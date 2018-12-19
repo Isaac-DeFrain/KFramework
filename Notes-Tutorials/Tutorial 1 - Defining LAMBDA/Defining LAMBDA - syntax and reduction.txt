@@ -1,0 +1,20 @@
+require "module/substitution.k"
+
+module LAMBDA
+
+  imports SUBSTITUTION
+
+  syntax Val ::= Id
+               | "lambda" Id "." Exp		[binder, latex(\lambda(#1).(#2))]
+
+  syntax Exp ::= Val
+               | Exp Exp			[left, strict]
+	       | "(" Exp ")"			[bracket]
+
+  syntax KVariable ::= Id
+
+  syntax KResult ::= Val
+
+  rule (lambda X:Id . E:Exp) V:Val => E[V / X]
+
+endmodule
