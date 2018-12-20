@@ -2,12 +2,14 @@
 ## Derived Constructs; Extending Predefined Syntax
 
 ### To learn:
-* How to define derived language constructs, that is, ones whose semantics is defined completely in terms of other language constructs.
+* How to define derived language constructs
+* How to extend predefined syntax
 
-* How to add new constructs to predefined syntactic categories.
+In this lesson, we will learn how to define derived language constructs, that is, ones whose semantics are defined completely in terms of other language constructs.  We will also learn how to add new constructs to predefined syntactic categories.
+
 
 ### Defining Derived Language Constructs
-When defining a language, we often want certain language constructs to be defined in terms of other constructs.  For example, a let-binding construct of the form
+When defining a language, we often want certain language constructs to be defined in terms of other constructs.  For example, a let-binding construct of the form:
 ```
 	let X = E in E'
 ```
@@ -21,14 +23,13 @@ This can be easily achieved with a rule, as shown in `lambda.k`.
 
 As a side point, which is not very relevant here but good to know, we may want the *desugaring* of `let` to not even count as a computational step, but as a mere *structural rearrangement* of the program so that other semantic rules (beta reduction, in our case) can match and apply.
 
-The K tool allows us to tag rules with the attribute [macro], with precisely the intuition above.  You can think of structural rules as a kind of light rules, almost like macros, or like ones which apply *under the hood*, instantaneously.  There are several other uses for structural rules in K,
-which we will discuss later in the tutorial.
+The K tool allows us to tag rules with the attributes `[structural]` and `[macro]`, with precisely the intuition above.  You can think of structural rules as a kind of light rules, almost like macros, or like ones which apply *under the hood*, instantaneously.  There are several other uses for structural rules in K, which we will discuss later in the tutorial.
 
 Kompile `lambda.k` and write some programs using `let` binders.
 
-E.g. consider a `lets.lambda` program which takes `arithmetic.lambda` and replaces each integer by a let-bound variable.  It should evaluate to `true`, just like the original `arithmetic.lambda`.
+For example, consider the `lets.lambda` program which takes `arithmetic.lambda` and replaces each integer by a let-bound variable.  It should evaluate to `true`, just like the original `arithmetic.lambda`.
 
-Let us now consider a more interesting program, namely one that calculates the factorial of 10:
+Let us consider a more interesting program, namely one that calculates the factorial of 10:
 ```
   factorial-let.lambda
 
@@ -42,7 +43,7 @@ Let us now consider a more interesting program, namely one that calculates the f
 
 This program follows a common technique to define *fixed-points* in untyped lambda calculus, based on passing a function to itself.
 
-We may not like to define fixed-points following the approach above, because it requires global changes in the body of the function meant to be recursive, basically to pass it to itself (`f f` in our case above).  The approach below isolates the fixed-point aspect of the function in a so-called *fixed-point combinator*, which we call `fix` below, and then applies it to the function defining the body of the factorial, without any changes to it:
+We may not like to define fixed-points following the approach above, because it requires global changes in the body of the function meant to be recursive, basically to pass it to itself (`f f` in our case above).  The approach below isolates the fixed-point aspect of the function in a so-called *fixed-point combinator*, which we call `fix`, and then applies it to the function defining the body of the factorial, without any changes to it:
 ```
   factorial-fix-let.lambda
 
@@ -59,7 +60,16 @@ Although the above techniques are interesting and powerful (indeed, untyped lamb
 
 
 ### Adding New Constructs to Predefined Syntactic Categories
-We can easily define a more complex derived construct, called `letrec`, conventionally encountered in functional programming languages, whose semantics captures the fixed-point idea above.  In order to keep its definition simple and intuitive, we define a simplified variant of `letrec`, namely one which only allows us to define one recursive one-argument function.  See `lambda.k`.
+We can easily define a more complex derived construct, called `letrec`, conventionally encountered in functional programming languages, whose semantics captures the fixed-point idea above.  In order to keep its definition simple and intuitive, we define a simplified variant of `letrec`, namely one which only allows us to define a single recursive one-argument function.
+```
+	syntax Exp ::= "letrec" Id Id "=" Exp "in" Exp
+  	syntax Id ::= "$x" | "$y"
+  	rule letrec F:Id X:Id = E in E' => 
+		let F =
+		(lambda $x . ((lambda F . lambda X . E) (lambda $y . ($x $x $y))))
+		(lambda $x . ((lambda F . lambda X . E) (lambda $y . ($x $x $y))))
+		in E'									[macro]
+```
 
 There are two interesting observations here.
 
@@ -76,4 +86,8 @@ Using `letrec`, we can now write the factorial program as elegantly as it can be
 ```
 
 In the next lesson, we will discuss an alternative definition of `letrec`, based on another binder, `mu`, specifically designed to define fixed points.
+
+
+### Additional Notes
+In more recent definitions, we prefer to make some `[structural]` rules `[macro]` rules.  Macros apply statically, before the program is executed, thus increasing the execution performance.  The `let` and `letrec` constructs here could be made into `[macro]`.
 
