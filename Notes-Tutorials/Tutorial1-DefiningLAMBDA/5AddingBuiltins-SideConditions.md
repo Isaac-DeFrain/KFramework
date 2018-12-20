@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 5](http://youtu.be/T1aI04q3l9U)
+# [Tutorial 1 - Lesson 5](https://www.youtube.com/watch?v=T1aI04q3l9U)
 ## Adding Builtins; Side Conditions
 
 ### To learn:

@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 7](http://youtu.be/qZWiBaN7zrw)
+# [Tutorial 1 - Lesson 7](https://www.youtube.com/watch?v=qZWiBaN7zrw)
 ## Derived Constructs; Extending Predefined Syntax
 
 ### To learn:

@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 2](http://youtu.be/NDXgYfHG6R4)
+# [Tutorial 1 - Lesson 2](https://www.youtube.com/watch?v=NDXgYfHG6R4)
 ## Module Importing, Rules, Variables
 
 ### To learn:

@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 4](http://youtu.be/ULXA4e_6-DY)
+# [Tutorial 1 - Lesson 4](https://www.youtube.com/watch?v=ULXA4e_6-DY)
 ## Generating Documentation; Latex Attributes
 
 ### To learn:

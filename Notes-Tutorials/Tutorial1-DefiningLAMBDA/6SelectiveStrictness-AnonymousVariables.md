@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 6](http://youtu.be/IreP6DFPWdk)
+# [Tutorial 1 - Lesson 6](https://www.youtube.com/watch?v=IreP6DFPWdk)
 ## Selective Strictness; Anonymous Variables
 
 ### To learn:

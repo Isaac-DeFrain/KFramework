@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 3](http://youtu.be/aul1x6bd1YM)
+# [Tutorial 1 - Lesson 3](https://www.youtube.com/watch?v=aul1x6bd1YM)
 ## Evaluation Strategies using Strictness
 
 ### To learn:

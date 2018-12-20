@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 1](http://youtu.be/y5Tf1EZVj8E)
+# [Tutorial 1 - Lesson 1](https://www.youtube.com/watch?v=y5Tf1EZVj8E)
 ## Syntax Modules and Basic K Commands
 
 ### To learn:

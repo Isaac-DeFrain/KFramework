@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 9](http://youtu.be/-pHgLqNMKac)
+# [Tutorial 1 - Lesson 9](https://www.youtube.com/watch?v=-pHgLqNMKac)
 ## A Complete and Documented K Definition
 
 ### To learn:

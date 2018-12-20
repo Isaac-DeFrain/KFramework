@@ -1,4 +1,4 @@
-# [Tutorial 1 - Lesson 8](http://youtu.be/Ox4uXDpcY64)
+# [Tutorial 1 - Lesson 8](https://www.youtube.com/watch?v=Ox4uXDpcY64)
 ## Multiple Binding Constructs
 
 ### To learn:
