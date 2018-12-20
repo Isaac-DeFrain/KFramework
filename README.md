@@ -7,6 +7,8 @@ I am currently learning K Framework. I will compile all of the relevant material
 
 * [K Overview](https://www.youtube.com/watch?v=eSaIKHQOo4c)
 
+* [K Framework GitHub](https://github.com/kframework/k/)
+
 * Papers
   * [K Primer](http://fsl.cs.illinois.edu/index.php/The_K_Primer_(version_3.3))
 
