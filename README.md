@@ -3,7 +3,7 @@
 I am currently learning K Framework. I will compile all of the relevant materials that I encounter/create here.
 
 ## Resources
-* [Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed)
+* [Tutorials/Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed)
 
 * Papers
   * [K Primer](http://fsl.cs.illinois.edu/index.php/The_K_Primer_(version_3.3))
