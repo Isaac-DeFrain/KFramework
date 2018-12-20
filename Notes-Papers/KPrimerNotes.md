@@ -217,16 +217,16 @@ E.g. the two rules for performing I/O:
 	     <out> ... .List => ListItem(I) </out>	     <in> ListItem(I) => .List ...</in>
 ```
 
-  * The `print` rule performs two changes in the configuration: (1) the `print` expression is replaced by its integer argument; (2) a list item containing that integer rplaces the empty list in the output cell (i.e. it is added to that list).
+  * The `print` rule performs two changes in the configuration: (1) the `print` expression is replaced by its integer argument; (2) a list item containing that integer replaces the empty list in the output cell (i.e. it is added to that list).
   * The `read` rule similarly replaces one element in the input cell by the empty list (i.e. deletes it from that list) and uses its value as a replacement for `read` in the computation cell.
 
 * Parts of the configuration can be omitted and inferred by the K tool (*configuration abstraction*)
 
-* K also allows omission of non-essential cell contents at either end (writting `...` instead)
+* K also allows omission of non-essential cell contents at either end (writing `...` instead)
 
 Full semantics for the `print` and `read` rules:
   * **print**: if `print I` (where `I` is an integer) is found at the beginning of the computation cell, then it is replaced by `I` and `I` is added at the end of the output list
-  * **read**: if `read` is found at the beginning of the computation cell, then the first element in the inout list is removed and its value is used as a replacement for `read`
+  * **read**: if `read` is found at the beginning of the computation cell, then the first element in the input list is removed and its value is used as a replacement for `read`
 
 Note that the rules corresponding to strictness annotations are used both to ensure that a `print` or `read` expression would eventually reach the top of the computation if it is in an evaluation position, and also that once they are evaluated, their values are plugged back into their corresponding context.
 
