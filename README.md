@@ -5,11 +5,11 @@ I am currently learning K Framework. I will compile all of the relevant material
 ## Resources
 * [Tutorials/Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed)
 
-* [K Overview](https://www.youtube.com/watch?v=eSaIKHQOo4c)
+* [K Overview video](https://www.youtube.com/watch?v=eSaIKHQOo4c)
 
 * [K Framework GitHub](https://github.com/kframework/k/)
 
-* Papers
+* [Papers](http://www.kframework.org/index.php/K_Publications)
   * [K Primer](http://fsl.cs.illinois.edu/index.php/The_K_Primer_(version_3.3))
 
   * [Overview of the K Semantic Framework](http://fsl.cs.illinois.edu/index.php/An_Overview_of_the_K_Semantic_Framework)
