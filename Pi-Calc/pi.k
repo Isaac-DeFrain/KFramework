@@ -37,11 +37,17 @@ module PI
 		    	<bound multiplicity="*"> . </bound>
 		      </bounds>
 		      <sum>
-		        <summand multiplicity="*">.</summand>
+		        <summand multiplicity="*"> . </summand>
 		      </sum>
 		    </proc>
 		  </par>
                 </T>
+
+
+  // REPLICATION SEMANTICS
+
+  rule <proc>... <k> ! P:Proc => P ...</k> ...</proc>
+       (.Bag => <proc>... <k> P </k> ...</proc>) [structural]
 
   // STRUCTURAL EQUIVALENCES
 
@@ -77,26 +83,26 @@ module PI
   // !(Nil | Nil) \equiv !Nil
     //needs to be finished
 
-  //COMM EVENT
+  // COMM EVENT
 
   rule <proc>
          ...
-         <k>(. => P[Z / Y]) ...</k>
+         <k> (. => P[Z / Y]) ...</k>
          (<sum>
            ...
            <summand> X:Name ? ( Y:Name ) . P:Proc </summand>
 	   ...
-         </sum> => <sum>.Bag</sum>)
+         </sum> => <sum> .Bag </sum>)
          ...
        </proc>
        <proc>
          ...
-         <k>(. => Q) ...</k>
+         <k> (. => Q) ...</k>
          (<sum>
            ...
 	   <summand> X:Name ! ( Z:Name ) . Q:Proc </summand>
 	   ...
-         </sum> => <sum>.Bag</sum>)
+         </sum> => <sum> .Bag </sum>)
          ...
        </proc>
 
