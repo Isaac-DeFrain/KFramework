@@ -266,6 +266,100 @@ The execution of `p2.exp` shows two things: that it is possible to pipe input to
 
 
 ## More Advanced K Definitional Features
+We will extend the EXP language.
+
+
+### Extending EXP with Functional Features
+To make EXP more expressive, we add `lambda` and `mu` abstractions to it.
+```
+	1  require "../exp.k"
+	2  require "modules/substitution.k"
+	3
+	4  module EXP-LAMBDA-SYNTAX
+	5    imports EXP-SYNTAX
+	6
+	7    syntax Val ::= Int
+	8		 | "lambda" Id "." Exp  [binder]
+	9    syntax Exp ::= Val
+	10		 | Exp Exp  		[seqstrict]  //application
+	11		 | "mu" Id "." Exp	[binder]
+	12 endmodule
+	13
+	14 module EXP-LAMBDA
+	15   imports EXP + EXP-LAMBDA-SYNTAX
+	16   imports SUBSTITUTION
+	17
+	18   syntax KResult ::= Val
+	19
+	20   rule (lambda X:Id . E:Exp) V:Val => E[V / X]  //beta-reduction
+	21
+	22   rule mu X:Id . E:Exp => E[mu X . E / X]	   //mu-unrolling
+	23 endmodule
+```
+
+#### Splitting Definitions Among Files
+Larger K definitions are usually spread out among multiple files, each potentially containing multiple modules. As a file-equivalent of the `imports` command on modules, a file can be included into another file using the `require` directive. `require` will first look up the path in the current directory; if not found, it will then look it up in the `include` directory from the K distribution. The tree of `require` dependencies is followed recursively.
+
+
+#### Binders and Substitution
+Both `lambda` and `mu` are binders, binding their first argument in the second argument. We use the builtin substitution operator to give semantics to these constructs. To guarantee that the substitutions work correctly (i.e. avoid variable capture), these constructs are marked with the [binder] annotation (lines 8 and 11). Currently, the `binder` annotation can only be applied to a two-argument production, of which the first must be an identifier.
+
+The SUBSTITUTION module is completely defined in the K tool, leveraging the binder predicate, and using the AST-view of the user-defined syntax to define a generic, capture-avoiding substitution operator. It exports a construct '`syntax K ::= K[K / K]`', which substitutes the second argument for the third in the first.
+
+To guarantee a *call-by-value* evaluation strategy, the application operator is declared `seqstrict` (line 10). Moreover, since all rules that don't explicitly mention a cell are assumed to be at the top of the computation cell, the evaluation strategy is also *outermost* (line 20). A special category `Val` is introduced to allow matching on both integers and lambda abstractions (lines 7-8) and computation results are extended to include all the values (line 18). Constraining rules not mentioning a cell to only happen at the top of the computation cell also helps avoid non-termination for the `mu`-unrolling rule (line 22), by only unrolling `mu` in an evaluation position.
+
+K does not commit to substitution-based definitions only. Environment-based definitions are quite natural, too. The environment is typically just another cell in the configuration which holds a map.
+
+
+#### Desugaring Syntax
+We show how one might desugar syntax in the K tool by adding two popular functional constructs to our language: `let` and `letrec`.
+```
+	syntax Exp ::= "let" Id "=" Exp "in" Exp
+		     | "letrec" Id Id "=" Exp "in" Exp
+```
+
+Instead of directly giving them semantics, we use `macro` capabilities to desugar them into `lambda` and `mu` abstractions:
+```
+	rule (let X:Id = E1:Exp in E2:Exp) => (lambda X . E2) E1  [macro]
+	rule (letrec F:Id X:Id = E1:Exp in E2:Exp) => (let F = mu F . lambda X . E1 in E2)  [macro]
+```
+
+The `let` operator desugars into an application of a `lambda`-abstraction, while `letrec` desugars into the `let` construct binding a `mu`-abstraction. Since they won't be part of the AST when giving the semantics, their corresponding productions don't need to annotated as binders.
+
+These macros are to be applied on programs at parse time; therefore both the syntax declaration and the macros themselves belong in the EXP-LAMBDA-SYNTAX module.
+
+
+### Imperative Features
+We add some imperative features to our EXP language.
+
+
+#### Statements
+To begin, we add a new syntactic category `Stmt` (for statements) and change the semicolon to be a statement terminator instead of an expression separator.
+```
+	syntax Stmt ::= Exp ";"  [strict]
+		      | Stmt Stmt
+```
+
+As we do not want statements to evaluate to values, we will not use strictness constraints to give statements their semantics. Instead, we give semantics for the expression statement and sequential composition with the following two rules:
+```
+	rule V:Val ; => .		      //expression statement
+	rule St1:Stmt St2:Stmt => St1 ~> St2  //sequential composition
+```
+
+The first rule discards the value for the expression statement; the second sequences statements as computations.
+
+Again, we add syntax productions to EXP-SYNTAX and K rules to EXP.
+
+
+#### Syntactic Lists
+K provides built-in support for generic syntactic lists: `List{Nonterminal,terminal}` stands for `terminal`-separated lists of zero or more `Nonterminal` elements. To instantiate and use the K built-in lists, we must alias each instance with a (typically fresh) non-terminal in our syntax. As an exmple, we add variable declarations to our EXP language. The first production below defines the `Ids` alias for the comma-separated lists of identifiers, while the second uses it to introduce variable declarations:
+```
+	syntax Ids ::= List{Id, ","}
+	syntax Stmt ::= "var" Ids ";"
+```
+
+Thus, both '`var x, y, z ;`' and '`var ;`' are bot valid declarations.
+
 
 
 
