@@ -87,9 +87,6 @@ module PI
   //Dissolve nu Nil summand
   rule <sum>... <summand> ( nu X:Name ) Nil </summand> => .Bag ...</sum>  [structural]
 
-  //Nu par Procs
-  //rule <k> ( nu X:Name )
-
   //Nu binding
   rule <k> ( nu X ) P => P </k>
        <env>... (.Bag => <local> X </local>) ...</env> [structural]
@@ -110,7 +107,7 @@ module PI
   rule <k> ! Nil => Nil ...</k>  [structural]
 
   // COMM EVENT
-  //currently deterministic, fix
+  //currently deterministic, fix this!
 
   rule <thread>
          ...
