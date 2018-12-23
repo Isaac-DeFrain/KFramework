@@ -9,7 +9,7 @@ module PI-SYNTAX
   syntax Proc ::= NormProc
                 | Proc "|" Proc                  	[klabel(Par), left]
                 | "!" Proc                          	[klabel(Replication)]
-                | "(" "nu" Name ")" Proc            	[klabel(New)]
+                | "(" "nu" Name ")" Proc            	[klabel(New),binder]
 	        | "(" Proc ")"                      	[bracket]
 		| "{" Proc "}"				[bracket]
 
@@ -18,7 +18,7 @@ module PI-SYNTAX
                     | "Nil"				//stopped process
 		    | NormProc "+" NormProc		[klabel(Or), left]
 
-  syntax priority Replication New Receive Send > Or > Par
+  syntax priority Replication New Receive Send > Or > Par //need more tests
 
   syntax KVariable ::= Name
 
@@ -29,30 +29,28 @@ module PI
 
   configuration <T color="green">
                   <par color="yellow">
-		    <proc color="magenta" multiplicity="*">
-		      <k color="purple">
-		        $PGM:Proc
-		      </k>
-		      <bounds color="cyan">
-		    	<bound color="blue" multiplicity="*"> . </bound>
-		      </bounds>
-		      <sum color="orange">
-		        <summand color="red" multiplicity="*"> . </summand>
-		      </sum>
-		    </proc>
-		  </par>
+                    <thread color="magenta" multiplicity="*">
+                      <k color="purple">
+                        $PGM:Proc
+                      </k>
+                      <env color="cyan">
+                        <local color="blue" multiplicity="*"> . </local>
+                      </env>
+                      <sum color="orange">
+                        <summand color="red" multiplicity="*"> . </summand>
+                      </sum>
+                    </thread>
+                  </par>
                 </T>
+
+  //add <new> cell for local bindings?
 
 
   // REPLICATION SEMANTICS
 
-  rule <proc>... <k> ! P:Proc => P ...</k> ...</proc>
-       (.Bag => <proc>... <k> P </k> ...</proc>)  [structural]
-
-  // NEW SEMANTICS
-  
-  rule <k> ( nu X:Name ) P:Proc => P ...</k>
-       <bounds>... (.Bag => <bound> X </bound>) ...</bounds>  [structural]
+  //Par with replication
+  rule <thread>... <k> ( ! P1:Proc ) | P2:Proc => P1 | P2 ...</k> ...</thread>
+       (.Bag => <thread>... <k> ! P1 </k> ...</thread>)  [structural]
 
   // STRUCTURAL EQUIVALENCES
 
@@ -60,52 +58,79 @@ module PI
   // P | 0 \equiv P
   // (P | Q) | R \equiv P | (Q | R)
 
-  rule <proc>... <k> P:Proc | Q:Proc => P </k> ...</proc>
-       (.Bag => <proc>... <k> Q </k> ...</proc>)  [structural]
+  //Par of Procs creates a thread for each Proc
+  rule <thread>... <k> P:Proc | Q:Proc => P </k> ...</thread>
+       (.Bag => <thread>... <k> Q </k> ...</thread>)  [structural]
 
-  rule <proc>... <k> Nil </k> ...</proc> => .Bag  [structural]
+  //Dissolve Nil k cell
+  rule <thread>... <k> Nil </k> ...</thread> => .Bag  [structural]
 
   // (N/\equiv, +, 0) is a symmetric monoid
 
-  rule <proc>... <k> N:NormProc => . </k>
-       <sum> .Bag => <summand> N </summand> </sum> ...</proc>  [structural]
+  //NormProcs in k cells are dissolved and added to sum cell
+  rule <thread>... <k> N:NormProc => . ...</k>
+       <sum>... .Bag => <summand> N </summand> ...</sum> ...</thread>  [structural]
 
+  //Sum of NormProcs creates a summand cell for each NormProc
   rule <summand> N:NormProc + M:NormProc => N </summand>
        (.Bag => <summand> M </summand>) [structural]
 
+  //Dissolve Nil summand cell
   rule <sum>... <summand> Nil </summand> => .Bag ...</sum>  [structural]
 
-  rule <proc>... <k> . </k> <sum> .Bag </sum> ...</proc> => .Bag  [structural]
+  //Dissolve empty threads
+  rule <thread>... <k> . </k> <sum> .Bag </sum> ...</thread> => .Bag  [structural]
 
   // (nu x) 0 \equiv 0
   // (nu x)(nu y)P \equiv (nu y)(nu x)P
-    //no environment/store needed to generate fresh names?
+
+  //Dissolve nu Nil summand
+  rule <sum>... <summand> ( nu X:Name ) Nil </summand> => .Bag ...</sum>  [structural]
+
+  //Nu par Procs
+  //rule <k> ( nu X:Name )
+
+  //Nu binding
+  rule <k> ( nu X ) P => P </k>
+       <env>... (.Bag => <local> X </local>) ...</env> [structural]
+
+  //Commutativity of nu
+  //rule 
 
   // !(!P) \equiv !P
   // !(Nil | Nil) \equiv !Nil
-    //needs to be finished
+
+  //Repeated replication
+  rule <k> ! (! P:Proc) => ! P ...</k>  [structural]
+
+  //Replication of par
+  rule <k> ! ( P1:Proc | P2:Proc ) => (! P1) | (! P2) ...</k>  [structural]
+
+  //Nil replication
+  rule <k> ! Nil => Nil ...</k>  [structural]
 
   // COMM EVENT
+  //currently deterministic, fix
 
-  rule <proc>
+  rule <thread>
          ...
-         <k> (. => P[Z / Y]) ...</k>
+         <k> (. => P1[Z / Y]) ...</k>
          (<sum>
            ...
-           <summand> X:Name ? ( Y:Name ) . P:Proc </summand>
+           <summand> X:Name ? ( Y:Name ) . P1:Proc </summand>
 	   ...
          </sum> => <sum> .Bag </sum>)
          ...
-       </proc>
-       <proc>
+       </thread>
+       <thread>
          ...
-         <k> (. => Q) ...</k>
+         <k> (. => P2) ...</k>
          (<sum>
            ...
-	   <summand> X:Name ! ( Z:Name ) . Q:Proc </summand>
+	   <summand> X:Name ! ( Z:Name ) . P2:Proc </summand>
 	   ...
          </sum> => <sum> .Bag </sum>)
          ...
-       </proc>
+       </thread>
 
 endmodule

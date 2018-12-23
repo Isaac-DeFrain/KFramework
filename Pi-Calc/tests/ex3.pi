@@ -1,1 +1,0 @@
-(nu x) ( x!(y).Nil | x?(y).Nil ) | (nu y) Nil

@@ -1,0 +1,3 @@
+//structural equivalence for replication operator
+
+! {! x!(y).Nil}
