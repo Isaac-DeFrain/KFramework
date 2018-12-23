@@ -98,6 +98,6 @@ module PI
 	   ...
          </sum> => <sum>.Bag</sum>)
          ...
-       </proc>  //shouldn't comm event take place among multiple <par> cells?
+       </proc>
 
 endmodule

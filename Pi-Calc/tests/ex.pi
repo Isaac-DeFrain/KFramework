@@ -1,1 +1,1 @@
-x?(y).(y!(a).Nil|z!(z).Nil) | x!(z).Nil
+x?(y).{y!(b).Nil | z!(z).Nil} | x!(a).Nil
