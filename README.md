@@ -3,7 +3,7 @@
 I am currently learning K Framework. I will compile all of the relevant materials that I encounter/create here.
 
 ## Resources
-* [Tutorials/Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed) / [My YouTube K Frameowkr playlist (tutorial videos in order)](https://www.youtube.com/watch?v=eSaIKHQOo4c&list=PLx_U8qR-tMtLQEDPvVk1y9gTIdUIWGaQd)
+* [Tutorials/Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed) / [My YouTube K Framework playlist (tutorial videos in order)](https://www.youtube.com/watch?v=eSaIKHQOo4c&list=PLx_U8qR-tMtLQEDPvVk1y9gTIdUIWGaQd)
 
 * [K Overview video](https://www.youtube.com/watch?v=eSaIKHQOo4c)
 
