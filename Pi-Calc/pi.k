@@ -27,17 +27,17 @@ endmodule
 module PI
   imports PI-SYNTAX
 
-  configuration <T>
-                  <par>
-		    <proc multiplicity="*">
-		      <k>
+  configuration <T color="green">
+                  <par color="yellow">
+		    <proc color="magenta" multiplicity="*">
+		      <k color="purple">
 		        $PGM:Proc
 		      </k>
-		      <bounds>
-		    	<bound multiplicity="*"> . </bound>
+		      <bounds color="cyan">
+		    	<bound color="blue" multiplicity="*"> . </bound>
 		      </bounds>
-		      <sum>
-		        <summand multiplicity="*"> . </summand>
+		      <sum color="orange">
+		        <summand color="red" multiplicity="*"> . </summand>
 		      </sum>
 		    </proc>
 		  </par>
@@ -47,7 +47,12 @@ module PI
   // REPLICATION SEMANTICS
 
   rule <proc>... <k> ! P:Proc => P ...</k> ...</proc>
-       (.Bag => <proc>... <k> P </k> ...</proc>) [structural]
+       (.Bag => <proc>... <k> P </k> ...</proc>)  [structural]
+
+  // NEW SEMANTICS
+  
+  rule <k> ( nu X:Name ) P:Proc => P ...</k>
+       <bounds>... (.Bag => <bound> X </bound>) ...</bounds>  [structural]
 
   // STRUCTURAL EQUIVALENCES
 
@@ -56,28 +61,25 @@ module PI
   // (P | Q) | R \equiv P | (Q | R)
 
   rule <proc>... <k> P:Proc | Q:Proc => P </k> ...</proc>
-       (.Bag => <proc>... <k> Q </k> ...</proc>) [structural]
+       (.Bag => <proc>... <k> Q </k> ...</proc>)  [structural]
 
-  rule <proc>... <k> Nil </k> ...</proc> => .Bag [structural]
+  rule <proc>... <k> Nil </k> ...</proc> => .Bag  [structural]
 
   // (N/\equiv, +, 0) is a symmetric monoid
 
   rule <proc>... <k> N:NormProc => . </k>
-       <sum> .Bag => <summand> N </summand> </sum> ...</proc> [structural]
+       <sum> .Bag => <summand> N </summand> </sum> ...</proc>  [structural]
 
   rule <summand> N:NormProc + M:NormProc => N </summand>
        (.Bag => <summand> M </summand>) [structural]
 
-  rule <sum>... <summand> Nil </summand> => .Bag ...</sum> [structural]
+  rule <sum>... <summand> Nil </summand> => .Bag ...</sum>  [structural]
 
-  rule <proc>... <k> . </k> <sum> .Bag </sum> ...</proc> => .Bag [structural]
+  rule <proc>... <k> . </k> <sum> .Bag </sum> ...</proc> => .Bag  [structural]
 
   // (nu x) 0 \equiv 0
   // (nu x)(nu y)P \equiv (nu y)(nu x)P
     //no environment/store needed to generate fresh names?
-  
-  rule <k> ( nu X:Name ) P:Proc => P ...</k>
-       <bounds>... (.Bag => <bound> X </bound>) ...</bounds> [structural]
 
   // !(!P) \equiv !P
   // !(Nil | Nil) \equiv !Nil
