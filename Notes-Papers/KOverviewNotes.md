@@ -200,11 +200,10 @@ Many K rules, particularly those which are computational, involve more than one 
 
 The K rule for variable lookup in SIMPLE:
 ```
-	rule <threads>... <thread> <k> X => V ...</k> <env>... X |-> L ...</env> ...</thread> ...</threads>
-	     <store>... L |-> V ...</store>
+	rule <k> X => V ...</k> <env> X |-> L ...</env> <store> L |-> V ...</store>
 ```
 
-This translates to the conventional rewrite rule:
+Translates to the conventional rewrite rule:
 ```
 	rule threads(thread(k(X ~> K) env(X |-> L, Env) Thread) Threads) store(L |-> V, Store)
 	  => threads(thread(k(V ~> K) env(X |-> L, Env) Thread) Threads) store(L |-> V, Store)
@@ -212,6 +211,10 @@ This translates to the conventional rewrite rule:
 
 where `K`, `Env`, `Thread`, `Threads`, and `Store` are cell frame variables corresponding to the "tears".
 
+
+There are two K-specific aspects in the rule above which need discussion. First, the `...`s in the cells means that the cell may contain more data there, but that data is irrelevant to the rule. We assumed a definition of maps as sets of pairs `key |-> value`.
+
+A second K-specific aspect to note in the rule above is that the configuration context does not match. In the configuration of SIMPLE, the `store` cell is not located in the same cell as `k` and `env`, so these cells cannot be matched as the rule states. This rule takes advantage of K's *configuration abstraction* mechanism which allows us to only specify the needed cells in a rule, with the rest of the configuration context being inferred from the defined configuration. The concretization of such abstract configuration rule contexts is based on several principles and criteria that help disambiguate among possible concrete rules (see [Overview of the K Semantic Framework](http://fsl.cs.illinois.edu/index.php/An_Overview_of_the_K_Semantic_Framework) for full details). Here we only mention one, the *locality principle*, which states that the configuration will be completed such that a minimal number of cells will be added. Th ensures that, in a multithreaded SIMPLE program, the cells `k` and `env` in the rule above will be assigned to the same thread cell. Allow adding them to different thread cells would be consistent with the configuration structure, having them in the same thread is "more local".
 
 
 
