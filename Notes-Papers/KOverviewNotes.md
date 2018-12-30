@@ -253,7 +253,7 @@ Given a signature `\Sigma` and a (potentially infinite) set of variables `X`, le
 
 instead of `k[L => R]`, since the holes are implicit and need no be mentioned.
 
-
+We can associate to any K rule `\rho: k[L => R]` a regular rewrite rule `K2R(\rho): L(k) -> R(k)`. 
 
 
 
