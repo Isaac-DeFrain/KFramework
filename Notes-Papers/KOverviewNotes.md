@@ -30,9 +30,42 @@ SIMPLE is intended to be a pedagogical and research language that captures the e
 * *Concurrency via dynamic thread creation/termination and synchronization*. One can spawn a thread to execute any statement. The spawned thread shares its environment at creation with its parent. Threads can be synchronized via a join command which blocks the current thread until the joined thread completes, via re-entrant locks which can be acquired and released, and rendezvous commands.
 
 ### K Syntax
-The K syntax of languages, calculi, or systems, as well as the additional syntax needed for the semantics of these, is defined using *context-free grammars* (CFG), or equivalently, algebraic signatures written using the *mixfix* notation. We use `List{Nonterminal,terminal}` to refer to the nonterminal corresponding to `terminal`-separated lists of `Nonterminal` elements; e.g. `List{Exp,@}` refers to `@`-separated lists of expressions. As a special case, `List{Nonterminal}` stands for comma-separated lists of nonterminals. In K, "`.`", read "nothing" and possibly tagged with its type, is uniformly used as the unit of all structures mentioned above. If a different unit is preferred, it can be specified as an additional argument to `List`, e.g. `List{Exp,@,nil}`.
+The K syntax of languages, calculi, or systems, as well as the additional syntax needed for the semantics of these, is defined using *context-free grammars* (CFG), or equivalently, algebraic signatures written using the *mixfix* notation. We use `List{Nonterminal,terminal}` to refer to the nonterminal corresponding to `terminal`-separated lists of `Nonterminal` elements; e.g. `List{Exp,@}` refers to `@`-separated lists of expressions. As a special case, `List{Nonterminal}` stands for comma-separated lists of nonterminals. In K, `.`, read "nothing" and possibly tagged with its type, is uniformly used as the unit of all structures mentioned above. If a different unit is preferred, it can be specified as an additional argument to `List`, e.g. `List{Exp,@,nil}`.
 
-Syntax definition and parsing 
+At its core, K is not concerned with concrete syntax at all. The syntax of K currently consists of one syntactic category `K` for *computational structures* (*computations*), i.e. structures which have the capability to compute when put in the right context, together with another syntactic category, `KLabel`, for AST labels:
+```
+	     K ::= KLabel ( List{K} ) | List{K,~>}			  (generic)
+	KLabel ::= 0 | 1 | ... | while(_)_ | {_} | ...		(language-specific)
+```
+
+A programming language, calculus, or system syntax, including constants as primitive values, is eventually regarded as a set of K labels by simply associating a unique K label to each production and discarding all the concrete syntactic categories. This way, any program or fragment of a program can be regarded (for semantic reasons) as a K *abstract syntax tree* (KAST) whose nodes are K labels and whoes leaves are `.`. By default, we use the mixfix notational philosophy when choosing label names. E.g. the fragment of SIMPLE program:
+```
+	while(x > 0) {x = x - 1;}
+```
+
+can be regarded as the KAST
+```
+	while(_)_(_>_(x(.), 0(.)), {_}(_=_(x(.), _-_(x(.), 1(.)))))
+```
+
+Theoretically, the KAST notation allows one to give language-independent and thus modular semantics to constructs that require one to visit the entire language syntax, such as substitution or code generation, by simply giving their semantics in terms of KASTs and not worrying about the concrete language syntax. Practically, it gives a means to separate syntactic and semantic concerns, leaving the translation from concrete syntax to KAST to tools.
+
+In addition to capturing language/calculus/system syntax as KAST structures as explained, the `K` syntactic category also provides a *task sequentialization* list construct, writtenn `~>` and read "followed by" or "and then". Idea being that if `t1`, ..., `tN` are computations, then `t1 ~> ... ~> tN` can be thought of as the computation consisting of `t1` followed by ... followed by `tN`.
+
+E.g. if `s1, s2 \in K` are KASTs corresponding to two statements in SIMPLE, then the semantics of sequential composition reduces `s1 s2` to `s1 ~> s2`, which will be further processed by using other rules: first `s1` will be fully evaluated, then `s2`. E.g. if `e1, e2 \in K` are KASTs corresponding to two expressions in SIMPLE, then the rewrite rules defining the evaluation strategy of addition will allow the expression `e1 + e2` to nondeterministically rewrite to either `e1 ~> [] + e2` or `e2 ~> e1 + []`, where `_+[]` and `[]+_` are two new K labels specifically added for this prupose.
+
+### K Configurations
+A programming language semantics is typically driven by the syntax, but it often needs additional semantic data in order to properly capture the desired semantics of each langauge consturct. Such data may include a program environment mapping program variables to memory locations, a store mapping memory locations to values, one or more stacks for functions and exceptions, a multi-set (or bag) of threads, a set of held locks associated to each thread, etc. To distinguish the various semantic components from each other, in K we "wrap" them within suggestively named *cells* when we structure them together in a configuration. These cells are nothing but constructors taking the desired structure and yieding a configuration item. E.g. the `<store>` cell can be defined as an operation
+```
+	store : Map -> CfgItem
+```
+
+where `Map` is the sort of maps from say natural numbers to integers. Cells can be nested.
+
+K assumes such configurations are defined upfront, before the semantic rules are given, since thte structure of program configurations is an important aspect that gives K its modularity.
+
+
+
 
 
 
