@@ -10,6 +10,8 @@ I am currently learning K Framework. I will compile all of the relevant material
 * [K Framework GitHub](https://github.com/kframework/k/)
 
 * [Papers](http://www.kframework.org/index.php/K_Publications)
+  * [K - A Semantic Framework for Programming Languages and Formal Analysis Tools](http://fsl.cs.illinois.edu/index.php/K_-_A_Semantic_Framework_for_Programming_Languages_and_Formal_Analysis_Tools)
+
   * [K Primer](http://fsl.cs.illinois.edu/index.php/The_K_Primer_(version_3.3))
 
   * [K Overview and SIMPLE Case Study](http://fsl.cs.illinois.edu/index.php/K_Overview_and_SIMPLE_Case_Study)
@@ -18,4 +20,14 @@ I am currently learning K Framework. I will compile all of the relevant material
 
   * [Matching Logic](http://fsl.cs.illinois.edu/index.php/Matching_logic)
 
+  * [A Truly Concurrent Semantics for K Framework Based on Graph Transformarions](http://fsl.cs.illinois.edu/index.php/A_Truly_Concurrent_Semantics_for_the_K_Framework_Based_on_Graph_Transformations)
+
+  * [Abstract Semantics for K Module Composition](http://fsl.cs.illinois.edu/index.php/Abstract_Semantics_for_K_Module_Composition)
+
+  * [A Language-Independent Approach to Smart Contract Verification](http://fsl.cs.illinois.edu/index.php/A_Language-Independent_Approach_to_Smart_Contract_Verification)
+
   * [Semantics-Based Program Verifier for all Languages](http://fsl.cs.illinois.edu/index.php/Semantics-Based_Program_Verifiers_for_All_Languages)
+
+  * [Specifying Languages and Verifying Programs with K](http://fsl.cs.illinois.edu/index.php/Specifying_Languages_and_Verifying_Programs_with_K)
+
+  * [IELE: An Intermediate-Level Blockchain Language Designed and Implemented Using Formal Semantics](http://fsl.cs.illinois.edu/index.php/IELE:_An_Intermediate-Level_Blockchain_Language_Designed_and_Implemented_Using_Formal_Semantics)
