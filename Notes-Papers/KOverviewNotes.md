@@ -64,7 +64,59 @@ where `Map` is the sort of maps from say natural numbers to integers. Cells can 
 
 K assumes such configurations are defined upfront, before the semantic rules are given, since thte structure of program configurations is an important aspect that gives K its modularity.
 
+#### Configuration of SIMPLE
+SIMPLE has functions with abrupt termination, exceptions, dynamic threads with lock synchronization and memory sharing, and input/output. The initial configuration of SIMPLE:
+```
+	<T>
+	  <threads>
+	    <thread multiplicity="*">
+	      <k>
+		$PGM:K
+	      </k>
+	      <control>
+		<fstack>
+		  .List
+		</fstack>
+		<xstack>
+		  .List
+		</xstack>
+	      </control>
+	      <env>
+		.Map
+	      </env>
+	      <holds>
+		.Map
+	      </holds>
+	      <id>
+		0
+	      </id>
+	    </thread>
+	  </threads>
+	  <genv>
+	    .Map
+	  </genv>
+	  <store>
+	    .Map
+	  </store>
+	  <busy>
+	    .Set
+	  </busy>
+	  <terminated>
+	    .Set
+	  </terminated>
+	  <in>
+	    .List
+	  </in>
+	  <out>
+	    .List
+	  </out>
+	  <nextLoc>
+	    0
+	  </nextLoc>
+	</T>
+```
 
+consists of a top level cell, `T`, holding a `threads` cell, a global environment map cell `genv` mapping the global variables and function names to their locations, a shared store map cell `store` mapping each location to some value, a set cell `terminated` holding the unique identifiers of the threads which have terminated (needed for `join`), `input` and `output` list cells, and a `nextLoc` cell holding a natural number undicating the next available location in memory. In SIMPLE, we prefer to explicitly manage memory. The location counter in `nextLoc` models an actual physical location in the store. The `threads` cell contains one `thread` cell for each existing thread in the program (signified by `multiplicity="*"`, meaning that at any given moment there could be zero or more `thread` cells). Each `thread` cell contains a computation cell `k`, a `control` cell holding the various control structures needed to jump to certain points of interest in the program execution, a local environment cell `env` mapping the thread local variables to locations in the store, and finally a `hold` map cell indicating what locks have been acquired by the thread and not released so far and how many times each lock has been acquired without being released (SIMPLE's locks are re-entrant). 
 
 
 
