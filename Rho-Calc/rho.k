@@ -13,7 +13,7 @@ module RHO-SYNTAX
                 | Id                                                   // Id: -> Name (not needed)
 
 // PROCESSES
-//receive is singled out so we can assign KResult ::= Nam Rec
+//receive is singled out so we can assign KResult ::= Name | Rec
   syntax Rec  ::= Name "(" Name ")"  "{" Proc "}"  [klabel(Rec)]       // Rec: Name*Name*Proc -> Proc
 
   syntax Proc ::= "Nil"                            [klabel(Stop)]      // Stop: -> Proc
@@ -34,7 +34,7 @@ module RHO-SYNTAX
 
   syntax KVariable ::= Name
 
-  syntax Val ::= Name             //is this what I want?
+  syntax Val ::= Name  //is this what I want?
 
 endmodule
 
@@ -47,7 +47,7 @@ module RHO
       <k> $PGM:Proc </k>
       <pool>                         //input-guarded process pool
         <guard multiplicity="*">
-          <proc> .K </proc>                //continuation to be further processed
+          <proc> .K </proc>       //continuation to be further processed
           <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
         </guard>
       </pool>
@@ -67,19 +67,20 @@ module RHO
   syntax KResult ::= Val | Rec  //is this what I want?
 
 // SEND SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>         //dissolve send and populate cells
-       (.Bag => <send>                               //create new send cell containing:
-                  <outchan> X |-> !L:Int </outchan>  //map outChan |-> Loc
-                  <msg> @P |-> !L </msg>       //map msg |-> Loc, message sent on Chan at Loc
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>          //dissolve send and populate cells
+       (.Bag => <send>                                //create new send cell containing:
+                  <outchan> X |-> !L:Int </outchan>   //map outChan |-> Loc
+                  <msg> @P |-> !L </msg>              //map msg |-> Loc, message sent on Chan at Loc
                 </send>)  [structural]
 
 // RECEIVE SEMANTICS
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
        (.Bag => <guard>
-                  <proc> P </proc>                   //P is a continuation
-                  <bind> Y |-> !L:Int </bind>  //location of variable which binds in P
+                  <proc> P </proc>                     //P is a continuation
+                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
                 </guard>)
        (.Bag => <inchan> X |-> !L </inchan>)  [structural]
+
 // PAR OPERATOR
 // create new thread?
 
