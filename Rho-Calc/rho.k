@@ -47,7 +47,7 @@ module RHO
       <k> $PGM:Proc </k>
       <pool>                         //input-guarded process pool
         <guard multiplicity="*">
-          <proc> .K </proc>       //continuation to be further processed
+          <proc> .K </proc>          //continuation to be further processed
           <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
         </guard>
       </pool>
@@ -100,7 +100,10 @@ module RHO
 
 //  rule P:Proc | Nil => P  [structural]
 
-//  rule <thread> <k> Nil </k> ...</thread> => .Bag  [structural]
+  rule (<guard> <proc> Nil </proc> <bind> _:Name |-> L:Int </bind> </guard> => .Bag)
+       (<inchan> _:Name |-> L </inchan> => .Bag)  [structural]
+
+//  rule <k> Nil </k> => .  [structural]
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
@@ -120,7 +123,7 @@ module RHO
 
 // SEMANTIC SUBSTITUTION
 
-// *(@P) \equiv P (instead of syntactic and semantic substitution?)
+// *(@P) \equiv P (instead of syntactic and semantic substitution? this is how it is in Rholang)
 // rule * ( @ P:Proc ) => P  [structural]
 
 endmodule
