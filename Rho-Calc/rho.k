@@ -44,49 +44,42 @@ module RHO
 
   configuration
     <T>
-      <threads>
-        <thread multiplicity="*">     //kepping track of pars/concurrency (process pool)
-          <k> $PGM:Proc </k>
-          <procs>                     //input-guarded processes i.e. continuations
-            <proc multiplicity="*">
-              <pool> .Map </pool>     //continuation
-              <pchan> .Map </pchan>   //map inChan |-> Loc tagging continuation
-              <bind> .Map </bind>     //Var |-> Loc, varible bindings in continuation
-              <depth> 0 </depth>      //how many levels down?
-            </proc>
-          </procs>
-        </thread>          
-      </threads>
-      <recs>                          //receives/incoming
-        <inmail multiplicity="*">     //receives on some channel
-          <inchan> .Map </inchan>     //map inChan |-> Loc, 
-          <inmsg> .Map </inmsg>       //map Msg |-> Loc, message waiting for inChan
-        </inmail>
-      </recs>
-      <sends>                         //sends/outgoing
-        <outmail multiplicity="*">    //many sends to the same channel
-          <outchan> .Map </outchan>   //map outChan |-> Loc, 
-          <outmsg> .Map </outmsg>     //map Msg |-> Loc, sent message waiting for outChan
-        </outmail>
-      </sends>
+      <k> $PGM:Proc </k>
+      <pool>                         //input-guarded process pool
+        <guard multiplicity="*">
+          <proc> .K </proc>                //continuation to be further processed
+          <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
+        </guard>
+      </pool>
+      <incoming>
+        <inchan multiplicity="*">    //receives on some channel
+          .Map                       //map inChan |-> Loc, Loc connected to continuation from receive
+        </inchan>
+      </incoming>
+      <outgoing>                     //sends and messages
+        <send multiplicity="*">      //many sends to the same channel
+          <outchan> .Map </outchan>  //map outChan |-> Loc, 
+          <msg> .Map </msg>          //map Msg |-> Loc, sent message waiting for matching inChan to comm
+        </send>
+      </outgoing>
     </T>
 
   syntax KResult ::= Val | Rec  //is this what I want?
 
 // SEND SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send and populate cells
-       <pool>... . => X!(P) |-> !L:Int </pool>
-       <outchan>... . =>  X |-> !L </outchan>
-       <outmsg>...  . => @P |-> !L </outmsg>  [structural]
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>         //dissolve send and populate cells
+       (.Bag => <send>                               //create new send cell containing:
+                  <outchan> X |-> !L:Int </outchan>  //map outChan |-> Loc
+                  <msg> @P |-> !L </msg>       //map msg |-> Loc, message sent on Chan at Loc
+                </send>)  [structural]
 
 // RECEIVE SEMANTICS
-  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and poulated cells
-       <pool>...  . => P |-> !L:Int </pool>            //P is a continuation
-       <pchan>... . => X |-> !L </pchan>               //location of channel
-       <bind>...  . => Y |-> !L </bind>                //location of variable which binds in P
-       <depth>    I => I +Int 1 </depth>               //depth(P) = depth(X(Y){P}) + 1
-       <inchan>...  . => X |-> !L </inchan>   [structural]
-
+  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
+       (.Bag => <guard>
+                  <proc> P </proc>                   //P is a continuation
+                  <bind> Y |-> !L:Int </bind>  //location of variable which binds in P
+                </guard>)
+       (.Bag => <inchan> X |-> !L </inchan>)  [structural]
 // PAR OPERATOR
 // create new thread?
 
