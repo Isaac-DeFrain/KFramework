@@ -27,11 +27,11 @@ module RHO-SYNTAX
                 | "(" Proc ")"                     [bracket]
 
 // PRECEDENCE
-//  syntax priority Send Rec > Par
+//  syntax priority Send Rec > Par  //needed?
 
   syntax KVariable ::= Name
 
-  syntax Val ::= Name                    //is this what I want?
+  syntax Val ::= Name  //needed?
 
 endmodule
 
@@ -41,51 +41,54 @@ module RHO
 
   configuration
     <T>
-      <activity>
+      <activity color="yellow">
         <thread multiplicity="*">
           <k> $PGM:Proc </k>
-          <procs>                        //input-guarded process pool
-            <proc multiplicity="*">
+          <processes color="red">        //input-guarded processes
+            <process multiplicity="*">
               <cont> .K </cont>          //continuation to be further processed
               <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
               <procid> 0 </procid>       //process identifier for bindings
-            </proc>
-          </procs>
+            </process>
+          </processes>
         </thread>
       </activity>
-      <incoming>
-        <rec multiplicity="*">
-          <inchan>                       
-            .Map                         //map inChan |-> Loc, Loc connected to continuation from receive
-          </inchan>
-          <inchanid> .Map </inchanid>    //map inChan |-> procId
-        </rec>
-      </incoming>
-      <outgoing>                         //sends
-        <send multiplicity="*">          //many sends to the same channel
-          <outchan> .Map </outchan>      //map outChan |-> Loc, 
-          <outmsg> .Map </outmsg>        //map Msg |-> Loc, sent message waiting for matching inChan to comm
-//          <outchanid> .Map </outchanid>  
-        </send>
-      </outgoing>
+      <tuplespace color="cyan">          //tuplespace for sends and receives
+        <receives color="green">         //receives
+          <receive multiplicity="*">
+            <recchan>                       
+              .Map                       //map inChan |-> Loc, Loc connected to continuation from receive
+            </recchan>
+            <recid> .Map </recid>        //map inChan |-> procId
+          </receive>
+        </receives>
+        <sends color="blue">             //sends
+          <send multiplicity="*">
+            <sendchan> .Map </sendchan>  //map sendChan |-> Loc, 
+            <msg> .Map </msg>            //map Msg |-> Loc, sent message waiting for matching recChan
+//            <outchanid> .Map </outchanid>  
+          </send>
+        </sends>
+      </tuplespace>
     </T>
 
-  syntax KResult ::= Val                 //is this what I want?
+  syntax KResult ::= Val
 
 // SEND SEMANTICS
-//  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>          //dissolve send and populate cells
-//       (.Bag => <send>                                //create new send cell containing:
-//                  <outchan> X |-> !L:Int </outchan>   //map outChan |-> Loc
-//                  <msg> @P |-> !L </msg>              //map msg |-> Loc, message sent on Chan at Loc
-//                </send>)  [structural]
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send and populate cells
+       (.Bag => <send>                                 //create new send cell containing:
+                  <sendchan> X |-> !L:Int </sendchan>  //map outChan |-> Loc
+                  <msg> @P |-> !L </msg>               //map msg |-> Loc, message sent on Chan at Loc
+                </send>)  [structural]
 
 // RECEIVE SEMANTICS
-//  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
-//       (.Bag => <guard>
-//                  <proc> P </proc>                     //P is a continuation
-//                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
-//                </guard>)
-//       (.Bag => <inchan> X |-> !L </inchan>)  [structural]
+  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
+       (.Bag => <process>
+                  <cont> P </cont>                     //continuation P
+                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
+                  <procid> !I:Int </procid>
+                </process>)
+       (.Bag => <receive> <recchan> X |-> !L </recchan> <recid> X |-> !I </recid> </receive>)  [structural]
 
 // PAR OPERATOR
 //  rule <thread> <k> P | Q => . ...</k>
