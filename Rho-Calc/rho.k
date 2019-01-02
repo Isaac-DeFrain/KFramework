@@ -5,7 +5,7 @@ require "substitution.k"
 module RHO-SYNTAX
   import ID
   import DOMAINS
-//  import SUBSTITUTION
+  import SUBSTITUTION
 
 
 // NAMES
@@ -13,14 +13,11 @@ module RHO-SYNTAX
                 | Id                                                   // Id: -> Name (not needed)
 
 // PROCESSES
-//receive is singled out so we can assign KResult ::= Name | Rec
-  syntax Rec  ::= Name "(" Name ")"  "{" Proc "}"  [klabel(Rec)]       // Rec: Name*Name*Proc -> Proc
-
   syntax Proc ::= "Nil"                            [klabel(Stop)]      // Stop: -> Proc
+                | Name "(" Name ")"  "{" Proc "}"  [klabel(Rec)]       // Rec: Name*Name*Proc -> Proc
                 | Proc "|" Proc                    [klabel(Par),left]  // Par: Proc*Proc -> Proc
                 | Name "!" "(" Proc ")"            [klabel(Send)]      // Send: Name*Proc -> Proc
                 | "*" Name                         [klabel(Reify)]     // Reify: Name -> Proc
-                | Rec
                 
 // BRACKETS
   syntax Name ::= "{" Name "}"                     [bracket]
@@ -29,12 +26,12 @@ module RHO-SYNTAX
   syntax Proc ::= "{" Proc "}"                     [bracket]
                 | "(" Proc ")"                     [bracket]
 
-// PRECEDENCE needs to be fixed
-  syntax priority Send Rec > Par
+// PRECEDENCE
+//  syntax priority Send Rec > Par
 
   syntax KVariable ::= Name
 
-  syntax Val ::= Name  //is this what I want?
+  syntax Val ::= Name                    //is this what I want?
 
 endmodule
 
@@ -44,45 +41,54 @@ module RHO
 
   configuration
     <T>
-      <k> $PGM:Proc </k>
-      <pool>                         //input-guarded process pool
-        <guard multiplicity="*">
-          <proc> .K </proc>          //continuation to be further processed
-          <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
-        </guard>
-      </pool>
+      <activity>
+        <thread multiplicity="*">
+          <k> $PGM:Proc </k>
+          <procs>                        //input-guarded process pool
+            <proc multiplicity="*">
+              <cont> .K </cont>          //continuation to be further processed
+              <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
+              <procid> 0 </procid>       //process identifier for bindings
+            </proc>
+          </procs>
+        </thread>
+      </activity>
       <incoming>
-        <inchan multiplicity="*">    //receives on some channel
-          .Map                       //map inChan |-> Loc, Loc connected to continuation from receive
-        </inchan>
+        <rec multiplicity="*">
+          <inchan>                       
+            .Map                         //map inChan |-> Loc, Loc connected to continuation from receive
+          </inchan>
+          <inchanid> .Map </inchanid>    //map inChan |-> procId
+        </rec>
       </incoming>
-      <outgoing>                     //sends and messages
-        <send multiplicity="*">      //many sends to the same channel
-          <outchan> .Map </outchan>  //map outChan |-> Loc, 
-          <msg> .Map </msg>          //map Msg |-> Loc, sent message waiting for matching inChan to comm
+      <outgoing>                         //sends
+        <send multiplicity="*">          //many sends to the same channel
+          <outchan> .Map </outchan>      //map outChan |-> Loc, 
+          <outmsg> .Map </outmsg>        //map Msg |-> Loc, sent message waiting for matching inChan to comm
+//          <outchanid> .Map </outchanid>  
         </send>
       </outgoing>
     </T>
 
-  syntax KResult ::= Val | Rec  //is this what I want?
+  syntax KResult ::= Val                 //is this what I want?
 
 // SEND SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>          //dissolve send and populate cells
-       (.Bag => <send>                                //create new send cell containing:
-                  <outchan> X |-> !L:Int </outchan>   //map outChan |-> Loc
-                  <msg> @P |-> !L </msg>              //map msg |-> Loc, message sent on Chan at Loc
-                </send>)  [structural]
+//  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>          //dissolve send and populate cells
+//       (.Bag => <send>                                //create new send cell containing:
+//                  <outchan> X |-> !L:Int </outchan>   //map outChan |-> Loc
+//                  <msg> @P |-> !L </msg>              //map msg |-> Loc, message sent on Chan at Loc
+//                </send>)  [structural]
 
 // RECEIVE SEMANTICS
-  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
-       (.Bag => <guard>
-                  <proc> P </proc>                     //P is a continuation
-                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
-                </guard>)
-       (.Bag => <inchan> X |-> !L </inchan>)  [structural]
+//  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
+//       (.Bag => <guard>
+//                  <proc> P </proc>                     //P is a continuation
+//                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
+//                </guard>)
+//       (.Bag => <inchan> X |-> !L </inchan>)  [structural]
 
 // PAR OPERATOR
-// create new thread?
+//  rule <thread> <k> P | Q => . ...</k>
 
 // SEND OPERATOR
 // record outChan, outMsg
@@ -100,8 +106,8 @@ module RHO
 
 //  rule P:Proc | Nil => P  [structural]
 
-  rule (<guard> <proc> Nil </proc> <bind> _:Name |-> L:Int </bind> </guard> => .Bag)
-       (<inchan> _:Name |-> L </inchan> => .Bag)  [structural]
+//  rule (<guard> <proc> Nil </proc> <bind> _:Name |-> L:Int </bind> </guard> => .Bag)
+//       (<inchan> _:Name |-> L </inchan> => .Bag)  [structural]
 
 //  rule <k> Nil </k> => .  [structural]
 

@@ -1018,7 +1018,6 @@ module LANGUAGE-PARSING
   imports RHO
   imports K-TERM
   imports ID-PROGRAM-PARSING
-  rule `<T>`(#Or(#And(`<k>`(#KRewrite(#KSequence(#Or(#And(`Rec`(X,Y,P),#Or(isRule(#token("2108060550","K")))),#And(`Send`(X,P),#Or(isRule(#token("-1333626799","K"))))),DotVar1),#Or(#And(DotVar1,isRule(#token("-1333626799","K"))),#And(DotVar1,isRule(#token("2108060550","K")))))),#Or(isRule(#token("-1333626799","K")),isRule(#token("2108060550","K")))),#And(THE_VARIABLE,isRule(#token("69554336","K")))),#KRewrite(#Or(#And(`<pool>`(#KRewrite(`_GuardCellBag_`(#Or(#And(GuardCellBag_DotVar0,isRule(#token("2108060550","K"))),#And(GuardCellBag_DotVar1,isRule(#token("69554336","K")))),#Or(#And(`<guard>`(`<proc>`(`Stop`(.KList)),`<bind>`(_2)),#Or(isRule(#token("69554336","K")))),#And(`.GuardCellBag`(.KList),#Or(isRule(#token("2108060550","K"))))),#Or(#And(`.GuardCellBag`(.KList),#Or(isRule(#token("2108060550","K")))),#And(GuardCellBag_DotVar0,isRule(#token("69554336","K"))))),#And(`_GuardCellBag_`(`<guard>`(`<proc>`(P),`<bind>`(`_|->_`(Y,!L))),`_GuardCellBag_`(GuardCellBag_DotVar0)),isRule(#token("2108060550","K"))))),#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))),#And(THE_VARIABLE,isRule(#token("-1333626799","K")))),#And(`<pool>`(`_GuardCellBag_`(`.GuardCellBag`(.KList),`_GuardCellBag_`(GuardCellBag_DotVar0,GuardCellBag_DotVar1))),isRule(#token("69554336","K")))),#KRewrite(#Or(#And(`<incoming>`(#KRewrite(`_InchanCellBag_`(#Or(#And(InchanCellBag_DotVar0,isRule(#token("2108060550","K"))),#And(InchanCellBag_DotVar1,isRule(#token("69554336","K")))),#Or(#And(`<inchan>`(_3),#Or(isRule(#token("69554336","K")))),#And(`.InchanCellBag`(.KList),#Or(isRule(#token("2108060550","K"))))),#Or(#And(`.InchanCellBag`(.KList),#Or(isRule(#token("2108060550","K")))),#And(InchanCellBag_DotVar0,isRule(#token("69554336","K"))))),#And(`_InchanCellBag_`(`<inchan>`(`_|->_`(X,!L)),`_InchanCellBag_`(InchanCellBag_DotVar0)),isRule(#token("2108060550","K"))))),#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))),#And(THE_VARIABLE,isRule(#token("-1333626799","K")))),#And(`<incoming>`(`_InchanCellBag_`(`.InchanCellBag`(.KList),`_InchanCellBag_`(InchanCellBag_DotVar0,InchanCellBag_DotVar1))),isRule(#token("69554336","K")))),#Or(#And(`<outgoing>`(#KRewrite(`_SendCellBag_`(SendCellBag_DotVar0),#And(`_SendCellBag_`(`<send>`(`<outchan>`(`_|->_`(X,!L)),`<msg>`(`_|->_`(`Quote`(P),!L))),`_SendCellBag_`(SendCellBag_DotVar0)),isRule(#token("-1333626799","K"))))),#Or(isRule(#token("-1333626799","K")))),#And(THE_VARIABLE,#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))))) requires #token("true","Bool") ensures #token("true","Bool") [automaton()]
 endmodule
 
 
@@ -1265,119 +1264,189 @@ module REQUIRES-ENSURES$SYNTAX [org.kframework.attributes.Location(Location(129,
 endmodule
 
 
-module RHO [org.kframework.attributes.Location(Location(41,1,129,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+module RHO [org.kframework.attributes.Location(Location(38,1,135,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
   imports SUBSTITUTION
   imports RHO-SYNTAX
   imports RHO$SYNTAX
   imports MAP
-  imports K-REFLECTION
   syntax KItem ::= Cell
   syntax K
+  syntax Cell ::= ThreadCell
   syntax Cell ::= TCell
   syntax Cell ::= SendCell
+  syntax Cell ::= RecCell
+  syntax Cell ::= ProcsCell
+  syntax Cell ::= ProcidCell
   syntax Cell ::= ProcCell
-  syntax Cell ::= PoolCell
+  syntax Cell ::= OutmsgCell
   syntax Cell ::= OutgoingCell
   syntax Cell ::= OutchanCell
-  syntax Cell ::= MsgCell
   syntax Cell ::= KCell
   syntax Cell ::= IncomingCell
+  syntax Cell ::= InchanidCell
   syntax Cell ::= InchanCell
-  syntax Cell ::= GuardCell
+  syntax Cell ::= ContCell
   syntax Cell ::= BindCell
+  syntax Cell ::= ActivityCell
   syntax Bool ::= "isCell" "(" K ")"
-  rule initTCell(Init)=>`<T>`(initKCell(Init),initPoolCell(.KList),initIncomingCell(.KList),initOutgoingCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(683e5011113694578ac3a9e19d7b4ec2ab296bd59566a949e6b95c4df1eb39d1) initializer()]
-  rule initSendCell(.KList)=>`<send>`(initOutchanCell(.KList),initMsgCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(48e85d3dad92e3771d68d3508906e1212a67d34397d88176cace880165069af0) initializer()]
-  rule initProcCell(.KList)=>`<proc>`(#EmptyK(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(4b630838117b94fdb892735fc7d579f3f2680ae49facd3a11925310e2227c1a5) initializer()]
-  rule initPoolCell(.KList)=>`<pool>`(`.GuardCellBag`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(45c35e49f4481b246d1bc675f1976f51e2fad514daf498d44e07ee10406a48b9) initializer()]
+  rule initThreadCell(Init)=>`<thread>`(initKCell(Init),initProcsCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d911fc1bfa2cf53501921ca74f7d281a287c29fe1c526f312b336c6eb801d384) initializer()]
+  rule initTCell(Init)=>`<T>`(initActivityCell(Init),initIncomingCell(.KList),initOutgoingCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(54a0182bb2bec429c0f319711ab797acf176b40e3d37a24285be5bf731c36959) initializer()]
+  rule initSendCell(.KList)=>`<send>`(initOutchanCell(.KList),initOutmsgCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(a6f58031e226fcb0212e11309c6cb8c762bb4b05c7bd112c46a779111b998fd1) initializer()]
+  rule initRecCell(.KList)=>`<rec>`(initInchanCell(.KList),initInchanidCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(c7576665fa7e8083be5dc7d893dc2771558b4af32b6d3690ffc38fd68a44a3c9) initializer()]
+  rule initProcsCell(.KList)=>`<procs>`(`.ProcCellBag`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(02648f09d7af39909cf85b2bb81a553fd32b6e0c10c309d495df908f4da13900) initializer()]
+  rule initProcidCell(.KList)=>`<procid>`(#token("0","Int")) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(44ee042f36136405b6f66cd96916599b8ff5e20dd564c91707986a65fea602c0) initializer()]
+  rule initProcCell(.KList)=>`<proc>`(initContCell(.KList),initBindCell(.KList),initProcidCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(66960482963c41c449e4c5884773b74f7d60cb2a8761088251a34d9d7011dbed) initializer()]
+  rule initOutmsgCell(.KList)=>`<outmsg>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(c1141466d7d19e5379614e6664317954d0feb50042c0dcfac5f35aa24658a225) initializer()]
   rule initOutgoingCell(.KList)=>`<outgoing>`(`.SendCellBag`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(acf2112f3ef2986bfc89c9b09be34a3379c40fe4103155225322cc90af1a2b0d) initializer()]
   rule initOutchanCell(.KList)=>`<outchan>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(55892ea61f69d15017a0fa0d1628df9c7bb645ac7cc3e0af357336b4f61212c6) initializer()]
-  rule initMsgCell(.KList)=>`<msg>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d9a297ed1c4ca766483963644ccded05c15487470ba6011647f373079d85848a) initializer()]
   rule initKCell(Init)=>`<k>`(`project:Proc`(`Map:lookup`(Init,#token("$PGM","KConfigVar")))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d3d92662c16a4dde1625ade96c567eef65d6dc0ed7c3f0ee2b3d4001d0c3f393) initializer()]
-  rule initIncomingCell(.KList)=>`<incoming>`(`.InchanCellBag`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(04069db7b153184cc1be56365169836d0c4cad51290a8823830676521830300d) initializer()]
+  rule initIncomingCell(.KList)=>`<incoming>`(`.RecCellBag`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(04069db7b153184cc1be56365169836d0c4cad51290a8823830676521830300d) initializer()]
+  rule initInchanidCell(.KList)=>`<inchanid>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(c1362b9492058f1ad232b85fe9468683eff082879e8f98962cc679610af3ac54) initializer()]
   rule initInchanCell(.KList)=>`<inchan>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(eebf8e00af120ed38034dedc048f90b05e0199ee1848f5b7375c49e3690ff948) initializer()]
-  rule initGuardCell(.KList)=>`<guard>`(initProcCell(.KList),initBindCell(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(f545dd5700505941b4053075c5f997e58e7e7d14d0f322860d9a86c99e538532) initializer()]
+  rule initContCell(.KList)=>`<cont>`(#EmptyK(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(9ae3f63ba6a8508ad4e1712e7170da45c90d694ae480d00f73186c6370430ef6) initializer()]
   rule initBindCell(.KList)=>`<bind>`(`.Map`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(48a0713751df858e766496c5a8cda8bf833423dc1a8a269e197d69ecb6047140) initializer()]
+  rule initActivityCell(Init)=>`<activity>`(initThreadCell(Init)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(e7ab45a618515b9b5397417ad78f871868b403f028f15d6b92c70dca269fc904) initializer()]
   rule `project:Proc`(K)=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cb126cf017df4e6349622538a0090ca4f49fe00ccf73259bbd5ec5a3e59e3beb) projection()]
-  rule `<T>`(`<k>`(#KSequence(`Send`(X,P),DotVar1)=>DotVar1),THE_VARIABLE,THE_VARIABLE,`<outgoing>`(`_SendCellBag_`(SendCellBag_DotVar0)=>`_SendCellBag_`(`<send>`(`<outchan>`(`_|->_`(X,!L)),`<msg>`(`_|->_`(`Quote`(P),!L))),`_SendCellBag_`(SendCellBag_DotVar0)))) requires #match(!L,#fresh(#token("\"Int\"","String"))) ensures #token("true","Bool") [UNIQUE_ID(88763b9cf8fc144230103af745ca3e66fc43188463c6016d995c9d03f284977d) contentStartColumn(8) contentStartLine(70) org.kframework.attributes.Location(Location(70,8,74,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) structural() topRule()]
-  rule `<T>`(`<k>`(#KSequence(`Rec`(X,Y,P),DotVar1)=>DotVar1),`<pool>`(`_GuardCellBag_`(GuardCellBag_DotVar0)=>`_GuardCellBag_`(`<guard>`(`<proc>`(P),`<bind>`(`_|->_`(Y,!L))),`_GuardCellBag_`(GuardCellBag_DotVar0))),`<incoming>`(`_InchanCellBag_`(InchanCellBag_DotVar0)=>`_InchanCellBag_`(`<inchan>`(`_|->_`(X,!L)),`_InchanCellBag_`(InchanCellBag_DotVar0))),THE_VARIABLE) requires #match(!L,#fresh(#token("\"Int\"","String"))) ensures #token("true","Bool") [UNIQUE_ID(b8ebca692cc843380fdebd29c90c92562e969c0035aa502f6ab4ab0e31049d60) contentStartColumn(8) contentStartLine(77) org.kframework.attributes.Location(Location(77,8,82,45)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) structural() topRule()]
-  rule `<T>`(THE_VARIABLE,`<pool>`(`_GuardCellBag_`(GuardCellBag_DotVar1,`<guard>`(`<proc>`(`Stop`(.KList)),`<bind>`(_2)),GuardCellBag_DotVar0))=>`<pool>`(`_GuardCellBag_`(`.GuardCellBag`(.KList),`_GuardCellBag_`(GuardCellBag_DotVar0,GuardCellBag_DotVar1))),`<incoming>`(`_InchanCellBag_`(InchanCellBag_DotVar1,`<inchan>`(_3),InchanCellBag_DotVar0))=>`<incoming>`(`_InchanCellBag_`(`.InchanCellBag`(.KList),`_InchanCellBag_`(InchanCellBag_DotVar0,InchanCellBag_DotVar1))),THE_VARIABLE) requires `_andBool_`(`_andBool_`(`_andBool_`(`_andBool_`(`_andBool_`(#mapChoice(_19,_2),#mapChoice(_20,_3)),#match(L,`Map:lookup`(_2,_19))),`_==K_`(`.Map`(.KList),`_[_<-undef]`(_2,_19))),`_==K_`(`.Map`(.KList),`_[_<-undef]`(_3,_20))),#match(L,`Map:lookup`(_3,_20))) ensures #token("true","Bool") [UNIQUE_ID(115451ec206fe4e30898a4ca4ac347db52bf5a41d8e91649d65a0823e0d416ca) contentStartColumn(8) contentStartLine(103) org.kframework.attributes.Location(Location(103,8,104,49)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) structural() topRule()]
-  rule `<T>`(#Or(#And(`<k>`(#KRewrite(#KSequence(#Or(#And(`Rec`(X,Y,P),#Or(isRule(#token("2108060550","K")))),#And(`Send`(X,P),#Or(isRule(#token("-1333626799","K"))))),DotVar1),#Or(#And(DotVar1,isRule(#token("-1333626799","K"))),#And(DotVar1,isRule(#token("2108060550","K")))))),#Or(isRule(#token("-1333626799","K")),isRule(#token("2108060550","K")))),#And(THE_VARIABLE,isRule(#token("69554336","K")))),#KRewrite(#Or(#And(`<pool>`(#KRewrite(`_GuardCellBag_`(#Or(#And(GuardCellBag_DotVar0,isRule(#token("2108060550","K"))),#And(GuardCellBag_DotVar1,isRule(#token("69554336","K")))),#Or(#And(`<guard>`(`<proc>`(`Stop`(.KList)),`<bind>`(_2)),#Or(isRule(#token("69554336","K")))),#And(`.GuardCellBag`(.KList),#Or(isRule(#token("2108060550","K"))))),#Or(#And(`.GuardCellBag`(.KList),#Or(isRule(#token("2108060550","K")))),#And(GuardCellBag_DotVar0,isRule(#token("69554336","K"))))),#And(`_GuardCellBag_`(`<guard>`(`<proc>`(P),`<bind>`(`_|->_`(Y,!L))),`_GuardCellBag_`(GuardCellBag_DotVar0)),isRule(#token("2108060550","K"))))),#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))),#And(THE_VARIABLE,isRule(#token("-1333626799","K")))),#And(`<pool>`(`_GuardCellBag_`(`.GuardCellBag`(.KList),`_GuardCellBag_`(GuardCellBag_DotVar0,GuardCellBag_DotVar1))),isRule(#token("69554336","K")))),#KRewrite(#Or(#And(`<incoming>`(#KRewrite(`_InchanCellBag_`(#Or(#And(InchanCellBag_DotVar0,isRule(#token("2108060550","K"))),#And(InchanCellBag_DotVar1,isRule(#token("69554336","K")))),#Or(#And(`<inchan>`(_3),#Or(isRule(#token("69554336","K")))),#And(`.InchanCellBag`(.KList),#Or(isRule(#token("2108060550","K"))))),#Or(#And(`.InchanCellBag`(.KList),#Or(isRule(#token("2108060550","K")))),#And(InchanCellBag_DotVar0,isRule(#token("69554336","K"))))),#And(`_InchanCellBag_`(`<inchan>`(`_|->_`(X,!L)),`_InchanCellBag_`(InchanCellBag_DotVar0)),isRule(#token("2108060550","K"))))),#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))),#And(THE_VARIABLE,isRule(#token("-1333626799","K")))),#And(`<incoming>`(`_InchanCellBag_`(`.InchanCellBag`(.KList),`_InchanCellBag_`(InchanCellBag_DotVar0,InchanCellBag_DotVar1))),isRule(#token("69554336","K")))),#Or(#And(`<outgoing>`(#KRewrite(`_SendCellBag_`(SendCellBag_DotVar0),#And(`_SendCellBag_`(`<send>`(`<outchan>`(`_|->_`(X,!L)),`<msg>`(`_|->_`(`Quote`(P),!L))),`_SendCellBag_`(SendCellBag_DotVar0)),isRule(#token("-1333626799","K"))))),#Or(isRule(#token("-1333626799","K")))),#And(THE_VARIABLE,#Or(isRule(#token("2108060550","K")),isRule(#token("69554336","K")))))) requires #token("true","Bool") ensures #token("true","Bool") [automaton()]
-  ModuleComment(sends and messages,[UNIQUE_ID(6893ab04718566229ea2fd7933506ffe5bfee20b01a5fc9f903fdefff5bfa958) org.kframework.attributes.Location(Location(59,38,59,58)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(receives on some channel,[UNIQUE_ID(b8ed106b77766ab902ec54abeb5365fe077b9261e446a3a3873db187ef1d6424) org.kframework.attributes.Location(Location(55,38,55,64)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(map outChan |-> Loc,[UNIQUE_ID(2cde42b4b375c81b473ed372db031c27aa9e30669c411c3e266cabee75866769) org.kframework.attributes.Location(Location(72,55,72,76)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(map outChan |-> Loc, ,[UNIQUE_ID(3473c04315a0a0921b6d0aa83d65ba4141d2afd9e63bfee73982dabc277d8ca5) org.kframework.attributes.Location(Location(61,38,61,61)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(map msg |-> Loc, message sent on Chan at Loc,[UNIQUE_ID(0e1f0a00b579e4768973fe5df30e2960eefc466d6f77a6b24e8c8ac179d12472) org.kframework.attributes.Location(Location(73,55,73,101)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(map inChan |-> Loc, Loc connected to continuation from receive,[UNIQUE_ID(5788d1d2775f1d1ba14ab89f9cd4857aed7afa7103e22ce7383a34688007b958) org.kframework.attributes.Location(Location(56,38,56,102)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(map Msg |-> Loc, sent message waiting for matching inChan to comm,[UNIQUE_ID(30675a4b54765d014c6f573c1b5da5a807c7e3c844c0ed06d960d6c6b0c8ced2) org.kframework.attributes.Location(Location(62,38,62,105)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(many sends to the same channel,[UNIQUE_ID(5a1a2fa07194152268be711140637cfb605ca58190a3a96b882060b1e787115f) org.kframework.attributes.Location(Location(60,38,60,70)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(location of variable which binds in P,[UNIQUE_ID(37d5437dc43f98115a1462e30608886a828d82feaa97f2e8b0ec79352aec22a6) org.kframework.attributes.Location(Location(80,56,80,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(is this what I want?,[UNIQUE_ID(2e99f1d6bde586ef05715d918579145e134f0df549ebaa711586ff08031c0ccc) org.kframework.attributes.Location(Location(67,33,67,55)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(input-guarded process pool,[UNIQUE_ID(d19d9595183e6a613a522e05feb047dbc1fe261ee6a2a8f3a4aafb9d0ef3199f) org.kframework.attributes.Location(Location(48,38,48,66)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(dissolve send and populate cells,[UNIQUE_ID(d2ddca321867b8165e6cc19f8e8698e48ad2f08280ffe2ad54e984ed00eeb6a2) org.kframework.attributes.Location(Location(70,55,70,89)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(dissolve receive and populate cells,[UNIQUE_ID(1d0df8732d1536539cc050b0a155d24d488c26e1c2c46cc6c7da470ee677e4ba) org.kframework.attributes.Location(Location(77,56,77,93)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(create new send cell containing:,[UNIQUE_ID(09b44122f372d6cabac3bdab1e1e0b77c4d28009439eeb3b33f199294be74812) org.kframework.attributes.Location(Location(71,55,71,89)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(continuation to be further processed,[UNIQUE_ID(0f36701e3b3194af17e3f0b0310350a8bdc7f89aa649510a2d955669ef75d493) org.kframework.attributes.Location(Location(50,38,50,76)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(Var |-> Loc, varible bindings in continuation,[UNIQUE_ID(29c03cba9f80270294daf8636e4b51137eca5c931f0211fd5862f273e1d969e7) org.kframework.attributes.Location(Location(51,38,51,85)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(P is a continuation,[UNIQUE_ID(6e667b77b14d0c56ea2796b6d8d6344f3478d279174b3afe438a7ad4c1ad9277) org.kframework.attributes.Location(Location(79,56,79,77)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( rule * ( @ P:Proc ) => P  [structural],[UNIQUE_ID(87b3ca93000b48d697101f33879000b6a5be4eed5e68f166c3daf5188a7a2f73) org.kframework.attributes.Location(Location(127,1,127,42)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( record outChan, outMsg,[UNIQUE_ID(ca6489baf51966ee0af91e48dc3a1dc64c903de311a985bf207b7aee297cc19c) org.kframework.attributes.Location(Location(88,1,88,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( record binding variable,,[UNIQUE_ID(20c9c3aecb00cddc1afe60135528af12e06940d61932cd90675f951bf18d8843) org.kframework.attributes.Location(Location(91,1,91,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( move to process pool?,[UNIQUE_ID(f8bad8bffb4577f0db7476f24b0ac8223c25833cf93a69b05ae1c3c239b6e2d7) org.kframework.attributes.Location(Location(94,1,94,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( inChan "matches" outChan,[UNIQUE_ID(e8d8f79592f36d5c141deca5919341b918d01e1d554b580d05601f7f999078c8) org.kframework.attributes.Location(Location(114,1,114,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( create new thread?,[UNIQUE_ID(22d2ecc6de6843c669cf5bbbe178d1bc5def60c411b290e7a4f7ad2df7927a77) org.kframework.attributes.Location(Location(85,1,85,22)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( [Y / X]: Name -> Name ...,[UNIQUE_ID(b86664ec1bb8d57683389e620b47b0c1169796be25f183d1bb0fdd93ba189e9a) org.kframework.attributes.Location(Location(122,1,122,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( SYNTACTIC SUBSTITUTION,[UNIQUE_ID(205920630b97575995e30b61ac260db8d9cf6a5300753c2172c24e3e5b02e32a) org.kframework.attributes.Location(Location(121,1,121,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( STRUCTURAL EQUIVALENCE,[UNIQUE_ID(fbed00b24adf96d0e2671f842dbac3a885f2543be28730bf201967d90bdd9b7b) org.kframework.attributes.Location(Location(96,1,96,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( SEND SEMANTICS,[UNIQUE_ID(39cad9127b01c71ae72b4190da6c881b62b21178d79851bf1c451f9f89e85a0a) org.kframework.attributes.Location(Location(69,1,69,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( SEND OPERATOR,[UNIQUE_ID(25c885698ecc461009bf9724d9205ac5c6b632e706f31b5929cde39a3b551774) org.kframework.attributes.Location(Location(87,1,87,17)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( SEMANTIC SUBSTITUTION,[UNIQUE_ID(ffb3e0481b9335aaf6170bdf7f74693706d94e465c87dea896f63703deacbbdf) org.kframework.attributes.Location(Location(124,1,124,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( REIFY OPERATOR,[UNIQUE_ID(71a94685ad6963020bb3eb864c23c70497ddd666a5c3eccaa4111a3d857f578f) org.kframework.attributes.Location(Location(93,1,93,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( REDUCTION RULES,[UNIQUE_ID(53e064c10b5a6072885d520dfc14fd667994afeca28da135b129f239262c674a) org.kframework.attributes.Location(Location(112,1,112,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( RECEIVE SEMANTICS,[UNIQUE_ID(733c3563f52589fe80579e0778e847c00d9704f3023f85dc3a770fa870c8139a) org.kframework.attributes.Location(Location(76,1,76,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( REC OPERATOR,[UNIQUE_ID(ee3e10994d15bfa79a2d0b01d9beabb40964cd9241bb407c5465afddfbc8e07b) org.kframework.attributes.Location(Location(90,1,90,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( PAR: P|Q -> P'|Q when P -> P',[UNIQUE_ID(3d92e1e91712fb194b8e39765fb5cadba1a488366ef2ae13c278222989b52446) org.kframework.attributes.Location(Location(117,1,117,33)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( PAR OPERATOR,[UNIQUE_ID(1b239bf0ad1e0e55d3f6f2201f78e80f730bab7935d7e7e5fa0a388d2546a234) org.kframework.attributes.Location(Location(84,1,84,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( P \equiv Q \implies @P \equiv_N @Q,[UNIQUE_ID(3da3af908ceecb22b9f769c67eedcb4409f1a5f59cfa9feb4edd111fd3cd0952) org.kframework.attributes.Location(Location(110,1,110,38)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( NAME EQUIVALENCE,[UNIQUE_ID(d7ba3a630aadaaafd9b1810e2cc1a6983c1cba5a5321ac1217fd40a08a6ed002) org.kframework.attributes.Location(Location(108,1,108,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( EQUIV: P -> Q when P \equiv P', P' -> Q', and Q' \equiv Q,[UNIQUE_ID(1b7a807a2297b41c7a031bf1dff15d3449cafedade16ec0b8bee31b8b6e48750) org.kframework.attributes.Location(Location(119,1,119,61)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y]),[UNIQUE_ID(b800c01dd26d877093d120563d82eed58159119f7fa28e872b666fb91a004a7a) org.kframework.attributes.Location(Location(115,1,115,99)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( COMM EVENT,[UNIQUE_ID(452954ff962f8e6f5fd79abb15b1883f989c6affee8759810be2fa09ea1aec13) org.kframework.attributes.Location(Location(113,1,113,14)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( @{*x} \equiv_N x,[UNIQUE_ID(6c224e5725f5d43580f7f0e070230a0b96738b01579e33cda05fdde4a3780e5f) org.kframework.attributes.Location(Location(109,1,109,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( *(@P) \equiv P (instead of syntactic and semantic substitution? this is how it is in Rholang),[UNIQUE_ID(7f033cc367d0f62bbc68af2b4e7203c3022311040d7906c8db4da0ada4a38dc5) org.kframework.attributes.Location(Location(126,1,126,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( (P | Q) | R \equiv P | (Q | R),[UNIQUE_ID(2334068eab3a60ec3cabf56456bd630763f82f86d5e9a601be65900d1b2171d8) org.kframework.attributes.Location(Location(99,1,99,34)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(  rule P:Proc | Nil => P  [structural],[UNIQUE_ID(5f4eda996c5b151c8298eedd2d1a8bb0d485c1e64ae1c2666e9492ea071bb98e) org.kframework.attributes.Location(Location(101,1,101,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(  rule <k> Nil </k> => .  [structural],[UNIQUE_ID(b3c1a78f614646c8202fade41849d93391d6f066dc7b84c2597b99dfc1016814) org.kframework.attributes.Location(Location(106,1,106,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(  P | Q      \equiv Q | P,[UNIQUE_ID(d82ba3728bbffa2fe446b463c1169ac6a8416d6c472aa8915804ef4f5f2cbd66) org.kframework.attributes.Location(Location(98,1,98,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(  P | 0      \equiv P,[UNIQUE_ID(8fd908860114224e7b7c6dfcde332f89fcaac1f58ee21c9ea4f366f0868cc63c) org.kframework.attributes.Location(Location(97,1,97,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(sends,[UNIQUE_ID(a946160ab255948bce945a5d04405989598951e5c52ee582b5717aa74f54bac8) org.kframework.attributes.Location(Location(64,42,64,49)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(process identifier for bindings,[UNIQUE_ID(88c537ed9406dff3e7bada05121d6652358d2205bda3e36cfdeb2007b7bb0ad9) org.kframework.attributes.Location(Location(51,42,51,75)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(map outChan |-> Loc, ,[UNIQUE_ID(3473c04315a0a0921b6d0aa83d65ba4141d2afd9e63bfee73982dabc277d8ca5) org.kframework.attributes.Location(Location(66,42,66,65)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(map inChan |-> procId,[UNIQUE_ID(7fc6885cf420699eacc3ebf54a7760c11ef3dec125f1426c8530b43f0d52ee9a) org.kframework.attributes.Location(Location(61,42,61,65)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(map inChan |-> Loc, Loc connected to continuation from receive,[UNIQUE_ID(5788d1d2775f1d1ba14ab89f9cd4857aed7afa7103e22ce7383a34688007b958) org.kframework.attributes.Location(Location(59,42,59,106)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(map Msg |-> Loc, sent message waiting for matching inChan to comm,[UNIQUE_ID(30675a4b54765d014c6f573c1b5da5a807c7e3c844c0ed06d960d6c6b0c8ced2) org.kframework.attributes.Location(Location(67,42,67,109)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(many sends to the same channel,[UNIQUE_ID(5a1a2fa07194152268be711140637cfb605ca58190a3a96b882060b1e787115f) org.kframework.attributes.Location(Location(65,42,65,74)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(is this what I want?,[UNIQUE_ID(2e99f1d6bde586ef05715d918579145e134f0df549ebaa711586ff08031c0ccc) org.kframework.attributes.Location(Location(73,42,73,64)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(input-guarded process pool,[UNIQUE_ID(d19d9595183e6a613a522e05feb047dbc1fe261ee6a2a8f3a4aafb9d0ef3199f) org.kframework.attributes.Location(Location(47,42,47,70)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(continuation to be further processed,[UNIQUE_ID(0f36701e3b3194af17e3f0b0310350a8bdc7f89aa649510a2d955669ef75d493) org.kframework.attributes.Location(Location(49,42,49,80)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(Var |-> Loc, varible bindings in continuation,[UNIQUE_ID(29c03cba9f80270294daf8636e4b51137eca5c931f0211fd5862f273e1d969e7) org.kframework.attributes.Location(Location(50,42,50,89)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( rule * ( @ P:Proc ) => P  [structural],[UNIQUE_ID(87b3ca93000b48d697101f33879000b6a5be4eed5e68f166c3daf5188a7a2f73) org.kframework.attributes.Location(Location(133,1,133,42)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( record outChan, outMsg,[UNIQUE_ID(ca6489baf51966ee0af91e48dc3a1dc64c903de311a985bf207b7aee297cc19c) org.kframework.attributes.Location(Location(94,1,94,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( record binding variable,,[UNIQUE_ID(20c9c3aecb00cddc1afe60135528af12e06940d61932cd90675f951bf18d8843) org.kframework.attributes.Location(Location(97,1,97,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( move to process pool?,[UNIQUE_ID(f8bad8bffb4577f0db7476f24b0ac8223c25833cf93a69b05ae1c3c239b6e2d7) org.kframework.attributes.Location(Location(100,1,100,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( inChan "matches" outChan,[UNIQUE_ID(e8d8f79592f36d5c141deca5919341b918d01e1d554b580d05601f7f999078c8) org.kframework.attributes.Location(Location(120,1,120,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( [Y / X]: Name -> Name ...,[UNIQUE_ID(b86664ec1bb8d57683389e620b47b0c1169796be25f183d1bb0fdd93ba189e9a) org.kframework.attributes.Location(Location(128,1,128,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( SYNTACTIC SUBSTITUTION,[UNIQUE_ID(205920630b97575995e30b61ac260db8d9cf6a5300753c2172c24e3e5b02e32a) org.kframework.attributes.Location(Location(127,1,127,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( STRUCTURAL EQUIVALENCE,[UNIQUE_ID(fbed00b24adf96d0e2671f842dbac3a885f2543be28730bf201967d90bdd9b7b) org.kframework.attributes.Location(Location(102,1,102,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( SEND SEMANTICS,[UNIQUE_ID(39cad9127b01c71ae72b4190da6c881b62b21178d79851bf1c451f9f89e85a0a) org.kframework.attributes.Location(Location(75,1,75,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( SEND OPERATOR,[UNIQUE_ID(25c885698ecc461009bf9724d9205ac5c6b632e706f31b5929cde39a3b551774) org.kframework.attributes.Location(Location(93,1,93,17)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( SEMANTIC SUBSTITUTION,[UNIQUE_ID(ffb3e0481b9335aaf6170bdf7f74693706d94e465c87dea896f63703deacbbdf) org.kframework.attributes.Location(Location(130,1,130,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( REIFY OPERATOR,[UNIQUE_ID(71a94685ad6963020bb3eb864c23c70497ddd666a5c3eccaa4111a3d857f578f) org.kframework.attributes.Location(Location(99,1,99,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( REDUCTION RULES,[UNIQUE_ID(53e064c10b5a6072885d520dfc14fd667994afeca28da135b129f239262c674a) org.kframework.attributes.Location(Location(118,1,118,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( RECEIVE SEMANTICS,[UNIQUE_ID(733c3563f52589fe80579e0778e847c00d9704f3023f85dc3a770fa870c8139a) org.kframework.attributes.Location(Location(82,1,82,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( REC OPERATOR,[UNIQUE_ID(ee3e10994d15bfa79a2d0b01d9beabb40964cd9241bb407c5465afddfbc8e07b) org.kframework.attributes.Location(Location(96,1,96,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( PAR: P|Q -> P'|Q when P -> P',[UNIQUE_ID(3d92e1e91712fb194b8e39765fb5cadba1a488366ef2ae13c278222989b52446) org.kframework.attributes.Location(Location(123,1,123,33)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( PAR OPERATOR,[UNIQUE_ID(1b239bf0ad1e0e55d3f6f2201f78e80f730bab7935d7e7e5fa0a388d2546a234) org.kframework.attributes.Location(Location(90,1,90,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( P \equiv Q \implies @P \equiv_N @Q,[UNIQUE_ID(3da3af908ceecb22b9f769c67eedcb4409f1a5f59cfa9feb4edd111fd3cd0952) org.kframework.attributes.Location(Location(116,1,116,38)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( NAME EQUIVALENCE,[UNIQUE_ID(d7ba3a630aadaaafd9b1810e2cc1a6983c1cba5a5321ac1217fd40a08a6ed002) org.kframework.attributes.Location(Location(114,1,114,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( EQUIV: P -> Q when P \equiv P', P' -> Q', and Q' \equiv Q,[UNIQUE_ID(1b7a807a2297b41c7a031bf1dff15d3449cafedade16ec0b8bee31b8b6e48750) org.kframework.attributes.Location(Location(125,1,125,61)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y]),[UNIQUE_ID(b800c01dd26d877093d120563d82eed58159119f7fa28e872b666fb91a004a7a) org.kframework.attributes.Location(Location(121,1,121,99)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( COMM EVENT,[UNIQUE_ID(452954ff962f8e6f5fd79abb15b1883f989c6affee8759810be2fa09ea1aec13) org.kframework.attributes.Location(Location(119,1,119,14)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( @{*x} \equiv_N x,[UNIQUE_ID(6c224e5725f5d43580f7f0e070230a0b96738b01579e33cda05fdde4a3780e5f) org.kframework.attributes.Location(Location(115,1,115,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( *(@P) \equiv P (instead of syntactic and semantic substitution? this is how it is in Rholang),[UNIQUE_ID(7f033cc367d0f62bbc68af2b4e7203c3022311040d7906c8db4da0ada4a38dc5) org.kframework.attributes.Location(Location(132,1,132,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( (P | Q) | R \equiv P | (Q | R),[UNIQUE_ID(2334068eab3a60ec3cabf56456bd630763f82f86d5e9a601be65900d1b2171d8) org.kframework.attributes.Location(Location(105,1,105,34)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule P:Proc | Nil => P  [structural],[UNIQUE_ID(5f4eda996c5b151c8298eedd2d1a8bb0d485c1e64ae1c2666e9492ea071bb98e) org.kframework.attributes.Location(Location(107,1,107,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule <thread> <k> P | Q => . ...</k>,[UNIQUE_ID(90e1f3fed2a0fcd62f8b9eebfa061ce9dcb901ae25e6bd5ca6a13c74b3cc7c7f) org.kframework.attributes.Location(Location(91,1,91,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>          //dissolve send and populate cells,[UNIQUE_ID(42daf2371891cbe638db16cc547bd8bd9d2f21ba1a1e75d3f97c2f93f00b5d2c) org.kframework.attributes.Location(Location(76,1,76,91)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule <k> Nil </k> => .  [structural],[UNIQUE_ID(b3c1a78f614646c8202fade41849d93391d6f066dc7b84c2597b99dfc1016814) org.kframework.attributes.Location(Location(112,1,112,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells,[UNIQUE_ID(38e8b8deee79395c941e4922ea7041c1d73cc65816f273362661d66b8aff56b8) org.kframework.attributes.Location(Location(83,1,83,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  rule (<guard> <proc> Nil </proc> <bind> _:Name |-> L:Int </bind> </guard> => .Bag),[UNIQUE_ID(b04131b900704696dec759a4ced2f1f5cd9e3bcbce242648037820d203714a9b) org.kframework.attributes.Location(Location(109,1,109,87)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  P | Q      \equiv Q | P,[UNIQUE_ID(d82ba3728bbffa2fe446b463c1169ac6a8416d6c472aa8915804ef4f5f2cbd66) org.kframework.attributes.Location(Location(104,1,104,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  P | 0      \equiv P,[UNIQUE_ID(8fd908860114224e7b7c6dfcde332f89fcaac1f58ee21c9ea4f366f0868cc63c) org.kframework.attributes.Location(Location(103,1,103,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(       (<inchan> _:Name |-> L </inchan> => .Bag)  [structural],[UNIQUE_ID(e3ea5a36c497ee9c1c2a2925b940f86de43b95c9626e72021aff4703578b9035) org.kframework.attributes.Location(Location(110,1,110,65)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(       (.Bag => <send>                                //create new send cell containing:,[UNIQUE_ID(ae5df3a5ea4fb395fa5fa50139a274d5ab2c298619955cc2215849711c27f587) org.kframework.attributes.Location(Location(77,1,77,91)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(       (.Bag => <inchan> X |-> !L </inchan>)  [structural],[UNIQUE_ID(30b58dbfda75ee19d3e7d1760fc324753d871606e540809a85474151086b583e) org.kframework.attributes.Location(Location(88,1,88,61)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(       (.Bag => <guard>,[UNIQUE_ID(4a929591c2ea1a638dc81aeff74267ac06b737f16463daac23175de6275dfb70) org.kframework.attributes.Location(Location(84,1,84,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(          <outchanid> .Map </outchanid>  ,[UNIQUE_ID(a318a2514810a45f4700a4d6b142840bc593085a84e8953bd1856b031c7a47b9) org.kframework.attributes.Location(Location(68,1,68,44)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                </send>)  [structural],[UNIQUE_ID(e6c7c1b3825ce3a9aeda49de9b0baea5ca36fc0b7a768bd8213a2a960dc810cc) org.kframework.attributes.Location(Location(80,1,80,41)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                </guard>),[UNIQUE_ID(7ff2061013949cbd395046e2cf71aa8c6ab76bc30457634c29f0e1a772013ba0) org.kframework.attributes.Location(Location(87,1,87,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                  <proc> P </proc>                     //P is a continuation,[UNIQUE_ID(5b202e67163efc072524222a01278cd749c7d817ab39911a53ce7036ef126a27) org.kframework.attributes.Location(Location(85,1,85,79)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                  <outchan> X |-> !L:Int </outchan>   //map outChan |-> Loc,[UNIQUE_ID(ffcc3df7543edcb800384ad310c6c8840419993f4ee0cd5449ed8dac056c3c4c) org.kframework.attributes.Location(Location(78,1,78,78)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                  <msg> @P |-> !L </msg>              //map msg |-> Loc, message sent on Chan at Loc,[UNIQUE_ID(b25864550322b30aaa212db092c15f01334a808b77bcb5d9b003f2ae4696e050) org.kframework.attributes.Location(Location(79,1,79,103)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P,[UNIQUE_ID(0646ab8b4764be1aae6e029cb9251199ea431fcdd0c38c1fab5cbaea4b2ab5c5) org.kframework.attributes.Location(Location(86,1,86,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  Bubble(config,<T>
+      <activity>
+        <thread multiplicity="*">
+          <k> $PGM:Proc </k>
+          <procs>                        //input-guarded process pool
+            <proc multiplicity="*">
+              <cont> .K </cont>          //continuation to be further processed
+              <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
+              <procid> 0 </procid>       //process identifier for bindings
+            </proc>
+          </procs>
+        </thread>
+      </activity>
+      <incoming>
+        <rec multiplicity="*">
+          <inchan>                       
+            .Map                         //map inChan |-> Loc, Loc connected to continuation from receive
+          </inchan>
+          <inchanid> .Map </inchanid>    //map inChan |-> procId
+        </rec>
+      </incoming>
+      <outgoing>                         //sends
+        <send multiplicity="*">          //many sends to the same channel
+          <outchan> .Map </outchan>      //map outChan |-> Loc, 
+          <outmsg> .Map </outmsg>        //map Msg |-> Loc, sent message waiting for matching inChan to comm
+//          <outchanid> .Map </outchanid>  
+        </send>
+      </outgoing>
+    </T>,[UNIQUE_ID(ec36353152dac555005f57d2ffee18dd5234ac482112770731af731bb42cc2f9) contentStartColumn(5) contentStartLine(43) org.kframework.attributes.Location(Location(42,3,71,8)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
 endmodule
 
 
-module RHO$SYNTAX [org.kframework.attributes.Location(Location(41,1,129,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+module RHO$SYNTAX [org.kframework.attributes.Location(Location(38,1,135,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
   imports SUBSTITUTION$SYNTAX
   imports RHO-SYNTAX$SYNTAX
   imports MAP$SYNTAX
-  syntax TCellFragment ::= "<T>-fragment" KCellOpt PoolCellOpt IncomingCellOpt OutgoingCellOpt "</T>-fragment"
+  syntax ThreadCellFragment ::= "<thread>-fragment" KCellOpt ProcsCellOpt "</thread>-fragment"
+  syntax ThreadCellBag [UNIQUE_ID(ffaf034f111991095c71efbd5df430d825b2406df5aac222d221c1d1c97c0fc7) hook(BAG.Bag)]
+  syntax ThreadCellBag ::= ThreadCellBag ThreadCellBag
+  syntax ThreadCellBag ::= ThreadCell
+  syntax ThreadCellBag ::= "ThreadCellBagItem" "(" ThreadCell ")"
+  syntax ThreadCellBag ::= ".ThreadCellBag"
+  syntax ThreadCell ::= "initThreadCell" "(" Map ")"
+  syntax ThreadCell ::= "<thread>" KCell ProcsCell "</thread>"
+  syntax TCellFragment ::= "<T>-fragment" ActivityCellOpt IncomingCellOpt OutgoingCellOpt "</T>-fragment"
   syntax TCell ::= "initTCell" "(" Map ")"
-  syntax TCell ::= "<T>" KCell PoolCell IncomingCell OutgoingCell "</T>"
-  syntax SendCellFragment ::= "<send>-fragment" OutchanCellOpt MsgCellOpt "</send>-fragment"
+  syntax TCell ::= "<T>" ActivityCell IncomingCell OutgoingCell "</T>"
+  syntax SendCellFragment ::= "<send>-fragment" OutchanCellOpt OutmsgCellOpt "</send>-fragment"
   syntax SendCellBag [UNIQUE_ID(f36daa721239b6daacb7b807221c0a2d46b014bb953607404cd8d575fe554c85) hook(BAG.Bag)]
   syntax SendCellBag ::= SendCellBag SendCellBag
   syntax SendCellBag ::= SendCell
   syntax SendCellBag ::= "SendCellBagItem" "(" SendCell ")"
   syntax SendCellBag ::= ".SendCellBag"
   syntax SendCell ::= "initSendCell"
-  syntax SendCell ::= "<send>" OutchanCell MsgCell "</send>"
-  syntax ProcCellOpt ::= ProcCell
-  syntax ProcCellOpt ::= "noProcCell"
+  syntax SendCell ::= "<send>" OutchanCell OutmsgCell "</send>"
+  syntax RecCellFragment ::= "<rec>-fragment" InchanCellOpt InchanidCellOpt "</rec>-fragment"
+  syntax RecCellBag [UNIQUE_ID(3ef079c2d5810a8174698a46e45fc449571f6412b0c16f430f7337d151edbff3) hook(BAG.Bag)]
+  syntax RecCellBag ::= RecCellBag RecCellBag
+  syntax RecCellBag ::= RecCell
+  syntax RecCellBag ::= "RecCellBagItem" "(" RecCell ")"
+  syntax RecCellBag ::= ".RecCellBag"
+  syntax RecCell ::= "initRecCell"
+  syntax RecCell ::= "<rec>" InchanCell InchanidCell "</rec>"
+  syntax ProcsCellOpt ::= ProcsCell
+  syntax ProcsCellOpt ::= "noProcsCell"
+  syntax ProcsCellFragment ::= "<procs>-fragment" ProcCellBag "</procs>-fragment"
+  syntax ProcsCell ::= "initProcsCell"
+  syntax ProcsCell ::= "<procs>" ProcCellBag "</procs>"
+  syntax ProcidCellOpt ::= ProcidCell
+  syntax ProcidCellOpt ::= "noProcidCell"
+  syntax ProcidCell ::= "initProcidCell"
+  syntax ProcidCell ::= "<procid>" Int "</procid>"
+  syntax ProcCellFragment ::= "<proc>-fragment" ContCellOpt BindCellOpt ProcidCellOpt "</proc>-fragment"
+  syntax ProcCellBag [UNIQUE_ID(a54348e3b4c078077b9015fb9260a66205c6adbfdd50c38ddc7a318b37c30428) hook(BAG.Bag)]
+  syntax ProcCellBag ::= ProcCellBag ProcCellBag
+  syntax ProcCellBag ::= ProcCell
+  syntax ProcCellBag ::= "ProcCellBagItem" "(" ProcCell ")"
+  syntax ProcCellBag ::= ".ProcCellBag"
   syntax ProcCell ::= "initProcCell"
-  syntax ProcCell ::= "<proc>" K "</proc>"
+  syntax ProcCell ::= "<proc>" ContCell BindCell ProcidCell "</proc>"
   syntax Proc ::= "project:Proc" "(" K ")"
-  syntax PoolCellOpt ::= PoolCell
-  syntax PoolCellOpt ::= "noPoolCell"
-  syntax PoolCellFragment ::= "<pool>-fragment" GuardCellBag "</pool>-fragment"
-  syntax PoolCell ::= "initPoolCell"
-  syntax PoolCell ::= "<pool>" GuardCellBag "</pool>"
+  syntax OutmsgCellOpt ::= OutmsgCell
+  syntax OutmsgCellOpt ::= "noOutmsgCell"
+  syntax OutmsgCell ::= "initOutmsgCell"
+  syntax OutmsgCell ::= "<outmsg>" Map "</outmsg>"
   syntax OutgoingCellOpt ::= OutgoingCell
   syntax OutgoingCellOpt ::= "noOutgoingCell"
   syntax OutgoingCellFragment ::= "<outgoing>-fragment" SendCellBag "</outgoing>-fragment"
@@ -1387,42 +1456,50 @@ module RHO$SYNTAX [org.kframework.attributes.Location(Location(41,1,129,9)) org.
   syntax OutchanCellOpt ::= "noOutchanCell"
   syntax OutchanCell ::= "initOutchanCell"
   syntax OutchanCell ::= "<outchan>" Map "</outchan>"
-  syntax MsgCellOpt ::= MsgCell
-  syntax MsgCellOpt ::= "noMsgCell"
-  syntax MsgCell ::= "initMsgCell"
-  syntax MsgCell ::= "<msg>" Map "</msg>"
   syntax KResult ::= Val
-  syntax KResult ::= Rec
+  syntax KItem ::= ThreadCellFragment
+  syntax KItem ::= ThreadCellBag
+  syntax KItem ::= ThreadCell
   syntax KItem ::= TCellFragment
   syntax KItem ::= TCell
   syntax KItem ::= SendCellFragment
   syntax KItem ::= SendCellBag
   syntax KItem ::= SendCell
-  syntax KItem ::= ProcCellOpt
+  syntax KItem ::= RecCellFragment
+  syntax KItem ::= RecCellBag
+  syntax KItem ::= RecCell
+  syntax KItem ::= ProcsCellOpt
+  syntax KItem ::= ProcsCellFragment
+  syntax KItem ::= ProcsCell
+  syntax KItem ::= ProcidCellOpt
+  syntax KItem ::= ProcidCell
+  syntax KItem ::= ProcCellFragment
+  syntax KItem ::= ProcCellBag
   syntax KItem ::= ProcCell
-  syntax KItem ::= PoolCellOpt
-  syntax KItem ::= PoolCellFragment
-  syntax KItem ::= PoolCell
+  syntax KItem ::= OutmsgCellOpt
+  syntax KItem ::= OutmsgCell
   syntax KItem ::= OutgoingCellOpt
   syntax KItem ::= OutgoingCellFragment
   syntax KItem ::= OutgoingCell
   syntax KItem ::= OutchanCellOpt
   syntax KItem ::= OutchanCell
-  syntax KItem ::= MsgCellOpt
-  syntax KItem ::= MsgCell
   syntax KItem ::= KResult
   syntax KItem ::= KCellOpt
   syntax KItem ::= KCell
   syntax KItem ::= IncomingCellOpt
   syntax KItem ::= IncomingCellFragment
   syntax KItem ::= IncomingCell
-  syntax KItem ::= InchanCellBag
+  syntax KItem ::= InchanidCellOpt
+  syntax KItem ::= InchanidCell
+  syntax KItem ::= InchanCellOpt
   syntax KItem ::= InchanCell
-  syntax KItem ::= GuardCellFragment
-  syntax KItem ::= GuardCellBag
-  syntax KItem ::= GuardCell
+  syntax KItem ::= ContCellOpt
+  syntax KItem ::= ContCell
   syntax KItem ::= BindCellOpt
   syntax KItem ::= BindCell
+  syntax KItem ::= ActivityCellOpt
+  syntax KItem ::= ActivityCellFragment
+  syntax KItem ::= ActivityCell
   syntax KCellOpt ::= KCell
   syntax KCellOpt ::= "noKCell"
   syntax KCell ::= "initKCell" "(" Map ")"
@@ -1430,111 +1507,134 @@ module RHO$SYNTAX [org.kframework.attributes.Location(Location(41,1,129,9)) org.
   syntax K
   syntax IncomingCellOpt ::= IncomingCell
   syntax IncomingCellOpt ::= "noIncomingCell"
-  syntax IncomingCellFragment ::= "<incoming>-fragment" InchanCellBag "</incoming>-fragment"
+  syntax IncomingCellFragment ::= "<incoming>-fragment" RecCellBag "</incoming>-fragment"
   syntax IncomingCell ::= "initIncomingCell"
-  syntax IncomingCell ::= "<incoming>" InchanCellBag "</incoming>"
-  syntax InchanCellBag [UNIQUE_ID(2fbcace4cd97e56011ba30e7be33e6f50d7f38cc28efb8cd873b57d7860b2225) hook(BAG.Bag)]
-  syntax InchanCellBag ::= InchanCellBag InchanCellBag
-  syntax InchanCellBag ::= InchanCell
-  syntax InchanCellBag ::= "InchanCellBagItem" "(" InchanCell ")"
-  syntax InchanCellBag ::= ".InchanCellBag"
+  syntax IncomingCell ::= "<incoming>" RecCellBag "</incoming>"
+  syntax InchanidCellOpt ::= InchanidCell
+  syntax InchanidCellOpt ::= "noInchanidCell"
+  syntax InchanidCell ::= "initInchanidCell"
+  syntax InchanidCell ::= "<inchanid>" Map "</inchanid>"
+  syntax InchanCellOpt ::= InchanCell
+  syntax InchanCellOpt ::= "noInchanCell"
   syntax InchanCell ::= "initInchanCell"
   syntax InchanCell ::= "<inchan>" Map "</inchan>"
-  syntax GuardCellFragment ::= "<guard>-fragment" ProcCellOpt BindCellOpt "</guard>-fragment"
-  syntax GuardCellBag [UNIQUE_ID(7953a193b3ba98b1697f969927fb36af6cd2b6c66b4db34910b95c50e5426976) hook(BAG.Bag)]
-  syntax GuardCellBag ::= GuardCellBag GuardCellBag
-  syntax GuardCellBag ::= GuardCell
-  syntax GuardCellBag ::= "GuardCellBagItem" "(" GuardCell ")"
-  syntax GuardCellBag ::= ".GuardCellBag"
-  syntax GuardCell ::= "initGuardCell"
-  syntax GuardCell ::= "<guard>" ProcCell BindCell "</guard>"
+  syntax ContCellOpt ::= ContCell
+  syntax ContCellOpt ::= "noContCell"
+  syntax ContCell ::= "initContCell"
+  syntax ContCell ::= "<cont>" K "</cont>"
+  syntax Bool ::= "isThreadCellFragment" "(" K ")"
+  syntax Bool ::= "isThreadCellBag" "(" K ")"
+  syntax Bool ::= "isThreadCell" "(" K ")"
   syntax Bool ::= "isTCellFragment" "(" K ")"
   syntax Bool ::= "isTCell" "(" K ")"
   syntax Bool ::= "isSendCellFragment" "(" K ")"
   syntax Bool ::= "isSendCellBag" "(" K ")"
   syntax Bool ::= "isSendCell" "(" K ")"
-  syntax Bool ::= "isProcCellOpt" "(" K ")"
+  syntax Bool ::= "isRecCellFragment" "(" K ")"
+  syntax Bool ::= "isRecCellBag" "(" K ")"
+  syntax Bool ::= "isRecCell" "(" K ")"
+  syntax Bool ::= "isProcsCellOpt" "(" K ")"
+  syntax Bool ::= "isProcsCellFragment" "(" K ")"
+  syntax Bool ::= "isProcsCell" "(" K ")"
+  syntax Bool ::= "isProcidCellOpt" "(" K ")"
+  syntax Bool ::= "isProcidCell" "(" K ")"
+  syntax Bool ::= "isProcCellFragment" "(" K ")"
+  syntax Bool ::= "isProcCellBag" "(" K ")"
   syntax Bool ::= "isProcCell" "(" K ")"
-  syntax Bool ::= "isPoolCellOpt" "(" K ")"
-  syntax Bool ::= "isPoolCellFragment" "(" K ")"
-  syntax Bool ::= "isPoolCell" "(" K ")"
+  syntax Bool ::= "isOutmsgCellOpt" "(" K ")"
+  syntax Bool ::= "isOutmsgCell" "(" K ")"
   syntax Bool ::= "isOutgoingCellOpt" "(" K ")"
   syntax Bool ::= "isOutgoingCellFragment" "(" K ")"
   syntax Bool ::= "isOutgoingCell" "(" K ")"
   syntax Bool ::= "isOutchanCellOpt" "(" K ")"
   syntax Bool ::= "isOutchanCell" "(" K ")"
-  syntax Bool ::= "isMsgCellOpt" "(" K ")"
-  syntax Bool ::= "isMsgCell" "(" K ")"
   syntax Bool ::= "isKResult" "(" K ")"
   syntax Bool ::= "isKCellOpt" "(" K ")"
   syntax Bool ::= "isKCell" "(" K ")"
   syntax Bool ::= "isIncomingCellOpt" "(" K ")"
   syntax Bool ::= "isIncomingCellFragment" "(" K ")"
   syntax Bool ::= "isIncomingCell" "(" K ")"
-  syntax Bool ::= "isInchanCellBag" "(" K ")"
+  syntax Bool ::= "isInchanidCellOpt" "(" K ")"
+  syntax Bool ::= "isInchanidCell" "(" K ")"
+  syntax Bool ::= "isInchanCellOpt" "(" K ")"
   syntax Bool ::= "isInchanCell" "(" K ")"
-  syntax Bool ::= "isGuardCellFragment" "(" K ")"
-  syntax Bool ::= "isGuardCellBag" "(" K ")"
-  syntax Bool ::= "isGuardCell" "(" K ")"
+  syntax Bool ::= "isContCellOpt" "(" K ")"
+  syntax Bool ::= "isContCell" "(" K ")"
   syntax Bool ::= "isBindCellOpt" "(" K ")"
   syntax Bool ::= "isBindCell" "(" K ")"
+  syntax Bool ::= "isActivityCellOpt" "(" K ")"
+  syntax Bool ::= "isActivityCellFragment" "(" K ")"
+  syntax Bool ::= "isActivityCell" "(" K ")"
   syntax BindCellOpt ::= BindCell
   syntax BindCellOpt ::= "noBindCell"
   syntax BindCell ::= "initBindCell"
   syntax BindCell ::= "<bind>" Map "</bind>"
+  syntax ActivityCellOpt ::= ActivityCell
+  syntax ActivityCellOpt ::= "noActivityCell"
+  syntax ActivityCellFragment ::= "<activity>-fragment" ThreadCellBag "</activity>-fragment"
+  syntax ActivityCell ::= "initActivityCell" "(" Map ")"
+  syntax ActivityCell ::= "<activity>" ThreadCellBag "</activity>"
   Bubble(config,<T>
-      <k> $PGM:Proc </k>
-      <pool>                         //input-guarded process pool
-        <guard multiplicity="*">
-          <proc> .K </proc>          //continuation to be further processed
-          <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
-        </guard>
-      </pool>
+      <activity>
+        <thread multiplicity="*">
+          <k> $PGM:Proc </k>
+          <procs>                        //input-guarded process pool
+            <proc multiplicity="*">
+              <cont> .K </cont>          //continuation to be further processed
+              <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
+              <procid> 0 </procid>       //process identifier for bindings
+            </proc>
+          </procs>
+        </thread>
+      </activity>
       <incoming>
-        <inchan multiplicity="*">    //receives on some channel
-          .Map                       //map inChan |-> Loc, Loc connected to continuation from receive
-        </inchan>
+        <rec multiplicity="*">
+          <inchan>                       
+            .Map                         //map inChan |-> Loc, Loc connected to continuation from receive
+          </inchan>
+          <inchanid> .Map </inchanid>    //map inChan |-> procId
+        </rec>
       </incoming>
-      <outgoing>                     //sends and messages
-        <send multiplicity="*">      //many sends to the same channel
-          <outchan> .Map </outchan>  //map outChan |-> Loc, 
-          <msg> .Map </msg>          //map Msg |-> Loc, sent message waiting for matching inChan to comm
+      <outgoing>                         //sends
+        <send multiplicity="*">          //many sends to the same channel
+          <outchan> .Map </outchan>      //map outChan |-> Loc, 
+          <outmsg> .Map </outmsg>        //map Msg |-> Loc, sent message waiting for matching inChan to comm
+//          <outchanid> .Map </outchanid>  
         </send>
       </outgoing>
-    </T>,[UNIQUE_ID(0810a32fe8c66490130353cf577a1f151b33bdb0b2f4fdec8e298e962c502d02) contentStartColumn(5) contentStartLine(46) org.kframework.attributes.Location(Location(45,3,65,8)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+    </T>,[UNIQUE_ID(ec36353152dac555005f57d2ffee18dd5234ac482112770731af731bb42cc2f9) contentStartColumn(5) contentStartLine(43) org.kframework.attributes.Location(Location(42,3,71,8)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
 endmodule
 
 
-module RHO-SYNTAX [org.kframework.attributes.Location(Location(5,1,39,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+module RHO-SYNTAX [org.kframework.attributes.Location(Location(5,1,36,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+  imports SUBSTITUTION
   imports RHO-SYNTAX$SYNTAX
   imports ID
   imports DOMAINS
-  ModuleComment(receive is singled out so we can assign KResult ::= Name | Rec,[UNIQUE_ID(a41c4b7e76ecfdb76adb9545bad84de949e493de47cc8e4eeff916ac7e645c75) org.kframework.attributes.Location(Location(16,1,16,65)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(is this what I want?,[UNIQUE_ID(2e99f1d6bde586ef05715d918579145e134f0df549ebaa711586ff08031c0ccc) org.kframework.attributes.Location(Location(37,24,37,46)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( Stop: -> Proc,[UNIQUE_ID(106d88a2614ede21cd6da9607869cb6ca623c080bb79f325a0c2b51d7354fbd0) org.kframework.attributes.Location(Location(19,72,19,88)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( Send: Name*Proc -> Proc,[UNIQUE_ID(2eda798e4e9f9ade43f891a24ea8225bb1236e06fcb8439c90cddd92a80703a1) org.kframework.attributes.Location(Location(21,72,21,98)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( Reify: Name -> Proc,[UNIQUE_ID(a8e3fc62bfbf31f580a304e7dcdad4e59277135d8a9ea452d38d357dd29bda65) org.kframework.attributes.Location(Location(22,72,22,94)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(is this what I want?,[UNIQUE_ID(2e99f1d6bde586ef05715d918579145e134f0df549ebaa711586ff08031c0ccc) org.kframework.attributes.Location(Location(34,42,34,64)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( Stop: -> Proc,[UNIQUE_ID(106d88a2614ede21cd6da9607869cb6ca623c080bb79f325a0c2b51d7354fbd0) org.kframework.attributes.Location(Location(16,72,16,88)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( Send: Name*Proc -> Proc,[UNIQUE_ID(2eda798e4e9f9ade43f891a24ea8225bb1236e06fcb8439c90cddd92a80703a1) org.kframework.attributes.Location(Location(19,72,19,98)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( Reify: Name -> Proc,[UNIQUE_ID(a8e3fc62bfbf31f580a304e7dcdad4e59277135d8a9ea452d38d357dd29bda65) org.kframework.attributes.Location(Location(20,72,20,94)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
   ModuleComment( Rec: Name*Name*Proc -> Proc,[UNIQUE_ID(451d3896c180a58784cc3fbd9701a92ab1f257988b79d6501be63654c3a3e067) org.kframework.attributes.Location(Location(17,72,17,102)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
   ModuleComment( Quote: Proc -> Name,[UNIQUE_ID(7d83f7a14f57570a196f06e5dc2e3f5ac91f7e99fcfca19a6fe20669ecb2017c) org.kframework.attributes.Location(Location(12,72,12,94)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( Par: Proc*Proc -> Proc,[UNIQUE_ID(b5aff81ecf4fa509b00d2a4a92d2756ea1cb051be78c9ac976d0b552b73e074e) org.kframework.attributes.Location(Location(20,72,20,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( Par: Proc*Proc -> Proc,[UNIQUE_ID(b5aff81ecf4fa509b00d2a4a92d2756ea1cb051be78c9ac976d0b552b73e074e) org.kframework.attributes.Location(Location(18,72,18,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
   ModuleComment( PROCESSES,[UNIQUE_ID(2e0df32513b517ccc4d7baf2f9a7bae4ee2e13b7aeeb5319ad98ed7bbd7dc845) org.kframework.attributes.Location(Location(15,1,15,13)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( PRECEDENCE needs to be fixed,[UNIQUE_ID(ce3096f5e885a12037ce4224c84e5310f2534581108a75774d0c00044beb8e7e) org.kframework.attributes.Location(Location(32,1,32,32)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( PRECEDENCE,[UNIQUE_ID(746e5280ce11178fad98a6b5635f32fe2db52dedfba2b3917be61bf260b609f2) org.kframework.attributes.Location(Location(29,1,29,14)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
   ModuleComment( NAMES,[UNIQUE_ID(cf245eb6320501a4450f7d4374255ecd534951ec7c5b7b6a8e137b96fc41748f) org.kframework.attributes.Location(Location(11,1,11,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
   ModuleComment( Id: -> Name (not needed),[UNIQUE_ID(264540909bed160eca557a6ddcb305f6116328d4c26cdbbef1edfd1823fcfd10) org.kframework.attributes.Location(Location(13,72,13,99)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment( BRACKETS,[UNIQUE_ID(6f7ca1aaee9382fbf820defa34206ec45de17c331cb9074db386ebc8e60c718d) org.kframework.attributes.Location(Location(25,1,25,12)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
-  ModuleComment(  import SUBSTITUTION,[UNIQUE_ID(bb103285983ae433faaf4d5d67f05ec4f1539f9e04d9d05a346a4f7281392061) org.kframework.attributes.Location(Location(8,1,8,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment( BRACKETS,[UNIQUE_ID(6f7ca1aaee9382fbf820defa34206ec45de17c331cb9074db386ebc8e60c718d) org.kframework.attributes.Location(Location(22,1,22,12)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
+  ModuleComment(  syntax priority Send Rec > Par,[UNIQUE_ID(60c5207ecc616f19beb58c43f03d104dfd99de6d7fedfa0dca6d2ca1631257a1) org.kframework.attributes.Location(Location(30,1,30,35)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))])
 endmodule
 
 
-module RHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(5,1,39,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+module RHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(5,1,36,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rho-Calc/./rho.k))]
+  imports SUBSTITUTION$SYNTAX
   imports ID$SYNTAX
   imports DOMAINS$SYNTAX
-  syntax priority Send Rec > Par
   syntax associativity left Par [UNIQUE_ID(2c8f8211fdb70b1e6707d45a4bb84d67a6802315de34618b58d7b0e76e412cd4)]
   syntax Val ::= Name
-  syntax Rec ::= Name "(" Name ")" "{" Proc "}"
-  syntax Proc ::= Rec
   syntax Proc ::= Proc "|" Proc
+  syntax Proc ::= Name "(" Name ")" "{" Proc "}"
   syntax Proc ::= Name "!" "(" Proc ")"
   syntax Proc ::= "{" Proc "}"
   syntax Proc ::= "Nil"
@@ -1546,16 +1646,12 @@ module RHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(5,1,39,9))
   syntax Name ::= "(" Name ")"
   syntax KVariable ::= Name
   syntax KItem ::= Val
-  syntax KItem ::= Rec
   syntax KItem ::= Proc
   syntax KItem ::= Name
-  syntax KItem ::= KVariable
   syntax K
   syntax Bool ::= "isVal" "(" K ")"
-  syntax Bool ::= "isRec" "(" K ")"
   syntax Bool ::= "isProc" "(" K ")"
   syntax Bool ::= "isName" "(" K ")"
-  syntax Bool ::= "isKVariable" "(" K ")"
 endmodule
 
 
