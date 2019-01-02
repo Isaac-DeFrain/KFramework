@@ -51,6 +51,7 @@ module RHO
               <procid> 0 </procid>       //process identifier for bindings
             </process>
           </processes>
+//          <threadid> 0 </threadid>
         </thread>
       </activity>
       <tuplespace color="cyan">          //tuplespace for sends and receives
@@ -66,7 +67,7 @@ module RHO
           <send multiplicity="*">
             <sendchan> .Map </sendchan>  //map sendChan |-> Loc, 
             <msg> .Map </msg>            //map Msg |-> Loc, sent message waiting for matching recChan
-//            <outchanid> .Map </outchanid>  
+//            <sendid> .Map </sendid>  
           </send>
         </sends>
       </tuplespace>
@@ -91,28 +92,22 @@ module RHO
        (.Bag => <receive> <recchan> X |-> !L </recchan> <recid> X |-> !I </recid> </receive>)  [structural]
 
 // PAR OPERATOR
-//  rule <thread> <k> P | Q => . ...</k>
-
-// SEND OPERATOR
-// record outChan, outMsg
-
-// REC OPERATOR
-// record binding variable,
+  rule <thread> <k> P1:Proc | P2:Proc => . ...</k> ...</thread>
+       (.Bag => <thread> <k> P1 </k> ...</thread>)
+       (.Bag => <thread> <k> P2 </k> ...</thread>)
 
 // REIFY OPERATOR
-// move to process pool?
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-//  rule P:Proc | Nil => P  [structural]
+  rule P:Proc | Nil => P  [structural]
 
-//  rule (<guard> <proc> Nil </proc> <bind> _:Name |-> L:Int </bind> </guard> => .Bag)
-//       (<inchan> _:Name |-> L </inchan> => .Bag)  [structural]
+  rule <process> <cont> .K </cont> ...</process> => .Bag  [structural]
 
-//  rule <k> Nil </k> => .  [structural]
+  rule (<thread> <k> .K </k> <processes> .Bag </processes> </thread> => .Bag)  [structural]
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
@@ -120,7 +115,9 @@ module RHO
 
 // REDUCTION RULES
 // COMM EVENT
-// inChan "matches" outChan
+// recChan "matches" sendChan
+// simple comm: x!(Q) | x(y){P} => P[@Q / y]
+
 // COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y])
 
 // PAR: P|Q -> P'|Q when P -> P'
