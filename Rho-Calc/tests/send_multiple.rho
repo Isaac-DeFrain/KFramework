@@ -1,3 +1,11 @@
 //Multiple Sends
 
-@Nil!(Nil) | @Nil!(@Nil!(Nil)) | @{@Nil!(Nil)}!(Nil) | @{@Nil!(Nil)}!(@Nil!(Nil))
+@Nil!(@Nil(@Nil){Nil}) | @Nil(@{@Nil!(Nil)}){@{@Nil!(Nil)}!(Nil)}
+
+
+x!(*z) | x(y){P} => P[z / y]
+x = @Nil
+y = @{@Nil!(Nil)}
+z = @{@Nil(@Nil){Nil}}
+
+P = @{@Nil!(Nil)}!(Nil)

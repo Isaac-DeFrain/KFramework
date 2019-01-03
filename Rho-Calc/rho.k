@@ -27,7 +27,7 @@ module RHO-SYNTAX
                 | "(" Proc ")"                     [bracket]
 
 // PRECEDENCE
-//  syntax priority Send Rec > Par  //needed?
+  syntax priority Send Rec > Par
 
   syntax KVariable ::= Name
 
@@ -71,13 +71,14 @@ module RHO
           </send>
         </sends>
       </tuplespace>
+      <other> .Bag </other>
     </T>
 
   syntax KResult ::= Val
 
 // SEND SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send and populate cells
-       (.Bag => <send>                                 //create new send cell containing:
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send in <k/> and populate other cells
+       (.Bag => <send>                                 //spawn new <send/> containing:
                   <sendchan> X |-> !L:Int </sendchan>  //map outChan |-> Loc
                   <msg> @P |-> !L </msg>               //map msg |-> Loc, message sent on Chan at Loc
                 </send>)  [structural]
@@ -103,11 +104,11 @@ module RHO
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-  rule P:Proc | Nil => P  [structural]
+//  rule P:Proc | Nil => P  [structural]
 
-  rule <process> <cont> .K </cont> ...</process> => .Bag  [structural]
+//  rule <process> <cont> .K </cont> ...</process> => .Bag  [structural]
 
-  rule (<thread> <k> .K </k> <processes> .Bag </processes> </thread> => .Bag)  [structural]
+//  rule (<thread> <k> .K </k> <processes> .Bag </processes> </thread> => .Bag)  [structural]
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
@@ -117,6 +118,19 @@ module RHO
 // COMM EVENT
 // recChan "matches" sendChan
 // simple comm: x!(Q) | x(y){P} => P[@Q / y]
+
+  rule
+  //a new thread holding the substituted continuation spawns, any other info to keep?
+  (.Bag => <thread> <k> P[Z / Y] </k> ...</thread>)  
+  (<process>                                         //continuation with appropriate binding variable
+     <cont> P:Proc </cont>                           //continuation
+     <bind> Y:Name |-> L1:Int </bind>                //binding variable at location L1
+     <procid> I:Int </procid>                        //process id
+   </process> => .Bag)                               //dissovles
+  //a send on chan X holding msg Z dissolves
+  (<send> <sendchan>... X:Name |-> L2:Int ...</sendchan> <msg> Z:Name |-> L2 </msg> </send> => .Bag)
+  //a receive on chan X at location L1 connected with procid I dissolves
+  (<receive> <recchan> X |-> L1 </recchan> <recid> X |-> I </recid> </receive> => .Bag)
 
 // COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y])
 

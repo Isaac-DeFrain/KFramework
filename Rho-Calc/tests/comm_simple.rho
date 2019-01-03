@@ -1,0 +1,12 @@
+//Simple COMM
+
+@{@Nil(@Nil){Nil}}!(Nil) | @{@Nil(@Nil){Nil}}(@{@Nil!(Nil)}){@{@Nil!(Nil)}!(Nil | Nil)}
+
+
+// x!(*z) | x(y){P} => P[z / y]
+// x = @{@Nil(@Nil){Nil}}
+// y = @{@Nil!(Nil)}
+// z = @Nil
+
+// P = @{@Nil!(Nil)}!(Nil | Nil)
+/// P[z / y] = {y!(Nil)}[z / y] = z!(Nil Nil) = @Nil!(Nil | Nil)
