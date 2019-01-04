@@ -41,23 +41,23 @@ module RHO
 
   configuration
     <T>
-      <activity color="yellow">
-        <thread color="red" multiplicity="*">      //process pool
+      <activity>
+        <thread color="red" multiplicity="*">    //process pool
           <k> $PGM:Proc </k>
         </thread>
       </activity>
-      <space color="cyan">             //tuplespace
-        <recs color="green">           //receives
-          <rec color="orange" multiplicity="*">
-            <rchan> .K </rchan>        //receiving channel
-            <bind> .K </bind>          //varible binding in continuation
-            <cont> .K </cont>          //continuation
+      <space color="cyan">                       //tuplespace
+        <recs color="green">                     //receives
+          <rec color="yellow" multiplicity="*">
+            <rchan> .K </rchan>                  //receiving channel
+            <bind> .K </bind>                    //varible binding in continuation
+            <cont> .K </cont>                    //continuation
           </rec>
         </recs>
-        <sends color="blue">           //sends
+        <sends color="blue">                     //sends
           <send color="teal" multiplicity="*">
-            <schan> .K </schan>        //sending channel
-            <msg> .K </msg>            //message sent
+            <schan> .K </schan>                  //sending channel
+            <msg> .K </msg>                      //message sent
           </send>
         </sends>
       </space>
@@ -101,21 +101,22 @@ module RHO
 // P \equiv Q \implies @P \equiv_N @Q
 
 // REDUCTION RULES
+
 // COMM EVENT
 // recChan "matches" sendChan
 // simple comm: x!(Q) | x(y){P} => P[@Q / y]
 
-  rule                                     //dissolve send and receive on the same channel
+  rule                                            //dissolve send and receive on the same channel
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
-  (<rec>                                   //dissolve receive with:
-     <rchan> X:Name </rchan>               //receiving channel X
-     <bind> Y:Name </bind>                 //binding variable Y
-     <cont> P:Proc </cont>                 //continuation P
+  (<rec>                                          //dissolve receive with:
+     <rchan> X:Name </rchan>                      //receiving channel X
+     <bind> Y:Name </bind>                        //binding variable Y
+     <cont> P:Proc </cont>                        //continuation P
    </rec> => .Bag)
-  (<send>                                  //dissolve send with:
-     <schan> X </schan>                    //sending channel X = rceiving channel
-     <msg> Z:Name </msg>                   //message sent Z to continuation
-   </send> => .Bag)  [structural]
+  (<send>                                         //dissolve send with:
+     <schan> X </schan>                           //sending channel X = rceiving channel
+     <msg> Z:Name </msg>                          //message sent Z to continuation
+   </send> => .Bag)
 
 // COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y])
 
