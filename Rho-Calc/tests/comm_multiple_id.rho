@@ -1,0 +1,7 @@
+//Simple comm
+
+x!(*a) | x!(*b) | a(u){*u} | b(v){*v} | x(y){y!(*z)}
+
+// => b!(*z) | x!(*a) | a(u){*u} | b(v){*v} => x!(*a) | a(u){*u} | *z
+
+// => x!(*b) | a!(*z) | a(u){*u} | b(v){*v} => x!(*b) | b(v){*v} | *z

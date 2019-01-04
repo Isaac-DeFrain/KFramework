@@ -81,8 +81,6 @@ module RHO
                   <cont> P </cont>                     //continuation P
                 </rec>) [structural]
 
-// REIFY OPERATOR
-
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
 //  P | Q      \equiv Q | P
@@ -98,14 +96,15 @@ module RHO
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q
 
-  rule <msg> @ * X:Name => X </msg>
+// REIFY OPERATOR
+  rule <msg> @ * X:Name => X </msg>  [structural]
+
+  rule * @ * X:Name => *X  [structural]
 
 // REDUCTION RULES
 
-// COMM EVENT
-// recChan "matches" sendChan
-// simple comm: x!(Q) | x(y){P} => P[@Q / y]
-
+// COMM
+// Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                            //dissolve send and receive on the same channel
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
   (<rec>                                          //dissolve receive with:
@@ -118,18 +117,14 @@ module RHO
      <msg> Z:Name </msg>                          //message sent Z to continuation
    </send> => .Bag)
 
-// COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y])
-
 // PAR: P|Q -> P'|Q when P -> P'
 
 // EQUIV: P -> Q when P \equiv P', P' -> Q', and Q' \equiv Q
 
 // SYNTACTIC SUBSTITUTION
-// [Y / X]: Name -> Name ...
 
 // SEMANTIC SUBSTITUTION
 
-// *(@P) \equiv P (instead of syntactic and semantic substitution? this is how it is in Rholang)
-// rule * ( @ P:Proc ) => P  [structural]
+// rule * @ P:Proc => P  [structural]
 
 endmodule
