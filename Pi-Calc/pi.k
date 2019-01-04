@@ -27,21 +27,22 @@ endmodule
 module PI
   imports PI-SYNTAX
 
-  configuration <T color="green">
-                  <par color="yellow">
-                    <thread color="magenta" multiplicity="*">
-                      <k color="purple">
-                        $PGM:Proc
-                      </k>
-                      <env color="cyan">
-                        <local color="blue" multiplicity="*"> . </local>
-                      </env>
-                      <sum color="orange">
-                        <summand color="red" multiplicity="*"> . </summand>
-                      </sum>
-                    </thread>
-                  </par>
-                </T>
+  configuration
+<T color="green">
+  <par color="yellow">
+    <thread color="magenta" multiplicity="*">
+      <k color="purple">
+        $PGM:Proc
+      </k>
+      <env color="cyan">
+        <local color="blue" multiplicity="*"> . </local>
+      </env>
+      <sum color="orange">
+        <summand color="red" multiplicity="*"> . </summand>
+      </sum>
+    </thread>
+  </par>
+</T>
 
   //add <new> cell for local bindings?
 
@@ -49,8 +50,8 @@ module PI
   // REPLICATION SEMANTICS
 
   //Par with replication
-  rule <thread>... <k> ( ! P1:Proc ) | P2:Proc => P1 | P2 ...</k> ...</thread>
-       (.Bag => <thread>... <k> ! P1 </k> ...</thread>)  [structural]
+  rule <thread> <k> ( ! P1:Proc ) | P2:Proc => P1 | P2 ...</k> ...</thread>
+       (.Bag => <thread> <k> ! P1 </k> ...</thread>)  [structural]
 
   // STRUCTURAL EQUIVALENCES
 
@@ -59,11 +60,11 @@ module PI
   // (P | Q) | R \equiv P | (Q | R)
 
   //Par of Procs creates a thread for each Proc
-  rule <thread>... <k> P:Proc | Q:Proc => P </k> ...</thread>
-       (.Bag => <thread>... <k> Q </k> ...</thread>)  [structural]
+  rule <thread> <k> P:Proc | Q:Proc => P ...</k> ...</thread>
+       (.Bag => <thread> <k> Q </k> ...</thread>)  [structural]
 
   //Dissolve Nil k cell
-  rule <thread>... <k> Nil </k> ...</thread> => .Bag  [structural]
+//  rule <thread> <k> Nil </k> ...</thread> => .Bag  [structural]
 
   // (N/\equiv, +, 0) is a symmetric monoid
 
@@ -76,7 +77,7 @@ module PI
        (.Bag => <summand> M </summand>) [structural]
 
   //Dissolve Nil summand cell
-  rule <sum>... <summand> Nil </summand> => .Bag ...</sum>  [structural]
+//  rule <sum>... <summand> Nil </summand> => .Bag ...</sum>  [structural]
 
   //Dissolve empty threads
   rule <thread>... <k> . </k> <sum> .Bag </sum> ...</thread> => .Bag  [structural]
@@ -104,13 +105,12 @@ module PI
   rule <k> ! ( P1:Proc | P2:Proc ) => (! P1) | (! P2) ...</k>  [structural]
 
   //Nil replication
-  rule <k> ! Nil => Nil ...</k>  [structural]
+//  rule <k> ! Nil => Nil ...</k>  [structural]
 
   // COMM EVENT
   //currently deterministic, fix this!
 
   rule <thread>
-         ...
          <k> (. => P1[Z / Y]) ...</k>
          (<sum>
            ...
@@ -120,7 +120,6 @@ module PI
          ...
        </thread>
        <thread>
-         ...
          <k> (. => P2) ...</k>
          (<sum>
            ...

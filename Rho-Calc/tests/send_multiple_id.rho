@@ -1,0 +1,11 @@
+//Multiple sends
+
+x!(*y1) | x!(*y2) | y!(*z1) | y!(*z2) | Nil | a(b1){*c1} | a(b2){*c2} | a1(b1){a2(b2){*c2}}
+
+
+//x!(*z) | x(y){P} => P[z / y]
+//x = @Nil
+//y = @{@Nil!(Nil)}
+//z = @{@Nil(@Nil){Nil}}
+
+//P = @{@Nil!(Nil)}!(Nil)

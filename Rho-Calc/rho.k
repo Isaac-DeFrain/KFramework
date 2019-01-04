@@ -9,15 +9,15 @@ module RHO-SYNTAX
 
 
 // NAMES
-  syntax Name ::= "@" Proc                         [klabel(Quote)]     // Quote: Proc -> Name
-                | Id                                                   // Id: -> Name (not needed)
+  syntax Name ::= "@" Proc                         [klabel(Quote)]          // Quote: Proc -> Name
+                | Id                                                        // Id: -> Name (not needed)
 
 // PROCESSES
-  syntax Proc ::= "Nil"                            [klabel(Stop)]      // Stop: -> Proc
-                | Name "(" Name ")"  "{" Proc "}"  [klabel(Rec)]       // Rec: Name*Name*Proc -> Proc
-                | Proc "|" Proc                    [klabel(Par),left]  // Par: Proc*Proc -> Proc
-                | Name "!" "(" Proc ")"            [klabel(Send)]      // Send: Name*Proc -> Proc
-                | "*" Name                         [klabel(Reify)]     // Reify: Name -> Proc
+  syntax Proc ::= "Nil"                            [klabel(Stop)]           // Stop: -> Proc
+                | Name "(" Name ")"  "{" Proc "}"  [klabel(Rec),binder(2)]  // Rec: Name*Name*Proc -> Proc
+                | Proc "|" Proc                    [klabel(Par),left]       // Par: Proc*Proc -> Proc
+                | Name "!" "(" Proc ")"            [klabel(Send)]           // Send: Name*Proc -> Proc
+                | "*" Name                         [klabel(Reify)]          // Reify: Name -> Proc
                 
 // BRACKETS
   syntax Name ::= "{" Name "}"                     [bracket]
@@ -42,60 +42,48 @@ module RHO
   configuration
     <T>
       <activity color="yellow">
-        <thread multiplicity="*">
+        <thread color="red" multiplicity="*">      //process pool
           <k> $PGM:Proc </k>
-          <processes color="red">        //input-guarded processes
-            <process multiplicity="*">
-              <cont> .K </cont>          //continuation to be further processed
-              <bind> .Map </bind>        //Var |-> Loc, varible bindings in continuation
-              <procid> 0 </procid>       //process identifier for bindings
-            </process>
-          </processes>
-//          <threadid> 0 </threadid>
         </thread>
       </activity>
-      <tuplespace color="cyan">          //tuplespace for sends and receives
-        <receives color="green">         //receives
-          <receive multiplicity="*">
-            <recchan>                       
-              .Map                       //map inChan |-> Loc, Loc connected to continuation from receive
-            </recchan>
-            <recid> .Map </recid>        //map inChan |-> procId
-          </receive>
-        </receives>
-        <sends color="blue">             //sends
-          <send multiplicity="*">
-            <sendchan> .Map </sendchan>  //map sendChan |-> Loc, 
-            <msg> .Map </msg>            //map Msg |-> Loc, sent message waiting for matching recChan
-//            <sendid> .Map </sendid>  
+      <space color="cyan">             //tuplespace
+        <recs color="green">           //receives
+          <rec color="orange" multiplicity="*">
+            <rchan> .K </rchan>        //receiving channel
+            <bind> .K </bind>          //varible binding in continuation
+            <cont> .K </cont>          //continuation
+          </rec>
+        </recs>
+        <sends color="blue">           //sends
+          <send color="teal" multiplicity="*">
+            <schan> .K </schan>        //sending channel
+            <msg> .K </msg>            //message sent
           </send>
         </sends>
-      </tuplespace>
-      <other> .Bag </other>
+      </space>
     </T>
 
   syntax KResult ::= Val
 
+// PAR OPERATOR
+  rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
+       (.Bag => <thread> <k> P1 </k> </thread>)
+       (.Bag => <thread> <k> P2 </k> </thread>)
+
 // SEND SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send in <k/> and populate other cells
-       (.Bag => <send>                                 //spawn new <send/> containing:
-                  <sendchan> X |-> !L:Int </sendchan>  //map outChan |-> Loc
-                  <msg> @P |-> !L </msg>               //map msg |-> Loc, message sent on Chan at Loc
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send in <activity/> and spawn <send/>
+       (.Bag => <send>
+                  <schan> X  </schan>                  //sending channel X
+                  <msg> @P </msg>                      //message sent @P
                 </send>)  [structural]
 
 // RECEIVE SEMANTICS
-  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive and populate cells
-       (.Bag => <process>
+  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive in <activity/> and spawn <rec/>
+       (.Bag => <rec>
+                  <rchan> X </rchan>                   //receiving channel X
+                  <bind> Y </bind>                     //variable Y binding in continuation P
                   <cont> P </cont>                     //continuation P
-                  <bind> Y |-> !L:Int </bind>          //location of variable which binds in P
-                  <procid> !I:Int </procid>
-                </process>)
-       (.Bag => <receive> <recchan> X |-> !L </recchan> <recid> X |-> !I </recid> </receive>)  [structural]
-
-// PAR OPERATOR
-  rule <thread> <k> P1:Proc | P2:Proc => . ...</k> ...</thread>
-       (.Bag => <thread> <k> P1 </k> ...</thread>)
-       (.Bag => <thread> <k> P2 </k> ...</thread>)
+                </rec>) [structural]
 
 // REIFY OPERATOR
 
@@ -104,11 +92,9 @@ module RHO
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-//  rule P:Proc | Nil => P  [structural]
+  rule P:Proc | Nil => P  [structural]
 
-//  rule <process> <cont> .K </cont> ...</process> => .Bag  [structural]
-
-//  rule (<thread> <k> .K </k> <processes> .Bag </processes> </thread> => .Bag)  [structural]
+  rule <thread> <k> . </k> </thread> => .Bag  [structural]
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
@@ -119,18 +105,17 @@ module RHO
 // recChan "matches" sendChan
 // simple comm: x!(Q) | x(y){P} => P[@Q / y]
 
-  rule
-  //a new thread holding the substituted continuation spawns, any other info to keep?
-  (.Bag => <thread> <k> P[Z / Y] </k> ...</thread>)  
-  (<process>                                         //continuation with appropriate binding variable
-     <cont> P:Proc </cont>                           //continuation
-     <bind> Y:Name |-> L1:Int </bind>                //binding variable at location L1
-     <procid> I:Int </procid>                        //process id
-   </process> => .Bag)                               //dissovles
-  //a send on chan X holding msg Z dissolves
-  (<send> <sendchan>... X:Name |-> L2:Int ...</sendchan> <msg> Z:Name |-> L2 </msg> </send> => .Bag)
-  //a receive on chan X at location L1 connected with procid I dissolves
-  (<receive> <recchan> X |-> L1 </recchan> <recid> X |-> I </recid> </receive> => .Bag)
+  rule                                     //dissolve send and receive on the same channel
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
+  (<rec>                                   //dissolve receive with:
+     <rchan> X:Name </rchan>               //receiving channel X
+     <bind> Y:Name </bind>                 //binding variable Y
+     <cont> P:Proc </cont>                 //continuation P
+   </rec> => .Bag)
+  (<send>                                  //dissolve send with:
+     <schan> X </schan>                    //sending channel X = rceiving channel
+     <msg> Z:Name </msg>                   //message sent Z to continuation
+   </send> => .Bag)  [structural]
 
 // COMM: `x(z){P} | y!(Q)` => P[@Q / z] when x \equiv_N y (denoted `x(z){P} | y!(Q)` -> P[@Q / Y])
 
