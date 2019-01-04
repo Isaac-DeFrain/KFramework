@@ -27,11 +27,9 @@ module RHO-SYNTAX
                 | "(" Proc ")"                     [bracket]
 
 // PRECEDENCE
-  syntax priority Send Rec > Par
+//  syntax priority Send Rec > Par
 
   syntax KVariable ::= Name
-
-  syntax Val ::= Name  //needed?
 
 endmodule
 
@@ -62,8 +60,6 @@ module RHO
         </sends>
       </space>
     </T>
-
-  syntax KResult ::= Val
 
 // PAR OPERATOR
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
@@ -96,9 +92,13 @@ module RHO
 
   rule <thread> <k> . </k> </thread> => .Bag  [structural]
 
+  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]
+
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q
+
+  rule <msg> @ * X:Name => X </msg>
 
 // REDUCTION RULES
 

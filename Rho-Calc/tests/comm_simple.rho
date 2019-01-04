@@ -3,10 +3,10 @@
 @{@Nil(@Nil){Nil}}!(Nil) | @{@Nil(@Nil){Nil}}(@{@Nil!(Nil)}){@{@Nil!(Nil)}!(Nil | Nil)}
 
 
-// x!(*z) | x(y){P} => P[z / y]
+// x!(*z) | x(y){y!(P)} => {y!(P)}[z / y] = z!(P)
 // x = @{@Nil(@Nil){Nil}}
 // y = @{@Nil!(Nil)}
 // z = @Nil
 
-// P = @{@Nil!(Nil)}!(Nil | Nil)
-/// P[z / y] = {y!(Nil)}[z / y] = z!(Nil Nil) = @Nil!(Nil | Nil)
+// P = Nil | Nil 
+// z!(Nil | Nil) = @Nil!(Nil | Nil)
