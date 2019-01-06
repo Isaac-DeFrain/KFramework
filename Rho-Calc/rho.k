@@ -44,7 +44,7 @@ module RHO
           <k> $PGM:Proc </k>
         </thread>
       </activity>
-      <space color="cyan">                       //tuplespace
+      <tuplespace color="cyan">                  //tuplespace
         <recs color="green">                     //receives
           <rec color="yellow" multiplicity="*">
             <rchan> .K </rchan>                  //receiving channel
@@ -58,7 +58,7 @@ module RHO
             <msg> .K </msg>                      //message sent
           </send>
         </sends>
-      </space>
+      </tuplespace>
     </T>
 
 // PAR OPERATOR
