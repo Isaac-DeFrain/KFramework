@@ -99,7 +99,11 @@ module RHO
 // P \equiv Q \implies @P \equiv_N @Q
 
 // REIFY OPERATOR
-  rule <msg> @ * X:Name => X </msg>  [structural]
+  rule <msg> @ * X:Name => X </msg> [structural]
+
+  rule <rchan> @ * X:Name => X </rchan>  [structural]
+
+  rule <schan> @ * X:Name => X </schan>  [structural]
 
   rule * @ P:Proc => P  [structural]
 
@@ -107,7 +111,7 @@ module RHO
 
 // REDUCTION RULES
 
-// COMM
+// COMM EVENT
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                            //dissolve send and receive on the same channel
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
@@ -125,10 +129,8 @@ module RHO
 
 // EQUIV: P -> Q when P \equiv P', P' -> Q', and Q' \equiv Q
 
-// SYNTACTIC SUBSTITUTION
+// SYNTACTIC SUBSTITUTION?
 
-// SEMANTIC SUBSTITUTION
-
-// rule * @ P:Proc => P  [structural]
+// SEMANTIC SUBSTITUTION?
 
 endmodule

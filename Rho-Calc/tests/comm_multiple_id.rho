@@ -1,6 +1,6 @@
-//Simple comm
+//Multiple comms
 
-x!(*a) | x!(*b) | a(u){*u} | b(v){*v} | x(y){y!(*z)}
+x!(*a) | x!(*b) | x(y){y!(*z)} | a(u){*u} | b(v){*v}
 
 // => b!(*z) | x!(*a) | a(u){*u} | b(v){*v} => x!(*a) | a(u){*u} | *z
 
