@@ -49,9 +49,9 @@ module PI
 
   // REPLICATION SEMANTICS
 
-  //Par with replication
-  rule <thread> <k> ( ! P1:Proc ) | P2:Proc => P1 | P2 ...</k> ...</thread>
-       (.Bag => <thread> <k> ! P1 </k> ...</thread>)  [structural]
+  //Par with replication - put !P in tuplespace
+//  rule <thread> <k> ( ! P1:Proc ) | P2:Proc => P1 | P2 ...</k> ...</thread>
+//       (.Bag => <thread> <k> ! P1 </k> ...</thread>)  [structural]
 
   // STRUCTURAL EQUIVALENCES
 

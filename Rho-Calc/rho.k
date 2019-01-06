@@ -69,16 +69,16 @@ module RHO
 // SEND SEMANTICS
   rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send in <activity/> and spawn <send/>
        (.Bag => <send>
-                  <schan> X  </schan>                  //sending channel X
-                  <msg> @P </msg>                      //message sent @P
+                  <schan> X </schan>                   //sending channel X
+                  <msg>  @P </msg>                     //message sent @P
                 </send>)  [structural]
 
 // RECEIVE SEMANTICS
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive in <activity/> and spawn <rec/>
        (.Bag => <rec>
                   <rchan> X </rchan>                   //receiving channel X
-                  <bind> Y </bind>                     //variable Y binding in continuation P
-                  <cont> P </cont>                     //continuation P
+                  <bind>  Y </bind>                    //variable Y binding in continuation P
+                  <cont>  P </cont>                    //continuation P
                 </rec>) [structural]
 
 // STRUCTURAL EQUIVALENCE
@@ -87,6 +87,8 @@ module RHO
 // (P | Q) | R \equiv P | (Q | R)
 
   rule P:Proc | Nil => P  [structural]
+
+  rule <cont> P:Proc | Nil => P </cont>  [structural]
 
   rule <thread> <k> . </k> </thread> => .Bag  [structural]
 
@@ -99,7 +101,9 @@ module RHO
 // REIFY OPERATOR
   rule <msg> @ * X:Name => X </msg>  [structural]
 
-  rule * @ * X:Name => *X  [structural]
+  rule * @ P:Proc => P  [structural]
+
+  rule <cont> * @ P:Proc => P </cont>  [structural]
 
 // REDUCTION RULES
 
