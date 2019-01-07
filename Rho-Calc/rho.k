@@ -26,9 +26,6 @@ module RHO-SYNTAX
   syntax Proc ::= "{" Proc "}"                     [bracket]
                 | "(" Proc ")"                     [bracket]
 
-// PRECEDENCE
-//  syntax priority Send Rec > Par
-
   syntax KVariable ::= Name
 
 endmodule
@@ -45,19 +42,19 @@ module RHO
         </thread>
       </activity>
       <tuplespace color="cyan">                  //tuplespace
-        <recs color="green">                     //receives
-          <rec color="yellow" multiplicity="*">
-            <rchan> .K </rchan>                  //receiving channel
-            <bind> .K </bind>                    //varible binding in continuation
-            <cont> .K </cont>                    //continuation
-          </rec>
-        </recs>
         <sends color="blue">                     //sends
           <send color="teal" multiplicity="*">
             <schan> .K </schan>                  //sending channel
-            <msg> .K </msg>                      //message sent
+            <msg>   .K </msg>                    //message sent
           </send>
         </sends>
+        <recs color="green">                     //receives
+          <rec color="yellow" multiplicity="*">
+            <rchan> .K </rchan>                  //receiving channel
+            <bind>  .K </bind>                   //varible binding in continuation
+            <cont>  .K </cont>                   //continuation
+          </rec>
+        </recs>
       </tuplespace>
     </T>
 
@@ -86,35 +83,34 @@ module RHO
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-  rule P:Proc | Nil => P  [structural]
+  rule P:Proc | Nil => P  [structural]                        //dissolve parred Nils in <k/>
 
-  rule <cont> P:Proc | Nil => P </cont>  [structural]
+  rule <cont> P:Proc | Nil => P </cont>  [structural]         //dissolve parred Nils in continuations
 
-  rule <thread> <k> . </k> </thread> => .Bag  [structural]
+  rule <thread> <k> . </k> </thread> => .Bag  [structural]    //dissolve empty threads
 
-  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]
+  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q
 
 // REIFY OPERATOR
-  rule <msg> @ * X:Name => X </msg> [structural]
+  rule <msg> @ * X:Name => X </msg> [structural]       //name equivalence in <msg/>
 
-  rule <rchan> @ * X:Name => X </rchan>  [structural]
+  rule <rchan> @ * X:Name => X </rchan>  [structural]  //name equivalence in <rchan/>
 
-  rule <schan> @ * X:Name => X </schan>  [structural]
+  rule <schan> @ * X:Name => X </schan>  [structural]  //name equivalence in <schan/>
 
-  rule * @ P:Proc => P  [structural]
+  rule * @ P:Proc => P  [structural]                   //inverse operator in <k/>
 
-  rule <cont> * @ P:Proc => P </cont>  [structural]
+  rule <cont> * @ P:Proc => P </cont>  [structural]    //inverse operator in <cont/>
 
 // REDUCTION RULES
 
 // COMM EVENT
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
-  rule                                            //dissolve send and receive on the same channel
-  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
+  rule                                            //dissolve send and receive on "same" channel
   (<rec>                                          //dissolve receive with:
      <rchan> X:Name </rchan>                      //receiving channel X
      <bind> Y:Name </bind>                        //binding variable Y
@@ -124,6 +120,7 @@ module RHO
      <schan> X </schan>                           //sending channel X = rceiving channel
      <msg> Z:Name </msg>                          //message sent Z to continuation
    </send> => .Bag)
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
 
 // PAR: P|Q -> P'|Q when P -> P'
 
