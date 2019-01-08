@@ -1,73 +1,61 @@
 type sort = 
-|SortInchanidCell
 |SortK
-|SortInchanCellOpt
-|SortOutgoingCellOpt
 |SortThreadCell
 |SortMap
 |SortThreadCellBag
 |SortRecCellBag
-|SortProcsCellFragment
 |SortRecCell
 |SortThreadCellFragment
 |SortContCellOpt
+|SortTuplespaceCell
 |SortKItem
-|SortInchanidCellOpt
 |SortStream
-|SortIncomingCell
-|SortProcCellBag
+|SortRecsCellFragment
 |SortProc
 |SortActivityCellOpt
 |SortString
 |SortFloat
+|SortSendsCellFragment
 |SortTCellFragment
 |SortContCell
-|SortIncomingCellFragment
+|SortSchanCell
+|SortRecsCellOpt
+|SortSendsCell
 |SortSet
+|SortRchanCellOpt
 |SortBindCellOpt
+|SortRecsCell
 |SortMInt
 |SortCell
 |SortSendCellFragment
-|SortProcCell
-|SortOutchanCell
-|SortInchanCell
+|SortSchanCellOpt
 |SortBool
-|SortKResult
-|SortProcidCell
-|SortOutmsgCell
-|SortOutchanCellOpt
-|SortIncomingCellOpt
+|SortTuplespaceCellOpt
 |SortKVariable
 |SortKCell
 |SortBytes
 |SortActivityCellFragment
-|SortProcsCellOpt
+|SortSendsCellOpt
+|SortTuplespaceCellFragment
 |SortIOError
 |SortStringBuffer
 |SortName
 |SortTCell
-|SortVal
-|SortOutmsgCellOpt
 |SortSendCellBag
 |SortInt
-|SortOutgoingCell
 |SortActivityCell
+|SortMsgCellOpt
 |SortRecCellFragment
-|SortOutgoingCellFragment
+|SortMsgCell
 |SortBindCell
 |SortKConfigVar
-|SortProcCellFragment
 |SortKCellOpt
-|SortProcidCellOpt
 |SortSendCell
-|SortProcsCell
 |SortId
 |SortList
+|SortRchanCell
 type klabel = 
-|Lbl_ProcCellBag_
 |Lbl'Hash'argv
-|LblisOutmsgCell
-|LblnoOutgoingCell
 |LblisThreadCell
 |Lbl_'_LT_Eqls'Int__INT
 |LblnotBool_
@@ -81,8 +69,10 @@ type klabel =
 |Lbl_'EqlsEqls'Bool__BOOL
 |LblisSet
 |Lbl'Hash'getenv
+|LblisTuplespaceCell
 |LblintersectSet
 |Lbl_in_keys'LPar'_'RPar'_MAP
+|LblinitMsgCell
 |LblfindChar
 |LblisThreadCellBag
 |LblSet'Coln'in
@@ -93,33 +83,28 @@ type klabel =
 |LblinitThreadCell
 |LblisIOError
 |Lbl'Hash'parse
-|Lbl'_LT_'proc'_GT_Hyph'fragment
+|LblisRchanCellOpt
 |Lbl'Hash'EALREADY_K'Hyph'IO
 |Lbl'Hash'ENETDOWN_K'Hyph'IO
-|LblinitProcidCell
 |LblmakeList
 |Lbl_'LSqB'_'_LT_Hyph'undef'RSqB'
-|LblnoProcsCell
 |Lbl'Hash'ESPIPE_K'Hyph'IO
-|Lbl'_LT_'outgoing'_GT_Hyph'fragment
 |Lbl'Hash'Bottom
 |Lbl'Hash'unlock'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |Lbl_'EqlsEqls'Int_
 |Lbl_andThenBool__BOOL
 |Lbl'Hash'ENOENT_K'Hyph'IO
-|Lbl'_LT_'procs'_GT_'
 |Lbl'Hash'parseInModule
 |Lbl'Hash'system
-|LblinitProcCell
 |LblisString
 |Lbl_'Perc'Int__INT
 |Lbl_'_GT__GT_'Int__INT
 |Lbl'Hash'ENOTTY_K'Hyph'IO
 |LblisList
 |Lbl'Hash'EPROTONOSUPPORT_K'Hyph'IO
+|LblisTuplespaceCellFragment
 |LblreplaceAll'LPar'_'Comm'_'Comm'_'RPar'_STRING
 |Lbl'Hash'EDESTADDRREQ_K'Hyph'IO
-|LblisInchanCell
 |LblPar
 |Lbl'Hash'EADDRINUSE_K'Hyph'IO
 |Lbl_'Xor_'Int__INT
@@ -130,102 +115,91 @@ type klabel =
 |Lbl'Hash'EHOSTDOWN_K'Hyph'IO
 |LblQuote
 |Lbl_'_GT_'String__STRING
+|LblisSendsCellFragment
 |Lbl_'EqlsEqls'String__STRING
 |Lbl'Hash'EMSGSIZE_K'Hyph'IO
-|LblinitOutmsgCell
 |LblisKConfigVar
-|LblisVal
-|LblinitInchanCell
 |Lbl'Hash'ENETRESET_K'Hyph'IO
 |Lbl'Hash'EAFNOSUPPORT_K'Hyph'IO
-|LblisKResult
+|LblnoSendsCell
 |Lbl'_LT_'thread'_GT_Hyph'fragment
 |LblisCell
 |Lbl'Hash'ENOMEM_K'Hyph'IO
 |Lblvalues
-|Lbl'_LT_'proc'_GT_'
-|LblinitIncomingCell
-|LblisProcidCell
 |LblRec
 |LblList'Coln'get
 |Lbl'Hash'lstat'LPar'_'RPar'_K'Hyph'IO
 |LblSendCellBagItem
 |LblisThreadCellFragment
 |LblSetItem
-|LblinitInchanidCell
 |LblunsignedBytes
+|Lbl'_LT_'rchan'_GT_'
+|LblisTuplespaceCellOpt
 |Lbl'Hash'ENXIO_K'Hyph'IO
 |Lbl_'_LT_'Int__INT
 |Lbl'Stop'List
 |LblisSendCell
 |Lbl'Hash'ENOLCK_K'Hyph'IO
-|LblnoOutchanCell
+|LblisSendsCellOpt
 |Lbl'Hash'ECONNABORTED_K'Hyph'IO
 |Lbl'Hash'configuration_K'Hyph'REFLECTION
 |LblrandInt
+|LblisSendsCell
 |Lbl'Hash'EXDEV_K'Hyph'IO
 |LblisFloat
 |Lbl'Hash'close'LPar'_'RPar'_K'Hyph'IO
+|Lbl'_LT_'msg'_GT_'
 |Lblkeys_list'LPar'_'RPar'_MAP
 |LblfreshId
 |LblisContCell
-|LblnoProcidCell
 |LblchrChar
 |Lbl_orElseBool__BOOL
 |Lbl_divInt__INT
+|LblisSchanCellOpt
 |Lbl'Hash'EISDIR_K'Hyph'IO
 |Lbl'Hash'EROFS_K'Hyph'IO
 |Lbl'_LT_'cont'_GT_'
 |Lbl_ThreadCellBag_
 |LblList'Coln'range
-|LblisProcidCellOpt
 |LblisProc
 |Lbl_'Plus'Int_
 |LblisKCell
-|LblProcCellBagItem
 |Lbl'Hash'unknownIOError
 |Lbl_orBool__BOOL
 |Lbl_'_GT_Eqls'Int__INT
 |LblisSendCellFragment
 |Lbl'Hash'ENFILE_K'Hyph'IO
 |LblupdateMap
-|Lbl'_LT_'inchanid'_GT_'
+|LblisRecsCell
 |LblInt2String
-|LblisInchanCellOpt
 |Lbl'Hash'ENOSYS_K'Hyph'IO
 |Lbl'Hash'ECONNREFUSED_K'Hyph'IO
+|Lbl'_LT_'sends'_GT_Hyph'fragment
 |Lbl'Hash'lock'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |Lbl_'EqlsSlshEqls'K_
 |Lbl'Hash'EADDRNOTAVAIL_K'Hyph'IO
 |LblcountAllOccurrences'LPar'_'Comm'_'RPar'_STRING
-|LblisOutchanCell
 |Lbl_'_GT_'Int__INT
 |LblfillList
-|LblisProcCellBag
-|LblisProcsCellOpt
+|LblnoRchanCell
 |LblbitRangeInt
-|LblisProcsCellFragment
-|Lbl'Stop'ProcCellBag
 |Lbl_'_LT_'String__STRING
 |LblisRecCell
-|LblinitOutchanCell
 |Lbl_List_
 |Lbl'Hash'ThreadLocal
 |Lbl'Hash'open'LPar'_'Comm'_'RPar'_K'Hyph'IO
-|Lbl'_LT_'inchan'_GT_'
 |Lbl'Hash'EOPNOTSUPP_K'Hyph'IO
 |Lbl_'PipeHyph_GT_'_
 |Lbl_'Hyph'Map__MAP
 |Lbl_xorBool__BOOL
+|LblisRecsCellOpt
 |Lbl'Stop'RecCellBag
-|LblisOutchanCellOpt
 |Lbl'Hash'EMLINK_K'Hyph'IO
 |Lbl'Hash'sort
 |Lbl_'EqlsEqls'K_
 |Lbl'Hash'open'LPar'_'RPar'_K'Hyph'IO
 |Lbl_'LSqB'_'RSqB'_SUBSTITUTION
 |LblisBindCellOpt
-|LblisOutgoingCell
 |LblreplaceFirst'LPar'_'Comm'_'Comm'_'RPar'_STRING
 |Lbl'Hash'ETOOMANYREFS_K'Hyph'IO
 |Lbl'Hash'EOVERFLOW_K'Hyph'IO
@@ -238,7 +212,7 @@ type klabel =
 |Lbl'_LT_'rec'_GT_'
 |Lbl'Hash'read'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |Lbl'Hash'EIO_K'Hyph'IO
-|LblisInchanidCellOpt
+|Lbl'_LT_'schan'_GT_'
 |LblbigEndianBytes
 |LblisSendCellBag
 |LblId2String
@@ -247,9 +221,6 @@ type klabel =
 |LblisContCellOpt
 |Lbl'Hash'fresh
 |LblMap'Coln'choice
-|LblisIncomingCellOpt
-|LblisProcCellFragment
-|LblisOutgoingCellFragment
 |Lbl_Set_
 |Lbl'Hash'EEXIST_K'Hyph'IO
 |Lbl_impliesBool__BOOL
@@ -260,13 +231,10 @@ type klabel =
 |Lbl'Hash'Thread
 |LblmaxInt'LPar'_'Comm'_'RPar'_INT
 |LblisActivityCellFragment
-|LblisOutmsgCellOpt
-|Lbl'_LT_'outchan'_GT_'
 |Lbl'Hash'EDEADLK_K'Hyph'IO
 |LblisBool
 |Lbl'Tild'Int__INT
 |Lbl_'_LT_Eqls'String__STRING
-|LblnoInchanCell
 |LblordChar
 |Lbl_modInt__INT
 |LblrfindChar
@@ -275,23 +243,21 @@ type klabel =
 |Lbl_Map_
 |Lbl_'Hyph'Int__INT
 |Lbl'Hash'EOF_K'Hyph'IO
+|LblinitSchanCell
 |LbldirectionalityChar
 |LblFloat2String
-|Lbl'_LT_'procid'_GT_'
 |Lbl'Hash'opendir'LPar'_'RPar'_K'Hyph'IO
-|Lbl'_LT_'procs'_GT_Hyph'fragment
-|LblisProcsCell
 |LblinitKCell
 |LblRecCellBagItem
-|LblisIncomingCell
-|Lbl'_LT_'incoming'_GT_'
 |LblsizeList
 |Lbl'Hash'EWOULDBLOCK_K'Hyph'IO
 |Lbl'Stop'Set
 |LblString2Id
+|LblinitTuplespaceCell
 |Lbl'_LT_'thread'_GT_'
 |Lbl'Hash'EACCES_K'Hyph'IO
 |Lbl_'EqlsSlshEqls'Bool__BOOL
+|LblisRchanCell
 |Lbl'Hash'ELOOP_K'Hyph'IO
 |Lbl'Hash'EDOM_K'Hyph'IO
 |Lbl'Hash'EFBIG_K'Hyph'IO
@@ -307,26 +273,26 @@ type klabel =
 |LblinitTCell
 |LblsignedBytes
 |Lbl'Hash'EPIPE_K'Hyph'IO
-|LblnoOutmsgCell
 |LblFloatFormat
 |LblnoContCell
 |Lbl'Hash'ENOTSOCK_K'Hyph'IO
 |Lbl_'Plus'String__STRING
 |Lbl_'Xor_Perc'Int___INT
-|LblisOutgoingCellOpt
-|LblinitProcsCell
 |Lbl_RecCellBag_
 |Lbl_'Pipe'Int__INT
+|LblisMsgCellOpt
 |Lbl'Hash'EISCONN_K'Hyph'IO
 |LblisKVariable
 |Lbl_dividesInt__INT
 |Lbl'_LT_'rec'_GT_Hyph'fragment
+|Lbl'_LT_'tuplespace'_GT_Hyph'fragment
 |LblrfindString
 |Lbl'_LT_'T'_GT_Hyph'fragment
 |Lbl'Hash'ESOCKTNOSUPPORT_K'Hyph'IO
 |Lbl'Hash'EINTR_K'Hyph'IO
 |Lbl'Hash'stat'LPar'_'RPar'_K'Hyph'IO
 |LblupdateList
+|LblisMsgCell
 |Lbl'Stop'SendCellBag
 |Lbl'_LT_'activity'_GT_Hyph'fragment
 |LblinitContCell
@@ -338,63 +304,65 @@ type klabel =
 |Lbl'Hash'EHOSTUNREACH_K'Hyph'IO
 |Lbl'Hash'ECONNRESET_K'Hyph'IO
 |LblfreshInt
+|Lbl'_LT_'recs'_GT_Hyph'fragment
 |Lbl'Hash'write'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |LblisKCellOpt
 |Lbl'Hash'ETIMEDOUT_K'Hyph'IO
 |Lbl'Hash'ECHILD_K'Hyph'IO
 |LblisRecCellFragment
+|LblinitRchanCell
+|Lbl'_LT_'sends'_GT_'
+|LblisSchanCell
 |Lbl_xorInt__INT
 |Lbl'Hash'EINPROGRESS_K'Hyph'IO
+|Lbl'_LT_'recs'_GT_'
 |LblString2Float
 |LblMap'Coln'lookupOrDefault
 |Lbl'Hash'if_'Hash'then_'Hash'else_'Hash'fi_K'Hyph'EQUAL
+|Lbl'_LT_'tuplespace'_GT_'
 |Lbl'Hash'ENOTCONN_K'Hyph'IO
 |Lbl'Hash'stdout_K'Hyph'IO
 |Lbl_'And'Int__INT
-|LblisProcCell
-|Lbl'_LT_'outmsg'_GT_'
 |Lbl'Hash'ENOPROTOOPT_K'Hyph'IO
 |LblinitBindCell
 |LbllittleEndianBytes
 |Lbl'Hash'EPERM_K'Hyph'IO
 |Lbl'Hash'ENAMETOOLONG_K'Hyph'IO
-|LblnoIncomingCell
 |Lbl'_LT_'send'_GT_'
 |Lbl_'_LT__LT_'Int__INT
 |Lbllog2Int
 |Lbl_'EqlsSlshEqls'Int__INT
 |Lbl'Hash'stdin_K'Hyph'IO
-|LblisInchanidCell
 |LblBase2String
 |LblListItem
 |Lbl_'_GT_Eqls'String__STRING
 |LblisStream
+|LblnoSchanCell
 |Lbl_'_LT_Eqls'Map__MAP
+|LblisRecsCellFragment
 |LblnewUUID_STRING
 |LblsizeMap
+|LblnoMsgCell
 |LblisId
 |LblsubstrString
 |LblReify
 |LblnoBindCell
 |Lbl_SendCellBag_
-|Lbl'_LT_'incoming'_GT_Hyph'fragment
+|LblnoTuplespaceCell
 |Lbl'Hash'ESRCH_K'Hyph'IO
 |Lbl'Hash'EMFILE_K'Hyph'IO
 |LblisActivityCellOpt
 |Lblsize
-|LblnoInchanidCell
-|LblinitOutgoingCell
 |Lbl'_LT_'activity'_GT_'
 |Lblproject'Coln'Proc
-|LblisIncomingCellFragment
 |Lbl'Hash'ENETUNREACH_K'Hyph'IO
 |Lbl'Hash'EPROTOTYPE_K'Hyph'IO
 |LblSend
 |Lbl'Hash'systemResult'LPar'_'Comm'_'Comm'_'RPar'_K'Hyph'IO
-|Lbl'_LT_'outgoing'_GT_'
 |Lbl_inList_
 |Lbl'Hash'ENOEXEC_K'Hyph'IO
 |LblminInt'LPar'_'Comm'_'RPar'_INT
+|LblinitRecsCell
 |LblisMap
 |LblsrandInt
 |Lbl'Hash'EINVAL_K'Hyph'IO
@@ -411,9 +379,11 @@ type klabel =
 |Lbl'Hash'tell'LPar'_'RPar'_K'Hyph'IO
 |Lblkeys
 |LblinitRecCell
+|LblinitSendsCell
 |Lbl'Hash'ESHUTDOWN_K'Hyph'IO
 |Lbl'Stop'ThreadCellBag
 |LblgetKLabel
+|LblnoRecsCell
 |LblThreadCellBagItem
 |Lbl'Hash'E2BIG_K'Hyph'IO
 |Lbl'Hash'ENOTDIR_K'Hyph'IO
@@ -422,75 +392,63 @@ type klabel =
 |LblinitSendCell
 |Lbl'_LT_'send'_GT_Hyph'fragment
 let print_sort(c: sort) : string = match c with 
-|SortInchanidCell -> "InchanidCell"
 |SortK -> "K"
-|SortInchanCellOpt -> "InchanCellOpt"
-|SortOutgoingCellOpt -> "OutgoingCellOpt"
 |SortThreadCell -> "ThreadCell"
 |SortMap -> "Map"
 |SortThreadCellBag -> "ThreadCellBag"
 |SortRecCellBag -> "RecCellBag"
-|SortProcsCellFragment -> "ProcsCellFragment"
 |SortRecCell -> "RecCell"
 |SortThreadCellFragment -> "ThreadCellFragment"
 |SortContCellOpt -> "ContCellOpt"
+|SortTuplespaceCell -> "TuplespaceCell"
 |SortKItem -> "KItem"
-|SortInchanidCellOpt -> "InchanidCellOpt"
 |SortStream -> "Stream"
-|SortIncomingCell -> "IncomingCell"
-|SortProcCellBag -> "ProcCellBag"
+|SortRecsCellFragment -> "RecsCellFragment"
 |SortProc -> "Proc"
 |SortActivityCellOpt -> "ActivityCellOpt"
 |SortString -> "String"
 |SortFloat -> "Float"
+|SortSendsCellFragment -> "SendsCellFragment"
 |SortTCellFragment -> "TCellFragment"
 |SortContCell -> "ContCell"
-|SortIncomingCellFragment -> "IncomingCellFragment"
+|SortSchanCell -> "SchanCell"
+|SortRecsCellOpt -> "RecsCellOpt"
+|SortSendsCell -> "SendsCell"
 |SortSet -> "Set"
+|SortRchanCellOpt -> "RchanCellOpt"
 |SortBindCellOpt -> "BindCellOpt"
+|SortRecsCell -> "RecsCell"
 |SortMInt -> "MInt"
 |SortCell -> "Cell"
 |SortSendCellFragment -> "SendCellFragment"
-|SortProcCell -> "ProcCell"
-|SortOutchanCell -> "OutchanCell"
-|SortInchanCell -> "InchanCell"
+|SortSchanCellOpt -> "SchanCellOpt"
 |SortBool -> "Bool"
-|SortKResult -> "KResult"
-|SortProcidCell -> "ProcidCell"
-|SortOutmsgCell -> "OutmsgCell"
-|SortOutchanCellOpt -> "OutchanCellOpt"
-|SortIncomingCellOpt -> "IncomingCellOpt"
+|SortTuplespaceCellOpt -> "TuplespaceCellOpt"
 |SortKVariable -> "KVariable"
 |SortKCell -> "KCell"
 |SortBytes -> "Bytes"
 |SortActivityCellFragment -> "ActivityCellFragment"
-|SortProcsCellOpt -> "ProcsCellOpt"
+|SortSendsCellOpt -> "SendsCellOpt"
+|SortTuplespaceCellFragment -> "TuplespaceCellFragment"
 |SortIOError -> "IOError"
 |SortStringBuffer -> "StringBuffer"
 |SortName -> "Name"
 |SortTCell -> "TCell"
-|SortVal -> "Val"
-|SortOutmsgCellOpt -> "OutmsgCellOpt"
 |SortSendCellBag -> "SendCellBag"
 |SortInt -> "Int"
-|SortOutgoingCell -> "OutgoingCell"
 |SortActivityCell -> "ActivityCell"
+|SortMsgCellOpt -> "MsgCellOpt"
 |SortRecCellFragment -> "RecCellFragment"
-|SortOutgoingCellFragment -> "OutgoingCellFragment"
+|SortMsgCell -> "MsgCell"
 |SortBindCell -> "BindCell"
 |SortKConfigVar -> "KConfigVar"
-|SortProcCellFragment -> "ProcCellFragment"
 |SortKCellOpt -> "KCellOpt"
-|SortProcidCellOpt -> "ProcidCellOpt"
 |SortSendCell -> "SendCell"
-|SortProcsCell -> "ProcsCell"
 |SortId -> "Id"
 |SortList -> "List"
+|SortRchanCell -> "RchanCell"
 let print_klabel(c: klabel) : string = match c with 
-|Lbl_ProcCellBag_ -> "`_ProcCellBag_`"
 |Lbl'Hash'argv -> "#argv"
-|LblisOutmsgCell -> "isOutmsgCell"
-|LblnoOutgoingCell -> "noOutgoingCell"
 |LblisThreadCell -> "isThreadCell"
 |Lbl_'_LT_Eqls'Int__INT -> "`_<=Int__INT`"
 |LblnotBool_ -> "`notBool_`"
@@ -504,8 +462,10 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl_'EqlsEqls'Bool__BOOL -> "`_==Bool__BOOL`"
 |LblisSet -> "isSet"
 |Lbl'Hash'getenv -> "#getenv"
+|LblisTuplespaceCell -> "isTuplespaceCell"
 |LblintersectSet -> "intersectSet"
 |Lbl_in_keys'LPar'_'RPar'_MAP -> "`_in_keys(_)_MAP`"
+|LblinitMsgCell -> "initMsgCell"
 |LblfindChar -> "findChar"
 |LblisThreadCellBag -> "isThreadCellBag"
 |LblSet'Coln'in -> "`Set:in`"
@@ -516,33 +476,28 @@ let print_klabel(c: klabel) : string = match c with
 |LblinitThreadCell -> "initThreadCell"
 |LblisIOError -> "isIOError"
 |Lbl'Hash'parse -> "#parse"
-|Lbl'_LT_'proc'_GT_Hyph'fragment -> "`<proc>-fragment`"
+|LblisRchanCellOpt -> "isRchanCellOpt"
 |Lbl'Hash'EALREADY_K'Hyph'IO -> "`#EALREADY_K-IO`"
 |Lbl'Hash'ENETDOWN_K'Hyph'IO -> "`#ENETDOWN_K-IO`"
-|LblinitProcidCell -> "initProcidCell"
 |LblmakeList -> "makeList"
 |Lbl_'LSqB'_'_LT_Hyph'undef'RSqB' -> "`_[_<-undef]`"
-|LblnoProcsCell -> "noProcsCell"
 |Lbl'Hash'ESPIPE_K'Hyph'IO -> "`#ESPIPE_K-IO`"
-|Lbl'_LT_'outgoing'_GT_Hyph'fragment -> "`<outgoing>-fragment`"
 |Lbl'Hash'Bottom -> "#Bottom"
 |Lbl'Hash'unlock'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "`#unlock(_,_)_K-IO`"
 |Lbl_'EqlsEqls'Int_ -> "`_==Int_`"
 |Lbl_andThenBool__BOOL -> "`_andThenBool__BOOL`"
 |Lbl'Hash'ENOENT_K'Hyph'IO -> "`#ENOENT_K-IO`"
-|Lbl'_LT_'procs'_GT_' -> "`<procs>`"
 |Lbl'Hash'parseInModule -> "#parseInModule"
 |Lbl'Hash'system -> "#system"
-|LblinitProcCell -> "initProcCell"
 |LblisString -> "isString"
 |Lbl_'Perc'Int__INT -> "`_%Int__INT`"
 |Lbl_'_GT__GT_'Int__INT -> "`_>>Int__INT`"
 |Lbl'Hash'ENOTTY_K'Hyph'IO -> "`#ENOTTY_K-IO`"
 |LblisList -> "isList"
 |Lbl'Hash'EPROTONOSUPPORT_K'Hyph'IO -> "`#EPROTONOSUPPORT_K-IO`"
+|LblisTuplespaceCellFragment -> "isTuplespaceCellFragment"
 |LblreplaceAll'LPar'_'Comm'_'Comm'_'RPar'_STRING -> "`replaceAll(_,_,_)_STRING`"
 |Lbl'Hash'EDESTADDRREQ_K'Hyph'IO -> "`#EDESTADDRREQ_K-IO`"
-|LblisInchanCell -> "isInchanCell"
 |LblPar -> "`Par`"
 |Lbl'Hash'EADDRINUSE_K'Hyph'IO -> "`#EADDRINUSE_K-IO`"
 |Lbl_'Xor_'Int__INT -> "`_^Int__INT`"
@@ -553,102 +508,91 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl'Hash'EHOSTDOWN_K'Hyph'IO -> "`#EHOSTDOWN_K-IO`"
 |LblQuote -> "`Quote`"
 |Lbl_'_GT_'String__STRING -> "`_>String__STRING`"
+|LblisSendsCellFragment -> "isSendsCellFragment"
 |Lbl_'EqlsEqls'String__STRING -> "`_==String__STRING`"
 |Lbl'Hash'EMSGSIZE_K'Hyph'IO -> "`#EMSGSIZE_K-IO`"
-|LblinitOutmsgCell -> "initOutmsgCell"
 |LblisKConfigVar -> "isKConfigVar"
-|LblisVal -> "isVal"
-|LblinitInchanCell -> "initInchanCell"
 |Lbl'Hash'ENETRESET_K'Hyph'IO -> "`#ENETRESET_K-IO`"
 |Lbl'Hash'EAFNOSUPPORT_K'Hyph'IO -> "`#EAFNOSUPPORT_K-IO`"
-|LblisKResult -> "isKResult"
+|LblnoSendsCell -> "noSendsCell"
 |Lbl'_LT_'thread'_GT_Hyph'fragment -> "`<thread>-fragment`"
 |LblisCell -> "isCell"
 |Lbl'Hash'ENOMEM_K'Hyph'IO -> "`#ENOMEM_K-IO`"
 |Lblvalues -> "values"
-|Lbl'_LT_'proc'_GT_' -> "`<proc>`"
-|LblinitIncomingCell -> "initIncomingCell"
-|LblisProcidCell -> "isProcidCell"
 |LblRec -> "`Rec`"
 |LblList'Coln'get -> "`List:get`"
 |Lbl'Hash'lstat'LPar'_'RPar'_K'Hyph'IO -> "`#lstat(_)_K-IO`"
 |LblSendCellBagItem -> "`SendCellBagItem`"
 |LblisThreadCellFragment -> "isThreadCellFragment"
 |LblSetItem -> "`SetItem`"
-|LblinitInchanidCell -> "initInchanidCell"
 |LblunsignedBytes -> "unsignedBytes"
+|Lbl'_LT_'rchan'_GT_' -> "`<rchan>`"
+|LblisTuplespaceCellOpt -> "isTuplespaceCellOpt"
 |Lbl'Hash'ENXIO_K'Hyph'IO -> "`#ENXIO_K-IO`"
 |Lbl_'_LT_'Int__INT -> "`_<Int__INT`"
 |Lbl'Stop'List -> "`.List`"
 |LblisSendCell -> "isSendCell"
 |Lbl'Hash'ENOLCK_K'Hyph'IO -> "`#ENOLCK_K-IO`"
-|LblnoOutchanCell -> "noOutchanCell"
+|LblisSendsCellOpt -> "isSendsCellOpt"
 |Lbl'Hash'ECONNABORTED_K'Hyph'IO -> "`#ECONNABORTED_K-IO`"
 |Lbl'Hash'configuration_K'Hyph'REFLECTION -> "`#configuration_K-REFLECTION`"
 |LblrandInt -> "randInt"
+|LblisSendsCell -> "isSendsCell"
 |Lbl'Hash'EXDEV_K'Hyph'IO -> "`#EXDEV_K-IO`"
 |LblisFloat -> "isFloat"
 |Lbl'Hash'close'LPar'_'RPar'_K'Hyph'IO -> "`#close(_)_K-IO`"
+|Lbl'_LT_'msg'_GT_' -> "`<msg>`"
 |Lblkeys_list'LPar'_'RPar'_MAP -> "`keys_list(_)_MAP`"
 |LblfreshId -> "freshId"
 |LblisContCell -> "isContCell"
-|LblnoProcidCell -> "noProcidCell"
 |LblchrChar -> "chrChar"
 |Lbl_orElseBool__BOOL -> "`_orElseBool__BOOL`"
 |Lbl_divInt__INT -> "`_divInt__INT`"
+|LblisSchanCellOpt -> "isSchanCellOpt"
 |Lbl'Hash'EISDIR_K'Hyph'IO -> "`#EISDIR_K-IO`"
 |Lbl'Hash'EROFS_K'Hyph'IO -> "`#EROFS_K-IO`"
 |Lbl'_LT_'cont'_GT_' -> "`<cont>`"
 |Lbl_ThreadCellBag_ -> "`_ThreadCellBag_`"
 |LblList'Coln'range -> "`List:range`"
-|LblisProcidCellOpt -> "isProcidCellOpt"
 |LblisProc -> "isProc"
 |Lbl_'Plus'Int_ -> "`_+Int_`"
 |LblisKCell -> "isKCell"
-|LblProcCellBagItem -> "`ProcCellBagItem`"
 |Lbl'Hash'unknownIOError -> "#unknownIOError"
 |Lbl_orBool__BOOL -> "`_orBool__BOOL`"
 |Lbl_'_GT_Eqls'Int__INT -> "`_>=Int__INT`"
 |LblisSendCellFragment -> "isSendCellFragment"
 |Lbl'Hash'ENFILE_K'Hyph'IO -> "`#ENFILE_K-IO`"
 |LblupdateMap -> "updateMap"
-|Lbl'_LT_'inchanid'_GT_' -> "`<inchanid>`"
+|LblisRecsCell -> "isRecsCell"
 |LblInt2String -> "`Int2String`"
-|LblisInchanCellOpt -> "isInchanCellOpt"
 |Lbl'Hash'ENOSYS_K'Hyph'IO -> "`#ENOSYS_K-IO`"
 |Lbl'Hash'ECONNREFUSED_K'Hyph'IO -> "`#ECONNREFUSED_K-IO`"
+|Lbl'_LT_'sends'_GT_Hyph'fragment -> "`<sends>-fragment`"
 |Lbl'Hash'lock'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "`#lock(_,_)_K-IO`"
 |Lbl_'EqlsSlshEqls'K_ -> "`_=/=K_`"
 |Lbl'Hash'EADDRNOTAVAIL_K'Hyph'IO -> "`#EADDRNOTAVAIL_K-IO`"
 |LblcountAllOccurrences'LPar'_'Comm'_'RPar'_STRING -> "`countAllOccurrences(_,_)_STRING`"
-|LblisOutchanCell -> "isOutchanCell"
 |Lbl_'_GT_'Int__INT -> "`_>Int__INT`"
 |LblfillList -> "fillList"
-|LblisProcCellBag -> "isProcCellBag"
-|LblisProcsCellOpt -> "isProcsCellOpt"
+|LblnoRchanCell -> "noRchanCell"
 |LblbitRangeInt -> "bitRangeInt"
-|LblisProcsCellFragment -> "isProcsCellFragment"
-|Lbl'Stop'ProcCellBag -> "`.ProcCellBag`"
 |Lbl_'_LT_'String__STRING -> "`_<String__STRING`"
 |LblisRecCell -> "isRecCell"
-|LblinitOutchanCell -> "initOutchanCell"
 |Lbl_List_ -> "`_List_`"
 |Lbl'Hash'ThreadLocal -> "#ThreadLocal"
 |Lbl'Hash'open'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "`#open(_,_)_K-IO`"
-|Lbl'_LT_'inchan'_GT_' -> "`<inchan>`"
 |Lbl'Hash'EOPNOTSUPP_K'Hyph'IO -> "`#EOPNOTSUPP_K-IO`"
 |Lbl_'PipeHyph_GT_'_ -> "`_|->_`"
 |Lbl_'Hyph'Map__MAP -> "`_-Map__MAP`"
 |Lbl_xorBool__BOOL -> "`_xorBool__BOOL`"
+|LblisRecsCellOpt -> "isRecsCellOpt"
 |Lbl'Stop'RecCellBag -> "`.RecCellBag`"
-|LblisOutchanCellOpt -> "isOutchanCellOpt"
 |Lbl'Hash'EMLINK_K'Hyph'IO -> "`#EMLINK_K-IO`"
 |Lbl'Hash'sort -> "#sort"
 |Lbl_'EqlsEqls'K_ -> "`_==K_`"
 |Lbl'Hash'open'LPar'_'RPar'_K'Hyph'IO -> "`#open(_)_K-IO`"
 |Lbl_'LSqB'_'RSqB'_SUBSTITUTION -> "`_[_]_SUBSTITUTION`"
 |LblisBindCellOpt -> "isBindCellOpt"
-|LblisOutgoingCell -> "isOutgoingCell"
 |LblreplaceFirst'LPar'_'Comm'_'Comm'_'RPar'_STRING -> "`replaceFirst(_,_,_)_STRING`"
 |Lbl'Hash'ETOOMANYREFS_K'Hyph'IO -> "`#ETOOMANYREFS_K-IO`"
 |Lbl'Hash'EOVERFLOW_K'Hyph'IO -> "`#EOVERFLOW_K-IO`"
@@ -661,7 +605,7 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl'_LT_'rec'_GT_' -> "`<rec>`"
 |Lbl'Hash'read'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "`#read(_,_)_K-IO`"
 |Lbl'Hash'EIO_K'Hyph'IO -> "`#EIO_K-IO`"
-|LblisInchanidCellOpt -> "isInchanidCellOpt"
+|Lbl'_LT_'schan'_GT_' -> "`<schan>`"
 |LblbigEndianBytes -> "bigEndianBytes"
 |LblisSendCellBag -> "isSendCellBag"
 |LblId2String -> "`Id2String`"
@@ -670,9 +614,6 @@ let print_klabel(c: klabel) : string = match c with
 |LblisContCellOpt -> "isContCellOpt"
 |Lbl'Hash'fresh -> "#fresh"
 |LblMap'Coln'choice -> "`Map:choice`"
-|LblisIncomingCellOpt -> "isIncomingCellOpt"
-|LblisProcCellFragment -> "isProcCellFragment"
-|LblisOutgoingCellFragment -> "isOutgoingCellFragment"
 |Lbl_Set_ -> "`_Set_`"
 |Lbl'Hash'EEXIST_K'Hyph'IO -> "`#EEXIST_K-IO`"
 |Lbl_impliesBool__BOOL -> "`_impliesBool__BOOL`"
@@ -683,13 +624,10 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl'Hash'Thread -> "#Thread"
 |LblmaxInt'LPar'_'Comm'_'RPar'_INT -> "`maxInt(_,_)_INT`"
 |LblisActivityCellFragment -> "isActivityCellFragment"
-|LblisOutmsgCellOpt -> "isOutmsgCellOpt"
-|Lbl'_LT_'outchan'_GT_' -> "`<outchan>`"
 |Lbl'Hash'EDEADLK_K'Hyph'IO -> "`#EDEADLK_K-IO`"
 |LblisBool -> "isBool"
 |Lbl'Tild'Int__INT -> "`~Int__INT`"
 |Lbl_'_LT_Eqls'String__STRING -> "`_<=String__STRING`"
-|LblnoInchanCell -> "noInchanCell"
 |LblordChar -> "ordChar"
 |Lbl_modInt__INT -> "`_modInt__INT`"
 |LblrfindChar -> "rfindChar"
@@ -698,23 +636,21 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl_Map_ -> "`_Map_`"
 |Lbl_'Hyph'Int__INT -> "`_-Int__INT`"
 |Lbl'Hash'EOF_K'Hyph'IO -> "`#EOF_K-IO`"
+|LblinitSchanCell -> "initSchanCell"
 |LbldirectionalityChar -> "directionalityChar"
 |LblFloat2String -> "`Float2String`"
-|Lbl'_LT_'procid'_GT_' -> "`<procid>`"
 |Lbl'Hash'opendir'LPar'_'RPar'_K'Hyph'IO -> "`#opendir(_)_K-IO`"
-|Lbl'_LT_'procs'_GT_Hyph'fragment -> "`<procs>-fragment`"
-|LblisProcsCell -> "isProcsCell"
 |LblinitKCell -> "initKCell"
 |LblRecCellBagItem -> "`RecCellBagItem`"
-|LblisIncomingCell -> "isIncomingCell"
-|Lbl'_LT_'incoming'_GT_' -> "`<incoming>`"
 |LblsizeList -> "sizeList"
 |Lbl'Hash'EWOULDBLOCK_K'Hyph'IO -> "`#EWOULDBLOCK_K-IO`"
 |Lbl'Stop'Set -> "`.Set`"
 |LblString2Id -> "`String2Id`"
+|LblinitTuplespaceCell -> "initTuplespaceCell"
 |Lbl'_LT_'thread'_GT_' -> "`<thread>`"
 |Lbl'Hash'EACCES_K'Hyph'IO -> "`#EACCES_K-IO`"
 |Lbl_'EqlsSlshEqls'Bool__BOOL -> "`_=/=Bool__BOOL`"
+|LblisRchanCell -> "isRchanCell"
 |Lbl'Hash'ELOOP_K'Hyph'IO -> "`#ELOOP_K-IO`"
 |Lbl'Hash'EDOM_K'Hyph'IO -> "`#EDOM_K-IO`"
 |Lbl'Hash'EFBIG_K'Hyph'IO -> "`#EFBIG_K-IO`"
@@ -730,26 +666,26 @@ let print_klabel(c: klabel) : string = match c with
 |LblinitTCell -> "initTCell"
 |LblsignedBytes -> "signedBytes"
 |Lbl'Hash'EPIPE_K'Hyph'IO -> "`#EPIPE_K-IO`"
-|LblnoOutmsgCell -> "noOutmsgCell"
 |LblFloatFormat -> "`FloatFormat`"
 |LblnoContCell -> "noContCell"
 |Lbl'Hash'ENOTSOCK_K'Hyph'IO -> "`#ENOTSOCK_K-IO`"
 |Lbl_'Plus'String__STRING -> "`_+String__STRING`"
 |Lbl_'Xor_Perc'Int___INT -> "`_^%Int___INT`"
-|LblisOutgoingCellOpt -> "isOutgoingCellOpt"
-|LblinitProcsCell -> "initProcsCell"
 |Lbl_RecCellBag_ -> "`_RecCellBag_`"
 |Lbl_'Pipe'Int__INT -> "`_|Int__INT`"
+|LblisMsgCellOpt -> "isMsgCellOpt"
 |Lbl'Hash'EISCONN_K'Hyph'IO -> "`#EISCONN_K-IO`"
 |LblisKVariable -> "isKVariable"
 |Lbl_dividesInt__INT -> "`_dividesInt__INT`"
 |Lbl'_LT_'rec'_GT_Hyph'fragment -> "`<rec>-fragment`"
+|Lbl'_LT_'tuplespace'_GT_Hyph'fragment -> "`<tuplespace>-fragment`"
 |LblrfindString -> "rfindString"
 |Lbl'_LT_'T'_GT_Hyph'fragment -> "`<T>-fragment`"
 |Lbl'Hash'ESOCKTNOSUPPORT_K'Hyph'IO -> "`#ESOCKTNOSUPPORT_K-IO`"
 |Lbl'Hash'EINTR_K'Hyph'IO -> "`#EINTR_K-IO`"
 |Lbl'Hash'stat'LPar'_'RPar'_K'Hyph'IO -> "`#stat(_)_K-IO`"
 |LblupdateList -> "updateList"
+|LblisMsgCell -> "isMsgCell"
 |Lbl'Stop'SendCellBag -> "`.SendCellBag`"
 |Lbl'_LT_'activity'_GT_Hyph'fragment -> "`<activity>-fragment`"
 |LblinitContCell -> "initContCell"
@@ -761,63 +697,65 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl'Hash'EHOSTUNREACH_K'Hyph'IO -> "`#EHOSTUNREACH_K-IO`"
 |Lbl'Hash'ECONNRESET_K'Hyph'IO -> "`#ECONNRESET_K-IO`"
 |LblfreshInt -> "freshInt"
+|Lbl'_LT_'recs'_GT_Hyph'fragment -> "`<recs>-fragment`"
 |Lbl'Hash'write'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "`#write(_,_)_K-IO`"
 |LblisKCellOpt -> "isKCellOpt"
 |Lbl'Hash'ETIMEDOUT_K'Hyph'IO -> "`#ETIMEDOUT_K-IO`"
 |Lbl'Hash'ECHILD_K'Hyph'IO -> "`#ECHILD_K-IO`"
 |LblisRecCellFragment -> "isRecCellFragment"
+|LblinitRchanCell -> "initRchanCell"
+|Lbl'_LT_'sends'_GT_' -> "`<sends>`"
+|LblisSchanCell -> "isSchanCell"
 |Lbl_xorInt__INT -> "`_xorInt__INT`"
 |Lbl'Hash'EINPROGRESS_K'Hyph'IO -> "`#EINPROGRESS_K-IO`"
+|Lbl'_LT_'recs'_GT_' -> "`<recs>`"
 |LblString2Float -> "`String2Float`"
 |LblMap'Coln'lookupOrDefault -> "`Map:lookupOrDefault`"
 |Lbl'Hash'if_'Hash'then_'Hash'else_'Hash'fi_K'Hyph'EQUAL -> "`#if_#then_#else_#fi_K-EQUAL`"
+|Lbl'_LT_'tuplespace'_GT_' -> "`<tuplespace>`"
 |Lbl'Hash'ENOTCONN_K'Hyph'IO -> "`#ENOTCONN_K-IO`"
 |Lbl'Hash'stdout_K'Hyph'IO -> "`#stdout_K-IO`"
 |Lbl_'And'Int__INT -> "`_&Int__INT`"
-|LblisProcCell -> "isProcCell"
-|Lbl'_LT_'outmsg'_GT_' -> "`<outmsg>`"
 |Lbl'Hash'ENOPROTOOPT_K'Hyph'IO -> "`#ENOPROTOOPT_K-IO`"
 |LblinitBindCell -> "initBindCell"
 |LbllittleEndianBytes -> "littleEndianBytes"
 |Lbl'Hash'EPERM_K'Hyph'IO -> "`#EPERM_K-IO`"
 |Lbl'Hash'ENAMETOOLONG_K'Hyph'IO -> "`#ENAMETOOLONG_K-IO`"
-|LblnoIncomingCell -> "noIncomingCell"
 |Lbl'_LT_'send'_GT_' -> "`<send>`"
 |Lbl_'_LT__LT_'Int__INT -> "`_<<Int__INT`"
 |Lbllog2Int -> "log2Int"
 |Lbl_'EqlsSlshEqls'Int__INT -> "`_=/=Int__INT`"
 |Lbl'Hash'stdin_K'Hyph'IO -> "`#stdin_K-IO`"
-|LblisInchanidCell -> "isInchanidCell"
 |LblBase2String -> "`Base2String`"
 |LblListItem -> "`ListItem`"
 |Lbl_'_GT_Eqls'String__STRING -> "`_>=String__STRING`"
 |LblisStream -> "isStream"
+|LblnoSchanCell -> "noSchanCell"
 |Lbl_'_LT_Eqls'Map__MAP -> "`_<=Map__MAP`"
+|LblisRecsCellFragment -> "isRecsCellFragment"
 |LblnewUUID_STRING -> "`newUUID_STRING`"
 |LblsizeMap -> "sizeMap"
+|LblnoMsgCell -> "noMsgCell"
 |LblisId -> "isId"
 |LblsubstrString -> "substrString"
 |LblReify -> "`Reify`"
 |LblnoBindCell -> "noBindCell"
 |Lbl_SendCellBag_ -> "`_SendCellBag_`"
-|Lbl'_LT_'incoming'_GT_Hyph'fragment -> "`<incoming>-fragment`"
+|LblnoTuplespaceCell -> "noTuplespaceCell"
 |Lbl'Hash'ESRCH_K'Hyph'IO -> "`#ESRCH_K-IO`"
 |Lbl'Hash'EMFILE_K'Hyph'IO -> "`#EMFILE_K-IO`"
 |LblisActivityCellOpt -> "isActivityCellOpt"
 |Lblsize -> "size"
-|LblnoInchanidCell -> "noInchanidCell"
-|LblinitOutgoingCell -> "initOutgoingCell"
 |Lbl'_LT_'activity'_GT_' -> "`<activity>`"
 |Lblproject'Coln'Proc -> "`project:Proc`"
-|LblisIncomingCellFragment -> "isIncomingCellFragment"
 |Lbl'Hash'ENETUNREACH_K'Hyph'IO -> "`#ENETUNREACH_K-IO`"
 |Lbl'Hash'EPROTOTYPE_K'Hyph'IO -> "`#EPROTOTYPE_K-IO`"
 |LblSend -> "`Send`"
 |Lbl'Hash'systemResult'LPar'_'Comm'_'Comm'_'RPar'_K'Hyph'IO -> "`#systemResult(_,_,_)_K-IO`"
-|Lbl'_LT_'outgoing'_GT_' -> "`<outgoing>`"
 |Lbl_inList_ -> "`_inList_`"
 |Lbl'Hash'ENOEXEC_K'Hyph'IO -> "`#ENOEXEC_K-IO`"
 |LblminInt'LPar'_'Comm'_'RPar'_INT -> "`minInt(_,_)_INT`"
+|LblinitRecsCell -> "initRecsCell"
 |LblisMap -> "isMap"
 |LblsrandInt -> "srandInt"
 |Lbl'Hash'EINVAL_K'Hyph'IO -> "`#EINVAL_K-IO`"
@@ -834,9 +772,11 @@ let print_klabel(c: klabel) : string = match c with
 |Lbl'Hash'tell'LPar'_'RPar'_K'Hyph'IO -> "`#tell(_)_K-IO`"
 |Lblkeys -> "keys"
 |LblinitRecCell -> "initRecCell"
+|LblinitSendsCell -> "initSendsCell"
 |Lbl'Hash'ESHUTDOWN_K'Hyph'IO -> "`#ESHUTDOWN_K-IO`"
 |Lbl'Stop'ThreadCellBag -> "`.ThreadCellBag`"
 |LblgetKLabel -> "getKLabel"
+|LblnoRecsCell -> "noRecsCell"
 |LblThreadCellBagItem -> "`ThreadCellBagItem`"
 |Lbl'Hash'E2BIG_K'Hyph'IO -> "`#E2BIG_K-IO`"
 |Lbl'Hash'ENOTDIR_K'Hyph'IO -> "`#ENOTDIR_K-IO`"
@@ -845,10 +785,7 @@ let print_klabel(c: klabel) : string = match c with
 |LblinitSendCell -> "initSendCell"
 |Lbl'_LT_'send'_GT_Hyph'fragment -> "`<send>-fragment`"
 let print_klabel_string(c: klabel) : string = match c with 
-|Lbl_ProcCellBag_ -> "_ProcCellBag_"
 |Lbl'Hash'argv -> "#argv"
-|LblisOutmsgCell -> "isOutmsgCell"
-|LblnoOutgoingCell -> "noOutgoingCell"
 |LblisThreadCell -> "isThreadCell"
 |Lbl_'_LT_Eqls'Int__INT -> "_<=Int__INT"
 |LblnotBool_ -> "notBool_"
@@ -862,8 +799,10 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl_'EqlsEqls'Bool__BOOL -> "_==Bool__BOOL"
 |LblisSet -> "isSet"
 |Lbl'Hash'getenv -> "#getenv"
+|LblisTuplespaceCell -> "isTuplespaceCell"
 |LblintersectSet -> "intersectSet"
 |Lbl_in_keys'LPar'_'RPar'_MAP -> "_in_keys(_)_MAP"
+|LblinitMsgCell -> "initMsgCell"
 |LblfindChar -> "findChar"
 |LblisThreadCellBag -> "isThreadCellBag"
 |LblSet'Coln'in -> "Set:in"
@@ -874,33 +813,28 @@ let print_klabel_string(c: klabel) : string = match c with
 |LblinitThreadCell -> "initThreadCell"
 |LblisIOError -> "isIOError"
 |Lbl'Hash'parse -> "#parse"
-|Lbl'_LT_'proc'_GT_Hyph'fragment -> "<proc>-fragment"
+|LblisRchanCellOpt -> "isRchanCellOpt"
 |Lbl'Hash'EALREADY_K'Hyph'IO -> "#EALREADY_K-IO"
 |Lbl'Hash'ENETDOWN_K'Hyph'IO -> "#ENETDOWN_K-IO"
-|LblinitProcidCell -> "initProcidCell"
 |LblmakeList -> "makeList"
 |Lbl_'LSqB'_'_LT_Hyph'undef'RSqB' -> "_[_<-undef]"
-|LblnoProcsCell -> "noProcsCell"
 |Lbl'Hash'ESPIPE_K'Hyph'IO -> "#ESPIPE_K-IO"
-|Lbl'_LT_'outgoing'_GT_Hyph'fragment -> "<outgoing>-fragment"
 |Lbl'Hash'Bottom -> "#Bottom"
 |Lbl'Hash'unlock'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "#unlock(_,_)_K-IO"
 |Lbl_'EqlsEqls'Int_ -> "_==Int_"
 |Lbl_andThenBool__BOOL -> "_andThenBool__BOOL"
 |Lbl'Hash'ENOENT_K'Hyph'IO -> "#ENOENT_K-IO"
-|Lbl'_LT_'procs'_GT_' -> "<procs>"
 |Lbl'Hash'parseInModule -> "#parseInModule"
 |Lbl'Hash'system -> "#system"
-|LblinitProcCell -> "initProcCell"
 |LblisString -> "isString"
 |Lbl_'Perc'Int__INT -> "_%Int__INT"
 |Lbl_'_GT__GT_'Int__INT -> "_>>Int__INT"
 |Lbl'Hash'ENOTTY_K'Hyph'IO -> "#ENOTTY_K-IO"
 |LblisList -> "isList"
 |Lbl'Hash'EPROTONOSUPPORT_K'Hyph'IO -> "#EPROTONOSUPPORT_K-IO"
+|LblisTuplespaceCellFragment -> "isTuplespaceCellFragment"
 |LblreplaceAll'LPar'_'Comm'_'Comm'_'RPar'_STRING -> "replaceAll(_,_,_)_STRING"
 |Lbl'Hash'EDESTADDRREQ_K'Hyph'IO -> "#EDESTADDRREQ_K-IO"
-|LblisInchanCell -> "isInchanCell"
 |LblPar -> "Par"
 |Lbl'Hash'EADDRINUSE_K'Hyph'IO -> "#EADDRINUSE_K-IO"
 |Lbl_'Xor_'Int__INT -> "_^Int__INT"
@@ -911,102 +845,91 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl'Hash'EHOSTDOWN_K'Hyph'IO -> "#EHOSTDOWN_K-IO"
 |LblQuote -> "Quote"
 |Lbl_'_GT_'String__STRING -> "_>String__STRING"
+|LblisSendsCellFragment -> "isSendsCellFragment"
 |Lbl_'EqlsEqls'String__STRING -> "_==String__STRING"
 |Lbl'Hash'EMSGSIZE_K'Hyph'IO -> "#EMSGSIZE_K-IO"
-|LblinitOutmsgCell -> "initOutmsgCell"
 |LblisKConfigVar -> "isKConfigVar"
-|LblisVal -> "isVal"
-|LblinitInchanCell -> "initInchanCell"
 |Lbl'Hash'ENETRESET_K'Hyph'IO -> "#ENETRESET_K-IO"
 |Lbl'Hash'EAFNOSUPPORT_K'Hyph'IO -> "#EAFNOSUPPORT_K-IO"
-|LblisKResult -> "isKResult"
+|LblnoSendsCell -> "noSendsCell"
 |Lbl'_LT_'thread'_GT_Hyph'fragment -> "<thread>-fragment"
 |LblisCell -> "isCell"
 |Lbl'Hash'ENOMEM_K'Hyph'IO -> "#ENOMEM_K-IO"
 |Lblvalues -> "values"
-|Lbl'_LT_'proc'_GT_' -> "<proc>"
-|LblinitIncomingCell -> "initIncomingCell"
-|LblisProcidCell -> "isProcidCell"
 |LblRec -> "Rec"
 |LblList'Coln'get -> "List:get"
 |Lbl'Hash'lstat'LPar'_'RPar'_K'Hyph'IO -> "#lstat(_)_K-IO"
 |LblSendCellBagItem -> "SendCellBagItem"
 |LblisThreadCellFragment -> "isThreadCellFragment"
 |LblSetItem -> "SetItem"
-|LblinitInchanidCell -> "initInchanidCell"
 |LblunsignedBytes -> "unsignedBytes"
+|Lbl'_LT_'rchan'_GT_' -> "<rchan>"
+|LblisTuplespaceCellOpt -> "isTuplespaceCellOpt"
 |Lbl'Hash'ENXIO_K'Hyph'IO -> "#ENXIO_K-IO"
 |Lbl_'_LT_'Int__INT -> "_<Int__INT"
 |Lbl'Stop'List -> ".List"
 |LblisSendCell -> "isSendCell"
 |Lbl'Hash'ENOLCK_K'Hyph'IO -> "#ENOLCK_K-IO"
-|LblnoOutchanCell -> "noOutchanCell"
+|LblisSendsCellOpt -> "isSendsCellOpt"
 |Lbl'Hash'ECONNABORTED_K'Hyph'IO -> "#ECONNABORTED_K-IO"
 |Lbl'Hash'configuration_K'Hyph'REFLECTION -> "#configuration_K-REFLECTION"
 |LblrandInt -> "randInt"
+|LblisSendsCell -> "isSendsCell"
 |Lbl'Hash'EXDEV_K'Hyph'IO -> "#EXDEV_K-IO"
 |LblisFloat -> "isFloat"
 |Lbl'Hash'close'LPar'_'RPar'_K'Hyph'IO -> "#close(_)_K-IO"
+|Lbl'_LT_'msg'_GT_' -> "<msg>"
 |Lblkeys_list'LPar'_'RPar'_MAP -> "keys_list(_)_MAP"
 |LblfreshId -> "freshId"
 |LblisContCell -> "isContCell"
-|LblnoProcidCell -> "noProcidCell"
 |LblchrChar -> "chrChar"
 |Lbl_orElseBool__BOOL -> "_orElseBool__BOOL"
 |Lbl_divInt__INT -> "_divInt__INT"
+|LblisSchanCellOpt -> "isSchanCellOpt"
 |Lbl'Hash'EISDIR_K'Hyph'IO -> "#EISDIR_K-IO"
 |Lbl'Hash'EROFS_K'Hyph'IO -> "#EROFS_K-IO"
 |Lbl'_LT_'cont'_GT_' -> "<cont>"
 |Lbl_ThreadCellBag_ -> "_ThreadCellBag_"
 |LblList'Coln'range -> "List:range"
-|LblisProcidCellOpt -> "isProcidCellOpt"
 |LblisProc -> "isProc"
 |Lbl_'Plus'Int_ -> "_+Int_"
 |LblisKCell -> "isKCell"
-|LblProcCellBagItem -> "ProcCellBagItem"
 |Lbl'Hash'unknownIOError -> "#unknownIOError"
 |Lbl_orBool__BOOL -> "_orBool__BOOL"
 |Lbl_'_GT_Eqls'Int__INT -> "_>=Int__INT"
 |LblisSendCellFragment -> "isSendCellFragment"
 |Lbl'Hash'ENFILE_K'Hyph'IO -> "#ENFILE_K-IO"
 |LblupdateMap -> "updateMap"
-|Lbl'_LT_'inchanid'_GT_' -> "<inchanid>"
+|LblisRecsCell -> "isRecsCell"
 |LblInt2String -> "Int2String"
-|LblisInchanCellOpt -> "isInchanCellOpt"
 |Lbl'Hash'ENOSYS_K'Hyph'IO -> "#ENOSYS_K-IO"
 |Lbl'Hash'ECONNREFUSED_K'Hyph'IO -> "#ECONNREFUSED_K-IO"
+|Lbl'_LT_'sends'_GT_Hyph'fragment -> "<sends>-fragment"
 |Lbl'Hash'lock'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "#lock(_,_)_K-IO"
 |Lbl_'EqlsSlshEqls'K_ -> "_=/=K_"
 |Lbl'Hash'EADDRNOTAVAIL_K'Hyph'IO -> "#EADDRNOTAVAIL_K-IO"
 |LblcountAllOccurrences'LPar'_'Comm'_'RPar'_STRING -> "countAllOccurrences(_,_)_STRING"
-|LblisOutchanCell -> "isOutchanCell"
 |Lbl_'_GT_'Int__INT -> "_>Int__INT"
 |LblfillList -> "fillList"
-|LblisProcCellBag -> "isProcCellBag"
-|LblisProcsCellOpt -> "isProcsCellOpt"
+|LblnoRchanCell -> "noRchanCell"
 |LblbitRangeInt -> "bitRangeInt"
-|LblisProcsCellFragment -> "isProcsCellFragment"
-|Lbl'Stop'ProcCellBag -> ".ProcCellBag"
 |Lbl_'_LT_'String__STRING -> "_<String__STRING"
 |LblisRecCell -> "isRecCell"
-|LblinitOutchanCell -> "initOutchanCell"
 |Lbl_List_ -> "_List_"
 |Lbl'Hash'ThreadLocal -> "#ThreadLocal"
 |Lbl'Hash'open'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "#open(_,_)_K-IO"
-|Lbl'_LT_'inchan'_GT_' -> "<inchan>"
 |Lbl'Hash'EOPNOTSUPP_K'Hyph'IO -> "#EOPNOTSUPP_K-IO"
 |Lbl_'PipeHyph_GT_'_ -> "_|->_"
 |Lbl_'Hyph'Map__MAP -> "_-Map__MAP"
 |Lbl_xorBool__BOOL -> "_xorBool__BOOL"
+|LblisRecsCellOpt -> "isRecsCellOpt"
 |Lbl'Stop'RecCellBag -> ".RecCellBag"
-|LblisOutchanCellOpt -> "isOutchanCellOpt"
 |Lbl'Hash'EMLINK_K'Hyph'IO -> "#EMLINK_K-IO"
 |Lbl'Hash'sort -> "#sort"
 |Lbl_'EqlsEqls'K_ -> "_==K_"
 |Lbl'Hash'open'LPar'_'RPar'_K'Hyph'IO -> "#open(_)_K-IO"
 |Lbl_'LSqB'_'RSqB'_SUBSTITUTION -> "_[_]_SUBSTITUTION"
 |LblisBindCellOpt -> "isBindCellOpt"
-|LblisOutgoingCell -> "isOutgoingCell"
 |LblreplaceFirst'LPar'_'Comm'_'Comm'_'RPar'_STRING -> "replaceFirst(_,_,_)_STRING"
 |Lbl'Hash'ETOOMANYREFS_K'Hyph'IO -> "#ETOOMANYREFS_K-IO"
 |Lbl'Hash'EOVERFLOW_K'Hyph'IO -> "#EOVERFLOW_K-IO"
@@ -1019,7 +942,7 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl'_LT_'rec'_GT_' -> "<rec>"
 |Lbl'Hash'read'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "#read(_,_)_K-IO"
 |Lbl'Hash'EIO_K'Hyph'IO -> "#EIO_K-IO"
-|LblisInchanidCellOpt -> "isInchanidCellOpt"
+|Lbl'_LT_'schan'_GT_' -> "<schan>"
 |LblbigEndianBytes -> "bigEndianBytes"
 |LblisSendCellBag -> "isSendCellBag"
 |LblId2String -> "Id2String"
@@ -1028,9 +951,6 @@ let print_klabel_string(c: klabel) : string = match c with
 |LblisContCellOpt -> "isContCellOpt"
 |Lbl'Hash'fresh -> "#fresh"
 |LblMap'Coln'choice -> "Map:choice"
-|LblisIncomingCellOpt -> "isIncomingCellOpt"
-|LblisProcCellFragment -> "isProcCellFragment"
-|LblisOutgoingCellFragment -> "isOutgoingCellFragment"
 |Lbl_Set_ -> "_Set_"
 |Lbl'Hash'EEXIST_K'Hyph'IO -> "#EEXIST_K-IO"
 |Lbl_impliesBool__BOOL -> "_impliesBool__BOOL"
@@ -1041,13 +961,10 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl'Hash'Thread -> "#Thread"
 |LblmaxInt'LPar'_'Comm'_'RPar'_INT -> "maxInt(_,_)_INT"
 |LblisActivityCellFragment -> "isActivityCellFragment"
-|LblisOutmsgCellOpt -> "isOutmsgCellOpt"
-|Lbl'_LT_'outchan'_GT_' -> "<outchan>"
 |Lbl'Hash'EDEADLK_K'Hyph'IO -> "#EDEADLK_K-IO"
 |LblisBool -> "isBool"
 |Lbl'Tild'Int__INT -> "~Int__INT"
 |Lbl_'_LT_Eqls'String__STRING -> "_<=String__STRING"
-|LblnoInchanCell -> "noInchanCell"
 |LblordChar -> "ordChar"
 |Lbl_modInt__INT -> "_modInt__INT"
 |LblrfindChar -> "rfindChar"
@@ -1056,23 +973,21 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl_Map_ -> "_Map_"
 |Lbl_'Hyph'Int__INT -> "_-Int__INT"
 |Lbl'Hash'EOF_K'Hyph'IO -> "#EOF_K-IO"
+|LblinitSchanCell -> "initSchanCell"
 |LbldirectionalityChar -> "directionalityChar"
 |LblFloat2String -> "Float2String"
-|Lbl'_LT_'procid'_GT_' -> "<procid>"
 |Lbl'Hash'opendir'LPar'_'RPar'_K'Hyph'IO -> "#opendir(_)_K-IO"
-|Lbl'_LT_'procs'_GT_Hyph'fragment -> "<procs>-fragment"
-|LblisProcsCell -> "isProcsCell"
 |LblinitKCell -> "initKCell"
 |LblRecCellBagItem -> "RecCellBagItem"
-|LblisIncomingCell -> "isIncomingCell"
-|Lbl'_LT_'incoming'_GT_' -> "<incoming>"
 |LblsizeList -> "sizeList"
 |Lbl'Hash'EWOULDBLOCK_K'Hyph'IO -> "#EWOULDBLOCK_K-IO"
 |Lbl'Stop'Set -> ".Set"
 |LblString2Id -> "String2Id"
+|LblinitTuplespaceCell -> "initTuplespaceCell"
 |Lbl'_LT_'thread'_GT_' -> "<thread>"
 |Lbl'Hash'EACCES_K'Hyph'IO -> "#EACCES_K-IO"
 |Lbl_'EqlsSlshEqls'Bool__BOOL -> "_=/=Bool__BOOL"
+|LblisRchanCell -> "isRchanCell"
 |Lbl'Hash'ELOOP_K'Hyph'IO -> "#ELOOP_K-IO"
 |Lbl'Hash'EDOM_K'Hyph'IO -> "#EDOM_K-IO"
 |Lbl'Hash'EFBIG_K'Hyph'IO -> "#EFBIG_K-IO"
@@ -1088,26 +1003,26 @@ let print_klabel_string(c: klabel) : string = match c with
 |LblinitTCell -> "initTCell"
 |LblsignedBytes -> "signedBytes"
 |Lbl'Hash'EPIPE_K'Hyph'IO -> "#EPIPE_K-IO"
-|LblnoOutmsgCell -> "noOutmsgCell"
 |LblFloatFormat -> "FloatFormat"
 |LblnoContCell -> "noContCell"
 |Lbl'Hash'ENOTSOCK_K'Hyph'IO -> "#ENOTSOCK_K-IO"
 |Lbl_'Plus'String__STRING -> "_+String__STRING"
 |Lbl_'Xor_Perc'Int___INT -> "_^%Int___INT"
-|LblisOutgoingCellOpt -> "isOutgoingCellOpt"
-|LblinitProcsCell -> "initProcsCell"
 |Lbl_RecCellBag_ -> "_RecCellBag_"
 |Lbl_'Pipe'Int__INT -> "_|Int__INT"
+|LblisMsgCellOpt -> "isMsgCellOpt"
 |Lbl'Hash'EISCONN_K'Hyph'IO -> "#EISCONN_K-IO"
 |LblisKVariable -> "isKVariable"
 |Lbl_dividesInt__INT -> "_dividesInt__INT"
 |Lbl'_LT_'rec'_GT_Hyph'fragment -> "<rec>-fragment"
+|Lbl'_LT_'tuplespace'_GT_Hyph'fragment -> "<tuplespace>-fragment"
 |LblrfindString -> "rfindString"
 |Lbl'_LT_'T'_GT_Hyph'fragment -> "<T>-fragment"
 |Lbl'Hash'ESOCKTNOSUPPORT_K'Hyph'IO -> "#ESOCKTNOSUPPORT_K-IO"
 |Lbl'Hash'EINTR_K'Hyph'IO -> "#EINTR_K-IO"
 |Lbl'Hash'stat'LPar'_'RPar'_K'Hyph'IO -> "#stat(_)_K-IO"
 |LblupdateList -> "updateList"
+|LblisMsgCell -> "isMsgCell"
 |Lbl'Stop'SendCellBag -> ".SendCellBag"
 |Lbl'_LT_'activity'_GT_Hyph'fragment -> "<activity>-fragment"
 |LblinitContCell -> "initContCell"
@@ -1119,63 +1034,65 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl'Hash'EHOSTUNREACH_K'Hyph'IO -> "#EHOSTUNREACH_K-IO"
 |Lbl'Hash'ECONNRESET_K'Hyph'IO -> "#ECONNRESET_K-IO"
 |LblfreshInt -> "freshInt"
+|Lbl'_LT_'recs'_GT_Hyph'fragment -> "<recs>-fragment"
 |Lbl'Hash'write'LPar'_'Comm'_'RPar'_K'Hyph'IO -> "#write(_,_)_K-IO"
 |LblisKCellOpt -> "isKCellOpt"
 |Lbl'Hash'ETIMEDOUT_K'Hyph'IO -> "#ETIMEDOUT_K-IO"
 |Lbl'Hash'ECHILD_K'Hyph'IO -> "#ECHILD_K-IO"
 |LblisRecCellFragment -> "isRecCellFragment"
+|LblinitRchanCell -> "initRchanCell"
+|Lbl'_LT_'sends'_GT_' -> "<sends>"
+|LblisSchanCell -> "isSchanCell"
 |Lbl_xorInt__INT -> "_xorInt__INT"
 |Lbl'Hash'EINPROGRESS_K'Hyph'IO -> "#EINPROGRESS_K-IO"
+|Lbl'_LT_'recs'_GT_' -> "<recs>"
 |LblString2Float -> "String2Float"
 |LblMap'Coln'lookupOrDefault -> "Map:lookupOrDefault"
 |Lbl'Hash'if_'Hash'then_'Hash'else_'Hash'fi_K'Hyph'EQUAL -> "#if_#then_#else_#fi_K-EQUAL"
+|Lbl'_LT_'tuplespace'_GT_' -> "<tuplespace>"
 |Lbl'Hash'ENOTCONN_K'Hyph'IO -> "#ENOTCONN_K-IO"
 |Lbl'Hash'stdout_K'Hyph'IO -> "#stdout_K-IO"
 |Lbl_'And'Int__INT -> "_&Int__INT"
-|LblisProcCell -> "isProcCell"
-|Lbl'_LT_'outmsg'_GT_' -> "<outmsg>"
 |Lbl'Hash'ENOPROTOOPT_K'Hyph'IO -> "#ENOPROTOOPT_K-IO"
 |LblinitBindCell -> "initBindCell"
 |LbllittleEndianBytes -> "littleEndianBytes"
 |Lbl'Hash'EPERM_K'Hyph'IO -> "#EPERM_K-IO"
 |Lbl'Hash'ENAMETOOLONG_K'Hyph'IO -> "#ENAMETOOLONG_K-IO"
-|LblnoIncomingCell -> "noIncomingCell"
 |Lbl'_LT_'send'_GT_' -> "<send>"
 |Lbl_'_LT__LT_'Int__INT -> "_<<Int__INT"
 |Lbllog2Int -> "log2Int"
 |Lbl_'EqlsSlshEqls'Int__INT -> "_=/=Int__INT"
 |Lbl'Hash'stdin_K'Hyph'IO -> "#stdin_K-IO"
-|LblisInchanidCell -> "isInchanidCell"
 |LblBase2String -> "Base2String"
 |LblListItem -> "ListItem"
 |Lbl_'_GT_Eqls'String__STRING -> "_>=String__STRING"
 |LblisStream -> "isStream"
+|LblnoSchanCell -> "noSchanCell"
 |Lbl_'_LT_Eqls'Map__MAP -> "_<=Map__MAP"
+|LblisRecsCellFragment -> "isRecsCellFragment"
 |LblnewUUID_STRING -> "newUUID_STRING"
 |LblsizeMap -> "sizeMap"
+|LblnoMsgCell -> "noMsgCell"
 |LblisId -> "isId"
 |LblsubstrString -> "substrString"
 |LblReify -> "Reify"
 |LblnoBindCell -> "noBindCell"
 |Lbl_SendCellBag_ -> "_SendCellBag_"
-|Lbl'_LT_'incoming'_GT_Hyph'fragment -> "<incoming>-fragment"
+|LblnoTuplespaceCell -> "noTuplespaceCell"
 |Lbl'Hash'ESRCH_K'Hyph'IO -> "#ESRCH_K-IO"
 |Lbl'Hash'EMFILE_K'Hyph'IO -> "#EMFILE_K-IO"
 |LblisActivityCellOpt -> "isActivityCellOpt"
 |Lblsize -> "size"
-|LblnoInchanidCell -> "noInchanidCell"
-|LblinitOutgoingCell -> "initOutgoingCell"
 |Lbl'_LT_'activity'_GT_' -> "<activity>"
 |Lblproject'Coln'Proc -> "project:Proc"
-|LblisIncomingCellFragment -> "isIncomingCellFragment"
 |Lbl'Hash'ENETUNREACH_K'Hyph'IO -> "#ENETUNREACH_K-IO"
 |Lbl'Hash'EPROTOTYPE_K'Hyph'IO -> "#EPROTOTYPE_K-IO"
 |LblSend -> "Send"
 |Lbl'Hash'systemResult'LPar'_'Comm'_'Comm'_'RPar'_K'Hyph'IO -> "#systemResult(_,_,_)_K-IO"
-|Lbl'_LT_'outgoing'_GT_' -> "<outgoing>"
 |Lbl_inList_ -> "_inList_"
 |Lbl'Hash'ENOEXEC_K'Hyph'IO -> "#ENOEXEC_K-IO"
 |LblminInt'LPar'_'Comm'_'RPar'_INT -> "minInt(_,_)_INT"
+|LblinitRecsCell -> "initRecsCell"
 |LblisMap -> "isMap"
 |LblsrandInt -> "srandInt"
 |Lbl'Hash'EINVAL_K'Hyph'IO -> "#EINVAL_K-IO"
@@ -1192,9 +1109,11 @@ let print_klabel_string(c: klabel) : string = match c with
 |Lbl'Hash'tell'LPar'_'RPar'_K'Hyph'IO -> "#tell(_)_K-IO"
 |Lblkeys -> "keys"
 |LblinitRecCell -> "initRecCell"
+|LblinitSendsCell -> "initSendsCell"
 |Lbl'Hash'ESHUTDOWN_K'Hyph'IO -> "#ESHUTDOWN_K-IO"
 |Lbl'Stop'ThreadCellBag -> ".ThreadCellBag"
 |LblgetKLabel -> "getKLabel"
+|LblnoRecsCell -> "noRecsCell"
 |LblThreadCellBagItem -> "ThreadCellBagItem"
 |Lbl'Hash'E2BIG_K'Hyph'IO -> "#E2BIG_K-IO"
 |Lbl'Hash'ENOTDIR_K'Hyph'IO -> "#ENOTDIR_K-IO"
@@ -1203,76 +1122,64 @@ let print_klabel_string(c: klabel) : string = match c with
 |LblinitSendCell -> "initSendCell"
 |Lbl'_LT_'send'_GT_Hyph'fragment -> "<send>-fragment"
 let parse_sort(c: string) : sort = match c with 
-|"InchanidCell" -> SortInchanidCell
 |"K" -> SortK
-|"InchanCellOpt" -> SortInchanCellOpt
-|"OutgoingCellOpt" -> SortOutgoingCellOpt
 |"ThreadCell" -> SortThreadCell
 |"Map" -> SortMap
 |"ThreadCellBag" -> SortThreadCellBag
 |"RecCellBag" -> SortRecCellBag
-|"ProcsCellFragment" -> SortProcsCellFragment
 |"RecCell" -> SortRecCell
 |"ThreadCellFragment" -> SortThreadCellFragment
 |"ContCellOpt" -> SortContCellOpt
+|"TuplespaceCell" -> SortTuplespaceCell
 |"KItem" -> SortKItem
-|"InchanidCellOpt" -> SortInchanidCellOpt
 |"Stream" -> SortStream
-|"IncomingCell" -> SortIncomingCell
-|"ProcCellBag" -> SortProcCellBag
+|"RecsCellFragment" -> SortRecsCellFragment
 |"Proc" -> SortProc
 |"ActivityCellOpt" -> SortActivityCellOpt
 |"String" -> SortString
 |"Float" -> SortFloat
+|"SendsCellFragment" -> SortSendsCellFragment
 |"TCellFragment" -> SortTCellFragment
 |"ContCell" -> SortContCell
-|"IncomingCellFragment" -> SortIncomingCellFragment
+|"SchanCell" -> SortSchanCell
+|"RecsCellOpt" -> SortRecsCellOpt
+|"SendsCell" -> SortSendsCell
 |"Set" -> SortSet
+|"RchanCellOpt" -> SortRchanCellOpt
 |"BindCellOpt" -> SortBindCellOpt
+|"RecsCell" -> SortRecsCell
 |"MInt" -> SortMInt
 |"Cell" -> SortCell
 |"SendCellFragment" -> SortSendCellFragment
-|"ProcCell" -> SortProcCell
-|"OutchanCell" -> SortOutchanCell
-|"InchanCell" -> SortInchanCell
+|"SchanCellOpt" -> SortSchanCellOpt
 |"Bool" -> SortBool
-|"KResult" -> SortKResult
-|"ProcidCell" -> SortProcidCell
-|"OutmsgCell" -> SortOutmsgCell
-|"OutchanCellOpt" -> SortOutchanCellOpt
-|"IncomingCellOpt" -> SortIncomingCellOpt
+|"TuplespaceCellOpt" -> SortTuplespaceCellOpt
 |"KVariable" -> SortKVariable
 |"KCell" -> SortKCell
 |"Bytes" -> SortBytes
 |"ActivityCellFragment" -> SortActivityCellFragment
-|"ProcsCellOpt" -> SortProcsCellOpt
+|"SendsCellOpt" -> SortSendsCellOpt
+|"TuplespaceCellFragment" -> SortTuplespaceCellFragment
 |"IOError" -> SortIOError
 |"StringBuffer" -> SortStringBuffer
 |"Name" -> SortName
 |"TCell" -> SortTCell
-|"Val" -> SortVal
-|"OutmsgCellOpt" -> SortOutmsgCellOpt
 |"SendCellBag" -> SortSendCellBag
 |"Int" -> SortInt
-|"OutgoingCell" -> SortOutgoingCell
 |"ActivityCell" -> SortActivityCell
+|"MsgCellOpt" -> SortMsgCellOpt
 |"RecCellFragment" -> SortRecCellFragment
-|"OutgoingCellFragment" -> SortOutgoingCellFragment
+|"MsgCell" -> SortMsgCell
 |"BindCell" -> SortBindCell
 |"KConfigVar" -> SortKConfigVar
-|"ProcCellFragment" -> SortProcCellFragment
 |"KCellOpt" -> SortKCellOpt
-|"ProcidCellOpt" -> SortProcidCellOpt
 |"SendCell" -> SortSendCell
-|"ProcsCell" -> SortProcsCell
 |"Id" -> SortId
 |"List" -> SortList
+|"RchanCell" -> SortRchanCell
 | _ -> invalid_arg ("parse_sort: " ^ c)
 let parse_klabel(c: string) : klabel = match c with 
-|"_ProcCellBag_" -> Lbl_ProcCellBag_
 |"#argv" -> Lbl'Hash'argv
-|"isOutmsgCell" -> LblisOutmsgCell
-|"noOutgoingCell" -> LblnoOutgoingCell
 |"isThreadCell" -> LblisThreadCell
 |"_<=Int__INT" -> Lbl_'_LT_Eqls'Int__INT
 |"notBool_" -> LblnotBool_
@@ -1286,8 +1193,10 @@ let parse_klabel(c: string) : klabel = match c with
 |"_==Bool__BOOL" -> Lbl_'EqlsEqls'Bool__BOOL
 |"isSet" -> LblisSet
 |"#getenv" -> Lbl'Hash'getenv
+|"isTuplespaceCell" -> LblisTuplespaceCell
 |"intersectSet" -> LblintersectSet
 |"_in_keys(_)_MAP" -> Lbl_in_keys'LPar'_'RPar'_MAP
+|"initMsgCell" -> LblinitMsgCell
 |"findChar" -> LblfindChar
 |"isThreadCellBag" -> LblisThreadCellBag
 |"Set:in" -> LblSet'Coln'in
@@ -1298,33 +1207,28 @@ let parse_klabel(c: string) : klabel = match c with
 |"initThreadCell" -> LblinitThreadCell
 |"isIOError" -> LblisIOError
 |"#parse" -> Lbl'Hash'parse
-|"<proc>-fragment" -> Lbl'_LT_'proc'_GT_Hyph'fragment
+|"isRchanCellOpt" -> LblisRchanCellOpt
 |"#EALREADY_K-IO" -> Lbl'Hash'EALREADY_K'Hyph'IO
 |"#ENETDOWN_K-IO" -> Lbl'Hash'ENETDOWN_K'Hyph'IO
-|"initProcidCell" -> LblinitProcidCell
 |"makeList" -> LblmakeList
 |"_[_<-undef]" -> Lbl_'LSqB'_'_LT_Hyph'undef'RSqB'
-|"noProcsCell" -> LblnoProcsCell
 |"#ESPIPE_K-IO" -> Lbl'Hash'ESPIPE_K'Hyph'IO
-|"<outgoing>-fragment" -> Lbl'_LT_'outgoing'_GT_Hyph'fragment
 |"#Bottom" -> Lbl'Hash'Bottom
 |"#unlock(_,_)_K-IO" -> Lbl'Hash'unlock'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |"_==Int_" -> Lbl_'EqlsEqls'Int_
 |"_andThenBool__BOOL" -> Lbl_andThenBool__BOOL
 |"#ENOENT_K-IO" -> Lbl'Hash'ENOENT_K'Hyph'IO
-|"<procs>" -> Lbl'_LT_'procs'_GT_'
 |"#parseInModule" -> Lbl'Hash'parseInModule
 |"#system" -> Lbl'Hash'system
-|"initProcCell" -> LblinitProcCell
 |"isString" -> LblisString
 |"_%Int__INT" -> Lbl_'Perc'Int__INT
 |"_>>Int__INT" -> Lbl_'_GT__GT_'Int__INT
 |"#ENOTTY_K-IO" -> Lbl'Hash'ENOTTY_K'Hyph'IO
 |"isList" -> LblisList
 |"#EPROTONOSUPPORT_K-IO" -> Lbl'Hash'EPROTONOSUPPORT_K'Hyph'IO
+|"isTuplespaceCellFragment" -> LblisTuplespaceCellFragment
 |"replaceAll(_,_,_)_STRING" -> LblreplaceAll'LPar'_'Comm'_'Comm'_'RPar'_STRING
 |"#EDESTADDRREQ_K-IO" -> Lbl'Hash'EDESTADDRREQ_K'Hyph'IO
-|"isInchanCell" -> LblisInchanCell
 |"Par" -> LblPar
 |"#EADDRINUSE_K-IO" -> Lbl'Hash'EADDRINUSE_K'Hyph'IO
 |"_^Int__INT" -> Lbl_'Xor_'Int__INT
@@ -1335,102 +1239,91 @@ let parse_klabel(c: string) : klabel = match c with
 |"#EHOSTDOWN_K-IO" -> Lbl'Hash'EHOSTDOWN_K'Hyph'IO
 |"Quote" -> LblQuote
 |"_>String__STRING" -> Lbl_'_GT_'String__STRING
+|"isSendsCellFragment" -> LblisSendsCellFragment
 |"_==String__STRING" -> Lbl_'EqlsEqls'String__STRING
 |"#EMSGSIZE_K-IO" -> Lbl'Hash'EMSGSIZE_K'Hyph'IO
-|"initOutmsgCell" -> LblinitOutmsgCell
 |"isKConfigVar" -> LblisKConfigVar
-|"isVal" -> LblisVal
-|"initInchanCell" -> LblinitInchanCell
 |"#ENETRESET_K-IO" -> Lbl'Hash'ENETRESET_K'Hyph'IO
 |"#EAFNOSUPPORT_K-IO" -> Lbl'Hash'EAFNOSUPPORT_K'Hyph'IO
-|"isKResult" -> LblisKResult
+|"noSendsCell" -> LblnoSendsCell
 |"<thread>-fragment" -> Lbl'_LT_'thread'_GT_Hyph'fragment
 |"isCell" -> LblisCell
 |"#ENOMEM_K-IO" -> Lbl'Hash'ENOMEM_K'Hyph'IO
 |"values" -> Lblvalues
-|"<proc>" -> Lbl'_LT_'proc'_GT_'
-|"initIncomingCell" -> LblinitIncomingCell
-|"isProcidCell" -> LblisProcidCell
 |"Rec" -> LblRec
 |"List:get" -> LblList'Coln'get
 |"#lstat(_)_K-IO" -> Lbl'Hash'lstat'LPar'_'RPar'_K'Hyph'IO
 |"SendCellBagItem" -> LblSendCellBagItem
 |"isThreadCellFragment" -> LblisThreadCellFragment
 |"SetItem" -> LblSetItem
-|"initInchanidCell" -> LblinitInchanidCell
 |"unsignedBytes" -> LblunsignedBytes
+|"<rchan>" -> Lbl'_LT_'rchan'_GT_'
+|"isTuplespaceCellOpt" -> LblisTuplespaceCellOpt
 |"#ENXIO_K-IO" -> Lbl'Hash'ENXIO_K'Hyph'IO
 |"_<Int__INT" -> Lbl_'_LT_'Int__INT
 |".List" -> Lbl'Stop'List
 |"isSendCell" -> LblisSendCell
 |"#ENOLCK_K-IO" -> Lbl'Hash'ENOLCK_K'Hyph'IO
-|"noOutchanCell" -> LblnoOutchanCell
+|"isSendsCellOpt" -> LblisSendsCellOpt
 |"#ECONNABORTED_K-IO" -> Lbl'Hash'ECONNABORTED_K'Hyph'IO
 |"#configuration_K-REFLECTION" -> Lbl'Hash'configuration_K'Hyph'REFLECTION
 |"randInt" -> LblrandInt
+|"isSendsCell" -> LblisSendsCell
 |"#EXDEV_K-IO" -> Lbl'Hash'EXDEV_K'Hyph'IO
 |"isFloat" -> LblisFloat
 |"#close(_)_K-IO" -> Lbl'Hash'close'LPar'_'RPar'_K'Hyph'IO
+|"<msg>" -> Lbl'_LT_'msg'_GT_'
 |"keys_list(_)_MAP" -> Lblkeys_list'LPar'_'RPar'_MAP
 |"freshId" -> LblfreshId
 |"isContCell" -> LblisContCell
-|"noProcidCell" -> LblnoProcidCell
 |"chrChar" -> LblchrChar
 |"_orElseBool__BOOL" -> Lbl_orElseBool__BOOL
 |"_divInt__INT" -> Lbl_divInt__INT
+|"isSchanCellOpt" -> LblisSchanCellOpt
 |"#EISDIR_K-IO" -> Lbl'Hash'EISDIR_K'Hyph'IO
 |"#EROFS_K-IO" -> Lbl'Hash'EROFS_K'Hyph'IO
 |"<cont>" -> Lbl'_LT_'cont'_GT_'
 |"_ThreadCellBag_" -> Lbl_ThreadCellBag_
 |"List:range" -> LblList'Coln'range
-|"isProcidCellOpt" -> LblisProcidCellOpt
 |"isProc" -> LblisProc
 |"_+Int_" -> Lbl_'Plus'Int_
 |"isKCell" -> LblisKCell
-|"ProcCellBagItem" -> LblProcCellBagItem
 |"#unknownIOError" -> Lbl'Hash'unknownIOError
 |"_orBool__BOOL" -> Lbl_orBool__BOOL
 |"_>=Int__INT" -> Lbl_'_GT_Eqls'Int__INT
 |"isSendCellFragment" -> LblisSendCellFragment
 |"#ENFILE_K-IO" -> Lbl'Hash'ENFILE_K'Hyph'IO
 |"updateMap" -> LblupdateMap
-|"<inchanid>" -> Lbl'_LT_'inchanid'_GT_'
+|"isRecsCell" -> LblisRecsCell
 |"Int2String" -> LblInt2String
-|"isInchanCellOpt" -> LblisInchanCellOpt
 |"#ENOSYS_K-IO" -> Lbl'Hash'ENOSYS_K'Hyph'IO
 |"#ECONNREFUSED_K-IO" -> Lbl'Hash'ECONNREFUSED_K'Hyph'IO
+|"<sends>-fragment" -> Lbl'_LT_'sends'_GT_Hyph'fragment
 |"#lock(_,_)_K-IO" -> Lbl'Hash'lock'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |"_=/=K_" -> Lbl_'EqlsSlshEqls'K_
 |"#EADDRNOTAVAIL_K-IO" -> Lbl'Hash'EADDRNOTAVAIL_K'Hyph'IO
 |"countAllOccurrences(_,_)_STRING" -> LblcountAllOccurrences'LPar'_'Comm'_'RPar'_STRING
-|"isOutchanCell" -> LblisOutchanCell
 |"_>Int__INT" -> Lbl_'_GT_'Int__INT
 |"fillList" -> LblfillList
-|"isProcCellBag" -> LblisProcCellBag
-|"isProcsCellOpt" -> LblisProcsCellOpt
+|"noRchanCell" -> LblnoRchanCell
 |"bitRangeInt" -> LblbitRangeInt
-|"isProcsCellFragment" -> LblisProcsCellFragment
-|".ProcCellBag" -> Lbl'Stop'ProcCellBag
 |"_<String__STRING" -> Lbl_'_LT_'String__STRING
 |"isRecCell" -> LblisRecCell
-|"initOutchanCell" -> LblinitOutchanCell
 |"_List_" -> Lbl_List_
 |"#ThreadLocal" -> Lbl'Hash'ThreadLocal
 |"#open(_,_)_K-IO" -> Lbl'Hash'open'LPar'_'Comm'_'RPar'_K'Hyph'IO
-|"<inchan>" -> Lbl'_LT_'inchan'_GT_'
 |"#EOPNOTSUPP_K-IO" -> Lbl'Hash'EOPNOTSUPP_K'Hyph'IO
 |"_|->_" -> Lbl_'PipeHyph_GT_'_
 |"_-Map__MAP" -> Lbl_'Hyph'Map__MAP
 |"_xorBool__BOOL" -> Lbl_xorBool__BOOL
+|"isRecsCellOpt" -> LblisRecsCellOpt
 |".RecCellBag" -> Lbl'Stop'RecCellBag
-|"isOutchanCellOpt" -> LblisOutchanCellOpt
 |"#EMLINK_K-IO" -> Lbl'Hash'EMLINK_K'Hyph'IO
 |"#sort" -> Lbl'Hash'sort
 |"_==K_" -> Lbl_'EqlsEqls'K_
 |"#open(_)_K-IO" -> Lbl'Hash'open'LPar'_'RPar'_K'Hyph'IO
 |"_[_]_SUBSTITUTION" -> Lbl_'LSqB'_'RSqB'_SUBSTITUTION
 |"isBindCellOpt" -> LblisBindCellOpt
-|"isOutgoingCell" -> LblisOutgoingCell
 |"replaceFirst(_,_,_)_STRING" -> LblreplaceFirst'LPar'_'Comm'_'Comm'_'RPar'_STRING
 |"#ETOOMANYREFS_K-IO" -> Lbl'Hash'ETOOMANYREFS_K'Hyph'IO
 |"#EOVERFLOW_K-IO" -> Lbl'Hash'EOVERFLOW_K'Hyph'IO
@@ -1443,7 +1336,7 @@ let parse_klabel(c: string) : klabel = match c with
 |"<rec>" -> Lbl'_LT_'rec'_GT_'
 |"#read(_,_)_K-IO" -> Lbl'Hash'read'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |"#EIO_K-IO" -> Lbl'Hash'EIO_K'Hyph'IO
-|"isInchanidCellOpt" -> LblisInchanidCellOpt
+|"<schan>" -> Lbl'_LT_'schan'_GT_'
 |"bigEndianBytes" -> LblbigEndianBytes
 |"isSendCellBag" -> LblisSendCellBag
 |"Id2String" -> LblId2String
@@ -1452,9 +1345,6 @@ let parse_klabel(c: string) : klabel = match c with
 |"isContCellOpt" -> LblisContCellOpt
 |"#fresh" -> Lbl'Hash'fresh
 |"Map:choice" -> LblMap'Coln'choice
-|"isIncomingCellOpt" -> LblisIncomingCellOpt
-|"isProcCellFragment" -> LblisProcCellFragment
-|"isOutgoingCellFragment" -> LblisOutgoingCellFragment
 |"_Set_" -> Lbl_Set_
 |"#EEXIST_K-IO" -> Lbl'Hash'EEXIST_K'Hyph'IO
 |"_impliesBool__BOOL" -> Lbl_impliesBool__BOOL
@@ -1465,13 +1355,10 @@ let parse_klabel(c: string) : klabel = match c with
 |"#Thread" -> Lbl'Hash'Thread
 |"maxInt(_,_)_INT" -> LblmaxInt'LPar'_'Comm'_'RPar'_INT
 |"isActivityCellFragment" -> LblisActivityCellFragment
-|"isOutmsgCellOpt" -> LblisOutmsgCellOpt
-|"<outchan>" -> Lbl'_LT_'outchan'_GT_'
 |"#EDEADLK_K-IO" -> Lbl'Hash'EDEADLK_K'Hyph'IO
 |"isBool" -> LblisBool
 |"~Int__INT" -> Lbl'Tild'Int__INT
 |"_<=String__STRING" -> Lbl_'_LT_Eqls'String__STRING
-|"noInchanCell" -> LblnoInchanCell
 |"ordChar" -> LblordChar
 |"_modInt__INT" -> Lbl_modInt__INT
 |"rfindChar" -> LblrfindChar
@@ -1480,23 +1367,21 @@ let parse_klabel(c: string) : klabel = match c with
 |"_Map_" -> Lbl_Map_
 |"_-Int__INT" -> Lbl_'Hyph'Int__INT
 |"#EOF_K-IO" -> Lbl'Hash'EOF_K'Hyph'IO
+|"initSchanCell" -> LblinitSchanCell
 |"directionalityChar" -> LbldirectionalityChar
 |"Float2String" -> LblFloat2String
-|"<procid>" -> Lbl'_LT_'procid'_GT_'
 |"#opendir(_)_K-IO" -> Lbl'Hash'opendir'LPar'_'RPar'_K'Hyph'IO
-|"<procs>-fragment" -> Lbl'_LT_'procs'_GT_Hyph'fragment
-|"isProcsCell" -> LblisProcsCell
 |"initKCell" -> LblinitKCell
 |"RecCellBagItem" -> LblRecCellBagItem
-|"isIncomingCell" -> LblisIncomingCell
-|"<incoming>" -> Lbl'_LT_'incoming'_GT_'
 |"sizeList" -> LblsizeList
 |"#EWOULDBLOCK_K-IO" -> Lbl'Hash'EWOULDBLOCK_K'Hyph'IO
 |".Set" -> Lbl'Stop'Set
 |"String2Id" -> LblString2Id
+|"initTuplespaceCell" -> LblinitTuplespaceCell
 |"<thread>" -> Lbl'_LT_'thread'_GT_'
 |"#EACCES_K-IO" -> Lbl'Hash'EACCES_K'Hyph'IO
 |"_=/=Bool__BOOL" -> Lbl_'EqlsSlshEqls'Bool__BOOL
+|"isRchanCell" -> LblisRchanCell
 |"#ELOOP_K-IO" -> Lbl'Hash'ELOOP_K'Hyph'IO
 |"#EDOM_K-IO" -> Lbl'Hash'EDOM_K'Hyph'IO
 |"#EFBIG_K-IO" -> Lbl'Hash'EFBIG_K'Hyph'IO
@@ -1512,26 +1397,26 @@ let parse_klabel(c: string) : klabel = match c with
 |"initTCell" -> LblinitTCell
 |"signedBytes" -> LblsignedBytes
 |"#EPIPE_K-IO" -> Lbl'Hash'EPIPE_K'Hyph'IO
-|"noOutmsgCell" -> LblnoOutmsgCell
 |"FloatFormat" -> LblFloatFormat
 |"noContCell" -> LblnoContCell
 |"#ENOTSOCK_K-IO" -> Lbl'Hash'ENOTSOCK_K'Hyph'IO
 |"_+String__STRING" -> Lbl_'Plus'String__STRING
 |"_^%Int___INT" -> Lbl_'Xor_Perc'Int___INT
-|"isOutgoingCellOpt" -> LblisOutgoingCellOpt
-|"initProcsCell" -> LblinitProcsCell
 |"_RecCellBag_" -> Lbl_RecCellBag_
 |"_|Int__INT" -> Lbl_'Pipe'Int__INT
+|"isMsgCellOpt" -> LblisMsgCellOpt
 |"#EISCONN_K-IO" -> Lbl'Hash'EISCONN_K'Hyph'IO
 |"isKVariable" -> LblisKVariable
 |"_dividesInt__INT" -> Lbl_dividesInt__INT
 |"<rec>-fragment" -> Lbl'_LT_'rec'_GT_Hyph'fragment
+|"<tuplespace>-fragment" -> Lbl'_LT_'tuplespace'_GT_Hyph'fragment
 |"rfindString" -> LblrfindString
 |"<T>-fragment" -> Lbl'_LT_'T'_GT_Hyph'fragment
 |"#ESOCKTNOSUPPORT_K-IO" -> Lbl'Hash'ESOCKTNOSUPPORT_K'Hyph'IO
 |"#EINTR_K-IO" -> Lbl'Hash'EINTR_K'Hyph'IO
 |"#stat(_)_K-IO" -> Lbl'Hash'stat'LPar'_'RPar'_K'Hyph'IO
 |"updateList" -> LblupdateList
+|"isMsgCell" -> LblisMsgCell
 |".SendCellBag" -> Lbl'Stop'SendCellBag
 |"<activity>-fragment" -> Lbl'_LT_'activity'_GT_Hyph'fragment
 |"initContCell" -> LblinitContCell
@@ -1543,63 +1428,65 @@ let parse_klabel(c: string) : klabel = match c with
 |"#EHOSTUNREACH_K-IO" -> Lbl'Hash'EHOSTUNREACH_K'Hyph'IO
 |"#ECONNRESET_K-IO" -> Lbl'Hash'ECONNRESET_K'Hyph'IO
 |"freshInt" -> LblfreshInt
+|"<recs>-fragment" -> Lbl'_LT_'recs'_GT_Hyph'fragment
 |"#write(_,_)_K-IO" -> Lbl'Hash'write'LPar'_'Comm'_'RPar'_K'Hyph'IO
 |"isKCellOpt" -> LblisKCellOpt
 |"#ETIMEDOUT_K-IO" -> Lbl'Hash'ETIMEDOUT_K'Hyph'IO
 |"#ECHILD_K-IO" -> Lbl'Hash'ECHILD_K'Hyph'IO
 |"isRecCellFragment" -> LblisRecCellFragment
+|"initRchanCell" -> LblinitRchanCell
+|"<sends>" -> Lbl'_LT_'sends'_GT_'
+|"isSchanCell" -> LblisSchanCell
 |"_xorInt__INT" -> Lbl_xorInt__INT
 |"#EINPROGRESS_K-IO" -> Lbl'Hash'EINPROGRESS_K'Hyph'IO
+|"<recs>" -> Lbl'_LT_'recs'_GT_'
 |"String2Float" -> LblString2Float
 |"Map:lookupOrDefault" -> LblMap'Coln'lookupOrDefault
 |"#if_#then_#else_#fi_K-EQUAL" -> Lbl'Hash'if_'Hash'then_'Hash'else_'Hash'fi_K'Hyph'EQUAL
+|"<tuplespace>" -> Lbl'_LT_'tuplespace'_GT_'
 |"#ENOTCONN_K-IO" -> Lbl'Hash'ENOTCONN_K'Hyph'IO
 |"#stdout_K-IO" -> Lbl'Hash'stdout_K'Hyph'IO
 |"_&Int__INT" -> Lbl_'And'Int__INT
-|"isProcCell" -> LblisProcCell
-|"<outmsg>" -> Lbl'_LT_'outmsg'_GT_'
 |"#ENOPROTOOPT_K-IO" -> Lbl'Hash'ENOPROTOOPT_K'Hyph'IO
 |"initBindCell" -> LblinitBindCell
 |"littleEndianBytes" -> LbllittleEndianBytes
 |"#EPERM_K-IO" -> Lbl'Hash'EPERM_K'Hyph'IO
 |"#ENAMETOOLONG_K-IO" -> Lbl'Hash'ENAMETOOLONG_K'Hyph'IO
-|"noIncomingCell" -> LblnoIncomingCell
 |"<send>" -> Lbl'_LT_'send'_GT_'
 |"_<<Int__INT" -> Lbl_'_LT__LT_'Int__INT
 |"log2Int" -> Lbllog2Int
 |"_=/=Int__INT" -> Lbl_'EqlsSlshEqls'Int__INT
 |"#stdin_K-IO" -> Lbl'Hash'stdin_K'Hyph'IO
-|"isInchanidCell" -> LblisInchanidCell
 |"Base2String" -> LblBase2String
 |"ListItem" -> LblListItem
 |"_>=String__STRING" -> Lbl_'_GT_Eqls'String__STRING
 |"isStream" -> LblisStream
+|"noSchanCell" -> LblnoSchanCell
 |"_<=Map__MAP" -> Lbl_'_LT_Eqls'Map__MAP
+|"isRecsCellFragment" -> LblisRecsCellFragment
 |"newUUID_STRING" -> LblnewUUID_STRING
 |"sizeMap" -> LblsizeMap
+|"noMsgCell" -> LblnoMsgCell
 |"isId" -> LblisId
 |"substrString" -> LblsubstrString
 |"Reify" -> LblReify
 |"noBindCell" -> LblnoBindCell
 |"_SendCellBag_" -> Lbl_SendCellBag_
-|"<incoming>-fragment" -> Lbl'_LT_'incoming'_GT_Hyph'fragment
+|"noTuplespaceCell" -> LblnoTuplespaceCell
 |"#ESRCH_K-IO" -> Lbl'Hash'ESRCH_K'Hyph'IO
 |"#EMFILE_K-IO" -> Lbl'Hash'EMFILE_K'Hyph'IO
 |"isActivityCellOpt" -> LblisActivityCellOpt
 |"size" -> Lblsize
-|"noInchanidCell" -> LblnoInchanidCell
-|"initOutgoingCell" -> LblinitOutgoingCell
 |"<activity>" -> Lbl'_LT_'activity'_GT_'
 |"project:Proc" -> Lblproject'Coln'Proc
-|"isIncomingCellFragment" -> LblisIncomingCellFragment
 |"#ENETUNREACH_K-IO" -> Lbl'Hash'ENETUNREACH_K'Hyph'IO
 |"#EPROTOTYPE_K-IO" -> Lbl'Hash'EPROTOTYPE_K'Hyph'IO
 |"Send" -> LblSend
 |"#systemResult(_,_,_)_K-IO" -> Lbl'Hash'systemResult'LPar'_'Comm'_'Comm'_'RPar'_K'Hyph'IO
-|"<outgoing>" -> Lbl'_LT_'outgoing'_GT_'
 |"_inList_" -> Lbl_inList_
 |"#ENOEXEC_K-IO" -> Lbl'Hash'ENOEXEC_K'Hyph'IO
 |"minInt(_,_)_INT" -> LblminInt'LPar'_'Comm'_'RPar'_INT
+|"initRecsCell" -> LblinitRecsCell
 |"isMap" -> LblisMap
 |"srandInt" -> LblsrandInt
 |"#EINVAL_K-IO" -> Lbl'Hash'EINVAL_K'Hyph'IO
@@ -1616,9 +1503,11 @@ let parse_klabel(c: string) : klabel = match c with
 |"#tell(_)_K-IO" -> Lbl'Hash'tell'LPar'_'RPar'_K'Hyph'IO
 |"keys" -> Lblkeys
 |"initRecCell" -> LblinitRecCell
+|"initSendsCell" -> LblinitSendsCell
 |"#ESHUTDOWN_K-IO" -> Lbl'Hash'ESHUTDOWN_K'Hyph'IO
 |".ThreadCellBag" -> Lbl'Stop'ThreadCellBag
 |"getKLabel" -> LblgetKLabel
+|"noRecsCell" -> LblnoRecsCell
 |"ThreadCellBagItem" -> LblThreadCellBagItem
 |"#E2BIG_K-IO" -> Lbl'Hash'E2BIG_K'Hyph'IO
 |"#ENOTDIR_K-IO" -> Lbl'Hash'ENOTDIR_K'Hyph'IO
@@ -1629,19 +1518,15 @@ let parse_klabel(c: string) : klabel = match c with
 | _ -> invalid_arg ("parse_klabel: " ^ c)
 let collection_for (c: klabel) : klabel = match c with 
 |LblSetItem -> Lbl_Set_
-|Lbl_ProcCellBag_ -> Lbl_ProcCellBag_
 |Lbl_ThreadCellBag_ -> Lbl_ThreadCellBag_
 |Lbl'Stop'Set -> Lbl_Set_
 |Lbl'_LT_'thread'_GT_' -> Lbl_ThreadCellBag_
 |Lbl'_LT_'send'_GT_' -> Lbl_SendCellBag_
 |Lbl_RecCellBag_ -> Lbl_RecCellBag_
-|LblProcCellBagItem -> Lbl_ProcCellBag_
 |LblListItem -> Lbl_List_
 |Lbl_Map_ -> Lbl_Map_
-|Lbl'Stop'ProcCellBag -> Lbl_ProcCellBag_
 |Lbl'Stop'List -> Lbl_List_
 |Lbl_Set_ -> Lbl_Set_
-|Lbl'_LT_'proc'_GT_' -> Lbl_ProcCellBag_
 |Lbl_List_ -> Lbl_List_
 |Lbl'Stop'Map -> Lbl_Map_
 |Lbl'Stop'ThreadCellBag -> Lbl_ThreadCellBag_
@@ -1655,7 +1540,6 @@ let collection_for (c: klabel) : klabel = match c with
 |LblRecCellBagItem -> Lbl_RecCellBag_
 | _ -> invalid_arg "collection_for"
 let unit_for (c: klabel) : klabel = match c with 
-|Lbl_ProcCellBag_ -> Lbl'Stop'ProcCellBag
 |Lbl_ThreadCellBag_ -> Lbl'Stop'ThreadCellBag
 |Lbl_Set_ -> Lbl'Stop'Set
 |Lbl_List_ -> Lbl'Stop'List
@@ -1664,7 +1548,6 @@ let unit_for (c: klabel) : klabel = match c with
 |Lbl_Map_ -> Lbl'Stop'Map
 | _ -> invalid_arg "unit_for"
 let el_for (c: klabel) : klabel = match c with 
-|Lbl_ProcCellBag_ -> LblProcCellBagItem
 |Lbl_ThreadCellBag_ -> LblThreadCellBagItem
 |Lbl_Set_ -> LblSetItem
 |Lbl_List_ -> LblListItem
@@ -2025,35 +1908,36 @@ let int'Hyph'1 = lazy (Int (Z.of_string "-1"))
 let const'Hash'EHOSTDOWN_K'Hyph'IO = KApply0(Lbl'Hash'EHOSTDOWN_K'Hyph'IO)
 let const'Stop'ThreadCellBag = KApply0(Lbl'Stop'ThreadCellBag)
 let constnoKCell = KApply0(LblnoKCell)
+let constnoRecsCell = KApply0(LblnoRecsCell)
+let constinitSchanCell = KApply0(LblinitSchanCell)
 let const'Hash'EINTR_K'Hyph'IO = KApply0(Lbl'Hash'EINTR_K'Hyph'IO)
-let constinitInchanCell = KApply0(LblinitInchanCell)
 let const'Hash'EOVERFLOW_K'Hyph'IO = KApply0(Lbl'Hash'EOVERFLOW_K'Hyph'IO)
 let const'Hash'ENETDOWN_K'Hyph'IO = KApply0(Lbl'Hash'ENETDOWN_K'Hyph'IO)
+let constnoMsgCell = KApply0(LblnoMsgCell)
 let const'Hash'EIO_K'Hyph'IO = KApply0(Lbl'Hash'EIO_K'Hyph'IO)
 let const'Hash'Bottom = KApply0(Lbl'Hash'Bottom)
 let const'Hash'EISCONN_K'Hyph'IO = KApply0(Lbl'Hash'EISCONN_K'Hyph'IO)
-let constnoInchanidCell = KApply0(LblnoInchanidCell)
 let const'Hash'EDOM_K'Hyph'IO = KApply0(Lbl'Hash'EDOM_K'Hyph'IO)
 let const'Stop'Map = KApply0(Lbl'Stop'Map)
 let const'Hash'EPROTOTYPE_K'Hyph'IO = KApply0(Lbl'Hash'EPROTOTYPE_K'Hyph'IO)
+let constinitRecsCell = KApply0(LblinitRecsCell)
 let const'Hash'EADDRINUSE_K'Hyph'IO = KApply0(Lbl'Hash'EADDRINUSE_K'Hyph'IO)
-let constinitOutgoingCell = KApply0(LblinitOutgoingCell)
 let const'Hash'EACCES_K'Hyph'IO = KApply0(Lbl'Hash'EACCES_K'Hyph'IO)
 let constnewUUID_STRING = KApply0(LblnewUUID_STRING)
 let const'Hash'ENOSPC_K'Hyph'IO = KApply0(Lbl'Hash'ENOSPC_K'Hyph'IO)
+let constnoTuplespaceCell = KApply0(LblnoTuplespaceCell)
 let const'Hash'EMLINK_K'Hyph'IO = KApply0(Lbl'Hash'EMLINK_K'Hyph'IO)
 let const'Hash'EINVAL_K'Hyph'IO = KApply0(Lbl'Hash'EINVAL_K'Hyph'IO)
-let constnoProcidCell = KApply0(LblnoProcidCell)
 let constinitSendCell = KApply0(LblinitSendCell)
 let const'Hash'ENOPROTOOPT_K'Hyph'IO = KApply0(Lbl'Hash'ENOPROTOOPT_K'Hyph'IO)
 let const'Hash'EPERM_K'Hyph'IO = KApply0(Lbl'Hash'EPERM_K'Hyph'IO)
 let const'Hash'EWOULDBLOCK_K'Hyph'IO = KApply0(Lbl'Hash'EWOULDBLOCK_K'Hyph'IO)
 let constinitBindCell = KApply0(LblinitBindCell)
+let constnoSchanCell = KApply0(LblnoSchanCell)
 let const'Stop'Set = KApply0(Lbl'Stop'Set)
 let const'Hash'ENETUNREACH_K'Hyph'IO = KApply0(Lbl'Hash'ENETUNREACH_K'Hyph'IO)
 let const'Stop'List = KApply0(Lbl'Stop'List)
 let const'Hash'ENAMETOOLONG_K'Hyph'IO = KApply0(Lbl'Hash'ENAMETOOLONG_K'Hyph'IO)
-let constnoProcsCell = KApply0(LblnoProcsCell)
 let const'Hash'ECONNRESET_K'Hyph'IO = KApply0(Lbl'Hash'ECONNRESET_K'Hyph'IO)
 let const'Hash'ENXIO_K'Hyph'IO = KApply0(Lbl'Hash'ENXIO_K'Hyph'IO)
 let const'Hash'EALREADY_K'Hyph'IO = KApply0(Lbl'Hash'EALREADY_K'Hyph'IO)
@@ -2061,26 +1945,24 @@ let const'Hash'ENOTCONN_K'Hyph'IO = KApply0(Lbl'Hash'ENOTCONN_K'Hyph'IO)
 let const'Hash'ETOOMANYREFS_K'Hyph'IO = KApply0(Lbl'Hash'ETOOMANYREFS_K'Hyph'IO)
 let const'Hash'configuration_K'Hyph'REFLECTION = KApply0(Lbl'Hash'configuration_K'Hyph'REFLECTION)
 let const'Hash'EMSGSIZE_K'Hyph'IO = KApply0(Lbl'Hash'EMSGSIZE_K'Hyph'IO)
-let constnoOutchanCell = KApply0(LblnoOutchanCell)
 let const'Stop'SendCellBag = KApply0(Lbl'Stop'SendCellBag)
-let constnoIncomingCell = KApply0(LblnoIncomingCell)
 let const'Hash'EDEADLK_K'Hyph'IO = KApply0(Lbl'Hash'EDEADLK_K'Hyph'IO)
 let const'Hash'ENOTSOCK_K'Hyph'IO = KApply0(Lbl'Hash'ENOTSOCK_K'Hyph'IO)
 let const'Hash'EAGAIN_K'Hyph'IO = KApply0(Lbl'Hash'EAGAIN_K'Hyph'IO)
+let constnoRchanCell = KApply0(LblnoRchanCell)
 let const'Hash'ESHUTDOWN_K'Hyph'IO = KApply0(Lbl'Hash'ESHUTDOWN_K'Hyph'IO)
 let const'Hash'ERANGE_K'Hyph'IO = KApply0(Lbl'Hash'ERANGE_K'Hyph'IO)
 let const'Hash'E2BIG_K'Hyph'IO = KApply0(Lbl'Hash'E2BIG_K'Hyph'IO)
 let const'Hash'ECONNREFUSED_K'Hyph'IO = KApply0(Lbl'Hash'ECONNREFUSED_K'Hyph'IO)
 let const'Hash'ENOSYS_K'Hyph'IO = KApply0(Lbl'Hash'ENOSYS_K'Hyph'IO)
-let constnoInchanCell = KApply0(LblnoInchanCell)
 let const'Hash'ENOTDIR_K'Hyph'IO = KApply0(Lbl'Hash'ENOTDIR_K'Hyph'IO)
 let const'Hash'ECONNABORTED_K'Hyph'IO = KApply0(Lbl'Hash'ECONNABORTED_K'Hyph'IO)
 let const'Hash'EBUSY_K'Hyph'IO = KApply0(Lbl'Hash'EBUSY_K'Hyph'IO)
 let const'Hash'EOPNOTSUPP_K'Hyph'IO = KApply0(Lbl'Hash'EOPNOTSUPP_K'Hyph'IO)
 let const'Hash'ESRCH_K'Hyph'IO = KApply0(Lbl'Hash'ESRCH_K'Hyph'IO)
-let constinitProcCell = KApply0(LblinitProcCell)
 let const'Hash'ENOMEM_K'Hyph'IO = KApply0(Lbl'Hash'ENOMEM_K'Hyph'IO)
 let constnoBindCell = KApply0(LblnoBindCell)
+let constinitRchanCell = KApply0(LblinitRchanCell)
 let constinitRecCell = KApply0(LblinitRecCell)
 let const'Hash'ESPIPE_K'Hyph'IO = KApply0(Lbl'Hash'ESPIPE_K'Hyph'IO)
 let const'Hash'ENOENT_K'Hyph'IO = KApply0(Lbl'Hash'ENOENT_K'Hyph'IO)
@@ -2090,20 +1972,20 @@ let const'Hash'EXDEV_K'Hyph'IO = KApply0(Lbl'Hash'EXDEV_K'Hyph'IO)
 let const'Hash'ENOLCK_K'Hyph'IO = KApply0(Lbl'Hash'ENOLCK_K'Hyph'IO)
 let const'Stop'RecCellBag = KApply0(Lbl'Stop'RecCellBag)
 let const'Hash'argv = KApply0(Lbl'Hash'argv)
+let constnoSendsCell = KApply0(LblnoSendsCell)
 let const'Hash'ENOTEMPTY_K'Hyph'IO = KApply0(Lbl'Hash'ENOTEMPTY_K'Hyph'IO)
 let const'Hash'EMFILE_K'Hyph'IO = KApply0(Lbl'Hash'EMFILE_K'Hyph'IO)
 let const'Hash'ELOOP_K'Hyph'IO = KApply0(Lbl'Hash'ELOOP_K'Hyph'IO)
 let const'Hash'stderr_K'Hyph'IO = KApply0(Lbl'Hash'stderr_K'Hyph'IO)
 let const'Hash'EPIPE_K'Hyph'IO = KApply0(Lbl'Hash'EPIPE_K'Hyph'IO)
 let const'Hash'ENETRESET_K'Hyph'IO = KApply0(Lbl'Hash'ENETRESET_K'Hyph'IO)
+let constinitTuplespaceCell = KApply0(LblinitTuplespaceCell)
+let constinitSendsCell = KApply0(LblinitSendsCell)
 let const'Hash'EPFNOSUPPORT_K'Hyph'IO = KApply0(Lbl'Hash'EPFNOSUPPORT_K'Hyph'IO)
 let const'Hash'EEXIST_K'Hyph'IO = KApply0(Lbl'Hash'EEXIST_K'Hyph'IO)
 let const'Hash'stdin_K'Hyph'IO = KApply0(Lbl'Hash'stdin_K'Hyph'IO)
 let const'Hash'EADDRNOTAVAIL_K'Hyph'IO = KApply0(Lbl'Hash'EADDRNOTAVAIL_K'Hyph'IO)
 let const'Hash'EHOSTUNREACH_K'Hyph'IO = KApply0(Lbl'Hash'EHOSTUNREACH_K'Hyph'IO)
-let constinitInchanidCell = KApply0(LblinitInchanidCell)
-let constinitProcidCell = KApply0(LblinitProcidCell)
-let constinitIncomingCell = KApply0(LblinitIncomingCell)
 let const'Hash'ECHILD_K'Hyph'IO = KApply0(Lbl'Hash'ECHILD_K'Hyph'IO)
 let const'Hash'EOF_K'Hyph'IO = KApply0(Lbl'Hash'EOF_K'Hyph'IO)
 let const'Hash'EDESTADDRREQ_K'Hyph'IO = KApply0(Lbl'Hash'EDESTADDRREQ_K'Hyph'IO)
@@ -2111,20 +1993,15 @@ let const'Hash'EFBIG_K'Hyph'IO = KApply0(Lbl'Hash'EFBIG_K'Hyph'IO)
 let const'Hash'EBADF_K'Hyph'IO = KApply0(Lbl'Hash'EBADF_K'Hyph'IO)
 let const'Hash'ETIMEDOUT_K'Hyph'IO = KApply0(Lbl'Hash'ETIMEDOUT_K'Hyph'IO)
 let const'Hash'ESOCKTNOSUPPORT_K'Hyph'IO = KApply0(Lbl'Hash'ESOCKTNOSUPPORT_K'Hyph'IO)
-let constnoOutmsgCell = KApply0(LblnoOutmsgCell)
 let const'Hash'EISDIR_K'Hyph'IO = KApply0(Lbl'Hash'EISDIR_K'Hyph'IO)
-let constinitProcsCell = KApply0(LblinitProcsCell)
-let constinitOutmsgCell = KApply0(LblinitOutmsgCell)
 let const'Hash'ENOTTY_K'Hyph'IO = KApply0(Lbl'Hash'ENOTTY_K'Hyph'IO)
 let const'Hash'EFAULT_K'Hyph'IO = KApply0(Lbl'Hash'EFAULT_K'Hyph'IO)
-let const'Stop'ProcCellBag = KApply0(Lbl'Stop'ProcCellBag)
 let constnoActivityCell = KApply0(LblnoActivityCell)
-let constnoOutgoingCell = KApply0(LblnoOutgoingCell)
 let const'Hash'EROFS_K'Hyph'IO = KApply0(Lbl'Hash'EROFS_K'Hyph'IO)
 let const'Hash'noparse_K'Hyph'IO = KApply0(Lbl'Hash'noparse_K'Hyph'IO)
 let const'Hash'ENFILE_K'Hyph'IO = KApply0(Lbl'Hash'ENFILE_K'Hyph'IO)
 let const'Hash'ThreadLocal = KApply0(Lbl'Hash'ThreadLocal)
-let constinitOutchanCell = KApply0(LblinitOutchanCell)
+let constinitMsgCell = KApply0(LblinitMsgCell)
 let constStop = KApply0(LblStop)
 let constnoContCell = KApply0(LblnoContCell)
 let constinitContCell = KApply0(LblinitContCell)

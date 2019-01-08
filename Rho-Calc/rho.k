@@ -36,14 +36,14 @@ module RHO
 
   configuration
     <T>
-      <activity>
-        <thread color="red" multiplicity="*">    //process pool
-          <k> $PGM:Proc </k>
+      <activity color="red">
+        <thread multiplicity="*">                //process pool
+          <k> $PGM:Proc </k>                     //
         </thread>
       </activity>
-      <tuplespace color="cyan">                  //tuplespace
-        <sends color="blue">                     //sends
-          <send color="teal" multiplicity="*">
+      <tuplespace color="blue">                  //tuplespace
+        <sends color="teal">                     //sends
+          <send color="cyan" multiplicity="*">
             <schan> .K </schan>                  //sending channel
             <msg>   .K </msg>                    //message sent
           </send>
@@ -61,14 +61,14 @@ module RHO
 // PAR OPERATOR
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
        (.Bag => <thread> <k> P1 </k> </thread>)
-       (.Bag => <thread> <k> P2 </k> </thread>)
+       (.Bag => <thread> <k> P2 </k> </thread>)        //[structural]
 
 // SEND SEMANTICS
   rule <k> X:Name ! ( P:Proc ) =>  . ...</k>           //dissolve send in <activity/> and spawn <send/>
        (.Bag => <send>
                   <schan> X </schan>                   //sending channel X
                   <msg>  @P </msg>                     //message sent @P
-                </send>)  [structural]
+                </send>)                               //[structural]
 
 // RECEIVE SEMANTICS
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>  //dissolve receive in <activity/> and spawn <rec/>
@@ -76,7 +76,7 @@ module RHO
                   <rchan> X </rchan>                   //receiving channel X
                   <bind>  Y </bind>                    //variable Y binding in continuation P
                   <cont>  P </cont>                    //continuation P
-                </rec>) [structural]
+                </rec>)                                //[structural]
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
@@ -93,9 +93,9 @@ module RHO
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
-// P \equiv Q \implies @P \equiv_N @Q
+// P \equiv Q \implies @P \equiv_N @Q (side condition)
 
-// REIFY OPERATOR
+// REIFY OPERATOR (can contexts be used here? * @ []:Proc and @ * []:Name)
   rule <msg> @ * X:Name => X </msg> [structural]       //name equivalence in <msg/>
 
   rule <rchan> @ * X:Name => X </rchan>  [structural]  //name equivalence in <rchan/>
@@ -108,16 +108,16 @@ module RHO
 
 // REDUCTION RULES
 
-// COMM EVENT
+// COMM EVENT (comm tag to track nondeterminism?)
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                            //dissolve send and receive on "same" channel
   (<rec>                                          //dissolve receive with:
      <rchan> X:Name </rchan>                      //receiving channel X
-     <bind> Y:Name </bind>                        //binding variable Y
-     <cont> P:Proc </cont>                        //continuation P
+     <bind>  Y:Name </bind>                       //binding variable Y
+     <cont>  P:Proc </cont>                       //continuation P
    </rec> => .Bag)
   (<send>                                         //dissolve send with:
-     <schan> X </schan>                           //sending channel X = rceiving channel
+     <schan> X </schan>                           //send on channel X \equiv_N receiving channel
      <msg> Z:Name </msg>                          //message sent Z to continuation
    </send> => .Bag)
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)  //spawn a new <thread/> holding P[Z / Y]
