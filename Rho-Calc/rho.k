@@ -121,7 +121,7 @@ module RHO
      <msg>   Z:Name </msg>                                    //Z is message sent to continuation
    </send> => .Bag)
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawns a new <thread/> holding P[Z / Y]
-  [klabel(COMM)]
+  [comm]
 
 // PAR: P|Q -> P'|Q when P -> P'
 
