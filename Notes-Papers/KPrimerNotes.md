@@ -360,6 +360,82 @@ K provides built-in support for generic syntactic lists: `List{Nonterminal,termi
 
 Thus, both '`var x, y, z ;`' and '`var ;`' are bot valid declarations.
 
+For semantic purposes, these lists are currently (?) interpreted as cons-lists (i.e. lists constructed with a head element followed by a tail list). Therefore, when giving semantics to constructs with list parameters, we often distinguish between two cases: when the list is empty and when the list has at least one element. TO give semantics to `var`, we add two new cells to the configuration: `env`, to hold mappings from variables to locations, and `store`, to hold mappings from locations to values. The semantics of variable declarations are captures in the following rules:
+```
+	rule var .Ids ; => .  [structural]
+
+	rule <k> var (X:Id, X1:Ids => X1) ; ...</k>
+	     <env> Rho:Map => Rho[!N:Int / X] </env>
+	     <store>... . => !N |-> 0 ...</store>
+```
+
+The first rule simply dissolves the `var` declaration if it's followed by an empty variable list (indicated by `.Ids`). The second rule recursively declares the first variable in the list by adding a mapping from a *fresh* location `!N` to `0` in the `store` cell, and updating the mapping of the name of the variable in the `env` cell to point to that location. We prefer to make the second rule structural, thinking of dissolving the residual empty `var` declaration as a structural cleanup rather than as a computational step.
+
+
+## Concurrency and Nondeterminism
+We can define nondeterministic features both related to concurrency and to the under-specification (e.g. order of evaluation). Also, we discuss methods to control the state explosion due to nondeterminism.
+
+### Configuration Abstraction
+We would like to extend EXP with concurrency features. The addition of the `env` cell in the presence of concurrency requires further adjustments to the configuration. First, there needs to be an `env` cell for each computation cell, to avoid one computation shadowing the variables of another one. Moreover, each environment should be tied to its computation, to avoid using another thread's environment. This can be acheived by adding another cell, `thread`, on top of the `k` and `env` cells, using the `multiplicity` XML attribute to indicate that the `thread` cell can occur multiple times. The `multiplicity` attribute can be used to specify how many copies of a cell are allowed: either 0 or 1 (`"?"`) (?), 0 or more (`"*"`), or one or more (`"+"`) (?). Upon this transformation, the configuration changes as follows:
+```
+	configuration
+	<thread multiplicity="*">
+	  <k> $PGM:K </k>
+	  <env> .Map </env>
+	</thread>
+	<store> .Map </store>
+	<streams>
+	  <in stream="stdin">   .List </in>
+	  <out stream="stdout"> .List </out>
+	</streams>
+```
+
+A possible syntax and semantics for thread spawning is:
+```
+	syntax Stmt ::= "spawn" "{" Stmt "}"
+
+	rule <k> spawn { St:Stmt } => . ...</k> <env> Rho:Map </env>
+	     (.Bag => <thread>... <k> St </k> <env> Rho </env> ...</thread>)
+```
+
+Changes to the configuration are quite frequent in practice, typically needed in order to accomodate new langauge features. K's configuration abstraction process allows users to not have to modify their rules when making structural changes to the language configuration. This feature is crucial for modularity, beacause it offers the possibility to write definitions in a way that may not require revisits to existing rules when the configuration is changed. Indeed, only the `spawn` rule needs to modified, despite the addition of a new `thread` cell. Instead, this cell is automatically inferred (added to the K tool at compile time) from the definition of the configuration above. For our rule for `var` given above, it means that the `k` and `env` cells will be considered as being part of the same `thread` cell. The K tool can infer this context in instances when there is only one correct way to complete the configuration used in rules in order to match the declared configuration. For further explanation, see [27]() and [28]().
+
+Multiplicity information is important in the configuration abstraction process, as it tells the K tool how to complete rules like that for a `rendezvous` construct:
+```
+	syntax Exp ::= "rendezvous" Exp  [strict]
+
+	rule <k> rendezvous I:Int => I ...</k> <k> rendezvous I:Int => I ...</k>
+```
+
+As the `k` cell does not have the `multiplicity` set to `"*"` and `thread` does, the tool can infer that each of the two computations resides in its own thread.
+
+Continuing to add imperative features to our language, we can take the above information and add rules for reading and setting a variable in memory:
+```
+	//reading a variable from memory		//setting a variable in memory
+
+	syntax Exp ::= Id				syntax Exp ::= Id "=" Exp  [strict(2)]
+
+	rule <k> X:Id => I ...</k>			rule <k> X:Id = I:Int => I ...</k>
+	     <env>... X |-> L:Int ...</env>		     <env>... X |-> L:Int ...</env>
+	     <store>... L |-> I:Int ...</store>		     <store>... L |-> (_ => I) ...</store>
+```
+
+Note how these rules avoid mentioning any `thread` cells.
+
+One limitation of the current implementation is that is does not allow multiple cells with the same name to appear in the initial configuration (?).
+
+### Advanced Strictness and Evaluation Strategies
+
+
+
+### Controlling Nondeterminism
+There are two main sources of nondeterminism in programming languages: concurrency and order of evaluation. We discuss how the K tool can be used to explore both kinds of nondeterministic behavior.
+
+#### Transitions
+At the theoretical level, K rules are partitioned into *structural* and *computational* rules. Intuitively, structural rules rearrange the configuration so that computational rules can apply. Structural rules therefore do not count as computational steps. A canonical example of structural rules are the rules generated for strictness constraints. A K semantics can be thought of as a generator of *transition systems* or *Kripke structures*, one for each program. Only the computational rules create steps, or transitions, in the corresponding transition systems or Kripke structures.
+
+
+
 
 
 

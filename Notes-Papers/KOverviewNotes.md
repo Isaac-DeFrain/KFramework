@@ -208,15 +208,16 @@ There are two K-specific aspects in the rule above which need discussion. First,
 A second K-specific aspect to note in the rule above is that the configuration context does not match. In the configuration of SIMPLE, the `store` cell is not located in the same cell as `k` and `env`, so these cells cannot be matched as the rule states. This rule takes advantage of K's *configuration abstraction* mechanism which allows us to only specify the needed cells in a rule, with the rest of the configuration context being inferred from the defined configuration. The concretization of such abstract configuration rule contexts is based on several principles and criteria that help disambiguate among possible concrete rules (see [Overview of the K Semantic Framework](http://fsl.cs.illinois.edu/index.php/An_Overview_of_the_K_Semantic_Framework) for full details). Here we only mention one, the *locality principle*, which states that the configuration will be completed such that a minimal number of cells will be added. Th ensures that, in a multithreaded SIMPLE program, the cells `k` and `env` in the rule above will be assigned to the same thread cell. Allow adding them to different thread cells would be consistent with the configuration structure, having them in the same thread is "more local".
 
 The overall principle underlying the abstraction capabilities above, as well as muck of K's design in general, has always been:
+
 > Everything we write in a rule may work against us when the language semantics is extended. The more the framework can automatically infer for us, the better.
 
-Informally, the cell and configuration abstractions above can be thought of as K's rewriting applying "modulo the configuration". Implementation-wise, this rule completion process can be applied both statically or dynamically. In the current implementation based on Maude (still accurate?), we apply them statically; e.g. the K rule for lookup in SIMPLE translates to the conventional rewrite rule:
+Informally, the cell and configuration abstractions above can be thought of as K's rewriting applying "modulo the configuration". Implementation-wise, this rule completion process can be applied statically or dynamically. In the current implementation based on Maude (still accurate?), we apply them statically; e.g. the K rule for lookup in SIMPLE translates to the conventional rewrite rule:
 ```
 	rule threads(thread(k(X ~> K) env(X |-> L, Env) Thread) Threads) store(L |-> V, Store)
 	  => threads(thread(k(V ~> K) env(X |-> L, Env) Thread) Threads) store(L |-> V, Store)
 ```
 
-where `K`, `Env`, `Thread`, `Threads`, and `Store` are cell frame variables corresponding to the `...`s (called "tears"). The current K tool makes use of Maude's strengths, such as its multi-set and context-insensitive rewriting. Other backends may require more complex translations if these features are supported.
+where `K`, `Env`, `Thread`, `Threads`, and `Store` are *cell frame* variables corresponding to the `...`s (called *tears*). The current K tool makes use of Maude's strengths (?), such as its multi-set and context-insensitive rewriting. Other backends may require more complex translations if these features are supported.
 
 Two more K rules, also part of the semantics of SIMPLE, illustrating two more features of K's configuration abstraction. The former is motivated by the need to add new cell instances to the configuration dynamically, and the latter by the need to match items which reside in different instances of the same cell.
 
@@ -238,7 +239,7 @@ The default configuration informs K that each `k` cell is meant to appear in its
 ### The Semantics of K
 The semantics of K is given in terms of *transition systems*. Any K definition can be regarded as a generator of transition systems, one for each program in the defined language. As expected, the states of these transition systems are given by instances of computational rules. The structural rules do not yield transitions, their role is to structurally rearrange the configuration so that computational rules match and apply. What is less obvious is that K allows (but does not enforce) more rules to apply concurrently on a given configuration as part of the same transition, even if they overlap; the only restriction is that a rule instance is not allowed to rewrite a subterm that another concurrent rule instance needs to access. This is reminiscent of how transactions work: concurrent reads are allowed, but no read/write or write/write conflicts.
 
-We will not define the semantics of K's configuration abstraction here. Instead, we prefer to think of it as syntactic sugar which is desugared statically. We do this first, because configuration abstraction has no effect on the resulting transition systems, its role being to simply adapt the rules to fit the configuration as intended; second, it buys us and others time to better understand, evaluate, and converge on what configuration abstraction should mean in its full generality; and finally, configuration abstraction as it is now seems hard to formalize any other way than algorithmically.
+We will not define the semantics of K's configuration abstraction here. Instead, we prefer to think of it as syntactic sugar which is desugared statically. We do this first, because configuration abstraction has no effect on the resulting transition systems, its role being to simply adapt the rules to fit the configuration as intended; second, it buys us and others time to better understand, evaluate, and converge on what configuration abstraction should mean in its full generality; and finally, configuration abstraction as it now seems is hard to formalize any other way than algorithmically.
 
 K rules describe how terms can be transformed by altering some of their parts. K shares the idea of match-and-replace with standard term rewriting, but each K rule also specifies which part of the pattern is read-only. Next we formally define the notion of a *K rule* and the desired K semantics.
 
@@ -251,7 +252,7 @@ Given a signature `\Sigma` and a (potentially infinite) set of variables `X`, le
 	k[ l_1 => r_1, ..., l_n => r_n ]
 ```
 
-instead of `k[L => R]`, since the holes are implicit and need no be mentioned.
+instead of `k[L => R]`, since the holes are implicit and need not be mentioned.
 
 We can associate to any K rule `\rho: k[L => R]` a regular rewrite rule `K2R(\rho): L(k) -> R(k)`. 
 
