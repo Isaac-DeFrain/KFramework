@@ -278,11 +278,11 @@ To make EXP more expressive, we add `lambda` and `mu` abstractions to it.
 	4  module EXP-LAMBDA-SYNTAX
 	5    imports EXP-SYNTAX
 	6
-	7    syntax Val ::= Int
-	8		 | "lambda" Id "." Exp  [binder]
-	9    syntax Exp ::= Val
-	10		 | Exp Exp  		[seqstrict]  //application
-	11		 | "mu" Id "." Exp	[binder]
+	7    syntax     Val ::= Int
+	8		      | "lambda" Id "." Exp  [binder]     //lambda abstraction
+	9    syntax     Exp ::= Val
+	10		      | Exp Exp  	  [seqstrict]     //application
+	11		      | "mu" Id "." Exp	     [binder]     //mu abstraction
 	12 endmodule
 	13
 	14 module EXP-LAMBDA
@@ -291,9 +291,9 @@ To make EXP more expressive, we add `lambda` and `mu` abstractions to it.
 	17
 	18   syntax KResult ::= Val
 	19
-	20   rule (lambda X:Id . E:Exp) V:Val => E[V / X]  //beta-reduction
+	20   rule (lambda X:Id . E:Exp) V:Val => E[V / X]         //beta-reduction
 	21
-	22   rule mu X:Id . E:Exp => E[mu X . E / X]	   //mu-unrolling
+	22   rule             mu X:Id . E:Exp => E[mu X . E / X]  //mu-unrolling
 	23 endmodule
 ```
 
@@ -320,7 +320,7 @@ We show how one might desugar syntax in the K tool by adding two popular functio
 
 Instead of directly giving them semantics, we use `macro` capabilities to desugar them into `lambda` and `mu` abstractions:
 ```
-	rule (let X:Id = E1:Exp in E2:Exp) => (lambda X . E2) E1  [macro]
+	rule         (let X:Id = E1:Exp in E2:Exp) => (lambda X . E2) E1                    [macro]
 	rule (letrec F:Id X:Id = E1:Exp in E2:Exp) => (let F = mu F . lambda X . E1 in E2)  [macro]
 ```
 
@@ -330,13 +330,13 @@ These macros are to be applied on programs at parse time; therefore both the syn
 
 
 ### Imperative Features
-We add some imperative features to our EXP language.
+We add some imperative features to the EXP language.
 
 
 #### Statements
 To begin, we add a new syntactic category `Stmt` (for statements) and change the semicolon to be a statement terminator instead of an expression separator.
 ```
-	syntax Stmt ::= Exp ";"  [strict]
+	syntax Stmt ::= Exp ";"    [strict]
 		      | Stmt Stmt
 ```
 
@@ -360,7 +360,7 @@ K provides built-in support for generic syntactic lists: `List{Nonterminal,termi
 
 Thus, both '`var x, y, z ;`' and '`var ;`' are bot valid declarations.
 
-For semantic purposes, these lists are currently (?) interpreted as cons-lists (i.e. lists constructed with a head element followed by a tail list). Therefore, when giving semantics to constructs with list parameters, we often distinguish between two cases: when the list is empty and when the list has at least one element. TO give semantics to `var`, we add two new cells to the configuration: `env`, to hold mappings from variables to locations, and `store`, to hold mappings from locations to values. The semantics of variable declarations are captures in the following rules:
+For semantic purposes, these lists are currently interpreted as cons-lists (i.e. lists constructed with a head element followed by a tail list). Therefore, when giving semantics to constructs with list parameters, we often distinguish between two cases: when the list is empty and when the list has at least one element. TO give semantics to `var`, we add two new cells to the configuration: `env`, to hold mappings from variables to locations, and `store`, to hold mappings from locations to values. The semantics of variable declarations are captures in the following rules:
 ```
 	rule var .Ids ; => .  [structural]
 
@@ -376,7 +376,7 @@ The first rule simply dissolves the `var` declaration if it's followed by an emp
 We can define nondeterministic features both related to concurrency and to the under-specification (e.g. order of evaluation). Also, we discuss methods to control the state explosion due to nondeterminism.
 
 ### Configuration Abstraction
-We would like to extend EXP with concurrency features. The addition of the `env` cell in the presence of concurrency requires further adjustments to the configuration. First, there needs to be an `env` cell for each computation cell, to avoid one computation shadowing the variables of another one. Moreover, each environment should be tied to its computation, to avoid using another thread's environment. This can be acheived by adding another cell, `thread`, on top of the `k` and `env` cells, using the `multiplicity` XML attribute to indicate that the `thread` cell can occur multiple times. The `multiplicity` attribute can be used to specify how many copies of a cell are allowed: either 0 or 1 (`"?"`) (?), 0 or more (`"*"`), or one or more (`"+"`) (?). Upon this transformation, the configuration changes as follows:
+We would like to extend EXP with concurrency features. The addition of the `env` cell in the presence of concurrency requires further adjustments to the configuration. First, there needs to be an `env` cell for each computation cell, to avoid one computation shadowing the variables of another one. Moreover, each environment should be tied to its computation, to avoid using another thread's environment. This can be acheived by adding another cell, `thread`, on top of the `k` and `env` cells, using the `multiplicity` XML attribute to indicate that the `thread` cell can occur multiple times. The `multiplicity` attribute can be used to specify how many copies of a cell are allowed: either 0 or 1 (`"?"`) (??), 0 or more (`"*"`), or one or more (`"+"`) (doesn't seem to work for me). Upon this transformation, the configuration changes as follows:
 ```
 	configuration
 	<thread multiplicity="*">
@@ -422,7 +422,7 @@ Continuing to add imperative features to our language, we can take the above inf
 
 Note how these rules avoid mentioning any `thread` cells.
 
-One limitation of the current implementation is that is does not allow multiple cells with the same name to appear in the initial configuration (?).
+One limitation of the current implementation is that is does not allow multiple cells with the same name to appear in the initial configuration (??).
 
 ### Advanced Strictness and Evaluation Strategies
 
@@ -481,12 +481,12 @@ E.g. we will name the addition operator in EXP:
 	syntax Exp ::= Exp "+" Exp  [plus, strict]
 ```
 
-After recompiling the K definition with `kompile --superheat "plus"`(?), we can run the program `p3.exp`
+After recompiling the K definition with `kompile --superheat "plus"`, we can run the program `p3.exp`
 ```
 	print(1) + print(2) + print(3)
 ```
 
-using the `--search` option of `krun`. The tool finds four solutions, differeing only in the contents of their `out` cell, containing the strings `"123"`, `"213"`, `"312"`, and `"321"`. The reason there are only four outputs instead of six is that in the absence of any `supercool` rule, `superheat` only offers nondeterministic choice. That is, once an argument of a construct is chosen to be evaluated, it is evaluated completely. In order to observe full nondeterminism, the rules whose behavior we consider observable, e.g. the output rule, 
+using the `--search` option of `krun`, i.e. doing `krun pathTo/p3.exp --search`. The tool finds four solutions, differeing only in the contents of their `out` cell, containing the strings `"123"`, `"213"`, `"312"`, and `"321"`. The reason there are only four outputs instead of six is that in the absence of any `supercool` rule, `superheat` only offers nondeterministic choice. That is, once an argument of a construct is chosen to be evaluated, it is evaluated completely. In order to observe full nondeterminism, the rules whose behavior we consider observable, e.g. the output rule, 
 ```
 	rule <k> print I:Int => I ...</k>
 	     <out>... . => ListItem(I) </out>  [output]
