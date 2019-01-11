@@ -121,14 +121,14 @@ module RHO
      <msg>   Z:Name </msg>                                    //Z is message sent to continuation
    </send> => .Bag)
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawns a new <thread/> holding P[Z / Y]
-  [comm]
+  [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 // PAR: P|Q -> P'|Q when P -> P'
 
 // EQUIV: P -> Q when P \equiv P', P' -> Q', and Q' \equiv Q
 
-// SYNTACTIC SUBSTITUTION?
+// SYNTACTIC SUBSTITUTION
 
-// SEMANTIC SUBSTITUTION?
+// SEMANTIC SUBSTITUTION
 
 endmodule
