@@ -1,5 +1,5 @@
 
-
+```
 	$ kompile rho.k --backend java --transition "comm"
 
 	$ krun tests/comm_multiple_id.rho --search-final
@@ -75,4 +75,5 @@
       </recs>
     </tuplespace>
   </T>
+```
 
