@@ -1,8 +1,9 @@
+# Terminal output: first successful comm transition
 
 ```
-	$ kompile rho.k --backend java --transition "comm"
+  $ kompile rho.k --backend java --transition "comm"
 
-	$ krun tests/comm_multiple_id.rho --search-final
+  $ krun tests/comm_multiple_id.rho --search-final
 
   Result ==K 
   <T>
