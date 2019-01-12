@@ -40,37 +40,37 @@ module RHO
         <thread multiplicity="*">                             //collection of threads
           <k> $PGM:Proc </k>                                  //programs and computations are process-based
         </thread>
-      </processpool>                                          //tuplespace stores sends and recs/conts
+      </processpool>                                          //tuplespace stores sends and receives
       <tuplespace color="blue">
-        <sends color="teal">                                  //sends
+        <outgoing color="teal">                               //**sends**
           <send color="cyan" multiplicity="*">                //there may be several, even on the same channel
             <schan> .K </schan>                               //sending channel
-            <msg>   .K </msg>                                 //message
+              <msg> .K </msg>                                 //message
           </send>
-        </sends>
-        <recs color="green">                                  //receives
-          <rec color="yellow" multiplicity="*">               //there may be several, even on the same channel
-            <rchan> .K </rchan>                               //receiving channel
-            <bvar>  .K </bvar>                                //binding varible in continuation
-            <cont>  .K </cont>                                //continuation
+        </outgoing>                                           //**************
+        <incoming color="green">                              //***receives***
+          <rec color="yellow" multiplicity="*">               //
+            <rchan> .K </rchan>                               //receiving channel (may be several on same channel)
+             <bvar> .K </bvar>                                //binding varible in continuation
+             <cont> .K </cont>                                //continuation
           </rec>
-        </recs>
+        </incoming>
       </tuplespace>
     </T>
 
-// PAR OPERATOR
+// PAR OPERATOR SEMANTICS
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
        (.Bag => <thread> <k> P1 </k> </thread>)
        (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
 
-// SEND SEMANTICS
+// SEND OPERATOR SEMANTICS
   rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <activity/> and spawn <send/>
        (.Bag => <send>
                   <schan> X </schan>                          //sending channel X
                   <msg>  @P </msg>                            //message sent @P
                 </send>)                                      //[structural]
 
-// RECEIVE SEMANTICS
+// RECEIVE OPERATOR SEMANTICS
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <activity/> and spawn <rec/>
        (.Bag => <rec>
                   <rchan> X </rchan>                          //receiving channel X
@@ -78,52 +78,57 @@ module RHO
                   <cont>  P </cont>                           //continuation P
                 </rec>)                                       //[structural]
 
-// STRUCTURAL EQUIVALENCE
-//  P | 0      \equiv P
-//  P | Q      \equiv Q | P
-// (P | Q) | R \equiv P | (Q | R)
-
-//  rule P:Proc | Nil => P                        [structural]  //dissolve parred Nils in <k/>
-
-//  rule <cont> P:Proc | Nil => P </cont>         [structural]  //dissolve parred Nils in continuations
-
-  rule <thread> <k> . </k> </thread> => .Bag    [structural]  //dissolve empty threads
-
-//  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
-
-// NAME EQUIVALENCE
-// @{*x} \equiv_N x
-// P \equiv Q \implies @P \equiv_N @Q (side condition)
-
-// REIFY OPERATOR
-//  context @ * HOLE => HOLE                      [structural]
-
-  rule <msg> @ * X:Name => X </msg>             [structural]  //name equivalence in <msg/>
-
-  rule <rchan> @ * X:Name => X </rchan>         [structural]  //name equivalence in <rchan/>
-
-  rule <schan> @ * X:Name => X </schan>         [structural]  //name equivalence in <schan/>
-
-//  rule * @ P:Proc => P                          [structural]  //inverse operator in <k/>
-
-//  rule <cont> * @ P:Proc => P </cont>           [structural]  //inverse operator in <cont/>
-
 // REDUCTION RULES
 
 // COMM EVENT
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                                        //dissolve send and receive on "same" channel
-  (<rec>                                                      //dissolve:
-     <rchan> X:Name </rchan>                                  //receive on channel X
-     <bvar>  Y:Name </bvar>                                   //binding variable Y
-     <cont>  P:Proc </cont>                                   //with continuation P
+  (<rec>                                                      //dissolve receive:
+     <rchan> X:Name </rchan>                                  // channel X
+      <bvar> Y:Name </bvar>                                   // binding variable Y
+      <cont> P:Proc </cont>                                   // continuation P
    </rec> => .Bag)
-  (<send>                                                     //dissolve:
-     <schan> X </schan>                                       //send on channel X
-     <msg>   Z:Name </msg>                                    //sent message Z
+  (<send>                                                     //dissolve send:
+     <schan> X </schan>                                       // channel X
+       <msg> Z:Name </msg>                                    // message Z
    </send> => .Bag)
-  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn a new <thread/> holding P[Z / Y]
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
+
+// STRUCTURAL EQUIVALENCE
+//  P | 0      \equiv P
+//  P | Q      \equiv Q | P
+// (P | Q) | R \equiv P | (Q | R)
+
+// Clean up parred expressions
+  rule        P:Proc | Nil => P                 [structural]  //Nils in <k/>
+
+  rule <cont> P:Proc | Nil => P </cont>         [structural]  //Nils in <cont/>
+
+// Dissolve computationally meaningless threads
+  rule  <thread> <k> .K </k> </thread> => .Bag  [structural]  //empty threads
+
+  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //Nil threads
+
+// NAME EQUIVALENCE
+// @{*x} \equiv_N x
+// P \equiv Q \implies @P \equiv_N @Q (side condition)
+
+// NAME REDUCTIONS
+//context       @ * HOLE   => HOLE                            //write as single context reduction?
+
+  rule    <msg> @ * X:Name => X </msg>          [structural]  //name equivalence in <msg/>
+
+  rule  <rchan> @ * X:Name => X </rchan>        [structural]  //name equivalence in <rchan/>
+
+  rule  <schan> @ * X:Name => X </schan>        [structural]  //name equivalence class rep in <schan/>
+
+// *@ operator is idempotent [experimental]
+//  context   * @ * @ HOLE   => * @ HOLE                      //write as single context reduction?
+                                                              //split between contexts:
+  rule        * @ * @ P:Proc => * @ P           [structural]  // in <k/>
+
+  rule <cont> * @ * @ P:Proc => * @ P </cont>   [structural]  // in <cont/>
 
 // PAR: P|Q -> P'|Q when P -> P'
 
