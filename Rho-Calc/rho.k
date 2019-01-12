@@ -36,23 +36,23 @@ module RHO
 
   configuration
     <T>
-      <activity color="red">
-        <thread multiplicity="*">                             //process pool
-          <k> $PGM:Proc </k>                                  //computations are process-based
+      <processpool color="red">
+        <thread multiplicity="*">                             //collection of threads
+          <k> $PGM:Proc </k>                                  //programs and computations are process-based
         </thread>
-      </activity>                                             //tuplespace a.k.a. where the magic happens
+      </processpool>                                          //tuplespace stores sends and recs/conts
       <tuplespace color="blue">
         <sends color="teal">                                  //sends
-          <send color="cyan" multiplicity="*">                //there may be several, on the same channel even
+          <send color="cyan" multiplicity="*">                //there may be several, even on the same channel
             <schan> .K </schan>                               //sending channel
-            <msg>   .K </msg>                                 //message sent
+            <msg>   .K </msg>                                 //message
           </send>
         </sends>
         <recs color="green">                                  //receives
-          <rec color="yellow" multiplicity="*">               //there may be several, on the same channel even
+          <rec color="yellow" multiplicity="*">               //there may be several, even on the same channel
             <rchan> .K </rchan>                               //receiving channel
-            <bind>  .K </bind>                                //varible binding in continuation
-            <cont>  .K </cont>                                //continuation of the receive
+            <bvar>  .K </bvar>                                //binding varible in continuation
+            <cont>  .K </cont>                                //continuation
           </rec>
         </recs>
       </tuplespace>
@@ -74,7 +74,7 @@ module RHO
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <activity/> and spawn <rec/>
        (.Bag => <rec>
                   <rchan> X </rchan>                          //receiving channel X
-                  <bind>  Y </bind>                           //variable Y binding in continuation P
+                  <bvar>  Y </bvar>                           //variable Y binding in continuation P
                   <cont>  P </cont>                           //continuation P
                 </rec>)                                       //[structural]
 
@@ -83,44 +83,46 @@ module RHO
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-  rule P:Proc | Nil => P                        [structural]  //dissolve parred Nils in <k/>
+//  rule P:Proc | Nil => P                        [structural]  //dissolve parred Nils in <k/>
 
-  rule <cont> P:Proc | Nil => P </cont>         [structural]  //dissolve parred Nils in continuations
+//  rule <cont> P:Proc | Nil => P </cont>         [structural]  //dissolve parred Nils in continuations
 
   rule <thread> <k> . </k> </thread> => .Bag    [structural]  //dissolve empty threads
 
-  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
+//  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
-// REIFY OPERATOR (can contexts be used here? * @ []:Proc and @ * []:Name)
+// REIFY OPERATOR
+//  context @ * HOLE => HOLE                      [structural]
+
   rule <msg> @ * X:Name => X </msg>             [structural]  //name equivalence in <msg/>
 
   rule <rchan> @ * X:Name => X </rchan>         [structural]  //name equivalence in <rchan/>
 
   rule <schan> @ * X:Name => X </schan>         [structural]  //name equivalence in <schan/>
 
-  rule * @ P:Proc => P                          [structural]  //inverse operator in <k/>
+//  rule * @ P:Proc => P                          [structural]  //inverse operator in <k/>
 
-  rule <cont> * @ P:Proc => P </cont>           [structural]  //inverse operator in <cont/>
+//  rule <cont> * @ P:Proc => P </cont>           [structural]  //inverse operator in <cont/>
 
 // REDUCTION RULES
 
-// COMM EVENT (comm tag to track nondeterminism?)
+// COMM EVENT
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                                        //dissolve send and receive on "same" channel
-  (<rec>                                                      //dissolve receive with:
-     <rchan> X:Name </rchan>                                  //receiving channel X
-     <bind>  Y:Name </bind>                                   //binding variable Y
-     <cont>  P:Proc </cont>                                   //continuation P
+  (<rec>                                                      //dissolve:
+     <rchan> X:Name </rchan>                                  //receive on channel X
+     <bvar>  Y:Name </bvar>                                   //binding variable Y
+     <cont>  P:Proc </cont>                                   //with continuation P
    </rec> => .Bag)
-  (<send>                                                     //dissolve send with:
+  (<send>                                                     //dissolve:
      <schan> X </schan>                                       //send on channel X
-     <msg>   Z:Name </msg>                                    //Z is message sent to continuation
+     <msg>   Z:Name </msg>                                    //sent message Z
    </send> => .Bag)
-  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawns a new <thread/> holding P[Z / Y]
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn a new <thread/> holding P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 // PAR: P|Q -> P'|Q when P -> P'
