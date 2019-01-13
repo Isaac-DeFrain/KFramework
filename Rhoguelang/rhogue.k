@@ -13,27 +13,21 @@ module RHOGUE-SYNTAX
   import DOMAINS
   import SUBSTITUTION
 
-  //*******************
-  //*** NAME SYNTAX ***
-  //*******************
-//syntax NameVar ::= Id                                                   //name variable
-//                 | List{Id,","}                                         //name variables
-
+//*******************
+//*** NAME SYNTAX ***
+//*******************
   syntax    Name ::= Id                                                   //     Id: -----------------> Name
                    | "@" Proc                                             //  Quote: Proc ------------> Name
                    | "{" Name "}"                              [bracket]
                    | "(" Name ")"                              [bracket]
 
-  //**********************
-  //*** PROCESS SYNTAX ***
-  //**********************
-//syntax  Ground ::= Int
-//                 | String
-//                 | Bool
+//syntax NameVar ::= Id                                                   //name variable
+//                 | List{Id,","}                                         //name variables
 
-//syntax ProcVar ::= Id                                                   //process variable
-//                 | List{Id,","}                                         //process variables
 
+//**********************
+//*** PROCESS SYNTAX ***
+//**********************
   syntax    Proc ::= "Nil"                                                //    Nil: -----------------> Proc
                    | "(" Name "<-" Name "){" Proc "}"        [binder(2)]  //    Rec: Name*Name*Proc --> Proc
                    | "(" Name "<=" Name "){" Proc "}"        [binder(2)]  //   pRec: Name*Name*Proc --> Proc
@@ -43,6 +37,13 @@ module RHOGUE-SYNTAX
                    | "*" Name                                             //  Reify: Name ------------> Proc
                    | "{" Proc "}"                              [bracket]
                    | "(" Proc ")"                              [bracket]
+
+//syntax  Ground ::= Int                                                  //Ground terms
+//                 | String
+//                 | Bool
+
+//syntax ProcVar ::= Id                                                   //process variable
+//                 | List{Id,","}                                         //process variables
 
 endmodule
 
@@ -54,9 +55,9 @@ module RHOGUE
   import RHOGUE-SYNTAX
   import SUBSTITUTION
 
-  //<<<<<<<<<<<<<<<<<<<<<
-  //<<< CONFIGURATION >>>
-  //>>>>>>>>>>>>>>>>>>>>>
+//<<<<<<<<<<<<<<<<<<<<<
+//<<< CONFIGURATION >>>
+//>>>>>>>>>>>>>>>>>>>>>
 
   configuration
     <T>                                                       //<top> : < <processpool> <tuplespace> >
@@ -193,24 +194,24 @@ module RHOGUE
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 //Persistent receive comm
-//  rule                                                        //persistent receives
-//    <rpackage>                                                //
-//      <receive>                                               //comm event but rpackage persists:
-//        <rchan> X:Name </rchan>                               //  channel(s) X
-//        <bvars> Y:Name  </bvars>                              //  binding variable(s) Y
-//        <rpers>   Nil   </rpers>                              //  persistent
-//      </receive>                                              //
-//      <cont> P:Proc </cont>                                   //  continuation P
-//    </rpackage>                                               //
-//   (<spackage>                                                //dissolve spackage:
-//      <send>                                                  //
-//        <schan> X     </schan>                                //  channel(s) X
-//        <msgs>  Z:Name </msgs>                                //  message(s) Z
-//        <spers>  @Nil </spers>                                //  not persistent
-//      </send>                                                 //
-//    </spackage> => .Bag)                                      //  
-//  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-//  [commpr]                                                    //tagged "commpr" for tracking nondeterminism
+//  rule                                                      //persistent receives
+//    <rpackage>                                              //
+//      <receive>                                             //comm event but rpackage persists:
+//        <rchan> X:Name </rchan>                             //  channel(s) X
+//        <bvars> Y:Name  </bvars>                            //  binding variable(s) Y
+//        <rpers>   Nil   </rpers>                            //  persistent
+//      </receive>                                            //
+//      <cont> P:Proc </cont>                                 //  continuation P
+//    </rpackage>                                             //
+//   (<spackage>                                              //dissolve spackage:
+//      <send>                                                //
+//        <schan> X     </schan>                              //  channel(s) X
+//        <msgs>  Z:Name </msgs>                              //  message(s) Z
+//        <spers>  @Nil </spers>                              //  not persistent
+//      </send>                                               //
+//    </spackage> => .Bag)                                    //  
+//  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)            //spawn <thread/> holding substitution P[Z / Y]
+//  [commpr]                                                  //tagged "commpr" for tracking nondeterminism
 
 //Persistent send comm
 //  rule                                                      //persistent sends
