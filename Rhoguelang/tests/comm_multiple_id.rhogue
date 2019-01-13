@@ -1,0 +1,17 @@
+//Multiple comms
+
+x!(*a) | x!(*b) | (y <- x){y!(*z)} | (u <- a){*u} | (v <- b){*v}
+
+
+// Two possible reductions:
+//
+// Final state 1: x!(*a) | (u <- a){*u} | *z
+// 
+// => b!(*z) | x!(*a) | (u <- a){*u} | (v <- b){*v} => x!(*a) | (u <- a){*u} | *z
+// 
+// or
+//
+// Final state 2: x!(*b) | (v <- b){*v} | *z
+// 
+// => x!(*b) | a!(*z) | (u <- a){*u} | (v <- b){*v} => x!(*b) | (v <- b){*v} | *z
+
