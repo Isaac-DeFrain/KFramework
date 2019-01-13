@@ -130,8 +130,8 @@ module RHOGUE
   rule <k> X:Name !!( P:Proc ) => . ...</k>                   //dissolve send and spawn persistent <spackage/>
     (.Bag => <spackage>                                       //spawn spackage:
                <send>                                         //
-                 <schan>  X   </schan>                        //  sending channel(s) X
-                 <msgs>  @P    </msgs>                        //  message(s) sent @P
+                 <schan>  X  </schan>                         //  sending channel(s) X
+                 <msgs>  @P   </msgs>                         //  message(s) sent @P
                  <spers> Nil </spers>                         //  persistent
                </send>                                        //
              </spackage>)                                     //[macro]  
@@ -197,8 +197,8 @@ module RHOGUE
 //    <rpackage>                                                //
 //      <receive>                                               //comm event but rpackage persists:
 //        <rchan> X:Name </rchan>                               //  channel(s) X
-//        <bvars> Y:Name  </bvar>                               //  binding variable(s) Y
-//        <rpers>   Nil   </rper>                               //  persistent
+//        <bvars> Y:Name  </bvars>                              //  binding variable(s) Y
+//        <rpers>   Nil   </rpers>                              //  persistent
 //      </receive>                                              //
 //      <cont> P:Proc </cont>                                   //  continuation P
 //    </rpackage>                                               //
