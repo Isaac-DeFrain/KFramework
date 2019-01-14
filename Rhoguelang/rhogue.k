@@ -31,13 +31,19 @@ module RHOGUE-SYNTAX
 //*** PROCESS CONSTRUCTORS ***
 //****************************
   syntax  Ground ::= "Nil"                                                       //Ground terms
-                   | Int     //not sure
-                   | String  //about this
-//                 | Bool    //syntax
+                   | Bool
+                   | Int
+                   | String
 
   syntax  Atomic ::= Ground
                    | Rec
                    | Send
+
+       // Bundle cannot be destructured by pattern matching                      //| read? | write? |
+  syntax  Bundle ::= "bundle-" "{" Proc "}"                                      //| yes   | no     |
+                   | "bundle+" "{" Proc "}"                                      //| no    | yes    |
+                   | "bundle0" "{" Proc "}"                                      //| no    | no     |
+                   | "bundle"  "{" Proc "}"                                      //| yes   | yes    |
 
   syntax     New ::= "new" Name "in"  "{" Proc "}"                     [binder]  //  New: Name*Proc -------> Proc
 
@@ -57,6 +63,7 @@ module RHOGUE-SYNTAX
 //                 | List{Id,";"}                                                //process variables
 
   syntax    Proc ::= Atomic
+                   | Bundle
                    | Par
                    | New
                    | Reify
@@ -120,11 +127,9 @@ module RHOGUE
 
 //syntax KResult ::= Name | Atomic
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%% OPERATOR SEMANTICS %%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-// implement join as packet of sends/receives to a single continuation
+//=>=>=>=>=>=>=>=>=>=>=>=>=>
+//<=> OPERATOR SEMANTICS >=>
+//=>=>=>=>=>=>=>=>=>=>=>=>=>
 
 //-----------
 //--- PAR ---
@@ -285,8 +290,8 @@ module RHOGUE
 // * AND @ ARE INVERSE OPERATORS                              
 //context       * @ _:Proc => _                               //write as single context reduction?
                                                               //split between contexts:
-  rule          * @ P:Proc => P                 [structural]  //reduce *@s
+//rule          * @ P:Proc => P                 [structural]  //reduce *@s
 
-  rule   <cont> * @ P:Proc => P </cont>         [structural]  // in <cont/>
+//rule   <cont> * @ P:Proc => P </cont>         [structural]  // in <cont/>
 
 endmodule
