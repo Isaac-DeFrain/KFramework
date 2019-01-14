@@ -1,0 +1,4 @@
+// Linear and persistent sends
+
+  for (y <= x){ Nil } | for (y <= x){ Nil } | x!(*a)
+
