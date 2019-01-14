@@ -32,7 +32,7 @@ module RHOGUE-SYNTAX
 //****************************
   syntax  Ground ::= "Nil"                                                       //Ground terms
                    | Int     //not sure
-//                 | String  //about this
+                   | String  //about this
 //                 | Bool    //syntax
 
   syntax  Atomic ::= Ground
