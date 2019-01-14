@@ -6,7 +6,8 @@ Rho-calc with added:
   - [x] Bool
   - [x] Int
   - [x] String
-  - [ ] Bundle
+  - [x] Bundle
+  - [ ] List
   - [ ] Map
   - [ ] Set
   - [ ] Tuple
@@ -25,9 +26,10 @@ Rho-calc with added:
   - [x] Receive
   - [x] Send
   - [x] Persistent receive/send
+  - [x] Contract (syntactic sugar: persistent receive)
   - [ ] Join (list substitution)
   - [ ] Peek
-  - [ ] `new`
+  - [ ] `new` (unforgeable names)
   - [ ] Logical connectives
 - [ ] Reductions
   - [x] Comms (linear and persistent)
