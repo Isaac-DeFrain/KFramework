@@ -1,0 +1,4 @@
+// Persistent receive
+
+  (y <= x){ @Nil!(Nil) }
+

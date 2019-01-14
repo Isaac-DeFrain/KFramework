@@ -61,16 +61,16 @@ module RHOGUE
 
   configuration
     <T>                                                       //<top> : < <processpool> <tuplespace> >
-      <processpool color="orange">                            //<processpool> : < <thread*> >
-        <thread color="orange" multiplicity="*">              //<thread> : < <k> >
+      <processpool color="red">                               //<processpool> : < <thread*> >
+        <thread color="red" multiplicity="*">                 //<thread> : < <k> >
           <k>                                                 // concurrent compututaional threads
             $PGM:Proc                                         // programs and computations are both processes
           </k>                                                // end k
         </thread>                                             // end thread
       </processpool>                                          // end processpool
       <tuplespace color="blue">                               //<tuplespace> : < <rpackages> <spackages> >
-        <rpackages color="red">                               //<rpackages> : < <rpackage*> >
-          <rpackage color="red" multiplicity="*">             //<rpackage> : < <receives> <cont> >
+        <rpackages color="orange">                            //<rpackages> : < <rpackage*> >
+          <rpackage color="orange" multiplicity="*">          //<rpackage> : < <receives> <cont> >
             <receives color="purple">                         //<receives> : < <receive*> >
               <receive color="purple" multiplicity="*">       //<receive> : < <rchan> <bvars> <rpers> >
                 <rchan color="purple"> .K </rchan>            // receive channel(s)
@@ -78,7 +78,7 @@ module RHOGUE
                 <rpers color="purple"> .K </rpers>            // persistent (y/n)
               </receive>                                      // end receive
             </receives>                                       // end receives
-            <cont color="orange"> .K </cont>                  //<cont> : < <k> >
+            <cont color="red"> .K </cont>                     //<cont> : < <k> >
           </rpackage>                                         // end rpackage
         </rpackages>                                          // end rpackages
         <spackages color="green">                             //<spackages> : < <spackage*> >
@@ -160,7 +160,7 @@ module RHOGUE
                  <bvars>  Y  </bvars>                         //    variable(s) Y binding in continuation
                  <rpers> Nil </rpers>                         //    persistent (consumed many times)
                </receive>                                     //
-               <cont>    P    </cont>                         //  continuation P
+               <cont>     P   </cont>                         //  continuation P
              </rpackage>)                                     //[macro]
 
 //%%%%%%%%%%%%%%%%%%%%%%%
@@ -179,7 +179,7 @@ module RHOGUE
      <receive>                                                //  dissolve rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
        <bvars> Y:Name </bvars>                                //    binding variable(s) Y
-       <rpers>   Nil  </rpers>                                //    not persistent
+       <rpers> Nil    </rpers>                                //    not persistent
      </receive>                                               //
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
@@ -194,44 +194,44 @@ module RHOGUE
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 //Persistent receive comm
-//  rule                                                      //persistent receives
-//    <rpackage>                                              //
-//      <receive>                                             //comm event but rpackage persists:
-//        <rchan> X:Name </rchan>                             //  channel(s) X
-//        <bvars> Y:Name  </bvars>                            //  binding variable(s) Y
-//        <rpers>   Nil   </rpers>                            //  persistent
-//      </receive>                                            //
-//      <cont> P:Proc </cont>                                 //  continuation P
-//    </rpackage>                                             //
-//   (<spackage>                                              //dissolve spackage:
-//      <send>                                                //
-//        <schan> X     </schan>                              //  channel(s) X
-//        <msgs>  Z:Name </msgs>                              //  message(s) Z
-//        <spers>  @Nil </spers>                              //  not persistent
-//      </send>                                               //
-//    </spackage> => .Bag)                                    //  
-//  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)            //spawn <thread/> holding substitution P[Z / Y]
-//  [commpr]                                                  //tagged "commpr" for tracking nondeterminism
+  rule                                                      //persistent receives
+    <rpackage>                                              //
+      <receive>                                             //comm event but rpackage persists:
+        <rchan> X:Name </rchan>                             //  channel(s) X
+        <bvars> Y:Name </bvars>                             //  binding variable(s) Y
+        <rpers> Nil    </rpers>                             //  persistent
+      </receive>                                            //
+      <cont> P:Proc </cont>                                 //  continuation P
+    </rpackage>                                             //
+   (<spackage>                                              //dissolve spackage:
+      <send>                                                //
+        <schan> X     </schan>                              //  channel(s) X
+        <msgs>  Z:Name </msgs>                              //  message(s) Z
+        <spers> @Nil  </spers>                              //  not persistent
+      </send>                                               //
+    </spackage> => .Bag)                                    //  
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)            //spawn <thread/> holding substitution P[Z / Y]
+  [commpr]                                                  //tagged "commpr" for tracking nondeterminism
 
 //Persistent send comm
-//  rule                                                      //persistent sends
-// (<rpackage>                                                //
-//    <receive>                                               //dissolve rpackage:
-//      <rchan> X:Name </rchan>                               //  channel(s) X
-//      <bvars> Y:Name </bvars>                               //  binding variable(s) Y
-//      <rpers>  @Nil  </rpers>                               //  not persistent
-//    </receive>                                              //
-//  <cont> P:Proc </cont>                                     //  continuation P
-//</rpackage> => .Bag)                                        //
-//<spackage>                                                  //comm event and spackage persists:
-//  <send>                                                    //
-//    <schan> X     </schan>                                  //  channel(s) X
-//    <msgs>  Z:Name </msgs>                                  //  message(s) Z
-//    <spers>   Nil </spers>                                  //  persistent
-//  </send>                                                   //
-//</spackage>                                                 //  
-//(.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-//[commps]                                                    //tagged "commps" for tracking nondeterminism
+  rule                                                      //persistent sends
+   (<rpackage>                                                //
+      <receive>                                               //dissolve rpackage:
+        <rchan> X:Name </rchan>                               //  channel(s) X
+        <bvars> Y:Name </bvars>                               //  binding variable(s) Y
+        <rpers> @Nil   </rpers>                               //  not persistent
+      </receive>                                              //
+    <cont> P:Proc </cont>                                     //  continuation P
+  </rpackage> => .Bag)                                        //
+  <spackage>                                                  //comm event and spackage persists:
+    <send>                                                    //
+      <schan> X     </schan>                                  //  channel(s) X
+      <msgs>  Z:Name </msgs>                                  //  message(s) Z
+      <spers> Nil   </spers>                                  //  persistent
+    </send>                                                   //
+  </spackage>                                                 //  
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
+  [commps]                                                    //tagged "commps" for tracking nondeterminism
 
 //**DON'T DO BOTH PERSISTENT RECEIVE AND SEND ON SAME CHANNEL!
 

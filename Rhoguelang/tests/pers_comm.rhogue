@@ -1,0 +1,4 @@
+// Persistent comm
+
+  x!(*a) | x!(*b) | (y <= x){ y!(Nil) }
+

@@ -1,0 +1,4 @@
+// Linear and persistent sends
+
+  (b <- a){ Nil } | (y <= x){ Nil }
+
