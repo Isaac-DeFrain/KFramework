@@ -31,7 +31,7 @@ module RHOGUE-SYNTAX
 //*** PROCESS CONSTRUCTORS ***
 //****************************
   syntax  Ground ::= "Nil"                                                       //Ground terms
-//                 | Int     //not sure
+                   | Int     //not sure
 //                 | String  //about this
 //                 | Bool    //syntax
 
@@ -144,7 +144,7 @@ module RHOGUE
                <send>                                         //
                  <schan>  X   </schan>                        //  sending channel(s) X
                  <msg>   @P     </msg>                        //  message(s) sent @P
-                 <sper>  @Nil  </sper>                        //  not persistent
+                 <sper>   0    </sper>                        //  not persistent
                </send>                                        //
              </spackage>)                                     //[macro]
 
@@ -154,7 +154,7 @@ module RHOGUE
                <send>                                         //
                  <schan>  X  </schan>                         //  sending channel(s) X
                  <msg>   @P    </msg>                         //  message(s) sent @P
-                 <sper>  Nil  </sper>                         //  persistent
+                 <sper>   1   </sper>                         //  persistent
                </send>                                        //
              </spackage>)                                     //[macro]  
 
@@ -168,7 +168,7 @@ module RHOGUE
                <receive>                                      //  receive:
                  <rchan>  X   </rchan>                        //    receiving channel(s) X
                  <bvar>   Y    </bvar>                        //    variable(s) Y binding in continuation
-                 <rper>  @Nil  </rper>                        //    not persistent (only consumed once)
+                 <rper>   0   </rper>                        //    not persistent (only consumed once)
                </receive>                                     //
                <cont>     P   </cont>                         //  continuation P
              </rpackage>)                                     //[macro]
@@ -179,7 +179,7 @@ module RHOGUE
                <receive>                                      //  receive:
                  <rchan>  X  </rchan>                         //    receiving channel(s) X
                  <bvar>   Y   </bvar>                         //    variable(s) Y binding in continuation
-                 <rper>  Nil  </rper>                         //    persistent (consumed many times)
+                 <rper>   1   </rper>                         //    persistent (consumed many times)
                </receive>                                     //
                <cont>     P   </cont>                         //  continuation P
              </rpackage>)                                     //[macro]
@@ -200,7 +200,7 @@ module RHOGUE
      <receive>                                                //  consume rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
        <bvar>  Y:Name  </bvar>                                //    binding variable(s) Y
-       <rper>  Nil     </rper>                                //    not persistent
+       <rper>    0     </rper>                                //    not persistent
      </receive>                                               //
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
@@ -208,7 +208,7 @@ module RHOGUE
      <send>                                                   //  consume spackage:
        <schan> X     </schan>                                 //    channel(s) X
        <msg>   Z:Name  </msg>                                 //    message(s) Z
-       <sper>  Nil    </sper>                                 //    not persistent
+       <sper>    0    </sper>                                 //    not persistent
      </send>                                                  //
    </spackage> => .Bag)                                       //
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
@@ -220,15 +220,15 @@ module RHOGUE
       <receive>                                               //rpackage persists:
         <rchan> X:Name </rchan>                               //  channel(s) X
         <bvar>  Y:Name  </bvar>                               //  binding variable(s) Y
-        <rper>  Nil     </rper>                               //  persistent
+        <rper>    1     </rper>                               //  persistent
       </receive>                                              //
       <cont> P:Proc </cont>                                   //  continuation P
     </rpackage>                                               //
    (<spackage>                                                //consume spackage:
       <send>                                                  //
-        <schan> X     </schan>                                //  channel(s) X
+        <schan>   X   </schan>                                //  channel(s) X
         <msg>   Z:Name  </msg>                                //  message(s) Z
-        <sper>  @Nil   </sper>                                //  not persistent
+        <sper>    0    </sper>                                //  not persistent
       </send>                                                 //
     </spackage> => .Bag)                                      //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
@@ -240,15 +240,15 @@ module RHOGUE
       <receive>                                               //consume rpackage:
         <rchan> X:Name </rchan>                               //  channel(s) X
         <bvar>  Y:Name  </bvar>                               //  binding variable(s) Y
-        <rper>  @Nil    </rper>                               //  not persistent
+        <rper>    0     </rper>                               //  not persistent
       </receive>                                              //
     <cont> P:Proc </cont>                                     //  continuation P
   </rpackage> => .Bag)                                        //
   <spackage>                                                  //spackage persists:
     <send>                                                    //
-      <schan> X     </schan>                                  //  channel(s) X
+      <schan>   X   </schan>                                  //  channel(s) X
       <msg>   Z:Name  </msg>                                  //  message(s) Z
-      <sper>  Nil    </sper>                                  //  persistent
+      <sper>    1    </sper>                                  //  persistent
     </send>                                                   //
   </spackage>                                                 //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
