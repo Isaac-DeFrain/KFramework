@@ -45,6 +45,8 @@ module RHOGUE-SYNTAX
                    | "bundle0" "{" Proc "}"                                      //| no    | no     |
                    | "bundle"  "{" Proc "}"                                      //| yes   | yes    |
 
+  syntax   Smart ::= "contract" Name "(" Name ")" "{" Proc "}"
+
   syntax     New ::= "new" Name "in"  "{" Proc "}"                     [binder]  //  New: Name*Proc -------> Proc
 
   syntax   Reify ::=   "*" Name                                                  //Reify: Name ------------> Proc
@@ -123,7 +125,7 @@ module RHOGUE
       <msgprocessed> .List </msgprocessed>                    // list of messages processed for testing
     </T>                                                      // end of configuration
 
-  syntax KVariable ::= Name
+  syntax KVariable ::= Name | ProcVar
 
 //syntax KResult ::= Name | Atomic
 
@@ -137,7 +139,7 @@ module RHOGUE
 
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>  //dissolve par in <thread/>
        (.Bag => <thread> <k> P1 </k> </thread>)               //  spawn two new <thread/>s
-       (.Bag => <thread> <k> P2 </k> </thread>)  [structural] //or [macro]
+       (.Bag => <thread> <k> P2 </k> </thread>)  [structural]
 
 //-------------
 //--- SENDS ---
@@ -151,7 +153,7 @@ module RHOGUE
                  <msg>   @P     </msg>                        //  message(s) sent @P
                  <sper>   0    </sper>                        //  not persistent
                </send>                                        //
-             </spackage>)                                     //[macro]
+             </spackage>)                        [structural]
 
 //Persistent send
   rule <k> X:Name !!( P:Proc ) => . ...</k>                   //dissolve send and spawn persistent <spackage/>
@@ -161,7 +163,7 @@ module RHOGUE
                  <msg>   @P    </msg>                         //  message(s) sent @P
                  <sper>   1   </sper>                         //  persistent
                </send>                                        //
-             </spackage>)                                     //[macro]  
+             </spackage>)                        [structural]  
 
 //----------------
 //--- RECEIVES ---
@@ -173,10 +175,10 @@ module RHOGUE
                <receive>                                      //  receive:
                  <rchan>  X   </rchan>                        //    receiving channel(s) X
                  <bvar>   Y    </bvar>                        //    variable(s) Y binding in continuation
-                 <rper>   0   </rper>                        //    not persistent (only consumed once)
+                 <rper>   0    </rper>                        //    not persistent (only consumed once)
                </receive>                                     //
                <cont>     P   </cont>                         //  continuation P
-             </rpackage>)                                     //[macro]
+             </rpackage>)                        [structural]
 
 //Persistent receive
   rule <k> for ( Y:Name <= X:Name ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
@@ -187,7 +189,7 @@ module RHOGUE
                  <rper>   1   </rper>                         //    persistent (consumed many times)
                </receive>                                     //
                <cont>     P   </cont>                         //  continuation P
-             </rpackage>)                                     //[macro]
+             </rpackage>)                        [structural]
 
 //%%%%%%%%%%%%%%%%%%%%%%%
 //%%% REDUCTION RULES %%%
@@ -261,6 +263,10 @@ module RHOGUE
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
 
+  rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
+
+  rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
+
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
 //context        Nil | P:Proc => P
@@ -293,5 +299,30 @@ module RHOGUE
 //rule          * @ P:Proc => P                 [structural]  //reduce *@s
 
 //rule   <cont> * @ P:Proc => P </cont>         [structural]  // in <cont/>
+
+//The patterns in:
+//
+//for( NamePat <- Name ){ Body }
+//for( NamePat <= Name ){ Body }
+//
+//Match against the processes in:
+//
+//Name!(Process)
+//Name!!(Process)
+//
+//
+//Each NamePat_i in:
+//
+//for( NamePat_1 <- Name_1 ; ... ; NamePat_N <- Name_N ){ Body }
+//for( NamePat_1 <= Name_1 ; ... ; NamePat_N <= Name_N ){ Body }
+//
+//Matches against a Process_i in:
+//
+//Name_1!(Process_1) | ... | Name_N!(Process_N)
+//Name_1!!(Process_1) | ... | Name_N!!(Process_N)
+//
+//
+//Tries to match Process against each Pattern_i until it finds a match (or doesn’t):
+//match Process { Pattern_1 => { Body_1 } ... Pattern_N => { Body_N } }
 
 endmodule
