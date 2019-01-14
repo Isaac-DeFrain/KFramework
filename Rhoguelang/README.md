@@ -3,13 +3,13 @@
 Rho-calc with added:
 - [ ] Ground terms / basic data structures
   - [x] `Nil`
-  - [ ] Bool
+  - [x] Bool
+  - [x] Int
+  - [x] String
   - [ ] Bundle
-  - [ ] Int
   - [ ] Map
   - [ ] Set
   - [ ] Tuple
-  - [ ] String
   - [ ] Uri
 - [ ] Operations
   - [ ] Conditional
@@ -20,11 +20,12 @@ Rho-calc with added:
   - [ ] String
   - [ ] List
 - [ ] Operators
+  - [x] Par
   - [x] Quote
   - [x] Receive
-  - [x]
+  - [x] Send
   - [x] Persistent receive/send
-  - [ ] Join
+  - [ ] Join (list substitution)
   - [ ] Peek
   - [ ] `new`
   - [ ] Logical connectives
@@ -32,5 +33,6 @@ Rho-calc with added:
   - [x] Comms (linear and persistent)
   - [ ] Strict functions
   - [ ] Pattern matching
-- [ ] Process variables
+- [x] Process variables
 - [ ] Type system
+  - [ ] tagged function types
