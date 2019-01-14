@@ -18,7 +18,7 @@ module RHOGUE-SYNTAX
 //@@@@@@@@@@@@@@@@@@@@@@@@@
   syntax   Quote ::= "@" Proc                                                   //Quote: Proc -------------> Name
 
-  syntax NameVar ::= Id                                                         //   Id: Char -------------> Name
+  syntax NameVar ::= Id                                                         //   Id: Char' ------------> Name
 //                 | List{Id,";"}                                               //name variables
 
   syntax    Name ::= Quote
@@ -35,7 +35,13 @@ module RHOGUE-SYNTAX
 //                 | String  //about this
 //                 | Bool    //syntax
 
-  syntax     Par ::= Proc  "|"  Proc                                     [left]  //  Par: Proc*Proc -------> Proc
+  syntax  Atomic ::= Ground
+                   | Rec
+                   | Send
+
+  syntax     New ::= "new" Name "in"  "{" Proc "}"                     [binder]  //  New: Name*Proc -------> Proc
+
+  syntax   Reify ::=   "*" Name                                                  //Reify: Name ------------> Proc
 
   syntax     Rec ::= "for" "("  Name "<-" Name "){" Proc "}"        [binder(2)]  //  Rec: Name*Name*Proc --> Proc
                    | "for" "("  Name "<=" Name "){" Proc "}"        [binder(2)]  // pRec: Name*Name*Proc --> Proc
@@ -43,17 +49,16 @@ module RHOGUE-SYNTAX
   syntax    Send ::= Name "!("  Proc ")"                                         // Send: Name*Proc -------> Proc
                    | Name "!!(" Proc ")"                                         //pSend: Name*Proc -------> Proc
 
-  syntax   Reify ::= "*" Name                                                    //Reify: Name ------------> Proc
+  syntax     Par ::= Proc  "|"  Proc                                             //  Par: Proc*Proc -------> Proc
 
-  syntax  Atomic ::= Rec
-                   | Send
 
-//syntax ProcVar ::= Id                                                          //   Id: Char ------------> Proc
+
+//syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc
 //                 | List{Id,";"}                                                //process variables
 
-  syntax    Proc ::= Ground
-                   | Atomic
+  syntax    Proc ::= Atomic
                    | Par
+                   | New
                    | Reify
 //                 | ProcVar
                    | "{" Proc "}"                                     [bracket]
