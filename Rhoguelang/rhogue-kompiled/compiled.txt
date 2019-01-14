@@ -1778,7 +1778,6 @@ module RHOGUE-SYNTAX [org.kframework.attributes.Location(Location(11,1,68,9)) or
   imports RHOGUE-SYNTAX$SYNTAX
   imports ID
   imports DOMAINS
-  ModuleComment(syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc,[UNIQUE_ID(c07b83cdc15b4bfdff30f88672297d343bff64ee6679e7b6d26d1efdd4784022) org.kframework.attributes.Location(Location(56,1,56,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(pSend: Name*Proc -------> Proc,[UNIQUE_ID(2fb94441f7d012c059b6fa18809a363b70b16c038aa3e0bc73493c2aa4729d99) org.kframework.attributes.Location(Location(50,82,50,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(not sure,[UNIQUE_ID(11f2a7f8d3d238cba4891ac3390203e12fb4224ccf7c434bf72d3f52f9f0af52) org.kframework.attributes.Location(Location(34,30,34,40)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(Reify: Name ------------> Proc,[UNIQUE_ID(e9b53c195e18291fdf9397b1f8807e2c62915b2dabdcf5856a9136f4ae1654b9) org.kframework.attributes.Location(Location(44,82,44,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
@@ -1795,9 +1794,9 @@ module RHOGUE-SYNTAX [org.kframework.attributes.Location(Location(11,1,68,9)) or
   ModuleComment(  Rec: Name*Name*Proc --> Proc,[UNIQUE_ID(198f0e9eb7662c0aae0c83efef29b75138cde53eb5839387ec369a519322ba4c) org.kframework.attributes.Location(Location(46,82,46,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(  Par: Proc*Proc -------> Proc,[UNIQUE_ID(08b29e57ed97db5bce78cfab532482275f68e55e2bf96d46fbe3d02d9e70d5f0) org.kframework.attributes.Location(Location(52,82,52,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(  New: Name*Proc -------> Proc,[UNIQUE_ID(28cfea42f381257b6497db5c3e3293ad9b5026e4d0fc17321c8422040b19798d) org.kframework.attributes.Location(Location(42,82,42,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
+  ModuleComment(   Id: Char' -----------> Proc,[UNIQUE_ID(77b818be2bb019df73258e47a8d96e4f236f61dcfbc990f91dbea6c7f187b334) org.kframework.attributes.Location(Location(56,82,56,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(   Id: Char' ------------> Name,[UNIQUE_ID(41f7c8d026fdb370599d6755c4ffb32156812aec00c67b1eff06b060fd490f04) org.kframework.attributes.Location(Location(21,81,21,114)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(                 | String  //about this,[UNIQUE_ID(a51fb5412549d4b5fd4e56aed07fde90b7184a2cb66852db7894431e43f6031a) org.kframework.attributes.Location(Location(35,1,35,42)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
-  ModuleComment(                 | ProcVar,[UNIQUE_ID(86e93b74c450f8efe65846faf055e3ece337e02b09ed474bf90be3b54caf3a8d) org.kframework.attributes.Location(Location(63,1,63,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(                 | List{Id,";"}                                               //name variables,[UNIQUE_ID(b264e27651a0d7f440ad79cea1497709788dca6f8c9e0f232dd6b5905698c537) org.kframework.attributes.Location(Location(22,1,22,97)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(                 | List{Id,";"}                                                //process variables,[UNIQUE_ID(4af9b736bbd5990fac062834c5c0c6ea80f1404a9f5c7217a11204b40168800d) org.kframework.attributes.Location(Location(57,1,57,101)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
   ModuleComment(                 | Bool    //syntax,[UNIQUE_ID(e3f139877313d36bfce50f5830d13d267c451cd5505bb2845ea1e6a5ed1eb56e) org.kframework.attributes.Location(Location(36,1,36,38)) org.kframework.attributes.Source(Source(/home/isaac/Documents/Isaac/KFramework/Git/KFramework/Rhoguelang/./rhogue.k))])
@@ -1814,7 +1813,9 @@ module RHOGUE-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(11,1,68
   syntax Rec ::= "for" "(" Name "<=" Name "){" Proc "}"
   syntax Rec ::= "for" "(" Name "<-" Name "){" Proc "}"
   syntax Quote ::= "@" Proc
+  syntax ProcVar ::= Id
   syntax Proc ::= Reify
+  syntax Proc ::= ProcVar
   syntax Proc ::= Par
   syntax Proc ::= New
   syntax Proc ::= Atomic
@@ -1831,6 +1832,7 @@ module RHOGUE-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(11,1,68
   syntax KItem ::= Reify
   syntax KItem ::= Rec
   syntax KItem ::= Quote
+  syntax KItem ::= ProcVar
   syntax KItem ::= Proc
   syntax KItem ::= Par
   syntax KItem ::= New
@@ -1845,6 +1847,7 @@ module RHOGUE-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(11,1,68
   syntax Bool ::= "isReify" "(" K ")"
   syntax Bool ::= "isRec" "(" K ")"
   syntax Bool ::= "isQuote" "(" K ")"
+  syntax Bool ::= "isProcVar" "(" K ")"
   syntax Bool ::= "isProc" "(" K ")"
   syntax Bool ::= "isPar" "(" K ")"
   syntax Bool ::= "isNew" "(" K ")"

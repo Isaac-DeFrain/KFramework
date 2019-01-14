@@ -53,14 +53,14 @@ module RHOGUE-SYNTAX
 
 
 
-//syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc
+  syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc
 //                 | List{Id,";"}                                                //process variables
 
   syntax    Proc ::= Atomic
                    | Par
                    | New
                    | Reify
-//                 | ProcVar
+                   | ProcVar
                    | "{" Proc "}"                                     [bracket]
                    | "(" Proc ")"                                     [bracket]
 
