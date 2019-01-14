@@ -19,7 +19,7 @@ module RHOGUE-SYNTAX
   syntax   Quote ::= "@" Proc                                                   //Quote: Proc -------------> Name
 
   syntax NameVar ::= Id                                                         //   Id: Char -------------> Name
-//                 | List{Id,","}                                               //name variables
+//                 | List{Id,";"}                                               //name variables
 
   syntax    Name ::= Quote
                    | NameVar
@@ -49,7 +49,7 @@ module RHOGUE-SYNTAX
                    | Send
 
 //syntax ProcVar ::= Id                                                          //   Id: Char ------------> Proc
-//                 | List{Id,","}                                                //process variables
+//                 | List{Id,";"}                                                //process variables
 
   syntax    Proc ::= Ground
                    | Atomic
