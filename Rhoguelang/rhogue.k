@@ -19,7 +19,8 @@ module RHOGUE-SYNTAX
   syntax   Quote ::= "@" Proc                                                   //Quote: Proc -------------> Name
 
   syntax NameVar ::= Id                                                         //   Id: Char' ------------> Name
-//                 | List{Id,";"}                                               //name variables
+                   | List{Id,";"}                            [klabel(NameVar)]  //name variables
+                   | "[" NameVar "]"
 
   syntax    Name ::= Quote
                    | NameVar
@@ -62,12 +63,14 @@ module RHOGUE-SYNTAX
 
 
   syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc
-//                 | List{Id,";"}                                                //process variables
+//                 | List{Id,";"}                             [klabel(ProcVar)]  //process variables
+//                 | "[" ProcVar "]"
 
   syntax    Proc ::= Atomic
                    | Bundle
                    | Par
                    | New
+                   | Smart
                    | Reify
                    | ProcVar
                    | "{" Proc "}"                                     [bracket]
@@ -122,7 +125,6 @@ module RHOGUE
           </spackage>                                         // end spackage
         </spackages>                                          // end spackages
       </tuplespace>                                           // end tuplespace
-      <msgprocessed> .List </msgprocessed>                    // list of messages processed for testing
     </T>                                                      // end of configuration
 
   syntax KVariable ::= Name | ProcVar
@@ -145,15 +147,15 @@ module RHOGUE
 //--- SENDS ---
 //-------------
 
-//Linear send
-  rule <k> X:Name !( P:Proc ) => . ...</k>                    //dissolve send in <thread/> and spawn <spackage/>
-    (.Bag => <spackage>                                       //spawn spackage:
-               <send>                                         //
-                 <schan>  X   </schan>                        //  sending channel(s) X
-                 <msg>   @P     </msg>                        //  message(s) sent @P
-                 <sper>   0    </sper>                        //  not persistent
-               </send>                                        //
-             </spackage>)                        [structural]
+//Linear send (recursion not currently working)
+  rule <k> [Hd; Tl]:NameVar !( P:Proc ) => Tl !( P:Proc ) ...</k>
+    (.Bag => <send>                                           //
+               <schan> Hd </schan>                            //  sending channel(s) X
+               <msg>   @P   </msg>                            //  message(s) sent @P
+               <sper>   0  </sper>                            //  not persistent
+             </send>)                            [structural]
+
+  rule <k> .NameVar !( P:Proc ) => . ...</k>
 
 //Persistent send
   rule <k> X:Name !!( P:Proc ) => . ...</k>                   //dissolve send and spawn persistent <spackage/>
@@ -221,35 +223,55 @@ module RHOGUE
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
+//Linear comm list i.e. join
+//rule                                                        //consume both rpackage and spackage
+//(<rpackage>                                                 //
+//   <receive>                                                //  consume rpackage:
+//     <rchan> X:Name </rchan>                                //    channel(s) X
+//     <bvar>  Y:Name  </bvar>                                //    binding variable(s) Y
+//     <rper>    0     </rper>                                //    not persistent
+//   </receive>                                               //
+//   <cont> P:Proc </cont>                                    //    continuation P
+// </rpackage> => .Bag)                                       //
+//(<spackage>                                                 //
+//   <send>                                                   //  consume spackage:
+//     <schan> X     </schan>                                 //    channel(s) X
+//     <msg>   Z:Name  </msg>                                 //    message(s) Z
+//     <sper>    0    </sper>                                 //    not persistent
+//   </send>                                                  //
+// </spackage> => .Bag)                                       //
+//(.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
+//[comm]                                                      //tagged "comm" for tracking nondeterminism
+
 //Persistent receive comm
   rule                                                        //persistent receives (rpackage persists)
-    <rpackage>                                                //
-      <receive>                                               //rpackage persists:
-        <rchan> X:Name </rchan>                               //  channel(s) X
-        <bvar>  Y:Name  </bvar>                               //  binding variable(s) Y
-        <rper>    1     </rper>                               //  persistent
-      </receive>                                              //
-      <cont> P:Proc </cont>                                   //  continuation P
-    </rpackage>                                               //
-   (<spackage>                                                //consume spackage:
-      <send>                                                  //
-        <schan>   X   </schan>                                //  channel(s) X
-        <msg>   Z:Name  </msg>                                //  message(s) Z
-        <sper>    0    </sper>                                //  not persistent
-      </send>                                                 //
-    </spackage> => .Bag)                                      //  
+   <rpackage>                                                 //
+     <receive>                                                //rpackage persists:
+       <rchan> X:Name </rchan>                                //  channel(s) X
+       <bvar>  Y:Name  </bvar>                                //  binding variable(s) Y
+       <rper>    1     </rper>                                //  persistent
+     </receive>                                               //
+     <cont> P:Proc </cont>                                    //  continuation P
+   </rpackage>                                                //
+  (<spackage>                                                 //consume spackage:
+     <send>                                                   //
+       <schan>   X   </schan>                                 //  channel(s) X
+       <msg>   Z:Name  </msg>                                 //  message(s) Z
+       <sper>    0    </sper>                                 //  not persistent
+     </send>                                                  //
+   </spackage> => .Bag)                                       //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [commpr]                                                    //tagged "commpr" for tracking nondeterminism
+  [comm]                                                    //tagged "commpr" for tracking nondeterminism
 
 //Persistent send comm
   rule                                                        //persistent sends (spackage persists)
-   (<rpackage>                                                //
-      <receive>                                               //consume rpackage:
-        <rchan> X:Name </rchan>                               //  channel(s) X
-        <bvar>  Y:Name  </bvar>                               //  binding variable(s) Y
-        <rper>    0     </rper>                               //  not persistent
-      </receive>                                              //
-    <cont> P:Proc </cont>                                     //  continuation P
+  (<rpackage>                                                 //
+     <receive>                                                //consume rpackage:
+       <rchan> X:Name </rchan>                                //  channel(s) X
+       <bvar>  Y:Name  </bvar>                                //  binding variable(s) Y
+       <rper>    0     </rper>                                //  not persistent
+     </receive>                                               //
+     <cont> P:Proc </cont>                                    //  continuation P
   </rpackage> => .Bag)                                        //
   <spackage>                                                  //spackage persists:
     <send>                                                    //
@@ -259,7 +281,7 @@ module RHOGUE
     </send>                                                   //
   </spackage>                                                 //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [commps]                                                    //tagged "commps" for tracking nondeterminism
+  [comm]                                                    //tagged "commps" for tracking nondeterminism
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
 
