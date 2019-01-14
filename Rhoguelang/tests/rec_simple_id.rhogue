@@ -1,3 +1,3 @@
-//Simple receive
+// Simple receive
 
-x(y){*z}
+   for ( y <- x){ *z }

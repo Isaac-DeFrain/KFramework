@@ -20,11 +20,17 @@ Rho-calc with added:
   - [ ] String
   - [ ] List
 - [ ] Operators
+  - [x] Quote
+  - [x] Receive
+  - [x]
   - [x] Persistent receive/send
   - [ ] Join
   - [ ] Peek
   - [ ] `new`
   - [ ] Logical connectives
+- [ ] Reductions
+  - [x] Comms (linear and persistent)
+  - [ ] Strict functions
+  - [ ] Pattern matching
 - [ ] Process variables
-- [ ] Patterns
 - [ ] Type system

@@ -1,4 +1,4 @@
 // Persistent receive
 
-  (y <= x){ @Nil!(Nil) }
+  for (y <= x){ @Nil!(Nil) }
 

@@ -1,3 +1,3 @@
 //Multiple comms: a then b
 
-  x!(*a) | x!(*b) | (y <- x ){y!(*z)}
+  x!(*a) | x!(*b) | for (y <- x ){y!(*z)}

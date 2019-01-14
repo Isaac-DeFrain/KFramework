@@ -1,4 +1,4 @@
 // Persistent comm
 
-  x!(*a) | x!(*b) | (y <= x){ y!(Nil) }
+  x!(*a) | x!(*b) | for (y <= x){ y!(Nil) }
 
