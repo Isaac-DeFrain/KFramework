@@ -1,4 +1,4 @@
 // Send list
 
-  @Nil!( [a; b; c] )
+  @Nil!( *[a, b, c] )
 

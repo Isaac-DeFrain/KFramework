@@ -1,4 +1,4 @@
-// List name
+// List send
 
-  a; b; c!( Nil )
+  [a, b, c]!( Nil )
 

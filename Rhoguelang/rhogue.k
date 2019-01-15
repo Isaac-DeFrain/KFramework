@@ -13,24 +13,31 @@ module RHOGUE-SYNTAX
   import DOMAINS
   import SUBSTITUTION
 
-//@@@@@@@@@@@@@@@@@@@@@@@@@
-//@@@ NAME CONSTRUCTORS @@@
-//@@@@@@@@@@@@@@@@@@@@@@@@@
+//@*@*@*@*@*@*@*@*@*@*@*@*@
+//@*@ NAME CONSTRUCTORS @*@
+//@*@*@*@*@*@*@*@*@*@*@*@*@
   syntax   Quote ::= "@" Proc                                                   //Quote: Proc -------------> Name
 
   syntax NameVar ::= Id                                                         //   Id: Char' ------------> Name
-                   | List{Id,";"}                            [klabel(NameVar)]  //name variables
-                   | "[" NameVar "]"
+
+ syntax NameVars ::= NameVar
+                   | List{Id,","}                           [klabel(NameVars)]  //name variables
+                   | "[" NameVars "]"
 
   syntax    Name ::= Quote
                    | NameVar
                    | "{" Name "}"                                    [bracket]
                    | "(" Name ")"                                    [bracket]
 
+  syntax   Names ::= Name
+                   | List{Name,","}
+                   | NameVars
+                   | "[" Names "]"
 
-//****************************
-//*** PROCESS CONSTRUCTORS ***
-//****************************
+
+//*@*@*@*@*@*@*@*@*@*@*@*@*@*@
+//*@* PROCESS CONSTRUCTORS *@*
+//*@*@*@*@*@*@*@*@*@*@*@*@*@*@
   syntax  Ground ::= "Nil"                                                       //Ground terms
                    | Bool
                    | Int
@@ -40,30 +47,30 @@ module RHOGUE-SYNTAX
                    | Rec
                    | Send
 
-       // Bundle cannot be destructured by pattern matching                      //| read? | write? |
-  syntax  Bundle ::= "bundle-" "{" Proc "}"                                      //| yes   | no     |
-                   | "bundle+" "{" Proc "}"                                      //| no    | yes    |
-                   | "bundle0" "{" Proc "}"                                      //| no    | no     |
-                   | "bundle"  "{" Proc "}"                                      //| yes   | yes    |
+       // Bundle cannot be destructured by pattern matching                      // | read? | write? |
+  syntax  Bundle ::= "bundle-" "{" Proc "}"                                      // | yes   | no     |
+                   | "bundle+" "{" Proc "}"                                      // | no    | yes    |
+                   | "bundle0" "{" Proc "}"                                      // | no    | no     |
+                   | "bundle"  "{" Proc "}"                                      // | yes   | yes    |
 
-  syntax   Smart ::= "contract" Name "(" Name ")" "{" Proc "}"
+  syntax   Smart ::= "contract" Names "(" Names ")" "{" Proc "}"
 
-  syntax     New ::= "new" Name "in"  "{" Proc "}"                     [binder]  //  New: Name*Proc -------> Proc
+  syntax     New ::= "new" Names "in"  "{" Proc "}"                    [binder]  //  New: Name*Proc -------> Proc
 
-  syntax   Reify ::=   "*" Name                                                  //Reify: Name ------------> Proc
+  syntax   Reify ::=   "*" Names                                                 //Reify: Name ------------> Proc
 
-  syntax     Rec ::= "for" "("  Name "<-" Name "){" Proc "}"        [binder(2)]  //  Rec: Name*Name*Proc --> Proc
-                   | "for" "("  Name "<=" Name "){" Proc "}"        [binder(2)]  // pRec: Name*Name*Proc --> Proc
+  syntax     Rec ::= "for" "("  Names "<-" Names "){" Proc "}"      [binder(2)]  //  Rec: Name*Name*Proc --> Proc
+                   | "for" "("  Names "<=" Names "){" Proc "}"      [binder(2)]  // pRec: Name*Name*Proc --> Proc
 
-  syntax    Send ::= Name "!("  Proc ")"                                         // Send: Name*Proc -------> Proc
-                   | Name "!!(" Proc ")"                                         //pSend: Name*Proc -------> Proc
+  syntax    Send ::= Names "!("  Proc ")"                                        // Send: Name*Proc -------> Proc
+                   | Names "!!(" Proc ")"                                        //pSend: Name*Proc -------> Proc
 
   syntax     Par ::= Proc  "|"  Proc                                             //  Par: Proc*Proc -------> Proc
 
 
 
   syntax ProcVar ::= Id                                                          //   Id: Char' -----------> Proc
-//                 | List{Id,";"}                             [klabel(ProcVar)]  //process variables
+//                 | List{Id}                                [klabel(ProcVars)]  //process variables
 //                 | "[" ProcVar "]"
 
   syntax    Proc ::= Atomic
@@ -132,47 +139,52 @@ module RHOGUE
 //syntax KResult ::= Name | Atomic
 
 //=>=>=>=>=>=>=>=>=>=>=>=>=>
-//<=> OPERATOR SEMANTICS >=>
+//<=> OPERATOR SEMANTICS <=>
 //=>=>=>=>=>=>=>=>=>=>=>=>=>
 
-//-----------
-//--- PAR ---
-//-----------
+//|||||||||||
+//||| PAR |||
+//|||||||||||
 
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>  //dissolve par in <thread/>
        (.Bag => <thread> <k> P1 </k> </thread>)               //  spawn two new <thread/>s
        (.Bag => <thread> <k> P2 </k> </thread>)  [structural]
 
-//-------------
-//--- SENDS ---
-//-------------
+//!!!!!!!!!!!!!
+//!!! SENDS !!!
+//!!!!!!!!!!!!!
 
 //Linear send (recursion not currently working)
-  rule <k> [Hd; Tl]:NameVar !( P:Proc ) => Tl !( P:Proc ) ...</k>
+  rule <k> X:Names !( P:Proc ) => . ...</k>                   //dissolve send & spawn nonpersistent <spackage/>
     (.Bag => <send>                                           //
-               <schan> Hd </schan>                            //  sending channel(s) X
+               <schan>  X </schan>                            //  sending channel(s) X
                <msg>   @P   </msg>                            //  message(s) sent @P
                <sper>   0  </sper>                            //  not persistent
              </send>)                            [structural]
 
-  rule <k> .NameVar !( P:Proc ) => . ...</k>
-
 //Persistent send
-  rule <k> X:Name !!( P:Proc ) => . ...</k>                   //dissolve send and spawn persistent <spackage/>
+  rule <k> X:Names !!( P:Proc ) => . ...</k>                  //dissolve send & spawn persistent <spackage/>
     (.Bag => <spackage>                                       //spawn spackage:
                <send>                                         //
                  <schan>  X  </schan>                         //  sending channel(s) X
                  <msg>   @P    </msg>                         //  message(s) sent @P
                  <sper>   1   </sper>                         //  persistent
                </send>                                        //
-             </spackage>)                        [structural]  
+             </spackage>)                        [structural]
 
-//----------------
-//--- RECEIVES ---
-//----------------
+//channel lists
+  rule (<send> <schan> Hd,Tl:Names </schan> <msg> M:Name </msg> <sper> Sp </sper> </send> => .Bag)
+       (.Bag => <send> <schan> Hd </schan> <msg> M </msg> <sper> Sp </sper> </send>)
+       (.Bag => <send> <schan> Tl </schan> <msg> M </msg> <sper> Sp </sper> </send>)
+
+  rule (<send> <schan> .Names </schan> ...</send> => .Bag)
+
+//<-<-<-<-<-<-<-<-
+//<-< RECEIVES <-<
+//<-<-<-<-<-<-<-<-
 
 //Linear receive
-  rule <k> for ( Y:Name <- X:Name ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
+  rule <k> for ( Y:Names <- X:Names ){ P:Proc } => . ...</k>  //dissolve receive and spawn <rpackage/>
     (.Bag => <rpackage>                                       //spawn linear rpackage:
                <receive>                                      //  receive:
                  <rchan>  X   </rchan>                        //    receiving channel(s) X
@@ -183,7 +195,7 @@ module RHOGUE
              </rpackage>)                        [structural]
 
 //Persistent receive
-  rule <k> for ( Y:Name <= X:Name ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
+  rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>  //dissolve receive and spawn <rpackage/>
     (.Bag => <rpackage>                                       //spawn persistent rpackage:
                <receive>                                      //  receive:
                  <rchan>  X  </rchan>                         //    receiving channel(s) X
@@ -193,9 +205,11 @@ module RHOGUE
                <cont>     P   </cont>                         //  continuation P
              </rpackage>)                        [structural]
 
-//%%%%%%%%%%%%%%%%%%%%%%%
-//%%% REDUCTION RULES %%%
-//%%%%%%%%%%%%%%%%%%%%%%%
+//Bool, Int, String operations
+
+//>=>=>=>=>=>=>=>=>=>=>=>
+//<=> REDUCTION RULES <=>
+//>=>=>=>=>=>=>=>=>=>=>=>
 
 //------------------
 //--- COMM EVENT ---
@@ -224,24 +238,24 @@ module RHOGUE
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 //Linear comm list i.e. join
-//rule                                                        //consume both rpackage and spackage
-//(<rpackage>                                                 //
-//   <receive>                                                //  consume rpackage:
-//     <rchan> X:Name </rchan>                                //    channel(s) X
-//     <bvar>  Y:Name  </bvar>                                //    binding variable(s) Y
-//     <rper>    0     </rper>                                //    not persistent
-//   </receive>                                               //
-//   <cont> P:Proc </cont>                                    //    continuation P
-// </rpackage> => .Bag)                                       //
-//(<spackage>                                                 //
-//   <send>                                                   //  consume spackage:
-//     <schan> X     </schan>                                 //    channel(s) X
-//     <msg>   Z:Name  </msg>                                 //    message(s) Z
-//     <sper>    0    </sper>                                 //    not persistent
-//   </send>                                                  //
-// </spackage> => .Bag)                                       //
-//(.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
-//[comm]                                                      //tagged "comm" for tracking nondeterminism
+  rule                                                        //consume both rpackage and spackage
+  (<rpackage>                                                 //
+     <receive>                                                //  consume rpackage:
+       <rchan> X:Name </rchan>                                //    channel(s) X
+       <bvar>  Y:Name  </bvar>                                //    binding variable(s) Y
+       <rper>    0     </rper>                                //    not persistent
+     </receive>                                               //
+     <cont> P:Proc </cont>                                    //    continuation P
+   </rpackage> => .Bag)                                       //
+  (<spackage>                                                 //
+     <send>                                                   //  consume spackage:
+       <schan> X     </schan>                                 //    channel(s) X
+       <msg>   Z:Name  </msg>                                 //    message(s) Z
+       <sper>    0    </sper>                                 //    not persistent
+     </send>                                                  //
+   </spackage> => .Bag)                                       //
+  (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
+  [comm]                                                      //tagged "comm" for tracking nondeterminism
 
 //Persistent receive comm
   rule                                                        //persistent receives (rpackage persists)
@@ -261,7 +275,7 @@ module RHOGUE
      </send>                                                  //
    </spackage> => .Bag)                                       //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [comm]                                                    //tagged "commpr" for tracking nondeterminism
+  [comm]                                                      //tagged "commpr" for tracking nondeterminism
 
 //Persistent send comm
   rule                                                        //persistent sends (spackage persists)
@@ -281,7 +295,7 @@ module RHOGUE
     </send>                                                   //
   </spackage>                                                 //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [comm]                                                    //tagged "commps" for tracking nondeterminism
+  [comm]                                                      //tagged "commps" for tracking nondeterminism
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
 
