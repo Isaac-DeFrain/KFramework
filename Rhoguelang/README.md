@@ -38,3 +38,6 @@ Rho-calc with added:
 - [x] Process variables
 - [ ] Type system
   - [ ] tagged function types
+
+Here's a diagram of the configuration:
+![Rhoguelang configuration](RhoguelangConfiguration.png)
