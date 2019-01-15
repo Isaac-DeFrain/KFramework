@@ -30,7 +30,7 @@ SIMPLE is intended to be a pedagogical and research language that captures the e
 * *Concurrency via dynamic thread creation/termination and synchronization*. One can spawn a thread to execute any statement. The spawned thread shares its environment at creation with its parent. Threads can be synchronized via a join command which blocks the current thread until the joined thread completes, via re-entrant locks which can be acquired and released, and rendezvous commands.
 
 ### K Syntax
-The K syntax of languages, calculi, or systems, as well as the additional syntax needed for the semantics of these, is defined using *context-free grammars* (CFG), or equivalently, algebraic signatures written using the *mixfix* notation. We use `List{Nonterminal,terminal}` to refer to the nonterminal corresponding to `terminal`-separated lists of `Nonterminal` elements; e.g. `List{Exp,@}` refers to `@`-separated lists of expressions. As a special case, `List{Nonterminal}` stands for comma-separated lists of nonterminals. In K, `.`, read "nothing" and possibly tagged with its type, is uniformly used as the unit of all structures mentioned above. If a different unit is preferred, it can be specified as an additional argument to `List`, e.g. `List{Exp,@,nil}`.
+The K syntax of languages, calculi, or systems, as well as the additional syntax needed for the semantics of these, is defined using *context-free grammars* (CFG), or equivalently, algebraic signatures written using the *mixfix* notation. We use `List{Nonterminal,"terminal"}` to refer to the nonterminal corresponding to `terminal`-separated lists of `Nonterminal` elements; e.g. `List{Exp,"@"}` refers to `@`-separated lists of expressions. In K, `.`, read "nothing" and possibly tagged with its type, is uniformly used as the unit of all structures mentioned above. If a different unit is preferred, it can be specified as an additional argument to `List`, e.g. `List{Exp,"@","nil"}`.
 
 At its core, K is not concerned with concrete syntax at all. The syntax of K currently consists of one syntactic category `K` for *computational structures* (*computations*), i.e. structures which have the capability to compute when put in the right context, together with another syntactic category, `KLabel`, for AST labels:
 ```
@@ -38,7 +38,7 @@ At its core, K is not concerned with concrete syntax at all. The syntax of K cur
 	KLabel ::= 0 | 1 | ... | while(_)_ | {_} | ...		(language-specific)
 ```
 
-A programming language, calculus, or system syntax, including constants as primitive values, is eventually regarded as a set of K labels by simply associating a unique K label to each production and discarding all the concrete syntactic categories. This way, any program or fragment of a program can be regarded (for semantic reasons) as a K *abstract syntax tree* (KAST) whose nodes are K labels and whoes leaves are `.`. By default, we use the mixfix notational philosophy when choosing label names. E.g. the fragment of SIMPLE program:
+A programming language, calculus, or system syntax, including constants as primitive values, is eventually regarded as a set of K labels by simply associating a unique K label to each production and discarding all the concrete syntactic categories. This way, any program or fragment of a program can be regarded (for semantic reasons) as a K *abstract syntax tree* (KAST) whose nodes are K labels and whose leaves are `.`. By default, we use the mixfix notational philosophy when choosing label names. E.g. the fragment of SIMPLE program:
 ```
 	while(x > 0) {x = x - 1;}
 ```
@@ -50,19 +50,19 @@ can be regarded as the KAST
 
 Theoretically, the KAST notation allows one to give language-independent and thus modular semantics to constructs that require one to visit the entire language syntax, such as substitution or code generation, by simply giving their semantics in terms of KASTs and not worrying about the concrete language syntax. Practically, it gives a means to separate syntactic and semantic concerns, leaving the translation from concrete syntax to KAST to tools.
 
-In addition to capturing language/calculus/system syntax as KAST structures as explained, the `K` syntactic category also provides a *task sequentialization* list construct, writtenn `~>` and read "followed by" or "and then". Idea being that if `t1`, ..., `tN` are computations, then `t1 ~> ... ~> tN` can be thought of as the computation consisting of `t1` followed by ... followed by `tN`.
+In addition to capturing language/calculus/system syntax as KAST structures as explained, the `K` syntactic category also provides a *task sequentialization* list construct, written `~>` and read "followed by" or "and then". Idea being that if `t1`, ..., `tN` are computations, then `t1 ~> ... ~> tN` can be thought of as the computation consisting of `t1` followed by ... followed by `tN`.
 
-E.g. if `s1, s2 \in K` are KASTs corresponding to two statements in SIMPLE, then the semantics of sequential composition reduces `s1 s2` to `s1 ~> s2`, which will be further processed by using other rules: first `s1` will be fully evaluated, then `s2`. E.g. if `e1, e2 \in K` are KASTs corresponding to two expressions in SIMPLE, then the rewrite rules defining the evaluation strategy of addition will allow the expression `e1 + e2` to nondeterministically rewrite to either `e1 ~> [] + e2` or `e2 ~> e1 + []`, where `_+[]` and `[]+_` are two new K labels specifically added for this prupose.
+E.g. if `s1, s2 \in K` are KASTs corresponding to two statements in SIMPLE, then the semantics of sequential composition reduces `s1 s2` to `s1 ~> s2`, which will be further processed by using other rules: first `s1` will be fully evaluated, then `s2`. E.g. if `e1, e2 \in K` are KASTs corresponding to two expressions in SIMPLE, then the rewrite rules defining the evaluation strategy of addition will allow the expression `e1 + e2` to nondeterministically rewrite to either `e1 ~> [] + e2` or `e2 ~> e1 + []`, where `_+[]` and `[]+_` are two new K labels specifically added for this purpose.
 
 ### K Configurations
-A programming language semantics is typically driven by the syntax, but it often needs additional semantic data in order to properly capture the desired semantics of each langauge consturct. Such data may include a program environment mapping program variables to memory locations, a store mapping memory locations to values, one or more stacks for functions and exceptions, a multi-set (or bag) of threads, a set of held locks associated to each thread, etc. To distinguish the various semantic components from each other, in K we "wrap" them within suggestively named *cells* when we structure them together in a configuration. These cells are nothing but constructors taking the desired structure and yieding a configuration item. E.g. the `<store>` cell can be defined as an operation
+A programming language semantics is typically driven by the syntax, but it often needs additional semantic data in order to properly capture the desired semantics of each language construct. Such data may include a program environment mapping program variables to memory locations, a store mapping memory locations to values, one or more stacks for functions and exceptions, a multi-set (or bag) of threads, a set of held locks associated to each thread, etc. To distinguish the various semantic components from each other, in K we "wrap" them within suggestively named *cells* when we structure them together in a configuration. These cells are nothing but constructors taking the desired structure and yielding a configuration item. E.g. the `<store>` cell can be defined as an operation
 ```
 	store : Map -> CfgItem
 ```
 
 where `Map` is the sort of maps from say natural numbers to integers. Cells can be nested.
 
-K assumes such configurations are defined upfront, before the semantic rules are given, since thte structure of program configurations is an important aspect that gives K its modularity.
+K assumes such configurations are defined upfront, before the semantic rules are given, since the structure of program configurations is an important aspect that gives K its modularity.
 
 #### Configuration of SIMPLE
 SIMPLE has functions with abrupt termination, exceptions, dynamic threads with lock synchronization and memory sharing, and input/output. The initial configuration of SIMPLE:
@@ -116,7 +116,7 @@ SIMPLE has functions with abrupt termination, exceptions, dynamic threads with l
 	</T>
 ```
 
-consists of a top level cell, `T`, holding a `threads` cell, a global environment map cell `genv` mapping the global variables and function names to their locations, a shared store map cell `store` mapping each location to some value, a set cell `terminated` holding the unique identifiers of the threads which have terminated (needed for `join`), `input` and `output` list cells, and a `nextLoc` cell holding a natural number undicating the next available location in memory. In SIMPLE, we prefer to explicitly manage memory. The location counter in `nextLoc` models an actual physical location in the store. The `threads` cell contains one `thread` cell for each existing thread in the program (signified by `multiplicity="*"`, meaning that at any given moment there could be zero or more `thread` cells). Each `thread` cell contains a computation cell `k`, a `control` cell holding the various control structures needed to jump to certain points of interest in the program execution, a local environment cell `env` mapping the thread local variables to locations in the store, and finally a `hold` map cell indicating what locks have been acquired by the thread and not released so far and how many times each lock has been acquired without being released (SIMPLE's locks are re-entrant). The `control` cell contains only two subcells, a function stack `fstack` and an exception stack `xstack` which are both lists. More control structures can be added to the `control` cell if the language is extended with more control-changing constructs. Notice that all cells except the `k` cell are initialized, in that they contain a ground term of their coreesponding sort. The `k` cell is initialized with the (KAST of the) program to be executed.
+consists of a top level cell, `T`, holding a `threads` cell, a global environment map cell `genv` mapping the global variables and function names to their locations, a shared store map cell `store` mapping each location to some value, a set cell `terminated` holding the unique identifiers of the threads which have terminated (needed for `join`), `input` and `output` list cells, and a `nextLoc` cell holding a natural number indicating the next available location in memory. In SIMPLE, we prefer to explicitly manage memory. The location counter in `nextLoc` models an actual physical location in the store. The `threads` cell contains one `thread` cell for each existing thread in the program (signified by `multiplicity="*"`, meaning that at any given moment there could be zero or more `thread` cells). Each `thread` cell contains a computation cell `k`, a `control` cell holding the various control structures needed to jump to certain points of interest in the program execution, a local environment cell `env` mapping the thread local variables to locations in the store, and finally a `hold` map cell indicating what locks have been acquired by the thread and not released so far and how many times each lock has been acquired without being released (SIMPLE's locks are re-entrant). The `control` cell contains only two subcells, a function stack `fstack` and an exception stack `xstack` which are both lists. More control structures can be added to the `control` cell if the language is extended with more control-changing constructs. Notice that all cells except the `k` cell are initialized, in that they contain a ground term of their corresponding sort. The `k` cell is initialized with the (KAST of the) program to be executed.
 
 K's configuration declaration does several things at the same time:
 1. It defines an algebraic signature for configurations;
@@ -129,7 +129,7 @@ K uses XML to delimit cells (shown above) and allows for users to further initia
 The configuration is initialized by placing the target program at it's specified position and initializing all other cells with their declared contents. The K rewrite rules giving the language semantics (nondeterministically and concurrently) match and apply, potentially generating any possible behavior of the target program. There are two types of rules in K, *structural* and *computational*. Intuitively, structural rules decompose and eventually push the tasks to the top (or to the left) of the computation. Semantic rules then say how to process the atomic tasks. I.e. the structural rules do not count as observable steps, while the computational rules do. We discuss the formal semantic difference between the two in the next section. Unless explicitly tagged `[structural]`, K rules are assumed to be computational.
 
 #### Structural Rules
-An important category of structural rules is *heatin/cooling* rules (terminology inspired from the chemical abstract machine). Heating/cooling rules have the role of re-arranging the computation according to the desired evaluation strategies. The result of this structural process is that, unlike in reduction semantics with evalutaion contexts, rewriting in K nedds *not* be context-sensitive. E.g. consider the addition operation in SIMPLE, which is intended to be nondeterministic. We add two pairs of reversible structural rules for it, namely
+An important category of structural rules is *heating/cooling* rules (terminology inspired from the chemical abstract machine). Heating/cooling rules have the role of re-arranging the computation according to the desired evaluation strategies. The result of this structural process is that, unlike in reduction semantics with evalutaion contexts, rewriting in K needs *not* be context-sensitive. E.g. consider the addition operation in SIMPLE, which is intended to be nondeterministic. We add two pairs of reversible structural rules for it, namely
 ```
 	rule E1 + E2 => E1 ~> [] + E2  [structural] //heating
 	rule E1 ~> [] + E2 => E1 + E2  [structural] //cooling
@@ -145,7 +145,7 @@ To simplify the application of heating/cooling rules, in K we simply use a synta
 	syntax Exp := Exp "+" Exp  [strict]
 ```
 
-The "strict" annotation, or attribute, associated to a syntactic construct states that it is intended to be (nondeterministically) strict in its arguments, and is equivalent to giving the four rules above. We can constrain strictness only to specified by appending a space-separated list in parentheses, e.g. a construct which is to be strict only in its first and third arguments, would be annotated with "strict(1 3)". To evaluate the arguments of a construct in a specified order, say from left to right, we use the `[seqstrict]` annotation. The translation of "sequentially strict" rules into structural heatin/cooling rules is as follows:
+The "strict" annotation, or attribute, associated to a syntactic construct states that it is intended to be (nondeterministically) strict in its arguments, and is equivalent to giving the four rules above. We can constrain strictness only to specified by appending a space-separated list in parentheses, e.g. a construct which is to be strict only in its first and third arguments, would be annotated with "strict(1 3)". To evaluate the arguments of a construct in a specified order, say from left to right, we use the `[seqstrict]` annotation. The translation of "sequentially strict" rules into structural heating/cooling rules is as follows:
 ```
 	rule E1 + V2 => E1 ~> [] + V2  [structural] //heating
 	rule E1 ~> [] + V2 => E1 + V2  [structural] //cooling
@@ -180,7 +180,7 @@ The heating/cooling rules are not restricted to only defining evaluation strateg
 	context ++ ([] => lvalue([]))
 ```
 
-The first context states that the second argument of a multiplication operation is evaulated only if the value of the first argument is different from zero (since one may want to give a shortcircuited semantics to multiplication and reduce the amount of unnecessary nondeterminism). The second states that the object in a member access expression is evalutaed whever it is different `super` (since `super` member accesses are resolved statically). The third context declaration makes use of K's in-place rewriting notation. It basically says that when the argument of the increment construct is evaluated, it should be wrapped with the `lvalue` construct. The role of the wrapper is for the special treatment of the expression being evaluated.
+The first context states that the second argument of a multiplication operation is evaluated only if the value of the first argument is different from zero (since one may want to give a short-circuited semantics to multiplication and reduce the amount of unnecessary nondeterminism). The second states that the object in a member access expression is evaluated wherever it is different `super` (since `super` member accesses are resolved statically). The third context declaration makes use of K's in-place rewriting notation. It basically says that when the argument of the increment construct is evaluated, it should be wrapped with the `lvalue` construct. The role of the wrapper is for the special treatment of the expression being evaluated.
 
 The heating rules corresponding to these contexts are, respectively:
 ```
@@ -191,7 +191,7 @@ The heating rules corresponding to these contexts are, respectively:
 	rule ++ E  => lvalue(E) ~> ++ []  [structural]
 ```
 
-The corresponding cooling rules reverse the heating rules. Note that the cooling rule for the third context expects the wrapper to still be wrapping the expression, and it removes it upon plugging the expession back. Thus, this wrapper should only have contextual meaning, used for altering the semantics, but being preserved by it. In some sense, these wrappers are actually providing locally typed evaluation contexts.
+The corresponding cooling rules reverse the heating rules. Note that the cooling rule for the third context expects the wrapper to still be wrapping the expression, and it removes it upon plugging the expression back. Thus, this wrapper should only have contextual meaning, used for altering the semantics, but being preserved by it. In some sense, these wrappers are actually providing locally typed evaluation contexts.
 
 Not all structural rules are heating/cooling rules. Sometimes we want to desugar some language constructs into others or into built-in K constructs and we do not want such steps to be observable. E.g. one may want to desugar a "for" loop into a "while" loop or eliminate the sequential composition construct, replacing it with the K built-in `~>` construct. A language designer may not want such structural rules to be reversible. In fact, making all structural rules reversible may yield unwanted nondeterminism in the language.
 
@@ -205,7 +205,7 @@ The K rule for variable lookup in SIMPLE:
 
 There are two K-specific aspects in the rule above which need discussion. First, the `...`s in the cells means that the cell may contain more data there, but that data is irrelevant to the rule. We assumed a definition of maps as sets of pairs `key |-> value`.
 
-A second K-specific aspect to note in the rule above is that the configuration context does not match. In the configuration of SIMPLE, the `store` cell is not located in the same cell as `k` and `env`, so these cells cannot be matched as the rule states. This rule takes advantage of K's *configuration abstraction* mechanism which allows us to only specify the needed cells in a rule, with the rest of the configuration context being inferred from the defined configuration. The concretization of such abstract configuration rule contexts is based on several principles and criteria that help disambiguate among possible concrete rules (see [Overview of the K Semantic Framework](http://fsl.cs.illinois.edu/index.php/An_Overview_of_the_K_Semantic_Framework) for full details). Here we only mention one, the *locality principle*, which states that the configuration will be completed such that a minimal number of cells will be added. Th ensures that, in a multithreaded SIMPLE program, the cells `k` and `env` in the rule above will be assigned to the same thread cell. Allow adding them to different thread cells would be consistent with the configuration structure, having them in the same thread is "more local".
+A second K-specific aspect to note in the rule above is that the configuration context does not match. In the configuration of SIMPLE, the `store` cell is not located in the same cell as `k` and `env`, so these cells cannot be matched as the rule states. This rule takes advantage of K's *configuration abstraction* mechanism which allows us to only specify the needed cells in a rule, with the rest of the configuration context being inferred from the defined configuration. The concretization of such abstract configuration rule contexts is based on several principles and criteria that help disambiguate among possible concrete rules (see [Overview of the K Semantic Framework](http://fsl.cs.illinois.edu/index.php/An_Overview_of_the_K_Semantic_Framework) for full details). Here we only mention one, the *locality principle*, which states that the configuration will be completed such that a minimal number of cells will be added. Th ensures that, in a multi-threaded SIMPLE program, the cells `k` and `env` in the rule above will be assigned to the same thread cell. Allow adding them to different thread cells would be consistent with the configuration structure, having them in the same thread is "more local".
 
 The overall principle underlying the abstraction capabilities above, as well as muck of K's design in general, has always been:
 
@@ -254,15 +254,4 @@ Given a signature `\Sigma` and a (potentially infinite) set of variables `X`, le
 
 instead of `k[L => R]`, since the holes are implicit and need not be mentioned.
 
-We can associate to any K rule `\rho: k[L => R]` a regular rewrite rule `K2R(\rho): L(k) -> R(k)`. 
-
-
-
-
-
-
-
-
-
-
-
+We can associate to any K rule `\rho: k[L => R]` a regular rewrite rule `K2R(\rho): L(k) -> R(k)`.
