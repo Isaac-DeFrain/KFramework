@@ -50,13 +50,13 @@ module RHOGUE-SYNTAX
                    | Rec
                    | Send
 
-       // Bundle cannot be destructured by pattern matching                      // | read? | write? |
-  syntax  Bundle ::= "bundle-" "{" Proc "}"                                      // | yes   | no     |
-                   | "bundle+" "{" Proc "}"                                      // | no    | yes    |
-                   | "bundle0" "{" Proc "}"                                      // | no    | no     |
-                   | "bundle"  "{" Proc "}"                                      // | yes   | yes    |
+      //**Bundle cannot be destructured by pattern matching**                    // | can read? | can write? |
+  syntax  Bundle ::= "bundle-" "{" Proc "}"                                      // | yes       | no         |
+                   | "bundle+" "{" Proc "}"                                      // | no        | yes        |
+                   | "bundle0" "{" Proc "}"                                      // | no        | no         |
+                   | "bundle"  "{" Proc "}"                                      // | yes       | yes        |
 
-  syntax   Smart ::= "contract" Names "(" Names ")" "{" Proc "}"
+  syntax     Con ::= "contract" Names "(" Names ")" "{" Proc "}"
 
   syntax     New ::= "new" Names "in"  "{" Proc "}"                    [binder]  //  New: Name*Proc -------> Proc
 
@@ -76,11 +76,12 @@ module RHOGUE-SYNTAX
 //                 | List{Id}                                [klabel(ProcVars)]  //process variables
 //                 | "[" ProcVar "]"
 
+//precedence?
   syntax    Proc ::= Atomic
                    | Bundle
                    | Par
                    | New
-                   | Smart
+                   | Con
                    | Reify
                    | ProcVar
                    | "{" Proc "}"                                     [bracket]
@@ -137,7 +138,7 @@ module RHOGUE
       </tuplespace>                                           // end tuplespace
     </T>                                                      // end of configuration
 
-  syntax KVariable ::= Name | ProcVar
+  syntax KVariable ::= Names | ProcVar
 
 //syntax KResult ::= Name | Atomic
 
@@ -160,9 +161,9 @@ module RHOGUE
 //Linear send (recursion not currently working)
   rule <k> X:Names !( P:Proc ) => . ...</k>                   //dissolve send & spawn nonpersistent <spackage/>
     (.Bag => <send>                                           //
-               <schan>  X </schan>                            //  sending channel(s) X
-               <msg>   @P   </msg>                            //  message(s) sent @P
-               <sper>   0  </sper>                            //  not persistent
+               <schan>  X  </schan>                           //  sending channel(s) X
+               <msg>   @P    </msg>                           //  message(s) sent @P
+               <sper>   0   </sper>                           //  not persistent
              </send>)                            [structural]
 
 //Persistent send
@@ -176,14 +177,15 @@ module RHOGUE
 //channel lists
   rule <sends>
          <send>
-           <schan> (Hd,Tl:Names => Tl) </schan>
-           <msg>        M:Name           </msg>
-           <sper>      Sp:Proc          </sper>
+           <schan> (Hd:Name, Tl:Names => Tl) </schan>
+           <msg>     M:Name                    </msg>
+           <sper>   Sp:Proc                   </sper>
          </send>
         (.Bag => <send> <schan> Hd </schan> <msg> M </msg> <sper> Sp </sper> </send>)
-      </sends>
+      </sends>                                   [structural]
 
   rule <send> <schan> .Names => . </schan> ...</send>
+                                                 [structural]
 
 //<-<-<-<-<-<-<-<-
 //<-< RECEIVES <-<
