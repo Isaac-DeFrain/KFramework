@@ -7,19 +7,25 @@ Rho-calc with added:
   - [x] Int
   - [x] String
   - [x] Bundle
-  - [ ] List
-  - [ ] Map
-  - [ ] Set
+  - [x] List
+  - [x] Map
+  - [x] Set
   - [ ] Tuple
   - [ ] Uri
 - [ ] Operations
   - [ ] Conditional
-    - [ ] `If (x) {P}`
-    - [ ] `If (x) {P} else {Q}`
-  - [ ] Int arithmetic (modular)
-  - [ ] Boolean
-  - [ ] String
+    - [ ] `If (x) {P}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it dissolves)
+    - [ ] `If (x) {P} else {Q}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it rewrites to `Q`)
+  - [ ] Bool
+  - [ ] Bundle?
+  - [ ] Int arithmetic
   - [ ] List
+  - [ ] Map
+  - [ ] Mod arithmetic
+  - [ ] Set
+  - [ ] String
+  - [ ] Tuple
+  - [ ] Uri?
 - [ ] Operators
   - [x] Par
   - [x] Quote
@@ -27,8 +33,9 @@ Rho-calc with added:
   - [x] Send
   - [x] Persistent receive/send
   - [x] Contract (syntactic sugar: persistent receive)
+  - [ ] Bundle
   - [ ] Join (list substitution)
-  - [ ] Peek
+  - [ ] Peek ("comm without consumption")
   - [ ] `new` (unforgeable names)
   - [ ] Logical connectives
 - [ ] Reductions
@@ -38,6 +45,10 @@ Rho-calc with added:
 - [x] Process variables
 - [ ] Type system
   - [ ] tagged function types
+
+Difference between Rholang and Rho calculus:
+* In Rho calculus: `for (@Nil <- x){ P }` is executed for any name which is substituted for any name sent on `x`, which is then substituted for `@Nil` in the continuation `P`.
+* In Rholang: `for (@Nil <- x){ P }` only executes when `@Nil` is sent on `x`.
 
 Here's a diagram of the configuration:
 ![Rhoguelang configuration](RhoguelangConfiguration.png)
