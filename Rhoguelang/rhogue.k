@@ -41,8 +41,10 @@ module RHOGUE-SYNTAX
   syntax  Ground ::= "Nil"                                                       //Ground terms
                    | Bool
                    | Int
-                   | String
+                   | List
                    | Map
+                   | Set
+                   | String
 
   syntax  Atomic ::= Ground
                    | Rec
