@@ -30,8 +30,8 @@ module RHOGUE-SYNTAX
                    | "(" Name ")"                                    [bracket]
 
   syntax   Names ::= Name
-                   | List{Name,","}
-                   | NameVars
+                   | List{Name,","}                            [klabel(Names)]
+//                 | NameVars
                    | "[" Names "]"
 
 
@@ -42,6 +42,7 @@ module RHOGUE-SYNTAX
                    | Bool
                    | Int
                    | String
+                   | Map
 
   syntax  Atomic ::= Ground
                    | Rec
@@ -164,20 +165,23 @@ module RHOGUE
 
 //Persistent send
   rule <k> X:Names !!( P:Proc ) => . ...</k>                  //dissolve send & spawn persistent <spackage/>
-    (.Bag => <spackage>                                       //spawn spackage:
-               <send>                                         //
-                 <schan>  X  </schan>                         //  sending channel(s) X
-                 <msg>   @P    </msg>                         //  message(s) sent @P
-                 <sper>   1   </sper>                         //  persistent
-               </send>                                        //
-             </spackage>)                        [structural]
+    (.Bag => <send>                                           //
+               <schan>  X  </schan>                           //  sending channel(s) X
+               <msg>   @P    </msg>                           //  message(s) sent @P
+               <sper>   1   </sper>                           //  persistent
+             </send>)                            [structural]
 
 //channel lists
-  rule (<send> <schan> Hd,Tl:Names </schan> <msg> M:Name </msg> <sper> Sp </sper> </send> => .Bag)
-       (.Bag => <send> <schan> Hd </schan> <msg> M </msg> <sper> Sp </sper> </send>)
-       (.Bag => <send> <schan> Tl </schan> <msg> M </msg> <sper> Sp </sper> </send>)
+  rule <sends>
+         <send>
+           <schan> (Hd,Tl:Names => Tl) </schan>
+           <msg>        M:Name           </msg>
+           <sper>      Sp:Proc          </sper>
+         </send>
+        (.Bag => <send> <schan> Hd </schan> <msg> M </msg> <sper> Sp </sper> </send>)
+      </sends>
 
-  rule (<send> <schan> .Names </schan> ...</send> => .Bag)
+  rule <send> <schan> .Names => . </schan> ...</send>
 
 //<-<-<-<-<-<-<-<-
 //<-< RECEIVES <-<
@@ -321,7 +325,7 @@ module RHOGUE
   rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
 
 //  NAME REDUCTIONS
-//context    @ * _:Name => _                                  //write as single context reduction?
+//context       @ * []                                        //write as single context reduction?
 
   rule  <msg>   @ * X:Name => X   </msg>        [structural]  //in message(s)
 
@@ -330,7 +334,7 @@ module RHOGUE
   rule  <schan> @ * X:Name => X </schan>        [structural]  //in sending channel(s)
 
 // * AND @ ARE INVERSE OPERATORS                              
-//context       * @ _:Proc => _                               //write as single context reduction?
+//context       * @ []                                        //write as single context reduction?
                                                               //split between contexts:
 //rule          * @ P:Proc => P                 [structural]  //reduce *@s
 
