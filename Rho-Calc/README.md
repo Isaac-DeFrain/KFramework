@@ -29,7 +29,7 @@ There are two main containment cells:
   * Receives consist of a channel, binding variable, and a continuation.
 
 Initial configuration:
-![Current configuration](RhoCalcConfiguration.png)
+![Rho-calc configuration](RhoCalcConfiguration.png)
 
 ## Rules
 * Par: spawns new threads for each component
