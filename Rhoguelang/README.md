@@ -4,6 +4,7 @@ Rho-calc with added:
 - [ ] Ground terms / basic data structures
   - [x] `Nil`
   - [x] Bool
+  - [ ] Float
   - [x] Int
   - [x] String
   - [x] Bundle
@@ -16,9 +17,10 @@ Rho-calc with added:
   - [ ] Conditional
     - [ ] `If (x) {P}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it dissolves)
     - [ ] `If (x) {P} else {Q}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it rewrites to `Q`)
-  - [ ] Bool
-  - [ ] Bundle?
-  - [ ] Int arithmetic
+  - [ ] Bool: `notbool`, `andbool`, `orbool`
+  - [ ] Bundle: read and/or write
+  - [ ] Int arithmetic: `+Int`, `-Int`, `*Int`, `/Int`
+  - [ ] Float arithmetic
   - [ ] List
   - [ ] Map
   - [ ] Mod arithmetic
@@ -26,7 +28,7 @@ Rho-calc with added:
   - [ ] String
   - [ ] Tuple
   - [ ] Uri?
-- [ ] Operators
+- [ ] Operators: syntax -> semantics
   - [x] Par
   - [x] Quote
   - [x] Receive
