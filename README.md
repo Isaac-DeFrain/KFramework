@@ -12,7 +12,7 @@ I am currently learning K Framework. I will compile all of the relevant material
 * [Papers](http://www.kframework.org/index.php/K_Publications)
   * [K - A Semantic Framework for Programming Languages and Formal Analysis Tools](http://fsl.cs.illinois.edu/index.php/K_-_A_Semantic_Framework_for_Programming_Languages_and_Formal_Analysis_Tools)
 
-  * [K Primer](http://fsl.cs.illinois.edu/index.php/The_K_Primer_(version_3.3))
+  * [K Primer](http://fsl.cs.illinois.edu/FSL/papers/2013/k-primer-2013-v32/k-primer-2013-v32-public.pdf)
 
   * [K Overview and SIMPLE Case Study](http://fsl.cs.illinois.edu/index.php/K_Overview_and_SIMPLE_Case_Study)
 

@@ -1,3 +1,0 @@
-//No COMM event should take place here.
-
-(nu x) { x?(y).{y!(z).Nil} } | x!(a).Nil

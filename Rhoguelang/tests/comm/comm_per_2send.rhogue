@@ -1,4 +1,0 @@
-// Linear and persistent sends
-
-  for (y <= x){ Nil } | x!(*a) | x!(*b)
-

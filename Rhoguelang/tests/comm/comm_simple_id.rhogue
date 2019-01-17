@@ -1,5 +1,0 @@
-//Simple comm
-
-  x!(*a) | for ( y <- x ){y!(*z)}
-
-//reduces to (@*a)!(*z)

@@ -1,3 +1,0 @@
-//Multiple comms: receive, b then a
-
-  for ( y <- x){y!(*z)} | x!(*b) | x!(*a)

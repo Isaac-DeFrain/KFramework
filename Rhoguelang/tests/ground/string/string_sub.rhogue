@@ -1,7 +1,0 @@
-// String substitution
-
-   x!( ":)" ) | for ( y <- x ){ *y }
-
-
-// remove * and @ inverse rules and run
-// x!( ":)" ) | for ( @"y" <- x ){ *@"y" }

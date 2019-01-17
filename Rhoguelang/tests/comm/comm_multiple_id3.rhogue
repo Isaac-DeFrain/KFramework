@@ -1,3 +1,0 @@
-//Multiple comms: b then a
-
-  x!(*b) | x!(*a) | for ( y <- x){y!(*z)}
