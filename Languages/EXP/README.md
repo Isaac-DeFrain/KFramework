@@ -33,6 +33,7 @@ Described in the [K Primer](http://fsl.cs.illinois.edu/FSL/papers/2013/k-primer-
 ```
   KResult ::= Int
 ```
+Strict functions evaluate arguments to `Int`
 
 * Configuration
 ```
@@ -69,5 +70,6 @@ Described in the [K Primer](http://fsl.cs.illinois.edu/FSL/papers/2013/k-primer-
   rule <k> spawn E => 0 ...</k>
     ( . => <k> E </k>)
 
-  rule <k>
+  rule <k> rendezvous I:Int => I ...</k>
+       <k> rendezvous I     => I ...</k>
 ```
