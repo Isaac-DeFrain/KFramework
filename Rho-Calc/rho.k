@@ -36,25 +36,25 @@ module RHO
 
   configuration
     <T>
-      <processpool color="red">
+      <threadpool color="red">
         <thread multiplicity="*">                             //collection of threads
           <k> $PGM:Proc </k>                                  //programs and computations are process-based
-        </thread>
-      </processpool>                                          //tuplespace stores sends and receives
-      <tuplespace color="blue">
-        <outgoing color="teal">                               //**sends**
-          <send color="cyan" multiplicity="*">                //there may be several, even on the same channel
-            <schan> .K </schan>                               //sending channel
-              <msg> .K </msg>                                 //message
-          </send>
-        </outgoing>                                           //**************
-        <incoming color="green">                              //***receives***
+        </thread>                                             //
+      </threadpool>                                           //tuplespace stores sends and receives
+      <tuplespace color="blue">                               //
+        <sends color="teal">                                  //**sends**
+          <send color="cyan" multiplicity="*">                //
+            <schan> .K </schan>                               //sending channel (many messages on same channel)
+            <msg>   .K   </msg>                               //message
+          </send>                                             //
+        </sends>                                              //
+        <receives color="green">                              //**receives**
           <rec color="yellow" multiplicity="*">               //
-            <rchan> .K </rchan>                               //receiving channel (may be several on same channel)
-             <bvar> .K </bvar>                                //binding varible in continuation
-             <cont> .K </cont>                                //continuation
+            <rchan> .K </rchan>                               //receiving channel (many messages on same channel)
+            <bvar>  .K  </bvar>                               //binding varible in continuation
+            <cont>  .K  </cont>                               //continuation
           </rec>
-        </incoming>
+        </receives>
       </tuplespace>
     </T>
 
@@ -64,18 +64,18 @@ module RHO
        (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
 
 // SEND OPERATOR SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <activity/> and spawn <send/>
+  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>
                   <schan> X </schan>                          //sending channel X
                   <msg>  @P </msg>                            //message sent @P
                 </send>)                                      //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
-  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <activity/> and spawn <rec/>
+  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <threadpool/> and spawn <rec/>
        (.Bag => <rec>
                   <rchan> X </rchan>                          //receiving channel X
-                  <bvar>  Y </bvar>                           //variable Y binding in continuation P
-                  <cont>  P </cont>                           //continuation P
+                  <bvar>  Y  </bvar>                          //variable Y binding in continuation P
+                  <cont>  P  </cont>                          //continuation P
                 </rec>)                                       //[structural]
 
 // REDUCTION RULES
@@ -85,12 +85,12 @@ module RHO
   rule                                                        //dissolve send and receive on "same" channel
   (<rec>                                                      //dissolve receive:
      <rchan> X:Name </rchan>                                  // channel X
-      <bvar> Y:Name </bvar>                                   // binding variable Y
-      <cont> P:Proc </cont>                                   // continuation P
+     <bvar>  Y:Name  </bvar>                                  // binding variable Y
+     <cont>  P:Proc  </cont>                                  // continuation P
    </rec> => .Bag)
   (<send>                                                     //dissolve send:
-     <schan> X </schan>                                       // channel X
-       <msg> Z:Name </msg>                                    // message Z
+     <schan> X    </schan>                                    // channel X
+     <msg>   Z:Name </msg>                                    // message Z
    </send> => .Bag)
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
@@ -101,6 +101,8 @@ module RHO
 // (P | Q) | R \equiv P | (Q | R)
 
 // Clean up parred expressions
+//context [] | Nil
+//context Nil | []
   rule        P:Proc | Nil => P                 [structural]  //Nils in <k/>
 
   rule <cont> P:Proc | Nil => P </cont>         [structural]  //Nils in <cont/>
@@ -115,7 +117,7 @@ module RHO
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
 // NAME REDUCTIONS
-//context       @ * HOLE   => HOLE                            //write as single context reduction?
+//context       @ * []     => []                              //write as single context reduction?
 
   rule    <msg> @ * X:Name => X </msg>          [structural]  //name equivalence in <msg/>
 
@@ -124,7 +126,7 @@ module RHO
   rule  <schan> @ * X:Name => X </schan>        [structural]  //name equivalence class rep in <schan/>
 
 // *@ operator is idempotent [experimental]
-//  context   * @ * @ HOLE   => * @ HOLE                      //write as single context reduction?
+//  context   * @ * @ []     => * @ []                        //write as single context reduction?
                                                               //split between contexts:
   rule        * @ * @ P:Proc => * @ P           [structural]  // in <k/>
 
