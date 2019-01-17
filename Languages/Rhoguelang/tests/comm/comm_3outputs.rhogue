@@ -1,0 +1,6 @@
+// Nondeterministic comms - three sends on same channel
+
+  x!(*a) | x!(*b) | x!(*c) | for (y <- x){ Nil }
+
+// Three reductions:
+// x!(*b) | x!(*c) | Nil or x!(*a) | x!(*c) | Nil or x!(*a) | x!(*b) | Nil

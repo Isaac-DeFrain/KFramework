@@ -1,0 +1,7 @@
+// Process variable comm
+// name and proc variables interact in substitution
+
+   for ( y <= x ){ y } | x!(*a)
+
+// here the substitution: { y }[a / y] = a; a proc subs to a name?
+

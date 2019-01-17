@@ -1,0 +1,3 @@
+// Simple receive
+
+   for ( y <- x){ *z }

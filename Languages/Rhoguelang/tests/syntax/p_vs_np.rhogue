@@ -1,0 +1,4 @@
+// Linear and persistent sends
+
+  for (b <- a){ Nil } | for (y <= x){ Nil }
+

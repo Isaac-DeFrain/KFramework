@@ -1,0 +1,7 @@
+// Nondeterministic comms - nested sends
+
+  x!(*a) | x!(*b) | for (z <- x){y!(*z)} | y!(*c) | y!(*d) | for (z <- y){x!(*z)}
+
+// Twelve unique reduction paths with five unique reductions:
+//
+// x!(*b) | y!(*a) | y!(*c) | y!(*d) | y(z){x!(*z)}
