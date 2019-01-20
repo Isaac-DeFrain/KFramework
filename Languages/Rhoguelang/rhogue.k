@@ -6,9 +6,9 @@ require "substitution.k"
 //... SYNTAX MODULE ...
 //.....................
 module RHOGUE-SYNTAX
-  import ID
-  import DOMAINS-syntax
-  import SUBSTITUTION
+import ID
+import DOMAINS-syntax
+import SUBSTITUTION
 
 //-----------------------------
 //--- PROCESSES & VARIABLES ---
@@ -50,12 +50,11 @@ syntax    Collection ::= RhoList                                                
                        | RhoTuple                                                      //process tuple
 
 // Lists
-syntax      RhoList ::= "[" Procs "]"                                                  //list of preocesses
+syntax      RhoList ::= "[" Procs "]"                                                  //list of processes
 
-// Maps
+// Maps & Key-Value Pairs
 syntax       RhoMap ::= "{" RhoKVPairs "}"                                             //map = { key-value pairs }
 
-// Key-Value Pairs
 syntax   RhoKVPairs ::= Proc ":" Proc                                                  //single key-value pair
                       | Proc ":" Proc "," RhoKVPairs                                   //multiple key-value pairs
 
@@ -66,19 +65,18 @@ syntax          Set ::= "Set" "(" Procs ")"                                     
 syntax     RhoTuple ::= "(" Proc ",)"                                                  //1-tuple, note the ",)"
                       | "(" Proc "," Procs ")"                                         //n-tuple, n >= 2
 
-//---Process Variables---
-// General Variables
+//--- General Variables ---
 syntax          Var ::= Id                                                             //name or process variable
 syntax         Vars ::= Var                                                            //single variable
                       | Var "," Vars                                                   //multiple variables
 
-// Process Variables
+//---Process Variables---
 syntax      ProcVar ::= Var                                                            //process variable
 
 syntax     ProcVars ::= ProcVar                                                        //monadic
                       | ProcVar "," ProcVars                                           //polyadic
 
-// Variable References - so we don't shadow the variable referenced
+//--- Variable References ---                                                          //so we don't shadow the variable referenced
 syntax       VarRef ::= "=" ProcVar                                                    //process variable reference
                       | "=" "*" NameVar                                                //evaluated name variable reference
 
@@ -87,22 +85,23 @@ syntax   MethodArgs ::= Procs                                                   
                       | ""                                                             //zero arguments
 
 // List of current methods
-syntax       Method ::= "method(nth)"                                                  //nth element: list, string, & tuple
-                      | "method(toByteArray)"                                          //to byte array: all
-                      | "method(hexToBytes)"                                           //hex to bytes: string
-                      | "method(union)"                                                //union: map & set
-                      | "method(diff)"                                                 //difference: not tuple
-                      | "method(add)"                                                  //add: not tuple
-                      | "method(delete)"                                               //delete: not tuple
+syntax       Method ::= "method(add)"                                                  //add: list & string
+                      | "method(confine)"                                              //still not in interpreter?
                       | "method(contains)"                                             //contains: not tuple
+                      | "method(delete)"                                               //delete: not tuple
+                      | "method(diff)"                                                 //difference: not tuple
                       | "method(get)"                                                  //get value: map
                       | "method(getOrElse)"                                            //get value or else: map
-                      | "method(set)"                                                  //set value: map
-                      | "method(keys)"                                                 //set of keys: map
-                      | "method(size)"                                                 //size: not tuple
+                      | "method(hexToBytes)"                                           //hex to bytes: string
                       | "method(lenth)"                                                //length: list & string
+                      | "method(keys)"                                                 //key set: map
+                      | "method(nth)"                                                  //nth element: list, string & tuple
+                      | "method(set)"                                                  //set value: map
+                      | "method(size)"                                                 //size: not tuple
                       | "method(slice)"                                                //slice: list & string
-                      | "method(confine)"                                              //not currently in interpreter?
+                      | "method(toByteArray)"                                          //to byte array: all
+                      | "method(union)"                                                //union: map & set
+
 
 //--- Expressions ---
 // expressions are anything that necessarily resolves to a ground term or collection
@@ -158,7 +157,8 @@ syntax       Receipt ::= LinearBinds
 
 // Linear binds
 syntax    LinearBind ::= NamePats  "<-" Name                                           //for( y <- x ){ P }
-                       | NamePats  "<!" Name                                           //peek
+
+syntax      PeekBind ::= NamePats  "<!" Name                                           //peek
 
 syntax   LinearBinds ::= LinearBind                                                    //single linear bind
                        | LinearBind ";" LinearBinds                                    //multiple linear binds (join)
@@ -222,20 +222,31 @@ syntax      NameVars ::= NameVar                                                
                        | NameVar "," NameVars                                          //multiple variables
 
 //--- Names ---
-syntax          Name ::= "@" Proc                                                          //quoted process
-                       | NameVar
+syntax          Name ::= "@" Proc                                                      //quoted process
+                       | NameVar                                                       //variable
 
-syntax         Names ::= Name
-                       | Name "," Names
-                       | NameVars
+syntax         Names ::= Name                                                          //single name
+                       | Name "," Names                                                //multiple names
+                       | NameVars                                                      //name variables
 
 //---------------------
 //--- NAME PATTERNS ---
 //---------------------
-syntax  NamePat ::= ???
+syntax       NamePat ::= Name                                                          //ordinary name
+                       | "@" ProcPat                                                   //quoted process pattern
 
-syntax NamePats ::= NamePat
-                  | NamePat "," NamePats
+syntax      NamePats ::= NamePat                                                       //single name pattern
+                       | NamePat "," NamePats                                          //multiple name patterns
+                       | Names                                                         //ordinary names
+
+//------------------------
+//--- GENERAL PATTERNS ---
+//------------------------
+syntax           Pat ::= NamePat                                                       //name pattern
+                       | ProcPat                                                       //process pattern
+
+syntax          Pats ::= NamePats                                                      //name patterns
+                       | ProcPats                                                      //process patterns
 
 endmodule
 
@@ -244,8 +255,8 @@ endmodule
 //........................
 
 module RHOGUE
-  import RHOGUE-SYNTAX
-  import SUBSTITUTION
+import RHOGUE-SYNTAX
+import SUBSTITUTION
 
 //---------------------
 //--- CONFIGURATION ---
@@ -287,18 +298,21 @@ configuration
     </tuplespace>                                             // end tuplespace
   </T>                                                        // end configuration
 
+//-----------------------------
+//--- KResults & KVariables ---
+//-----------------------------
+
 syntax KVariable ::= Id | NameVars | ProcVars
 
-syntax KResult ::= Bool | Int                                 //results for strictness
+syntax   KResult ::= Bool | Int                               //strictness only for AExp & BExp
 
-//..........................
-//... OPERATOR SEMANTICS ...
-//..........................
+//.................
+//... SEMANTICS ...
+//.................
 
 //-----------
 //--- PAR ---
 //-----------
-
 rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>    //dissolve par in <thread/>
      (.Bag => <thread> <k> P1 </k> </thread>)                 //  spawn two new <thread/>s
      (.Bag => <thread> <k> P2 </k> </thread>)  [structural]
@@ -359,8 +373,9 @@ rule <k> X:Name !!( P:Proc , Q:Procs ) => X !!( Q ) ...</k>   //dissolve send & 
 //--- RECEIVES ---
 //----------------
 
-//Linear receive
-rule <k> for ( Y:Names <- X:Names ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
+//--- Linear ---
+// Single
+rule <k> for ( Y:NamePats <- X:Name ){ P:Proc } => . ...</k>
   (.Bag => <rpackage>                                         //spawn linear rpackage:
              <receive>                                        //  receive:
                <rchan>  X   </rchan>                          //    receiving channel(s) X
@@ -370,8 +385,31 @@ rule <k> for ( Y:Names <- X:Names ){ P:Proc } => . ...</k>    //dissolve receive
              <cont>     P   </cont>                           //  continuation P
            </rpackage>)                        [structural]
 
-//Persistent receive
-rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
+// Multiple
+rule <k> for ( Y:NamePats <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
+  (.Bag => <rpackage>                                         //spawn linear rpackage:
+             <receive>                                        //  receive:
+               <rchan>  X   </rchan>                          //    receiving channel(s) X
+               <bvar>   Y    </bvar>                          //    variable(s) Y binding in continuation
+               <rper>   0    </rper>                          //    not persistent (only consumed once)
+             </receive>                                       //
+             <cont>     P   </cont>                           //  continuation P
+           </rpackage>)                        [structural]
+
+//--- Persistent ---
+// Single
+rule <k> for ( Y:NamePats <= X:Name ){ P:Proc } => . ...</k>
+  (.Bag => <rpackage>                                         //spawn persistent rpackage:
+             <receive>                                        //  receive:
+               <rchan>  X  </rchan>                           //    receiving channel(s) X
+               <bvar>   Y   </bvar>                           //    variable(s) Y binding in continuation
+               <rper>   1   </rper>                           //    persistent (consumed many times)
+             </receive>                                       //
+             <cont>     P   </cont>                           //  continuation P
+           </rpackage>)                        [structural]
+
+// Multiple
+rule <k> for ( Y:NamePats <= X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
   (.Bag => <rpackage>                                         //spawn persistent rpackage:
              <receive>                                        //  receive:
                <rchan>  X  </rchan>                           //    receiving channel(s) X
@@ -383,9 +421,9 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
 
 //Bool, Int, String operations
 
-//>=>=>=>=>=>=>=>=>=>=>=>
-//<=> REDUCTION RULES <=>
-//>=>=>=>=>=>=>=>=>=>=>=>
+//.......................
+//... REDUCTION RULES ...
+//.......................
 
 //------------------
 //--- COMM EVENT ---
@@ -393,8 +431,9 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
 
 //Comm: x!(Q) | x(y){P} => P[@Q / y]
 
-//Linear comm
-  rule                                                        //consume both rpackage and spackage
+//--- Linear ---
+// Single
+rule                                                          //consume both rpackage and spackage
   (<rpackage>                                                 //
      <receive>                                                //  consume rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
@@ -413,8 +452,8 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
-//Linear comm list i.e. join
-  rule                                                        //consume both rpackage and spackage
+// Multiple
+rule                                                          //consume both rpackage and spackage
   (<rpackage>                                                 //
      <receive>                                                //  consume rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
@@ -433,8 +472,8 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
-//Persistent receive comm
-  rule                                                        //persistent receives (rpackage persists)
+//--- Persistent receive ---
+rule                                                          //persistent receives (rpackage persists)
    <rpackage>                                                 //
      <receive>                                                //rpackage persists:
        <rchan> X:Name </rchan>                                //  channel(s) X
@@ -453,8 +492,8 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
   [comm]                                                      //tagged "commpr" for tracking nondeterminism
 
-//Persistent send comm
-  rule                                                        //persistent sends (spackage persists)
+//--- Persistent send ---
+rule                                                          //persistent sends (spackage persists)
   (<rpackage>                                                 //
      <receive>                                                //consume rpackage:
        <rchan> X:Name </rchan>                                //  channel(s) X
@@ -474,42 +513,30 @@ rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive
   [comm]                                                      //tagged "commps" for tracking nondeterminism
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
-
-  rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
-
-  rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
+rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
+rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
 
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
 //context        Nil | P:Proc => P
- 
 //rule        P:Proc | Nil    => P              [structural]  //Nils in <k/>
-
 //rule           Nil | P:Proc => P              [structural]  //Nils in <k/>
-
 //rule <cont> P:Proc | Nil    => P </cont>      [structural]  //Nils in <cont/>
-
 //rule <cont>    Nil | P:Proc => P </cont>      [structural]  //Nils in <cont/>
 
 //Dissolve computationally empty threads
-  rule <thread> <k>  .  </k> </thread> => .Bag  [structural]  //dissolve empty threads
-
-  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
+rule <thread> <k>  .  </k> </thread> => .Bag  [structural]  //dissolve empty threads
+rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
 
 //  NAME REDUCTIONS
 //context       @ * []                                        //write as single context reduction?
-
-  rule  <msg>   @ * X:Name => X   </msg>        [structural]  //in message(s)
-
-  rule  <rchan> @ * X:Name => X </rchan>        [structural]  //in receiving channel(s)
-
-  rule  <schan> @ * X:Name => X </schan>        [structural]  //in sending channel(s)
+rule  <msg>   @ * X:Name => X   </msg>        [structural]  //in message(s)
+rule  <rchan> @ * X:Name => X </rchan>        [structural]  //in receiving channel(s)
+rule  <schan> @ * X:Name => X </schan>        [structural]  //in sending channel(s)
 
 // * AND @ ARE INVERSE OPERATORS                              
 //context       * @ []                                        //write as single context reduction?
-                                                              //split between contexts:
 //rule          * @ P:Proc => P                 [structural]  //reduce *@s
-
 //rule   <cont> * @ P:Proc => P </cont>         [structural]  // in <cont/>
 
 //The patterns in:
