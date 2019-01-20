@@ -1,13 +1,14 @@
-// RHOGUELANG (a.k.a. RHO-CALC++)
+// RHOGUELANG (RHO-CALC to RHOLANG)
 
 require "substitution.k"
+require "domains.k"
 
 //.....................
 //... SYNTAX MODULE ...
 //.....................
-module RHOGUE-SYNTAX
+module RHOGUESYNTAX-SYNTAX
 import ID
-import DOMAINS-syntax
+import DOMAINS
 import SUBSTITUTION
 
 //-----------------------------
@@ -18,24 +19,24 @@ import SUBSTITUTION
 syntax          Proc ::= "{" Proc "}"                                       [bracket]  //bracket for process
                        | "Nil"                                                         //stopped process
                        | Ground                                                        //boolean, integer, string, unforgeable int, uri
-                       | Collection                                                    //process tuple, list, set, map
+                       | Collection                                                    //process list, map, set, tuple
                        | ProcVar                                                       //process variables
                        > VarRef                                                        //variable references
                        > "*" Name                                                      //evaluate/reify
-                       > Proc "." Method "(" MethodArgs ")"                            //method
+                       > MethodProc "." Method "(" MethodArgs ")"                      //method
                        > AExp                                                          //arithmetic expression
                        > BExp                                                          //boolean expression
                        > Name Send                                                     //send on channel
-                       > "contract" Names "(" NamePats ")" "=" "{" Proc "}"            //contract: needs to be given an alias which binds
+                       > "contract" Name "(" NamePat ")" "=" "{" Proc "}"              //contract: needs to be given an alias which binds
                        | "for" "(" Receipt ")" "{" Proc "}"                  [binder]  //listen
                        | "match" Proc "{" MatchCases "}"                               //match
                        | Bundle "{" Proc "}"                                           //bundle
-                       > "if" "(" Bool ")" Proc                           [strict(1)]  //if...then...
-                       | "if" "(" Bool ")" Proc "else" Proc               [strict(1)]  //if...then...else...
-                       | "new" NameDecs "in" "{" Proc "}"                    [binder]  //unforgeable names
+                       > "if" "(" BExp ")" Proc                           [strict(1)]  //if...then...
+                       | "if" "(" BExp ")" Proc "else" Proc               [strict(1)]  //if...then...else...
+                       | "new" NameDeclares "in" "{" Proc "}"                [binder]  //unforgeable names
                        > Proc "|" Proc                                         [left]  //parallel composition
 
-//--- Ground ---
+//--- Ground Terms ---
 //Basic Data Structures
 syntax        Ground ::= Bool                                                          //boolean
                        | Int                                                           //integer
@@ -45,7 +46,7 @@ syntax        Ground ::= Bool                                                   
 
 //--- Collection ---
 syntax    Collection ::= RhoList                                                       //process list
-                       | RhoMap                                                        //process map
+                       | RhoMap                                                        //process key-value pairs
                        | RhoSet                                                        //process set
                        | RhoTuple                                                      //process tuple
 
@@ -73,34 +74,42 @@ syntax         Vars ::= Var                                                     
 //---Process Variables---
 syntax      ProcVar ::= Var                                                            //process variable
 
-syntax     ProcVars ::= ProcVar                                                        //monadic
-                      | ProcVar "," ProcVars                                           //polyadic
+syntax     ProcVars ::= ProcVar                                                        //single variable
+                      | ProcVar "," ProcVars                                           //several variables
 
-//--- Variable References ---                                                          //so we don't shadow the variable referenced
+//--- Variable References ---                                                          //so we don't shadow the variable referenced (mutable reference)
 syntax       VarRef ::= "=" ProcVar                                                    //process variable reference
                       | "=" "*" NameVar                                                //evaluated name variable reference
 
+//---------------
 //--- Methods ---
-syntax   MethodArgs ::= Procs                                                          //one or more processes
+//---------------
+
+// Method Prefixes
+syntax   MethodProc ::= Collection                                                     //rholist, rhomap, rhoset, rhotuple
+                      | String                                                         //ordinary string
+
+// Method Arguments
+syntax   MethodArgs ::= Procs                                                          //one or more process arguments "," separated
                       | ""                                                             //no method arguments
 
 // List of current methods
-syntax       Method ::= "add"                                                          //add: list & string
+syntax       Method ::= "add"                                                          //add: Proc*Proc -> Method (list & string)
                       | "confine"                                                      //still not in interpreter?
-                      | "contains"                                                     //contains: not tuple
-                      | "delete"                                                       //delete: not tuple
-                      | "diff"                                                         //difference: not tuple
-                      | "get"                                                          //get value: map
-                      | "getOrElse"                                                    //get value or else: map
-                      | "hexToBytes"                                                   //hex to bytes: string
-                      | "lenth"                                                        //length: list & string
-                      | "keys"                                                         //key set: map
-                      | "nth"                                                          //nth element: list, string & tuple
-                      | "set"                                                          //set value: map
-                      | "size"                                                         //size: not tuple
-                      | "slice"                                                        //slice: list & string        
-                      | "toByteArray"                                                  //to byte array: all
-                      | "union"                                                        //union: map & set
+                      | "contains"                                                     //contains predicate: Proc*Elements -> Method
+                      | "delete"                                                       //delete: Proc*Elements -> Method (not tuple)
+                      | "diff"                                                         //difference: Proc*Procs -> Method (not tuple)
+                      | "get"                                                          //get value: Map*Key -> Method
+                      | "getOrElse"                                                    //get value or else: Map*Key*Proc -> Method
+                      | "hexToBytes"                                                   //hex to bytes: String -> Method
+                      | "lenth"                                                        //length: Proc -> Method (list & string)
+                      | "keys"                                                         //keys set: Map -> Method
+                      | "nth"                                                          //nth element: Proc*Int -> Method (list, string & tuple)
+                      | "set"                                                          //set value: Map*Key*Value -> Method
+                      | "size"                                                         //size: Proc -> Method (map & set)
+                      | "slice"                                                        //slice: Proc*Int*Int -> Method (list & string)        
+                      | "toByteArray"                                                  //to byte array: Proc -> Method (all)
+                      | "union"                                                        //union: Proc*Proc -> Method (map & set)
 
 
 //--- Expressions ---
@@ -121,17 +130,17 @@ syntax         AExp ::= "(" AExp ")"                                            
 
 // Boolean Expressions
 syntax         BExp ::= "(" BExp ")"                                        [bracket]  //parentheses for boolean expression
-                      | Bool                                                           //true or false
-                     // Arithmetic                                                     //arithmetic predicates
+                      | Bool                                                           //bool
+                     // Arithmetic predicates
                       > AExp "<"  AExp                                    [seqstrict]  //strictly less than
                       | AExp "<=" AExp                                    [seqstrict]  //less than
                       | AExp ">"  AExp                                    [seqstrict]  //strictly greater than
                       | AExp ">=" AExp                                    [seqstrict]  //greater than
-                     // Processes                                                      //process predicates
+                     // Process predicates
                       > Proc "matches" Proc                                            //process matching
                       | Proc "==" Proc                                                 //process equality
                       | Proc "!=" Proc                                                 //process inequlaity
-                     // Connectives                                                    //boolean connectives
+                     // Boolean connectives
                       | "not" BExp                                           [strict]  //not
                       > BExp "and" BExp                                   [seqstrict]  //and
                       > BExp "or"  BExp                                   [strict(1)]  //or
@@ -141,39 +150,40 @@ syntax          Send ::= SendSingle                                             
                        | SendMultiple                                                  //persistent
 
 // Single Send
-syntax    SendSingle ::= "!"  SendContent
+syntax    SendSingle ::= "!"  SendContent                                              //consumable send
 
 // Persistent Send
-syntax  SendMultiple ::= "!!" SendContent
+syntax  SendMultiple ::= "!!" SendContent                                              //inconsumable send
 
 // Content of send
 syntax   SendContent ::= "(" Proc ")"                                                  //monadic send
-                       | RhoTuple                                                      //poladic send
+                       | RhoTuple                                                      //polyadic send
 
 //--- Listens ---
 // Receipts
-syntax       Receipt ::= LinearBinds
-                       | RepeatedBinds
+syntax       Receipt ::= LinearBinds                                                   //for polyadic linear receive
+                       | RepeatedBinds                                                 //for polyadic persistent receive
+                       | PeekBind                                                      //for peek
 
 // Linear binds
-syntax    LinearBind ::= NamePats  "<-" Name                                           //for( y <- x ){ P }
+syntax      PeekBind ::= NamePat  "<!" Name                                            //for( y <! x ){ P }
 
-syntax      PeekBind ::= NamePats  "<!" Name                                           //peek
+syntax    LinearBind ::= NamePat  "<-" Name                                            //for( y <- x ){ P }
 
-syntax   LinearBinds ::= LinearBind                                                    //single linear bind
-                       | LinearBind ";" LinearBinds                                    //multiple linear binds (join)
+syntax   LinearBinds ::= LinearBind                                                    //single linear bind (monadic)
+                       | LinearBind ";" LinearBinds                                    //multiple linear binds (polyadic)
 
 // Repeated binds
-syntax  RepeatedBind ::= NamePats "<=" Name                                            //for( y <= x ){ P }
+syntax  RepeatedBind ::= NamePat "<=" Name                                             //for( y <= x ){ P }
 
 syntax RepeatedBinds ::= RepeatedBind                                                  //single repeated bind
                        | RepeatedBind ";" RepeatedBinds                                //multiple repeated binds (join)
 
 //--- Matches ---
-syntax     MatchCase ::= ProcPat "=>" Proc                                      [binder]  //match case
+syntax     MatchCase ::= ProcPat "=>" Proc                                   [binder]  //match case
 
 syntax    MatchCases ::= MatchCase                                                     //single match case
-                       | MathCase MatchCases                                           //multiple match cases
+                       | MathCase MatchCases                                           //multiple match cases, space separated
 
 //--- Bundles ---
 // cannot be destructured by pattern matching                                          // | can read? | can write? |
@@ -258,12 +268,13 @@ syntax         Names ::= Name                                                   
                        | NameVars                                                      //name variables
 
 //--- Name Declarations ---
-syntax       NameDec ::= NameVar                                                       //name variable
+syntax   NameDeclare ::= NameVar                                                       //name variable
                        | NameVar "(" Uri ")"                                           //name variable with uri
 
-syntax      NameDecs ::= NameVars                                                      //one or more name variables
+syntax  NameDeclares ::= NameVars                                                      //one or more name variables
                        | NamDec                                                        //single name declaration
                        | NameDec "," NameDecs                                          //multiple name declarations
+                       | ".NameDeclares"                                               //empty list
 
 //--- Uri ---
 syntax           Uri ::= "uri(" String ")"
@@ -291,3 +302,7 @@ syntax          Pats ::= NamePats                                               
 
 endmodule
 
+module RHOUGESYNTAX
+import RHOGUESYNTAX-SYNTAX
+
+endmodule
