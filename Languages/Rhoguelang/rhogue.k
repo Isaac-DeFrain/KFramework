@@ -44,21 +44,23 @@ syntax        Ground ::= Bool                                                   
                        | Uri                                                           //uri
 
 //--- Collection ---
-syntax    Collection ::= RhoList
-                       | RhoMap
-                       | RhoSet
-                       | RhoTuple
+syntax    Collection ::= RhoList                                                       //process list
+                       | RhoMap                                                        //process map
+                       | RhoSet                                                        //process set
+                       | RhoTuple                                                      //process tuple
 
 // Lists
-syntax      RhoList ::= "[" Procs "]"
+syntax      RhoList ::= "[" Procs "]"                                                  //list of preocesses
 
 // Maps
-syntax       RhoMap ::= "{" RhoKVPairs "}"
-syntax   RhoKVPairs ::= Proc ":" Proc
-                      | Proc ":" Proc "," RhoKVPairs
+syntax       RhoMap ::= "{" RhoKVPairs "}"                                             //map = { key-value pairs }
+
+// Key-Value Pairs
+syntax   RhoKVPairs ::= Proc ":" Proc                                                  //single key-value pair
+                      | Proc ":" Proc "," RhoKVPairs                                   //multiple key-value pairs
 
 // Sets
-syntax          Set ::= "Set" "(" Procs ")"
+syntax          Set ::= "Set" "(" Procs ")"                                            //set of processes
 
 // Tuples
 syntax     RhoTuple ::= "(" Proc ",)"                                                  //1-tuple, note the ",)"
@@ -70,27 +72,64 @@ syntax          Var ::= Id                                                      
 syntax         Vars ::= Var                                                            //single variable
                       | Var "," Vars                                                   //multiple variables
 
-// Variable References
-syntax       VarRef ::= "=" ProcVar                                                    //process variable reference
-                      | "=" "*" NameVar                                                //evaluated name variable reference
-
 // Process Variables
 syntax      ProcVar ::= Var                                                            //process variable
 
 syntax     ProcVars ::= ProcVar                                                        //monadic
                       | ProcVar "," ProcVars                                           //polyadic
 
+// Variable References - so we don't shadow the variable referenced
+syntax       VarRef ::= "=" ProcVar                                                    //process variable reference
+                      | "=" "*" NameVar                                                //evaluated name variable reference
+
+
+//--- Expressions ---
+// expressions are anything that necessarily resolves to a ground term or collection
+syntax          Exp ::= Collection
+                      | Ground
+                      | AExp
+
 // Arithmetic Expressions
-//syntax       AExp ::=                                                                //arithmetic expression
+syntax         AExp ::= "(" AExp ")"                                                   //parentheses for arithmetic expression
+                      > Int "*" Int                                          [strict]  //multiplication
+                      | Int "/" Int                                          [strict]  //division
+                      | Int "%%" Int                                         [strict]  //remainders
+                      > Int "+" Int                                          [strict]  //addition
+                      | Int "+" Int                                          [strict]  //subtraction
+                      | Int "+" Int                                          [strict]  //plus plus
+                      > Int "+" Int                                          [strict]  //minus minus
 
 // Boolean Expressions
-//syntax       BExp ::=                                                                //boolean expression
+syntax         Bool ::= "(" Bool ")"                                        [bracket]  //parentheses for boolean expression
+                     // Arithmetic                                                     //arithmetic predicates
+                      > Int "<"  Int                                      [seqstrict]  //strictly less than
+                      | Int "<=" Int                                      [seqstrict]  //less than
+                      | Int ">"  Int                                      [seqstrict]  //strictly greater than
+                      | Int ">=" Int                                      [seqstrict]  //greater than
+                     // Processes                                                      //process predicates
+                      > Proc "matches" Proc                                            //process matching
+                      | Proc "==" Proc                                                 //process equality
+                      | Proc "!=" Proc                                                 //process inequlaity
+                     // Connectives                                                    //boolean connectives
+                      | "not" Bool                                           [strict]  //not
+                      > Bool "and" Bool                                   [seqstrict]  //and
+                      > Bool "or"  Bool                                   [strict(1)]  //or
 
-// Bundle cannot be destructured by pattern matching*                                  // | can read? | can write? |
-syntax       Bundle ::= "bundle0"                                                      // | no        | no         |
-                      | "bundle-"                                                      // | yes       | no         |
-                      | "bundle+"                                                      // | no        | yes        |
-                      | "bundle"                                                       // | yes       | yes        |
+//--- Sends ---
+syntax          Send ::= SendSingle                                                    //single
+                       | SendMultiple                                                  //persistent
+
+// Single Send
+syntax    SendSingle ::= "!"  SendContent
+
+// Persistent Send
+syntax  SendMultiple ::= "!!" SendContent
+
+// Content of send
+syntax   SendContent ::= "(" Proc ")"                                                  //monadic send
+                       | RhoTuple                                                      //poladic send
+
+//--- Contracts ---
 
 //---Listen---
 // Linear
@@ -110,16 +149,15 @@ syntax RepeatedBinds ::= RepeatedBind                                           
 syntax       Receipt ::= LinearBinds
                        | RepeatedBinds
 
-//---Sends---
-// Linear
-syntax          Send ::= "!("  SendContent ")"
-                       | "!!(" SendContent ")"
-
-syntax   SendContent ::= Procs
-
-// Repeated
-
 //---Match---
+
+
+//--- Bundle---
+// cannot be destructured by pattern matching                                          // | can read? | can write? |
+syntax       Bundle ::= "bundle0"                                                      // | no        | no         |
+                      | "bundle-"                                                      // | yes       | no         |
+                      | "bundle+"                                                      // | no        | yes        |
+                      | "bundle"                                                       // | yes       | yes        |
 
 
 //------------------------
