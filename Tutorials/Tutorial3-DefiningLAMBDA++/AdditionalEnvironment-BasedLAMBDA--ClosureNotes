@@ -1,0 +1,31 @@
+Additional Environment-Based LAMBDA/Closure Notes
+
+
+//environment recovery task syntax
+
+  syntax K ::= env(Map)  //environment recovery is a computation
+
+//environment recovery task semantics
+
+  rule <k> _:Val ~> (env(Rho) => .) ...</k> <env> _ => Rho </env>  [structural]  //a value followed by an environment recovery task, env(Rho), at the top of the computation list rewrites the current environment to Rho and dissolves the task in the computation list, this is a structural rule
+
+//closure syntax
+
+  syntax Val ::= closure(Map,Id,Exp)  //adds closure to category of values, Val
+  syntax KResult ::= Val	      //makes values K results
+  syntax Exp ::= Val		      //makes values expressions so we can apply values to values
+
+//closure semantics
+
+  rule <k> lambda X . E => closure(Rho,X,E) ...</k> <env> Rho </env>  [structural]  //a lambda abstraction at the top of the computation list rewrites to a closure holding the current environment, this is a structural rule
+
+  rule <k> closure(Rho,X,E) V:Val => E ~> env(Rho') ...</k>
+       <env> Rho' => Rho[ !N / X ] </env>
+       <store>... . => ( !N |-> V ) ...</store>              //the closure(Rho,X,E) applied to the value, V, at the top of the computation list in the environment Rho', rewrites to the body of the closure, E, in the held environment, Rho, with a fresh natural number, !N, substituted for the variable, X, i.e. Rho[ !N / X ], and adds the binding !N |-> V to the store, followed by an environment recovery task to the original environment, Rho'
+
+//look up semantics
+
+  rule <k> X => V ...</k>
+       <env>... X |-> N ...</env>
+       <store>... N |-> V ...</store>  //the variable X at the top of the computation list rewrites to the value V if somewhere in the environment, X is bound to a location N, and somewhere in the store, the same location N is bound to the value V
+
