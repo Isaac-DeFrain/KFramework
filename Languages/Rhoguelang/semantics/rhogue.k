@@ -169,15 +169,13 @@ rule <k> for ( Y:NamePat <= X:Name ; RepeatedBinds ){ P:Proc } => for ( Repeated
              <cont>     P   </cont>                           //  continuation P
            </rpackage>)                         [structural]
 
-//Bool, Int, String operations
-
 //-----------
 //--- NEW ---
 //-----------
 rule new .NameDeclares in { P:Proc } => P            [macro]  //empty name declaration
 
-rule X:NameDeclare , N:NameDeclares in { P:Proc }
-  => new N in { P[unforgeable( !I:Int ) / X] }  [structural]  //
+rule X:NameDeclare , N:NameDeclares in { P:Proc }             //unforgeable name declarations
+  => new N in { P[unforgeable( !I:Int ) / X] }  [structural]  //recursive substitution
 
 //.......................
 //... REDUCTION RULES ...
@@ -192,15 +190,15 @@ rule X:NameDeclare , N:NameDeclares in { P:Proc }
 rule                                                          //consume both rpackage and send
   (<rpackage>                                                 //
      <receive>                                                //  consume rpackage:
-       <rchan> X:Name </rchan>                                //    channel(s) X
-       <bvar>  Y:Name  </bvar>                                //    binding variable(s) Y
-       <rper>    0     </rper>                                //    not persistent
+       <rchan> X:Name    </rchan>                             //    channel X
+       <bvar>  Y:NamePat  </bvar>                             //    binding variable(s) Y
+       <rper>     0       </rper>                             //    not persistent
      </receive>                                               //
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
   (<send>                                                     //  consume send:
-     <schan>   X   </schan>                                   //    channel(s) X
-     <msg>   Z:Name  </msg>                                   //    message(s) Z
+     <schan>     X    </schan>                                //    channel X
+     <msg>   Z:NameVar  </msg>                                //    message(s) Z
      <sper>    0    </sper>                                   //    not persistent
    </send> => .Bag)                                           //
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
@@ -216,13 +214,11 @@ rule                                                          //consume both rpa
      </receive>                                               //
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
-  (<spackage>                                                 //
-     <send>                                                   //  consume send:
-       <schan>   X   </schan>                                 //    channel X
-       <msg>   Z:Name  </msg>                                 //    message(s) Z
-       <sper>    0    </sper>                                 //    not persistent
-     </send>                                                  //
-   </spackage> => .Bag)                                       //
+  (<send>                                                     //  consume send:
+     <schan>   X   </schan>                                   //    channel X
+     <msg>   Z:Name  </msg>                                   //    message(s) Z
+     <sper>    0    </sper>                                   //    not persistent
+   </send> => .Bag)                                           //
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
   [comm]                                                      //tagged "comm" for tracking nondeterminism
 
@@ -236,18 +232,16 @@ rule                                                          //persistent recei
      </receive>                                               //
      <cont> P:Proc </cont>                                    //  continuation P
    </rpackage>                                                //
-  (<spackage>                                                 //consume spackage:
-     <send>                                                   //
-       <schan>   X   </schan>                                 //  channel(s) X
-       <msg>   Z:Name  </msg>                                 //  message(s) Z
-       <sper>    0    </sper>                                 //  not persistent
-     </send>                                                  //
-   </spackage> => .Bag)                                       //  
+  (<send>                                                     //
+     <schan>   X   </schan>                                   //  channel X
+     <msg>   Z:Name  </msg>                                   //  message(s) Z
+     <sper>    0    </sper>                                   //  not persistent
+   </send> => .Bag)                                           //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
   [comm]
 
 //--- Persistent send ---
-rule                                                          //persistent sends (spackage persists)
+rule                                                          //persistent sends (send persists)
   (<rpackage>                                                 //
      <receive>                                                //consume rpackage:
        <rchan> X:Name </rchan>                                //  channel(s) X
@@ -255,14 +249,12 @@ rule                                                          //persistent sends
        <rper>    0     </rper>                                //  not persistent
      </receive>                                               //
      <cont> P:Proc </cont>                                    //  continuation P
-  </rpackage> => .Bag)                                        //
-  <spackage>                                                  //spackage persists:
-    <send>                                                    //
-      <schan>   X   </schan>                                  //  channel(s) X
-      <msg>   Z:Name  </msg>                                  //  message(s) Z
-      <sper>    1    </sper>                                  //  persistent
-    </send>                                                   //
-  </spackage>                                                 //  
+   </rpackage> => .Bag)                                       //
+   <send>                                                     //
+     <schan>   X   </schan>                                   //  channel X
+     <msg>   Z:Name  </msg>                                   //  message(s) Z
+     <sper>    1    </sper>                                   //  persistent
+   </send>                                                    //
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
   [comm]
 
@@ -275,7 +267,7 @@ rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont>
 //------------
 
 // Single
-rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
+rule <k> for ( Y:NamePat <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
       <send>
         <schan>    X   </schan>                               //peek at Y on channel X
         <msg> Z:NamePats </msg>
@@ -284,6 +276,17 @@ rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
 //---------------
 //--- METHODS ---
 //---------------
+
+
+//------------------------------
+//--- ARITHMETIC EXPRESSIONS ---
+//------------------------------
+
+
+//---------------------------
+//--- BOOLEAN EXPRESSIONS ---
+//---------------------------
+
 
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
