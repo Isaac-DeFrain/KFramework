@@ -55,10 +55,10 @@ Rho-calc with added:
   - [x] Send
   - [x] Persistent receive/send
   - [x] Contract (syntactic sugar: persistent receive)
-  - [ ] Bundle: read and/or write
-  - [ ] Join
-  - [ ] Peek ("comm without consumption")
-  - [ ] `new` (unforgeable names)
+  - [ ] Bundle: read and/or write (I/O?)
+  - [x] Join
+  - [x] Peek ("comm without consumption")
+  - [x] `new` (unforgeable names)
   - [ ] Logical connectives for patterns
   - [x] Comms (linear and persistent)
   - [ ] Strict functions
