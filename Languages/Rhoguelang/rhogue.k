@@ -32,7 +32,7 @@ syntax          Proc ::= "{" Proc "}"                                       [bra
                        | Bundle "{" Proc "}"                                           //bundle
                        > "if" "(" Bool ")" Proc                           [strict(1)]  //if...then...
                        | "if" "(" Bool ")" Proc "else" Proc               [strict(1)]  //if...then...else...
-                       | "new" NameDeclarations "in" "{" Proc "}"            [binder]  //unforgeable names
+                       | "new" NameDecs "in" "{" Proc "}"                    [binder]  //unforgeable names
                        > Proc "|" Proc                                         [left]  //parallel composition
 
 //--- Ground ---
@@ -257,6 +257,17 @@ syntax         Names ::= Name                                                   
                        | Name "," Names                                                //multiple names
                        | NameVars                                                      //name variables
 
+//--- Name Declarations ---
+syntax       NameDec ::= NameVar                                                       //name variable
+                       | NameVar "(" Uri ")"                                           //name variable with uri
+
+syntax      NameDecs ::= NameVars                                                      //one or more name variables
+                       | NamDec                                                        //single name declaration
+                       | NameDec "," NameDecs                                          //multiple name declarations
+
+//--- Uri ---
+syntax           Uri ::= "uri(" String ")"
+
 //---------------------
 //--- NAME PATTERNS ---
 //---------------------
@@ -266,6 +277,8 @@ syntax       NamePat ::= Name                                                   
 syntax      NamePats ::= NamePat                                                       //single name pattern
                        | NamePat "," NamePats                                          //multiple name patterns
                        | Names                                                         //ordinary names
+
+
 
 //------------------------
 //--- GENERAL PATTERNS ---
@@ -518,7 +531,7 @@ rule                                                          //persistent recei
      </send>                                                  //
    </spackage> => .Bag)                                       //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [comm]                                                      //tagged "commpr" for tracking nondeterminism
+  [comm]
 
 //--- Persistent send ---
 rule                                                          //persistent sends (spackage persists)
@@ -538,11 +551,24 @@ rule                                                          //persistent sends
     </send>                                                   //
   </spackage>                                                 //  
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn <thread/> holding substitution P[Z / Y]
-  [comm]                                                      //tagged "commps" for tracking nondeterminism
+  [comm]
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
 rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
 rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
+
+//--- Peek ---
+rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => . ...</k>
+      <send>                                                  //  receive:
+        <schan> X </schan>                                    //
+        ...
+      </send>
+
+rule <k> for ( Y:NamePats <! X:Name ; PeekBinds ){ P:Proc } => for ( PeekBinds ){ P:Proc } ...</k>
+      <send>                                                  //  receive:
+        <schan> X </schan>                                    //
+        ...
+      </send>
 
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
@@ -553,17 +579,17 @@ rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont>
 //rule <cont>    Nil | P:Proc => P </cont>      [structural]  //Nils in <cont/>
 
 //Dissolve computationally empty threads
-rule <thread> <k>  .  </k> </thread> => .Bag  [structural]  //dissolve empty threads
-rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //dissolve Nil threads
+rule <thread> <k>  .  </k> </thread> => .Bag    [structural]  //dissolve empty threads
+rule <thread> <k> Nil </k> </thread> => .Bag    [structural]  //dissolve Nil threads
 
-//  NAME REDUCTIONS
-//context       @ * []                                        //write as single context reduction?
-rule  <msg>   @ * X:Name => X   </msg>        [structural]  //in message(s)
-rule  <rchan> @ * X:Name => X </rchan>        [structural]  //in receiving channel(s)
-rule  <schan> @ * X:Name => X </schan>        [structural]  //in sending channel(s)
-
-// * AND @ ARE INVERSE OPERATORS                              
+// * AND @ ARE INVERSE OPERATORS
 //context       * @ []                                        //write as single context reduction?
+//context       @ * []                                        //write as single context reduction?
+
+rule  <msg>   @ * X:Name => X   </msg>          [structural]  //in message(s)
+rule  <rchan> @ * X:Name => X </rchan>          [structural]  //in receiving channel(s)
+rule  <schan> @ * X:Name => X </schan>          [structural]  //in sending channel(s)
+                             
 //rule          * @ P:Proc => P                 [structural]  //reduce *@s
 //rule   <cont> * @ P:Proc => P </cont>         [structural]  // in <cont/>
 
