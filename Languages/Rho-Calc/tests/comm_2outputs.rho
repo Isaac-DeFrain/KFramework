@@ -1,0 +1,6 @@
+// Nondeterministic comms - two sends on same channel
+
+x!(*a) | x!(*b) | x(y){Nil}
+
+// Two reductions:
+// x!(*b) | Nil or x!(*a) | Nil
