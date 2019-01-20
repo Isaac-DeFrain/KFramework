@@ -1,34 +1,38 @@
 # Rhoguelang: Rho-calculus to Rholang in K
 
 Rho-calc with added:
-- [ ] Ground terms / basic data structures
-  - [x] `Nil`
+* Ground terms / basic data structures
   - [x] Bool
-  - [ ] Float
   - [x] Int
   - [x] String
-  - [x] Bundle
-  - [x] List
-  - [x] Map
-  - [x] Set
-  - [ ] Tuple
-  - [ ] Uri
-- [ ] Operations
-  - [ ] Conditional
+- [x] `Nil`
+- [x] Bundle: `Bundle { Proc }`
+- [x] List: `[ Procs ]`
+- [x] Map: `{ Proc : Proc, ... }`
+- [x] Set: `{ Procs }`
+- [x] Tuple: `( Proc ,) | ( Proc , Procs )`
+- [x] Uri: `"uri(" String ")"`
+* Operations - syntax
+  - Conditional
     - [ ] `If (x) {P}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it dissolves)
     - [ ] `If (x) {P} else {Q}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it rewrites to `Q`)
   - [ ] Bool: `notbool`, `andbool`, `orbool`
   - [ ] Bundle: read and/or write
   - [ ] Int arithmetic: `+Int`, `-Int`, `*Int`, `/Int`
-  - [ ] Float arithmetic
-  - [ ] List
-  - [ ] Map
-  - [ ] Mod arithmetic
-  - [ ] Set
+  * List
+    - [ ] concatenation: `++`
+    - [ ] slice from *m* to *n*: `"list".slice(m,n)`
+  * Map
+    - [ ]
+  - [ ] Mod arithmetic: `%%`
+  * Set
+    - [ ] union: `"set1".union("set2")`
+    - [ ] contains predicate: `"set".contains("element")`
+    - [ ] delete: `"set".delete("element")`
   - [ ] String
   - [ ] Tuple
   - [ ] Uri?
-- [ ] Operators: syntax -> semantics
+* Operations - semantics
   - [x] Par
   - [x] Quote
   - [x] Receive
@@ -36,11 +40,10 @@ Rho-calc with added:
   - [x] Persistent receive/send
   - [x] Contract (syntactic sugar: persistent receive)
   - [ ] Bundle
-  - [ ] Join (list substitution)
+  - [ ] Join
   - [ ] Peek ("comm without consumption")
   - [ ] `new` (unforgeable names)
-  - [ ] Logical connectives
-- [ ] Reductions
+  - [ ] Logical connectives for patterns
   - [x] Comms (linear and persistent)
   - [ ] Strict functions
   - [ ] Pattern matching
