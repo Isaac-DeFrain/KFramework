@@ -2,9 +2,9 @@
 
 require "substitution.k"
 
-//:=::=::=::=::=::=::=:
-//:=: SYNTAX MODULE :=:
-//:=::=::=::=::=::=::=:
+//.....................
+//... SYNTAX MODULE ...
+//.....................
 module RHOGUE-SYNTAX
   import ID
   import DOMAINS-syntax
@@ -82,6 +82,27 @@ syntax     ProcVars ::= ProcVar                                                 
 syntax       VarRef ::= "=" ProcVar                                                    //process variable reference
                       | "=" "*" NameVar                                                //evaluated name variable reference
 
+//--- Methods ---
+syntax   MethodArgs ::= Procs                                                          //one or more processes
+                      | ""                                                             //zero arguments
+
+// List of current methods
+syntax       Method ::= "method(nth)"                                                  //nth element: list, string, & tuple
+                      | "method(toByteArray)"                                          //to byte array: all
+                      | "method(hexToBytes)"                                           //hex to bytes: string
+                      | "method(union)"                                                //union: map & set
+                      | "method(diff)"                                                 //difference: not tuple
+                      | "method(add)"                                                  //add: not tuple
+                      | "method(delete)"                                               //delete: not tuple
+                      | "method(contains)"                                             //contains: not tuple
+                      | "method(get)"                                                  //get value: map
+                      | "method(getOrElse)"                                            //get value or else: map
+                      | "method(set)"                                                  //set value: map
+                      | "method(keys)"                                                 //set of keys: map
+                      | "method(size)"                                                 //size: not tuple
+                      | "method(lenth)"                                                //length: list & string
+                      | "method(slice)"                                                //slice: list & string
+                      | "method(confine)"                                              //not currently in interpreter?
 
 //--- Expressions ---
 // expressions are anything that necessarily resolves to a ground term or collection
@@ -91,29 +112,30 @@ syntax          Exp ::= Collection
 
 // Arithmetic Expressions
 syntax         AExp ::= "(" AExp ")"                                                   //parentheses for arithmetic expression
-                      > Int "*" Int                                          [strict]  //multiplication
-                      | Int "/" Int                                          [strict]  //division
-                      | Int "%%" Int                                         [strict]  //remainders
-                      > Int "+" Int                                          [strict]  //addition
-                      | Int "+" Int                                          [strict]  //subtraction
-                      | Int "+" Int                                          [strict]  //plus plus
-                      > Int "+" Int                                          [strict]  //minus minus
+                      > AExp "*"  AExp                                       [strict]  //multiplication
+                      | AExp "/"  AExp                                       [strict]  //division
+                      | AExp "%"  AExp                                       [strict]  //remainders
+                      > AExp "+"  AExp                                       [strict]  //addition
+                      | AExp "-"  AExp                                       [strict]  //subtraction
+                      | AExp "++" AExp                                       [strict]  //plus plus
+                      > AExp "--" AExp                                       [strict]  //minus minus
 
 // Boolean Expressions
-syntax         Bool ::= "(" Bool ")"                                        [bracket]  //parentheses for boolean expression
+syntax         BExp ::= "(" BExp ")"                                        [bracket]  //parentheses for boolean expression
+                      | Bool                                                           //true or false
                      // Arithmetic                                                     //arithmetic predicates
-                      > Int "<"  Int                                      [seqstrict]  //strictly less than
-                      | Int "<=" Int                                      [seqstrict]  //less than
-                      | Int ">"  Int                                      [seqstrict]  //strictly greater than
-                      | Int ">=" Int                                      [seqstrict]  //greater than
+                      > AExp "<"  AExp                                    [seqstrict]  //strictly less than
+                      | AExp "<=" AExp                                    [seqstrict]  //less than
+                      | AExp ">"  AExp                                    [seqstrict]  //strictly greater than
+                      | AExp ">=" AExp                                    [seqstrict]  //greater than
                      // Processes                                                      //process predicates
                       > Proc "matches" Proc                                            //process matching
                       | Proc "==" Proc                                                 //process equality
                       | Proc "!=" Proc                                                 //process inequlaity
                      // Connectives                                                    //boolean connectives
-                      | "not" Bool                                           [strict]  //not
-                      > Bool "and" Bool                                   [seqstrict]  //and
-                      > Bool "or"  Bool                                   [strict(1)]  //or
+                      | "not" BExp                                           [strict]  //not
+                      > BExp "and" BExp                                   [seqstrict]  //and
+                      > BExp "or"  BExp                                   [strict(1)]  //or
 
 //--- Sends ---
 syntax          Send ::= SendSingle                                                    //single
@@ -129,35 +151,36 @@ syntax  SendMultiple ::= "!!" SendContent
 syntax   SendContent ::= "(" Proc ")"                                                  //monadic send
                        | RhoTuple                                                      //poladic send
 
-//--- Contracts ---
+//--- Listens ---
+// Receipts
+syntax       Receipt ::= LinearBinds
+                       | RepeatedBinds
 
-//---Listen---
-// Linear
-syntax   LinearBind ::= NamePats  "<-" Name                                            //for( y <- x ){ P }
-                      | NamePats  "<!" Name                                            //peek
+// Linear binds
+syntax    LinearBind ::= NamePats  "<-" Name                                           //for( y <- x ){ P }
+                       | NamePats  "<!" Name                                           //peek
 
-syntax  LinearBinds ::= LinearBind                                                     //single linear bind
-                      | LinearBind ";" LinearBinds                                     //multiple linear binds (join)
+syntax   LinearBinds ::= LinearBind                                                    //single linear bind
+                       | LinearBind ";" LinearBinds                                    //multiple linear binds (join)
 
-// Repeated
+// Repeated binds
 syntax  RepeatedBind ::= NamePats "<=" Name                                            //for( y <= x ){ P }
 
 syntax RepeatedBinds ::= RepeatedBind                                                  //single repeated bind
                        | RepeatedBind ";" RepeatedBinds                                //multiple repeated binds (join)
 
-//Receipt
-syntax       Receipt ::= LinearBinds
-                       | RepeatedBinds
+//--- Matches ---
+syntax     MatchCase ::= ProcPat "=>" Proc                                      [binder]  //match case
 
-//---Match---
+syntax    MatchCases ::= MatchCase                                                     //single match case
+                       | MathCase MatchCases                                           //multiple match cases
 
-
-//--- Bundle---
+//--- Bundles ---
 // cannot be destructured by pattern matching                                          // | can read? | can write? |
-syntax       Bundle ::= "bundle0"                                                      // | no        | no         |
-                      | "bundle-"                                                      // | yes       | no         |
-                      | "bundle+"                                                      // | no        | yes        |
-                      | "bundle"                                                       // | yes       | yes        |
+syntax        Bundle ::= "bundle0"                                                     // | no        | no         |
+                       | "bundle-"                                                     // | yes       | no         |
+                       | "bundle+"                                                     // | no        | yes        |
+                       | "bundle"                                                      // | yes       | yes        |
 
 
 //------------------------
@@ -165,46 +188,46 @@ syntax       Bundle ::= "bundle0"                                               
 //------------------------
 
 //--- Process Patterns ---
-syntax       ProcPat ::= "{" ProcPat "}"     [bracket]  //bracket for process pattern
-                       | CollectionPat                  //collection pattern
-                       | SimpleType                     //simple type
-                       > "~" ProcPat                    //logical negation
-                       > ProcPat "/\\" ProcPat  [left]  //logical "and"
-                       > ProcPat "\\/" ProcPat  [left]  //logical "or"
-                       > Proc                           //process patterns can be ordinary pattern
-                       > ProcPat "|" ProcPat    [left]  //parallel compsition
+syntax       ProcPat ::= "{" ProcPat "}"     [bracket]                                 //bracket for process pattern
+                       | CollectionPat                                                 //collection pattern
+                       | SimpleType                                                    //simple type
+                       > "~" ProcPat                                                   //logical negation
+                       > ProcPat "/\\" ProcPat  [left]                                 //logical "and"
+                       > ProcPat "\\/" ProcPat  [left]                                 //logical "or"
+                       > Proc                                                          //process patterns can be ordinary pattern
+                       > ProcPat "|" ProcPat    [left]                                 //parallel compsition
 
-syntax      ProcPats ::= Procs                          //process patterns can be ordinary patterns
-                       | ProcPat                        //single process pattern
-                       | ProcPat "," ProcPats           //multiple process patterns
+syntax      ProcPats ::= Procs                                                         //process patterns can be ordinary patterns
+                       | ProcPat                                                       //single process pattern
+                       | ProcPat "," ProcPats                                          //multiple process patterns
 
 //---Simple Types---
-syntax       SimpleType ::= "Bool"
-                          | "ByteArray"
-                          | "Int"
-                          | "List"
-                          | "Map"
-                          | "String"
-                          | "Tuple"
-                          | "Uri"
+syntax    SimpleType ::= "Bool"
+                       | "ByteArray"
+                       | "Int"
+                       | "List"
+                       | "Map"
+                       | "String"
+                       | "Tuple"
+                       | "Uri"
 
 //------------------------------
 //--- NAMES & NAME VARIABLES ---
 //------------------------------
 
 //--- Name Variables ---
-syntax   NameVar ::= Var                                                               //name variable
+syntax       NameVar ::= Var                                                           //name variable
 
-syntax  NameVars ::= NameVar                                                           //single variable
-                   | NameVar "," NameVars                                              //multiple variables
+syntax      NameVars ::= NameVar                                                       //single variable
+                       | NameVar "," NameVars                                          //multiple variables
 
 //--- Names ---
-syntax      Name ::= "@" Proc                                                          //quoted process
-                   | NameVar
+syntax          Name ::= "@" Proc                                                          //quoted process
+                       | NameVar
 
-syntax     Names ::= Name
-                   | Name "," Names
-                   | NameVars
+syntax         Names ::= Name
+                       | Name "," Names
+                       | NameVars
 
 //---------------------
 //--- NAME PATTERNS ---
@@ -216,61 +239,61 @@ syntax NamePats ::= NamePat
 
 endmodule
 
-//=>=>=>=>=>=>=>=>=>=>=>=>
-//>=> SEMANTICS MODULE >=>
-//=>=>=>=>=>=>=>=>=>=>=>=>
+//........................
+//... SEMANTICS MODULE ...
+//........................
 
 module RHOGUE
   import RHOGUE-SYNTAX
   import SUBSTITUTION
 
-//><><><><><><><><><><>
-//<>< CONFIGURATION ><>
-//><><><><><><><><><><>
+//---------------------
+//--- CONFIGURATION ---
+//---------------------
 
-  configuration
-    <T>                                                       //<top> contains cells <processpool> & <tuplespace>
-      <threadpool color="red">                                //<threadpool> conatains zero or more <thread> cells
-        <thread color="red" multiplicity="*">                 //<thread> contains one <k> cell
-          <k>                                                 // concurrent compututaional threads
-            $PGM:Proc                                         // programs and computations are both processes
-          </k>                                                // end k
-        </thread>                                             // end thread
-      </threadpool>                                           // end threadpool
-      <tuplespace color="blue">                               //<tuplespace> contains cells <rpackages> & <spackages>
-        <rpackages color="orange">                            //<rpackages> contains zero or more <rpackage> cells
-          <rpackage color="orange" multiplicity="*">          //<rpackage> contains cells <receives> & <cont>
-            <receives color="purple">                         //<receives> contains zero or more <receive> cells
-              <receive color="purple" multiplicity="*">       //<receive> contains cells <rchan>, <bvars>, & <rpers>
-                <rchan color="purple"> .K </rchan>            // receive channel(s)
-                <bvar color="purple">  .K  </bvar>            // binding variable(s) in continuation
-                <rper color="purple">  .K  </rper>            // persistent (y/n?) (y=1 / n=0)
-              </receive>                                      // end receive
-            </receives>                                       // end receives
-            <cont color="red"> .K </cont>                     //<cont> contains the continuation
-          </rpackage>                                         // end rpackage
-        </rpackages>                                          // end rpackages
-        <spackages color="green">                             //<spackages> : < <spackage*> >
-          <spackage color="teal" multiplicity="*">            //<spackage> : < <sends> >
-            <sends color="cyan">                              //<sends> : < <send*> >
-              <send color="cyan" multiplicity="*">            //<send> : < <schan> <msgs> <spers> >
-                <schan color="cyan"> .K  </schan>             // send channel(s)
-                <msg color="cyan">   .K    </msg>             // message(s) being sent
-                <sper color="cyan">  .K   </sper>             // persistent (y/n?)
-              </send>                                         // end send
-            </sends>                                          // end sends
-          </spackage>                                         // end spackage
-        </spackages>                                          // end spackages
-      </tuplespace>                                           // end tuplespace
-    </T>                                                      // end of configuration
+configuration
+  <T>                                                         //<top> contains cells <processpool> & <tuplespace>
+    <threadpool color="red">                                  //<threadpool> conatains zero or more <thread> cells
+      <thread color="red" multiplicity="*">                   //<thread> contains one <k> cell
+        <k>                                                   // concurrent compututaional threads
+          $PGM:Proc                                           // programs and computations are both processes
+        </k>                                                  // end k
+      </thread>                                               // end thread
+    </threadpool>                                             // end threadpool
+    <tuplespace color="blue">                                 //<tuplespace> contains cells <rpackages> & <spackages>
+      <rpackages color="orange">                              //<rpackages> contains zero or more <rpackage> cells
+        <rpackage color="orange" multiplicity="*">            //<rpackage> contains cells <receives> & <cont>
+          <receives color="purple">                           //<receives> contains zero or more <receive> cells
+            <receive color="purple" multiplicity="*">         //<receive> contains cells <rchan>, <bvars>, & <rpers>
+              <rchan color="purple"> .K </rchan>              // receive channel(s)
+              <bvar color="purple">  .K  </bvar>              // binding variable(s) in continuation
+              <rper color="purple">  .K  </rper>              // persistent (y/n?) (y=1 / n=0)
+            </receive>                                        // end receive
+          </receives>                                         // end receives
+          <cont color="red"> .K </cont>                       //<cont> contains the continuation
+        </rpackage>                                           // end rpackage
+      </rpackages>                                            // end rpackages
+      <spackages color="green">                               //<spackages> contains zero or more <spackage> cells
+        <spackage color="teal" multiplicity="*">              //<spackage> contains one <sends> cell
+          <sends color="cyan">                                //<sends> contains zero or more <send> cells
+            <send color="cyan" multiplicity="*">              //<send> contains cells <schan>, <msgs>, & <spers>
+              <schan color="cyan"> .K  </schan>               // send channel(s)
+              <msg color="cyan">   .K    </msg>               // message(s) being sent
+              <sper color="cyan">  .K   </sper>               // persistent (y/n?)
+            </send>                                           // end send
+          </sends>                                            // end sends
+        </spackage>                                           // end spackage
+      </spackages>                                            // end spackages
+    </tuplespace>                                             // end tuplespace
+  </T>                                                        // end configuration
 
-  syntax KVariable ::= NameVars | ProcVars
+syntax KVariable ::= Id | NameVars | ProcVars
 
-//syntax KResult ::= Name | Atomic
+syntax KResult ::= Bool | Int                                 //results for strictness
 
-//=>=>=>=>=>=>=>=>=>=>=>=>=>
-//<=> OPERATOR SEMANTICS <=>
-//=>=>=>=>=>=>=>=>=>=>=>=>=>
+//..........................
+//... OPERATOR SEMANTICS ...
+//..........................
 
 //-----------
 //--- PAR ---
@@ -284,7 +307,8 @@ rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>    //dissolve par in 
 //--- SENDS ---
 //-------------
 
-//Linear send
+//--- Linear ---
+// Single - Proc
 rule <k> X:Name !( P:Proc ) => . ...</k>                      //dissolve send & spawn nonpersistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
@@ -292,7 +316,14 @@ rule <k> X:Name !( P:Proc ) => . ...</k>                      //dissolve send & 
              <sper>   0   </sper>                             //  not persistent
            </send>)                            [structural]
 
-//Multiple sends
+// Multiple - RhoTuple
+rule <k> X:Name !( P:Proc ,) => . ...</k>                     //dissolve send & spawn nonpersistent <spackage/>
+  (.Bag => <send>                                             //
+             <schan>  X  </schan>                             //  sending channel X
+             <msg>   @P    </msg>                             //  message sent @P
+             <sper>   0   </sper>                             //  not persistent
+           </send>)                            [structural]
+
 rule <k> X:Name !( P:Proc , Q:Procs ) => X !( Q ) ...</k>     //dissolve send & spawn nonpersistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
@@ -300,7 +331,8 @@ rule <k> X:Name !( P:Proc , Q:Procs ) => X !( Q ) ...</k>     //dissolve send & 
              <sper>   0   </sper>                             //  not persistent
            </send>)                            [structural]
 
-//Persistent sends
+//--- Persistent ---
+// Single - Proc
 rule <k> X:Name !!( P:Proc ) => . ...</k>                     //dissolve send & spawn persistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
@@ -308,16 +340,24 @@ rule <k> X:Name !!( P:Proc ) => . ...</k>                     //dissolve send & 
              <sper>   1   </sper>                             //  persistent
            </send>)                            [structural]
 
-rule <k> X:Name !!( P:Proc, Q:Procs ) => X !!( Q ) ...</k>    //dissolve send & spawn persistent <spackage/>
+// Multiple - RhoTuple
+rule <k> X:Name !!( P:Proc ,) => . ...</k>                    //dissolve send & spawn persistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   1   </sper>                             //  persistent
            </send>)                            [structural]
 
-//<-<-<-<-<-<-<-<-
-//<-< RECEIVES <-<
-//<-<-<-<-<-<-<-<-
+rule <k> X:Name !!( P:Proc , Q:Procs ) => X !!( Q ) ...</k>   //dissolve send & spawn persistent <spackage/>
+  (.Bag => <send>                                             //
+             <schan>  X  </schan>                             //  sending channel X
+             <msg>   @P    </msg>                             //  message sent @P
+             <sper>   1   </sper>                             //  persistent
+           </send>)                            [structural]
+
+//----------------
+//--- RECEIVES ---
+//----------------
 
 //Linear receive
 rule <k> for ( Y:Names <- X:Names ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
@@ -331,15 +371,15 @@ rule <k> for ( Y:Names <- X:Names ){ P:Proc } => . ...</k>    //dissolve receive
            </rpackage>)                        [structural]
 
 //Persistent receive
-  rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>  //dissolve receive and spawn <rpackage/>
-    (.Bag => <rpackage>                                       //spawn persistent rpackage:
-               <receive>                                      //  receive:
-                 <rchan>  X  </rchan>                         //    receiving channel(s) X
-                 <bvar>   Y   </bvar>                         //    variable(s) Y binding in continuation
-                 <rper>   1   </rper>                         //    persistent (consumed many times)
-               </receive>                                     //
-               <cont>     P   </cont>                         //  continuation P
-             </rpackage>)                        [structural]
+rule <k> for ( Y:Names <= X:Names ){ P:Proc } => . ...</k>    //dissolve receive and spawn <rpackage/>
+  (.Bag => <rpackage>                                         //spawn persistent rpackage:
+             <receive>                                        //  receive:
+               <rchan>  X  </rchan>                           //    receiving channel(s) X
+               <bvar>   Y   </bvar>                           //    variable(s) Y binding in continuation
+               <rper>   1   </rper>                           //    persistent (consumed many times)
+             </receive>                                       //
+             <cont>     P   </cont>                           //  continuation P
+           </rpackage>)                        [structural]
 
 //Bool, Int, String operations
 
