@@ -82,25 +82,25 @@ syntax       VarRef ::= "=" ProcVar                                             
 
 //--- Methods ---
 syntax   MethodArgs ::= Procs                                                          //one or more processes
-                      | ""                                                             //zero arguments
+                      | ""                                                             //no method arguments
 
 // List of current methods
-syntax       Method ::= "method(add)"                                                  //add: list & string
-                      | "method(confine)"                                              //still not in interpreter?
-                      | "method(contains)"                                             //contains: not tuple
-                      | "method(delete)"                                               //delete: not tuple
-                      | "method(diff)"                                                 //difference: not tuple
-                      | "method(get)"                                                  //get value: map
-                      | "method(getOrElse)"                                            //get value or else: map
-                      | "method(hexToBytes)"                                           //hex to bytes: string
-                      | "method(lenth)"                                                //length: list & string
-                      | "method(keys)"                                                 //key set: map
-                      | "method(nth)"                                                  //nth element: list, string & tuple
-                      | "method(set)"                                                  //set value: map
-                      | "method(size)"                                                 //size: not tuple
-                      | "method(slice)"                                                //slice: list & string
-                      | "method(toByteArray)"                                          //to byte array: all
-                      | "method(union)"                                                //union: map & set
+syntax       Method ::= "add"                                                          //add: list & string
+                      | "confine"                                                      //still not in interpreter?
+                      | "contains"                                                     //contains: not tuple
+                      | "delete"                                                       //delete: not tuple
+                      | "diff"                                                         //difference: not tuple
+                      | "get"                                                          //get value: map
+                      | "getOrElse"                                                    //get value or else: map
+                      | "hexToBytes"                                                   //hex to bytes: string
+                      | "lenth"                                                        //length: list & string
+                      | "keys"                                                         //key set: map
+                      | "nth"                                                          //nth element: list, string & tuple
+                      | "set"                                                          //set value: map
+                      | "size"                                                         //size: not tuple
+                      | "slice"                                                        //slice: list & string        
+                      | "toByteArray"                                                  //to byte array: all
+                      | "union"                                                        //union: map & set
 
 
 //--- Expressions ---
@@ -187,7 +187,6 @@ syntax        Bundle ::= "bundle0"                                              
 //--- PROCESS PATTERNS ---
 //------------------------
 
-//--- Process Patterns ---
 syntax       ProcPat ::= "{" ProcPat "}"     [bracket]                                 //bracket for process pattern
                        | CollectionPat                                                 //collection pattern
                        | SimpleType                                                    //simple type
@@ -201,7 +200,36 @@ syntax      ProcPats ::= Procs                                                  
                        | ProcPat                                                       //single process pattern
                        | ProcPat "," ProcPats                                          //multiple process patterns
 
-//---Simple Types---
+//--- Collection Patterns ---
+syntax CollectionPat ::= RhoListPat                                                    //list patterns
+                       | RhoMapPat                                                     //map patterns
+                       | RhoSetPat                                                     //set patterns
+                       | RhoTuplePat                                                   //tuple patterns
+
+// List Patterns
+syntax    RhoListPat ::= RhoList                                                       //ordinary list
+                       | "[" ProcPats "," "..." ProcVar "]"                            //genuine list pattern
+
+// Map & Key-Value Pair Patterns
+//syntax   RhoMapPat ::= RhoMap                                                        //ordinary map
+//                     | "{" RhoKVPairPat "," "..." RhoKVPairVar "}"                   //genuine map pattern
+//
+//syntaxRhoKVPairPat ::= ProcPat ":" ProcPat                                           //single key-value pattern
+//                     | ProcPat ":" ProcPat "," RhoKVPairPat                          //multiple key-value patterns
+//
+//syntaxRhoKVPairVar ::= ProcVar ":" ProcVar                                           //single key-value variable
+//                     | ProcVar ":" ProcVar "," RhoKVPairVar                          //multiple key-value variables
+
+// Set Patterns
+syntax     RhoSetPat ::= RhoSet                                                        //ordinary set
+                       | "Set" "(" ProcPats "," "..." ProcVar ")"                      //genuine set pattern
+
+// Tuple Patterns
+//syntax RhoTuplePat ::= RhoTuple                                                      //ordinary tuple
+//                     | "(" ProcVar ",)"                                              //genuine 1-tuple pattern
+//                     | "(" ProcPats "," "..." ProcVar ")"                            //genuine n-tuple pattern
+
+//--- Simple Types ---
 syntax    SimpleType ::= "Bool"
                        | "ByteArray"
                        | "Int"
@@ -302,9 +330,9 @@ configuration
 //--- KResults & KVariables ---
 //-----------------------------
 
-syntax KVariable ::= Id | NameVars | ProcVars
+syntax KVariable ::= Var | NameVar | ProcVar                  //variables for substitution
 
-syntax   KResult ::= Bool | Int                               //strictness only for AExp & BExp
+syntax   KResult ::= Bool | Int                               //strictness only for BExp & AExp
 
 //.................
 //... SEMANTICS ...
