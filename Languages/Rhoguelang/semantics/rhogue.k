@@ -1,12 +1,16 @@
+require "../syntax/rhoguesyntax.k"
+
+module RHOGUE-SYNTAX
+import RHOGUESYNTAX-SYNTAX
+import SUBSTITUTION
+
+endmodule
+
 //........................
 //... SEMANTICS MODULE ...
 //........................
-
-require "../syntax/rhoguesyntax.k"
-
 module RHOGUE
 import RHOGUE-SYNTAX
-import SUBSTITUTION
 
 //---------------------
 //--- CONFIGURATION ---
@@ -34,17 +38,13 @@ configuration
           <cont color="red"> .K </cont>                       //<cont> contains the continuation
         </rpackage>                                           // end rpackage
       </rpackages>                                            // end rpackages
-      <spackages color="green">                               //<spackages> contains zero or more <spackage> cells
-        <spackage color="teal" multiplicity="*">              //<spackage> contains one <sends> cell
-          <sends color="cyan">                                //<sends> contains zero or more <send> cells
-            <send color="cyan" multiplicity="*">              //<send> contains cells <schan>, <msgs>, & <spers>
-              <schan color="cyan"> .K  </schan>               // send channel(s)
-              <msg color="cyan">   .K    </msg>               // message(s) being sent
-              <sper color="cyan">  .K   </sper>               // persistent (y/n?)
-            </send>                                           // end send
-          </sends>                                            // end sends
-        </spackage>                                           // end spackage
-      </spackages>                                            // end spackages
+        <sends color="green">                                 //<sends> contains zero or more <send> cells
+          <send color="teal" multiplicity="*">                //<send> contains cells <schan>, <msgs>, & <spers>
+            <schan color="cyan"> .K  </schan>                 // send channel(s)
+            <msg color="cyan">   .K    </msg>                 // message(s) being sent
+            <sper color="cyan">  .K   </sper>                 // persistent (y/n?)
+          </send>                                             // end send
+        </sends>                                              // end sends
     </tuplespace>                                             // end tuplespace
   </T>                                                        // end configuration
 
@@ -60,12 +60,12 @@ syntax   KResult ::= Bool | Int                               //strictness only 
 //... SEMANTICS ...
 //.................
 
-//-----------
-//--- PAR ---
-//-----------
-rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>    //dissolve par in <thread/>
-     (.Bag => <thread> <k> P1 </k> </thread>)                 //  spawn two new <thread/>s
-     (.Bag => <thread> <k> P2 </k> </thread>)  [structural]
+//---------------------------
+//--- COMPUTATION THREADS ---
+//---------------------------
+rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>      //dissolve par
+     (.Bag => <thread> <k> P </k> </thread>)                  //  spawn new thread containing only P
+     (.Bag => <thread> <k> Q </k> </thread>)    [structural]  //  spawn new thread containing only Q
 
 //-------------
 //--- SENDS ---
@@ -78,7 +78,7 @@ rule <k> X:Name !( P:Proc ) => . ...</k>                      //dissolve send & 
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   0   </sper>                             //  not persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
 // Multiple - RhoTuple
 rule <k> X:Name !( P:Proc ,) => . ...</k>                     //dissolve send & spawn nonpersistent <spackage/>
@@ -86,14 +86,14 @@ rule <k> X:Name !( P:Proc ,) => . ...</k>                     //dissolve send & 
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   0   </sper>                             //  not persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
 rule <k> X:Name !( P:Proc , Q:Procs ) => X !( Q ) ...</k>     //dissolve send & spawn nonpersistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  messages sent @[P,Q]
              <sper>   0   </sper>                             //  not persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
 //--- Persistent ---
 // Single - Proc
@@ -102,7 +102,7 @@ rule <k> X:Name !!( P:Proc ) => . ...</k>                     //dissolve send & 
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   1   </sper>                             //  persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
 // Multiple - RhoTuple
 rule <k> X:Name !!( P:Proc ,) => . ...</k>                    //dissolve send & spawn persistent <spackage/>
@@ -110,22 +110,22 @@ rule <k> X:Name !!( P:Proc ,) => . ...</k>                    //dissolve send & 
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   1   </sper>                             //  persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
 rule <k> X:Name !!( P:Proc , Q:Procs ) => X !!( Q ) ...</k>   //dissolve send & spawn persistent <spackage/>
   (.Bag => <send>                                             //
              <schan>  X  </schan>                             //  sending channel X
              <msg>   @P    </msg>                             //  message sent @P
              <sper>   1   </sper>                             //  persistent
-           </send>)                            [structural]
+           </send>)                             [structural]
 
-//----------------
-//--- RECEIVES ---
-//----------------
+//-----------------
+//--- RPACKAGES ---
+//-----------------
 
 //--- Linear ---
 // Single
-rule <k> for ( Y:NamePats <- X:Name ){ P:Proc } => . ...</k>
+rule <k> for ( Y:NamePat <- X:Name ){ P:Proc } => . ...</k>
   (.Bag => <rpackage>                                         //spawn linear rpackage:
              <receive>                                        //  receive:
                <rchan>  X   </rchan>                          //    receiving channel(s) X
@@ -133,10 +133,10 @@ rule <k> for ( Y:NamePats <- X:Name ){ P:Proc } => . ...</k>
                <rper>   0    </rper>                          //    not persistent (only consumed once)
              </receive>                                       //
              <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                        [structural]
+           </rpackage>)                         [structural]
 
 // Multiple
-rule <k> for ( Y:NamePats <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
+rule <k> for ( Y:NamePat <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
   (.Bag => <rpackage>                                         //spawn linear rpackage:
              <receive>                                        //  receive:
                <rchan>  X   </rchan>                          //    receiving channel(s) X
@@ -144,11 +144,11 @@ rule <k> for ( Y:NamePats <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBin
                <rper>   0    </rper>                          //    not persistent (only consumed once)
              </receive>                                       //
              <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                        [structural]
+           </rpackage>)                         [structural]
 
 //--- Persistent ---
 // Single
-rule <k> for ( Y:NamePats <= X:Name ){ P:Proc } => . ...</k>
+rule <k> for ( Y:NamePat <= X:Name ){ P:Proc } => . ...</k>
   (.Bag => <rpackage>                                         //spawn persistent rpackage:
              <receive>                                        //  receive:
                <rchan>  X  </rchan>                           //    receiving channel(s) X
@@ -156,10 +156,10 @@ rule <k> for ( Y:NamePats <= X:Name ){ P:Proc } => . ...</k>
                <rper>   1   </rper>                           //    persistent (consumed many times)
              </receive>                                       //
              <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                        [structural]
+           </rpackage>)                         [structural]
 
 // Multiple
-rule <k> for ( Y:NamePats <= X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
+rule <k> for ( Y:NamePat <= X:Name ; RepeatedBinds ){ P:Proc } => for ( RepeatedBinds ){ P:Proc } ...</k>
   (.Bag => <rpackage>                                         //spawn persistent rpackage:
              <receive>                                        //  receive:
                <rchan>  X  </rchan>                           //    receiving channel(s) X
@@ -167,9 +167,17 @@ rule <k> for ( Y:NamePats <= X:Name ; LinearBinds ){ P:Proc } => for ( LinearBin
                <rper>   1   </rper>                           //    persistent (consumed many times)
              </receive>                                       //
              <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                        [structural]
+           </rpackage>)                         [structural]
 
 //Bool, Int, String operations
+
+//-----------
+//--- NEW ---
+//-----------
+rule new .NameDeclares in { P:Proc } => P            [macro]  //empty name declaration
+
+rule X:NameDeclare , N:NameDeclares in { P:Proc }
+  => new N in { P[unforgeable( !I:Int ) / X] }  [structural]  //
 
 //.......................
 //... REDUCTION RULES ...
@@ -179,11 +187,9 @@ rule <k> for ( Y:NamePats <= X:Name ; LinearBinds ){ P:Proc } => for ( LinearBin
 //--- COMM EVENT ---
 //------------------
 
-//Comm: x!(Q) | x(y){P} => P[@Q / y]
-
 //--- Linear ---
-// Single
-rule                                                          //consume both rpackage and spackage
+// Single comm
+rule                                                          //consume both rpackage and send
   (<rpackage>                                                 //
      <receive>                                                //  consume rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
@@ -192,18 +198,16 @@ rule                                                          //consume both rpa
      </receive>                                               //
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
-  (<spackage>                                                 //
-     <send>                                                   //  consume spackage:
-       <schan> X     </schan>                                 //    channel(s) X
-       <msg>   Z:Name  </msg>                                 //    message(s) Z
-       <sper>    0    </sper>                                 //    not persistent
-     </send>                                                  //
-   </spackage> => .Bag)                                       //
+  (<send>                                                     //  consume send:
+     <schan>   X   </schan>                                   //    channel(s) X
+     <msg>   Z:Name  </msg>                                   //    message(s) Z
+     <sper>    0    </sper>                                   //    not persistent
+   </send> => .Bag)                                           //
   (.Bag => <thread> <k> P[Z / Y] </k> </thread>)              //spawn thread for substituted cont P[Z / Y]
-  [comm]                                                      //tagged "comm" for tracking nondeterminism
+  [comm]
 
 // Multiple
-rule                                                          //consume both rpackage and spackage
+rule                                                          //consume both rpackage and send
   (<rpackage>                                                 //
      <receive>                                                //  consume rpackage:
        <rchan> X:Name </rchan>                                //    channel(s) X
@@ -213,8 +217,8 @@ rule                                                          //consume both rpa
      <cont> P:Proc </cont>                                    //    continuation P
    </rpackage> => .Bag)                                       //
   (<spackage>                                                 //
-     <send>                                                   //  consume spackage:
-       <schan> X     </schan>                                 //    channel(s) X
+     <send>                                                   //  consume send:
+       <schan>   X   </schan>                                 //    channel X
        <msg>   Z:Name  </msg>                                 //    message(s) Z
        <sper>    0    </sper>                                 //    not persistent
      </send>                                                  //
@@ -266,18 +270,20 @@ rule                                                          //persistent sends
 rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
 rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
 
+//------------
 //--- Peek ---
-rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => . ...</k>
-      <send>                                                  //  receive:
-        <schan> X </schan>                                    //
-        ...
+//------------
+
+// Single
+rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
+      <send>
+        <schan>    X   </schan>                               //peek at Y on channel X
+        <msg> Z:NamePats </msg>
       </send>
 
-rule <k> for ( Y:NamePats <! X:Name ; PeekBinds ){ P:Proc } => for ( PeekBinds ){ P:Proc } ...</k>
-      <send>                                                  //  receive:
-        <schan> X </schan>                                    //
-        ...
-      </send>
+//---------------
+//--- METHODS ---
+//---------------
 
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
