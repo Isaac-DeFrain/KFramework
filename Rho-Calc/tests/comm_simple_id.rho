@@ -1,5 +1,0 @@
-//Simple comm
-
-x!(*a) | x(y){y!(*z)}
-
-//reduces to (@*a)!(*z)

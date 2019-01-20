@@ -1,4 +1,0 @@
-// Process variable receive
-
-   for ( x <- x ){ x }
-

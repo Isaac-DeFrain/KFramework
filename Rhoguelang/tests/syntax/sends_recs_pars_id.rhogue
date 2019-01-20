@@ -1,3 +1,0 @@
-// Multiple sends id
-
-   x!(*y) | x!(*y) | y1!(*z1) | y2!(*z2) | Nil | a(b1){*c1} | a(b2){*c2} | a1(b1){a2(b2){*c2}}

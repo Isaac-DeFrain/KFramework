@@ -1,3 +1,0 @@
-// String
-
-   x!( "Hello, world!" ) | for ( y <- x ){ *y }

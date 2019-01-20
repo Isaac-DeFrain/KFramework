@@ -1,3 +1,0 @@
-// Multiple sends in parallel
-
-   @Nil!( for ( @Nil <- @Nil ){ Nil }) | @{@Nil!( Nil )}!( @{@Nil!( Nil )}!( Nil ))
