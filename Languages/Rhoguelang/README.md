@@ -11,27 +11,41 @@ Rho-calc with added:
 - [x] Map: `{ Proc : Proc, ... }`
 - [x] Set: `{ Procs }`
 - [x] Tuple: `( Proc ,) | ( Proc , Procs )`
-- [x] Uri: `"uri(" String ")"`
+- [x] Uri: `uri( String )`
 * Operations - syntax
   - Conditional
-    - [ ] `If (x) {P}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it dissolves)
-    - [ ] `If (x) {P} else {Q}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it rewrites to `Q`)
-  - [ ] Bool: `notbool`, `andbool`, `orbool`
-  - [ ] Bundle: read and/or write
-  - [ ] Int arithmetic: `+Int`, `-Int`, `*Int`, `/Int`
+    - [x] `If (x) {P}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it dissolves)
+    - [x] `If (x) {P} else {Q}` (if `x` is `true`, then the first element of the `k` cell rewrites to `P`; otherwise it rewrites to `Q`)
+  - [x] Bool: `notbool`, `andbool`, `orbool`
+  - [x] Int arithmetic: `+Int`, `-Int`, `*Int`, `/Int`
+  - [ ] Mod arithmetic: `%`
   * List
-    - [ ] concatenation: `++`
-    - [ ] slice from *m* to *n*: `"list".slice(m,n)`
+    - [ ] append: `List.append(List): list*list -> list`
+    - [ ] *m* th element: `List.nth(m): 'a list -> 'a'`
+    - [ ] length: `length(List): list -> int`
+    - [ ] slice from *m* to *n*: `List.slice(m,n): list -> list`
   * Map
-    - [ ]
-  - [ ] Mod arithmetic: `%%`
+    - [ ] union: `Map.union(Map): map*map -> map`
+    - [ ] delete: `Map.delete(Key): map -> map`
+    - [ ] contains predicate: `Map.contains(Key): map -> bool`
+    - [ ] get value: `Map.get(Key): map -> value`
+    - [ ] get or else: `Map.getOrElse(Key, Proc): map -> map \/ proc`
+    - [ ] set value: `Map.set(Key, Value): map -> map`
+    - [ ] get keys: `Map.keys(Map): map -> set`
+    - [ ] size: `Map.size(Map): map -> int`
   * Set
-    - [ ] union: `"set1".union("set2")`
-    - [ ] contains predicate: `"set".contains("element")`
-    - [ ] delete: `"set".delete("element")`
-  - [ ] String
-  - [ ] Tuple
-  - [ ] Uri?
+    - [ ] union: `Set.union(Set): set*set -> set`
+    - [ ] contains predicate: `Set.contains(Element): set*proc -> bool`
+    - [ ] delete: `Set.delete(Element): set*proc -> set`
+    - [ ] size: `Set.size(Set): set -> int`
+  * String
+    - [ ] concatenation: `String ++ String: string*string -> string`
+    - [ ] interpolation: `"${Key}String" %% {Map}: string -> string`
+    - [ ] slice from *m* to *n*: `String.slice(m,n): string*int*int -> string`
+    - [ ] interpret hex string: `HexString.hexToBytes(): hexstring -> string`
+  * Tuple
+    - [ ] *m* th element: `tuple.nth(m): tuple -> proc`
+  - [ ] All data structures have `toByteArray()`
 * Operations - semantics
   - [x] Par
   - [x] Quote
@@ -39,7 +53,7 @@ Rho-calc with added:
   - [x] Send
   - [x] Persistent receive/send
   - [x] Contract (syntactic sugar: persistent receive)
-  - [ ] Bundle
+  - [ ] Bundle: read and/or write
   - [ ] Join
   - [ ] Peek ("comm without consumption")
   - [ ] `new` (unforgeable names)
@@ -48,6 +62,7 @@ Rho-calc with added:
   - [ ] Strict functions
   - [ ] Pattern matching
 - [x] Process variables
+- [x] Name variables
 - [ ] Type system
   - [ ] tagged function types
 
