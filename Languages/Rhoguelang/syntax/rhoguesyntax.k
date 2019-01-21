@@ -138,26 +138,26 @@ syntax         BExp ::= "(" BExp ")"                                        [bra
                       | AExp ">=" AExp                                    [seqstrict]  //greater than
                      // Process predicates
                       > Proc "matches" Proc                                            //process matching
-                      | Proc "==" Proc                                                 //process equality
-                      | Proc "!=" Proc                                                 //process inequlaity
+                      | Proc "==" Proc                                                 //process equivalence
+                      | Proc "!=" Proc                                                 //process nonequivalence
                      // Boolean connectives
                       | "not" BExp                                           [strict]  //not
                       > BExp "and" BExp                                   [seqstrict]  //and
                       > BExp "or"  BExp                                   [strict(1)]  //or
 
 //--- Sends ---
-syntax          Send ::= SendSingle                                                    //single
-                       | SendMultiple                                                  //persistent
+syntax          Send ::= SingleSend                                                    //single
+                       | PersistSend                                                   //persistent
 
 // Single Send
-syntax    SendSingle ::= "!"  SendContent                                              //consumable send
+syntax    SingleSend ::= "!"  SendContent                                              //consumable once
 
 // Persistent Send
-syntax  SendMultiple ::= "!!" SendContent                                              //inconsumable send
+syntax   PersistSend ::= "!!" SendContent                                              //arbitrarily consuamable
 
 // Content of send
-syntax   SendContent ::= "(" Proc ")"                                                  //monadic send
-                       | RhoTuple                                                      //polyadic send
+syntax   SendContent ::= "(" Proc ")"                                                  //monadic
+                       | RhoTuple                                                      //polyadic
 
 //--- Listens ---
 // Receipts
@@ -166,12 +166,12 @@ syntax       Receipt ::= LinearBinds                                            
                        | PeekBind                                                      //for peek
 
 // Linear binds
-syntax      PeekBind ::= NamePat  "<!" Name                                            //for( y <! x ){ P }
+syntax      PeekBind ::= NamePat  "<!" Name                                            //for( y <! x ){ P } - does *not* consume send on x
 
-syntax    LinearBind ::= NamePat  "<-" Name                                            //for( y <- x ){ P }
+syntax    LinearBind ::= NamePat  "<-" Name                                            //for( y <- x ){ P } - consumes send on x
 
-syntax   LinearBinds ::= LinearBind                                                    //single linear bind (monadic)
-                       | LinearBind ";" LinearBinds                                    //multiple linear binds (polyadic)
+syntax   LinearBinds ::= LinearBind                                                    //linear monadic
+                       | LinearBind ";" LinearBinds                                    //linear polyadic
 
 // Repeated binds
 syntax  RepeatedBind ::= NamePat "<=" Name                                             //for( y <= x ){ P }
@@ -274,7 +274,7 @@ syntax   NameDeclare ::= NameVar                                                
 syntax  NameDeclares ::= NameVars                                                      //one or more name variables
                        | NamDec                                                        //single name declaration
                        | NameDec "," NameDecs                                          //multiple name declarations
-                       | ".NameDeclares"                                               //empty list
+                       | ".NameDeclares"                                               //empty NameDeclares list for recursion
 
 //--- Uri ---
 syntax           Uri ::= "uri(" String ")"

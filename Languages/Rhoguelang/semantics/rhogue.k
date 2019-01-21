@@ -288,6 +288,15 @@ rule <k> for ( Y:NamePat <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
 //---------------------------
 
 
+//--------------------
+//--- CONDITIONALS ---
+//--------------------
+rule if ( true ) P:Proc => P
+
+rule if ( true  ) P:Proc else _ => P
+rule if ( false ) _ else P:Proc => P
+
+
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
 //context        Nil | P:Proc => P
