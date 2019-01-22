@@ -275,7 +275,6 @@ syntax   NameDeclare ::= NameVar                                                
 syntax  NameDeclares ::= NameVars                                                      //one or more name variables
                        | NamDec                                                        //single name declaration
                        | NameDec "," NameDecs                                          //multiple name declarations
-                       | ".NameDeclares"                                               //empty NameDeclares list for recursion
 
 //--- Uri ---
 syntax           Uri ::= "uri(" String ")"
@@ -286,9 +285,10 @@ syntax           Uri ::= "uri(" String ")"
 syntax       NamePat ::= Name                                                          //ordinary name
                        | "@" ProcPat                                                   //quoted process pattern
 
-syntax      NamePats ::= NamePat                                                       //single name pattern
+syntax      NamePats ::= Names                                                         //ordinary names
+                       | NamePat                                                       //single name pattern
                        | NamePat "," NamePats                                          //multiple name patterns
-                       | Names                                                         //ordinary names
+
 
 
 
