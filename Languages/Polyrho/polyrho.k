@@ -1,4 +1,4 @@
-// Polyadic Rho-Calculus (no Ground, VarRef, AExp, BExp, patterns, contracts/persistence, bundle, conditionals, unforgeable names)
+// Polyadic Rho-Calculus
 
 require "substitution.k"
 require "domains.k"
@@ -12,42 +12,27 @@ import SUBSTITUTION
 //--- PROCESSES ---
 //-----------------
 
-//--- Process ---
-syntax          Proc ::= "{" Proc "}"
-                       | "Nil"
-                       | Collection
-                       | ProcVar
-                       > "*" Name
-                       > MethodProc "." Method "(" MethodArgs ")"
-                       > Name Send
-                       | "for" "(" Receipt ")" "{" Proc "}"
-                       > Proc "|" Proc
-
 //--- Processes ---
+syntax          Proc ::= "{" Proc "}"                              [bracket]
+                       | "Nil"
+                       | Ground
+                       | ProcVar
+                       | RhoTuple
+                       > "*" Name
+                       > Name Send
+                       | "for" "(" Receipt ")" "{" Proc "}"         [binder]
+                       > Proc "|" Proc                                [left]
+
 syntax         Procs ::= Proc
                        | Proc "," Procs
+                       | "{" Procs "}"                             [bracket]
 
-//--- Collections ---
-syntax    Collection ::= RhoList
-                       | RhoMap
-                       | RhoSet
-                       | RhoTuple
+//--- Ground Terms ---
+syntax        Ground ::= Bool
+                       | Int
+                       | String
 
-// Rho Lists
-syntax       RhoList ::= "[" Procs "]"
-
-// Rho Maps & Key-Value Pairs
-syntax        RhoMap ::= "{" KeyValuePairs "}"
-
-syntax  KeyValuePair ::= Proc ":" Proc
-
-syntax KeyValuePairs ::= KeyValuePair
-                       | KeyValuePair "," KeyValuePairs
-
-// Rho Sets
-syntax        RhoSet ::= "Set" "(" Procs ")"
-
-// Rho Tuples
+//--- Tuples ---
 syntax      RhoTuple ::= "(" Proc ",)"
                        | "(" Proc "," Procs ")"
 
@@ -60,43 +45,16 @@ syntax       ProcVar ::= Var
 syntax      ProcVars ::= ProcVar
                        | ProcVar "," ProcVars
 
-//--- Methods ---
-syntax    MethodProc ::= Collection
-
-syntax    MethodArgs ::= ""
-                       | Procs
-
-syntax        Method ::= "add"                                                          //add: Proc*Proc -> Method (list & string)
-                       | "confine"                                                      //still not in interpreter?
-                       | "contains"                                                     //contains predicate: Proc*Elements -> Method
-                       | "delete"                                                       //delete: Proc*Elements -> Method (not tuple)
-                       | "diff"                                                         //difference: Proc*Procs -> Method (not tuple)
-                       | "get"                                                          //get value: Map*Key -> Method
-                       | "getOrElse"                                                    //get value or else: Map*Key*Proc -> Method
-                       | "hexToBytes"                                                   //hex to bytes: String -> Method
-                       | "lenth"                                                        //length: Proc -> Method (list & string)
-                       | "keys"                                                         //keys set: Map -> Method
-                       | "nth"                                                          //nth element: Proc*Int -> Method (list, string & tuple)
-                       | "set"                                                          //set value: Map*Key*Value -> Method
-                       | "size"                                                         //size: Proc -> Method (map & set)
-                       | "slice"                                                        //slice: Proc*Int*Int -> Method (list & string)        
-                       | "toByteArray"                                                  //to byte array: Proc -> Method (all)
-                       | "union"
-
 //--- Sends ---
 syntax          Send ::= SingleSend
-//                     | PersistSend
 
 // Single send
 syntax    SingleSend ::= "!"  SendContent
 
-//syntax PersistSend ::= "!!" SendContent
-
-syntax   SendContent ::= "(" Proc ")"                                                   //monadic: x!(P)
-                       | RhoTuple                                                       //polyadic: x!(P1,...,PN)
+syntax   SendContent ::= "(" Procs ")"
 
 //--- Receives ---
-syntax       Receipt ::= LinerBinds
+syntax       Receipt ::= LinearBinds
 
 // Linear binds
 syntax    LinearBind ::= NamePat "<-" Name
@@ -114,6 +72,7 @@ syntax          Name ::= "@" Proc
 syntax         Names ::= Name
                        | Name "," Names
                        | NameVars
+                       | "@" "{" Procs "}"
 
 //--- Name Variables ---
 syntax       NameVar ::= Var
@@ -127,8 +86,7 @@ syntax      NameVars ::= NameVar
 
 //--- Process Patterns ---
 syntax       ProcPat ::= "{" ProcPat "}"
-                       | CollectionPat
-                       > Proc
+                       | Proc
                        > Proc "|" Proc
 
 syntax      ProcPats ::= Procs
@@ -149,24 +107,56 @@ endmodule
 module POLYRHO
 import POLYRHO-SYNTAX
 
+//---------------------
+//--- CONFIGURATION ---
+//---------------------
 configuration
-<T>
-  <threadpool>
-    <thread>
-      <k> $PGM:Proc </k>
-    </thread>
-  </threadpool>
-</T>
+  <T>
+    <threadpool color="red">
+      <thread color="red" multiplicity="*">
+        <k> $PGM:Proc </k>
+      </thread>
+    </threadpool>
+    <tuplespace color="blue">
+      <rpackages>
+        <rpackage color="teal" multiplicity="*">
+          <receives>
+            <receive color="green" multiplicity="*">
+              <rchs> .K </rchs>
+              <pats> .K </pats>
+            </receive>
+            <cont>   .K  </cont>
+          </receives>
+        </rpackage>  
+      </rpackages>
+      <spackages>
+        <spackage color="purple" multiplicity="*">
+          <sends>
+            <send colr="orange" multiplicity="*">
+              <schan> .K </schan>
+              <msgs>  .K  </msgs>
+            </send>
+          </sends>
+        </spackage>
+      </spackages>
+    </tuplespace>
+  </T>
 
-// Sends - send Proc or RhoTuple on Name, single and persistent
-rule 
+//-----------
+//--- PAR ---
+//-----------
+rule <k> P:Proc | Q:Proc => . ...</k>
+  (.Bag => <thread> <k> P </k> </thread>)
+  (.Bag => <thread> <k> Q </k> </thread>)             [structural]
 
-
-
-
-
-
-
+//------------
+//--- SEND ---
+//------------
+rule <k> X:Name ! ( P:Procs ) => . ...</k>
+  (.Bag => <send>
+             <schan> X </schan>
+             <msgs> @{P}  </msgs>
+           </send>)                                   [structural]
 
 
 
