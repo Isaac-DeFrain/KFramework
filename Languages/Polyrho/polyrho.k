@@ -1,4 +1,4 @@
-// Polyadic Rho-Calculus (no Ground, VarRef, AExp, BExp, patterns, contracts, bundle, conditionals, unforgeable names)
+// Polyadic Rho-Calculus (no Ground, VarRef, AExp, BExp, patterns, contracts/persistence, bundle, conditionals, unforgeable names)
 
 require "substitution.k"
 require "domains.k"
@@ -96,10 +96,13 @@ syntax   SendContent ::= "(" Proc ")"                                           
                        | RhoTuple                                                       //polyadic: x!(P1,...,PN)
 
 //--- Receives ---
-syntax       Receipt ::= LinerBind
-                       | RepeatedBind
+syntax       Receipt ::= LinerBinds
 
+// Linear binds
+syntax    LinearBind ::= NamePat "<-" Name
 
+syntax   LinearBinds ::= LinearBind
+                       | LinearBind ";" LinearBinds
 
 
 //-------------
@@ -116,6 +119,30 @@ syntax         Names ::= Name
 syntax       NameVar ::= Var
 syntax      NameVars ::= NameVar
                        | NameVar "," NameVars
+
+
+//----------------
+//--- PATTERNS ---
+//----------------
+
+//--- Process Patterns ---
+syntax       ProcPat ::= "{" ProcPat "}"
+                       | CollectionPat
+                       > Proc
+                       > Proc "|" Proc
+
+syntax      ProcPats ::= Procs
+                       | ProcPat
+                       | ProcPat "," ProcPats
+
+//--- Name Patterns ---
+syntax       NamePat ::= Name
+                       | "@" ProcPat
+
+syntax      NamePats ::= Names
+                       | NamePat
+                       | NamePat "," NamePats
+
 
 endmodule
 
