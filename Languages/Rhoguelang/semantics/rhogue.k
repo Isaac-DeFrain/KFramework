@@ -32,19 +32,23 @@ configuration
             <receive color="purple" multiplicity="*">         //<receive> contains cells <rchan>, <bvars>, & <rpers>
               <rchan color="purple"> .K </rchan>              // receive channel(s)
               <bvar color="purple">  .K  </bvar>              // binding variable(s) in continuation
-              <rper color="purple">  .K  </rper>              // persistent (y/n?) (y=1 / n=0)
             </receive>                                        // end receive
           </receives>                                         // end receives
-          <cont color="red"> .K </cont>                       //<cont> contains the continuation
+          <rper color="purple"> .K </rper>                    // persistent (y/n?) (y=1 / n=0)
+          <cont color="red">    .K </cont>                    //<cont> contains the continuation
         </rpackage>                                           // end rpackage
       </rpackages>                                            // end rpackages
-        <sends color="green">                                 //<sends> contains zero or more <send> cells
-          <send color="teal" multiplicity="*">                //<send> contains cells <schan>, <msgs>, & <spers>
-            <schan color="cyan"> .K  </schan>                 // send channel(s)
-            <msg color="cyan">   .K    </msg>                 // message(s) being sent
-            <sper color="cyan">  .K   </sper>                 // persistent (y/n?)
-          </send>                                             // end send
-        </sends>                                              // end sends
+      <spackages>                                             //<spackages> conatains zero or more <spackage> cells
+        <spacakge color="teal" multiplicity="*">              //<spackage> contains one <sends> cell
+          <sends color="green">                               //<sends> contains zero or more <send> cells
+            <send color="teal" multiplicity="*">              //<send> contains cells <schan>, <msgs>, & <spers>
+              <schan color="cyan"> .K  </schan>               // send channel(s)
+              <msg color="cyan">   .K    </msg>               // message(s) being sent
+            </send>                                           // end send
+            <sper color="cyan">  .K   </sper>                 // persistent?
+          </sends>                                            // end sends
+        </spackage>                                           // end spackage
+      </spackages>                                            // end spackages
     </tuplespace>                                             // end tuplespace
   </T>                                                        // end configuration
 
@@ -52,7 +56,7 @@ configuration
 //--- KResults & KVariables ---
 //-----------------------------
 
-syntax KVariable ::= Var | NameVar | ProcVar                  //variables for substitution
+syntax KVariable ::= Var | Name | ProcVar                     //variables for substitution
 
 syntax   KResult ::= Bool | Int                               //strictness only for BExp & AExp
 
@@ -75,24 +79,18 @@ rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>      //dissolve par
 // Single - Proc
 rule <k> X:Name !( P:Proc ) => . ...</k>                      //dissolve send & spawn nonpersistent <spackage/>
   (.Bag => <send>                                             //
-             <schan>  X  </schan>                             //  sending channel X
-             <msg>   @P    </msg>                             //  message sent @P
-             <sper>   0   </sper>                             //  not persistent
-           </send>)                             [structural]
+             <schan> X </schan>                               //  sending channel X
+             <msg>  @P   </msg>                               //  message sent @P
+           </send>)
+  (.Bag => <sper>    0  </sper>)                [structural]  //  not persistent
 
 // Multiple - RhoTuple
-rule <k> X:Name !( P:Proc ,) => . ...</k>                     //dissolve send & spawn nonpersistent <spackage/>
-  (.Bag => <send>                                             //
-             <schan>  X  </schan>                             //  sending channel X
-             <msg>   @P    </msg>                             //  message sent @P
-             <sper>   0   </sper>                             //  not persistent
-           </send>)                             [structural]
+rule X:Name !( P:Proc ,) => X !( P )                 [macro]  //syntactic sugar for monadic single send
 
 rule <k> X:Name !( P:Proc , Q:Procs ) => X !( Q ) ...</k>     //dissolve send & spawn nonpersistent <spackage/>
   (.Bag => <send>                                             //
-             <schan>  X  </schan>                             //  sending channel X
-             <msg>   @P    </msg>                             //  messages sent @[P,Q]
-             <sper>   0   </sper>                             //  not persistent
+             <schan> X </schan>                               //  sending channel X
+             <msg>  @P   </msg>                               //  messages sent @[P,Q]
            </send>)                             [structural]
 
 //--- Persistent ---
@@ -105,18 +103,12 @@ rule <k> X:Name !!( P:Proc ) => . ...</k>                     //dissolve send & 
            </send>)                             [structural]
 
 // Multiple - RhoTuple
-rule <k> X:Name !!( P:Proc ,) => . ...</k>                    //dissolve send & spawn persistent <spackage/>
-  (.Bag => <send>                                             //
-             <schan>  X  </schan>                             //  sending channel X
-             <msg>   @P    </msg>                             //  message sent @P
-             <sper>   1   </sper>                             //  persistent
-           </send>)                             [structural]
+rule X:Name !!( P:Proc ,) => X !!( P )               [macro]  //syntactic sugar for monadic persistent send
 
 rule <k> X:Name !!( P:Proc , Q:Procs ) => X !!( Q ) ...</k>   //dissolve send & spawn persistent <spackage/>
   (.Bag => <send>                                             //
-             <schan>  X  </schan>                             //  sending channel X
-             <msg>   @P    </msg>                             //  message sent @P
-             <sper>   1   </sper>                             //  persistent
+             <schan> X  </schan>                              //  sending channel X
+             <msg>  @P    </msg>                              //  message sent @P
            </send>)                             [structural]
 
 //-----------------
@@ -125,57 +117,46 @@ rule <k> X:Name !!( P:Proc , Q:Procs ) => X !!( Q ) ...</k>   //dissolve send & 
 
 //--- Linear ---
 // Single
-rule <k> for ( Y:NamePat <- X:Name ){ P:Proc } => . ...</k>
-  (.Bag => <rpackage>                                         //spawn linear rpackage:
-             <receive>                                        //  receive:
-               <rchan>  X   </rchan>                          //    receiving channel(s) X
-               <bvar>   Y    </bvar>                          //    variable(s) Y binding in continuation
-               <rper>   0    </rper>                          //    not persistent (only consumed once)
-             </receive>                                       //
-             <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                         [structural]
+rule <k> for ( Y:NamePats <- X:Name ){ P:Proc } => . ...</k>
+  (.Bag => <receive>                                          //  receive:
+             <rchan>  X   </rchan>                            //    receiving channel(s) X
+             <bvar>   Y    </bvar>                            //    variable(s) Y binding in continuation
+           </receive>)                                        //
+  (.Bag => <rper>     0    </rper>)                           //    not persistent (only consumed once)
+  (.Bag => <cont>     P    </cont>)             [structural]  //  continuation P
 
 // Multiple
-rule <k> for ( Y:NamePat <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
-  (.Bag => <rpackage>                                         //spawn linear rpackage:
-             <receive>                                        //  receive:
-               <rchan>  X   </rchan>                          //    receiving channel(s) X
-               <bvar>   Y    </bvar>                          //    variable(s) Y binding in continuation
-               <rper>   0    </rper>                          //    not persistent (only consumed once)
-             </receive>                                       //
-             <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                         [structural]
+rule <k> for ( Y:NamePats <- X:Name ; LinearBinds ){ P:Proc } => for ( LinearBinds ){ P:Proc } ...</k>
+  (.Bag => <receive>                                          //  receive:
+             <rchan>  X   </rchan>                            //    receiving channel(s) X
+             <bvar>   Y    </bvar>                            //    variable(s) Y binding in continuation
+           </receive>)                          [structural]
 
 //--- Persistent ---
 // Single
-rule <k> for ( Y:NamePat <= X:Name ){ P:Proc } => . ...</k>
-  (.Bag => <rpackage>                                         //spawn persistent rpackage:
-             <receive>                                        //  receive:
-               <rchan>  X  </rchan>                           //    receiving channel(s) X
-               <bvar>   Y   </bvar>                           //    variable(s) Y binding in continuation
-               <rper>   1   </rper>                           //    persistent (consumed many times)
-             </receive>                                       //
-             <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                         [structural]
+rule <k> for ( Y:NamePats <= X:Name ){ P:Proc } => . ...</k>
+  (.Bag => <receive>                                          //  receive:
+             <rchan>  X  </rchan>                             //    receiving channel(s) X
+             <bvar>   Y   </bvar>                             //    variable(s) Y binding in continuation  
+           </receive>)                                        //
+  (.Bag => <rper>     1   </rper>)                            //    persistent (consumed many times)
+  (.Bag => <cont>     P   </cont>)              [structural]  //  continuation P
 
-// Multiple
+// Multiple - single <receives> cell contains each <receive> and <rper> & <cont>
 rule <k> for ( Y:NamePat <= X:Name ; RepeatedBinds ){ P:Proc } => for ( RepeatedBinds ){ P:Proc } ...</k>
-  (.Bag => <rpackage>                                         //spawn persistent rpackage:
-             <receive>                                        //  receive:
-               <rchan>  X  </rchan>                           //    receiving channel(s) X
-               <bvar>   Y   </bvar>                           //    variable(s) Y binding in continuation
-               <rper>   1   </rper>                           //    persistent (consumed many times)
-             </receive>                                       //
-             <cont>     P   </cont>                           //  continuation P
-           </rpackage>)                         [structural]
+  (.Bag => <receive>                                          //  receive:
+             <rchan>  X  </rchan>                             //    receiving channel(s) X
+             <bvar>   Y   </bvar>                             //    variable(s) Y binding in continuation
+           </receive>)                          [structural]
 
 //-----------
 //--- NEW ---
 //-----------
-rule new .NameDeclares in { P:Proc } => P            [macro]  //empty name declaration
+rule new X:NameDeclare in { P:Proc }
+  => P[unforgeable( !I:Int ) / X] }                  [macro]  //single unforgeable name declaration
 
 rule X:NameDeclare , N:NameDeclares in { P:Proc }             //unforgeable name declarations
-  => new N in { P[unforgeable( !I:Int ) / X] }  [structural]  //recursive substitution
+  => new N in { new X in {P} }                  [structural]  //recursive substitution
 
 //.......................
 //... REDUCTION RULES ...
@@ -259,18 +240,22 @@ rule                                                          //persistent sends
   [comm]
 
 //**NEVER DO PERSISTENT RECEIVE AND PERSISTENT SEND ON SAME CHANNEL!
-rule contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P }                [structural]
-rule <cont> contract Y:Name ( X:Name ) { P:Proc } => for ( Y <- X ){ P } </cont> [structural]
+rule contract X:Name ( Y:NamePat ) { P:Proc } => for ( Y <= X ){ P }                  [macro]
+
+//rule contract X:Name , N:Name ( Y:NamePat , Pt:NamePat ) { P:Proc }
+//  => for ( Y <= X ; Pt <= N)                                                        [macro] 
+
+rule <cont> contract X:Names ( Y:NamePats ) { P:Proc } => for ( Y <- X ){ P } </cont>     [macro]
 
 //------------
 //--- Peek ---
 //------------
 
 // Single
-rule <k> for ( Y:NamePat <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
+rule <k> for ( Y:NamePats <! X:Name ){ P:Proc } => P[Z / Y] ...</k>
       <send>
         <schan>    X   </schan>                               //peek at Y on channel X
-        <msg> Z:NamePats </msg>
+        <msg>   Z:Names  </msg>
       </send>
 
 //---------------
@@ -296,6 +281,17 @@ rule if ( true ) P:Proc => P
 rule if ( true  ) P:Proc else _ => P
 rule if ( false ) _ else P:Proc => P
 
+//-------------
+//--- MATCH ---
+//-------------
+
+// Single match case
+rule match P:ProcVar { Pat1:ProcPat => P1:Proc }
+  => if ( type(P) isIn type(ProcPat) ) { P1[P / Pat1] }                         [macro]  //syntactic sugar
+
+// Multiple match cases
+rule match P:ProcVar { Pat1:ProcPat => P1:Proc M:MatchCases }
+  => if ( type(P) isIn type(ProcPat) ) { P1[P / Pat1] } else match P { M }      [macro]  //syntactic sugar
 
 //Clean up parred expressions
 //context     P:Proc | Nil    => P
@@ -332,17 +328,16 @@ rule  <schan> @ * X:Name => X </schan>          [structural]  //in sending chann
 //
 //
 //Each NamePat_i in:
-//
 //for( NamePat_1 <- Name_1 ; ... ; NamePat_N <- Name_N ){ Body }
+//or
 //for( NamePat_1 <= Name_1 ; ... ; NamePat_N <= Name_N ){ Body }
+//Matches against a Proc_i in:
+//Name_1!(Proc_1) | ... | Name_N!(Proc_N)
+//or
+//Name_1!!(Proc_1) | ... | Name_N!!(Proc_N)
 //
-//Matches against a Process_i in:
 //
-//Name_1!(Process_1) | ... | Name_N!(Process_N)
-//Name_1!!(Process_1) | ... | Name_N!!(Process_N)
-//
-//
-//Tries to match Process against each Pattern_i until it finds a match (or doesn’t):
-//match Process { Pattern_1 => { Body_1 } ... Pattern_N => { Body_N } }
+//Tries to match Proc against each ProcPat_i until it finds a match (or doesn’t):
+//match Proc { ProcPat_1 => { Proc_1 } ... ProcPat_N => { Proc_N } }
 
 endmodule

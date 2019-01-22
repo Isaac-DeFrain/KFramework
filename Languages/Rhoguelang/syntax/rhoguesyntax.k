@@ -27,7 +27,7 @@ syntax          Proc ::= "{" Proc "}"                                       [bra
                        > AExp                                                          //arithmetic expression
                        > BExp                                                          //boolean expression
                        > Name Send                                                     //send on channel
-                       > "contract" Name "(" NamePat ")" "=" "{" Proc "}"              //contract: needs to be given an alias which binds
+                       > "contract" Names "(" NamePats ")" "=" "{" Proc "}"            //contract: needs to be given an alias which binds
                        | "for" "(" Receipt ")" "{" Proc "}"                  [binder]  //listen
                        | "match" Proc "{" MatchCases "}"                               //match
                        | Bundle "{" Proc "}"                                           //bundle
@@ -117,14 +117,15 @@ syntax       Method ::= "add"                                                   
 syntax          Exp ::= Collection
                       | Ground
                       | AExp
+                      | BExp
 
 // Arithmetic Expressions
 syntax         AExp ::= "(" AExp ")"                                                   //parentheses for arithmetic expression
-                      > AExp "*"  AExp                                       [strict]  //multiplication
-                      | AExp "/"  AExp                                       [strict]  //division
-                      | AExp "%"  AExp                                       [strict]  //remainders
-                      > AExp "+"  AExp                                       [strict]  //addition
-                      | AExp "-"  AExp                                       [strict]  //subtraction
+                      > AExp "*"  AExp                                    [seqstrict]  //multiplication
+                      | AExp "/"  AExp                               [seqstrict(2 1)]  //division
+                      | AExp "%"  AExp                               [seqstrict(2 1)]  //remainders
+                      > AExp "+"  AExp                                    [seqstrict]  //addition
+                      | AExp "-"  AExp                                    [seqstrict]  //subtraction
                       | AExp "++" AExp                                       [strict]  //plus plus
                       > AExp "--" AExp                                       [strict]  //minus minus
 
@@ -156,25 +157,25 @@ syntax    SingleSend ::= "!"  SendContent                                       
 syntax   PersistSend ::= "!!" SendContent                                              //arbitrarily consuamable
 
 // Content of send
-syntax   SendContent ::= "(" Proc ")"                                                  //monadic
-                       | RhoTuple                                                      //polyadic
+syntax   SendContent ::= "(" Proc ")"                                                  //monadic contents
+                       | RhoTuple                                                      //polyadic contents
 
 //--- Listens ---
 // Receipts
-syntax       Receipt ::= LinearBinds                                                   //for polyadic linear receive
-                       | RepeatedBinds                                                 //for polyadic persistent receive
-                       | PeekBind                                                      //for peek
+syntax       Receipt ::= LinearBinds                                                   //supports monadic & polyadic linear receive
+                       | RepeatedBinds                                                 //supports monadic & polyadic persistent receive
+                       | PeekingBind                                                   //supports monadic peeking only
 
 // Linear binds
-syntax      PeekBind ::= NamePat  "<!" Name                                            //for( y <! x ){ P } - does *not* consume send on x
+syntax   PeekingBind ::= NamePats  "<!" Name                                           //for( y <! x ){ P } - does *not* consume send on x
 
-syntax    LinearBind ::= NamePat  "<-" Name                                            //for( y <- x ){ P } - consumes send on x
+syntax    LinearBind ::= NamePats  "<-" Name                                           //for( y <- x ){ P } - consumes send on x
 
 syntax   LinearBinds ::= LinearBind                                                    //linear monadic
                        | LinearBind ";" LinearBinds                                    //linear polyadic
 
 // Repeated binds
-syntax  RepeatedBind ::= NamePat "<=" Name                                             //for( y <= x ){ P }
+syntax  RepeatedBind ::= NamePats "<=" Name                                            //for( y <= x ){ P }
 
 syntax RepeatedBinds ::= RepeatedBind                                                  //single repeated bind
                        | RepeatedBind ";" RepeatedBinds                                //multiple repeated binds (join)
