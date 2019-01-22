@@ -19,13 +19,12 @@ syntax          Proc ::= "{" Proc "}"                              [bracket]
                        | ProcVar
                        | RhoTuple
                        > "*" Name
-                       > Name Send
+                       > Name "!" RhoTuple
                        | "for" "(" Receipt ")" "{" Proc "}"         [binder]
                        > Proc "|" Proc                                [left]
 
 syntax         Procs ::= Proc
                        | Proc "," Procs
-                       | "{" Procs "}"                             [bracket]
 
 //--- Ground Terms ---
 syntax        Ground ::= Bool
@@ -33,8 +32,7 @@ syntax        Ground ::= Bool
                        | String
 
 //--- Tuples ---
-syntax      RhoTuple ::= "(" Proc ",)"
-                       | "(" Proc "," Procs ")"
+syntax      RhoTuple ::= "(" Procs ")"
 
 //--- Process Variables ---
 syntax           Var ::= Id
@@ -45,19 +43,11 @@ syntax       ProcVar ::= Var
 syntax      ProcVars ::= ProcVar
                        | ProcVar "," ProcVars
 
-//--- Sends ---
-syntax          Send ::= SingleSend
-
-// Single send
-syntax    SingleSend ::= "!"  SendContent
-
-syntax   SendContent ::= "(" Procs ")"
-
 //--- Receives ---
 syntax       Receipt ::= LinearBinds
 
 // Linear binds
-syntax    LinearBind ::= NamePat "<-" Name
+syntax    LinearBind ::= NamePats "<-" Name
 
 syntax   LinearBinds ::= LinearBind
                        | LinearBind ";" LinearBinds
@@ -72,7 +62,7 @@ syntax          Name ::= "@" Proc
 syntax         Names ::= Name
                        | Name "," Names
                        | NameVars
-                       | "@" "{" Procs "}"
+                       | "@" RhoTuple
 
 //--- Name Variables ---
 syntax       NameVar ::= Var
@@ -146,17 +136,39 @@ configuration
 //--- PAR ---
 //-----------
 rule <k> P:Proc | Q:Proc => . ...</k>
-  (.Bag => <thread> <k> P </k> </thread>)
-  (.Bag => <thread> <k> Q </k> </thread>)             [structural]
+   (. => <thread> <k> P </k> </thread>)
+   (. => <thread> <k> Q </k> </thread>)               [structural]
 
 //------------
 //--- SEND ---
 //------------
-rule <k> X:Name ! ( P:Procs ) => . ...</k>
-  (.Bag => <send>
-             <schan> X </schan>
-             <msgs> @{P}  </msgs>
-           </send>)                                   [structural]
+rule <k> X:Name ! ( P:Proc ) => . ...</k>
+   (. => <send>
+           <schan> X </schan>
+           <msgs> @P  </msgs>
+         </send>)                                     [structural]
+
+rule <k> X:Name ! R:RhoTuple => . ...</k>
+   (. => <send>
+           <schan> X </schan>
+           <msgs> @R  </msgs>
+         </send>)                                     [structural]
+
+//---------------
+//--- RECEIVE ---
+//---------------
+rule <k> for ( Y:NamePat <- X:Name ) { P:Proc } => . ...</k>
+   (. => <receive>
+           <rchs> X </rchs>
+           <pats> Y </pats>
+         </receive>)
+   (. => <cont> P </cont>)                            [structural]
+
+rule <k> for ( Y:NamePat <- X:Name ; B:LinearBinds ) { P:Proc } => for ( B ) {P} ...</k>
+   (. => <receive>
+           <rchs> X </rchs>
+           <pats> Y </pats>
+         </receive>)                                  [structural]
 
 
 
