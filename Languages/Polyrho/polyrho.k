@@ -85,17 +85,21 @@ syntax        Method ::= "add"                                                  
 
 //--- Sends ---
 syntax          Send ::= SingleSend
-                       | PSend
+//                     | PersistSend
 
+// Single send
 syntax    SingleSend ::= "!"  SendContent
 
-syntax         PSend ::= "!!" SendContent
+//syntax PersistSend ::= "!!" SendContent
 
-syntax   SendContent ::= "(" Proc ")"
-                       | RhoTuple
+syntax   SendContent ::= "(" Proc ")"                                                   //monadic: x!(P)
+                       | RhoTuple                                                       //polyadic: x!(P1,...,PN)
 
 //--- Receives ---
-syntax     Receipt ::= 
+syntax       Receipt ::= LinerBind
+                       | RepeatedBind
+
+
 
 
 //-------------
