@@ -6,7 +6,7 @@ Rho-calc with added:
   - [x] Int
   - [x] String
 - [x] `Nil`
-- [x] Bundle: `Bundle { Proc }`
+- [x] Bundle: `Bundle { Proc }` and `Bundle ::= `
 - [x] List: `[ Procs ]`
 - [x] Map: `{ Proc : Proc, ... }`
 - [x] Set: `{ Procs }`
