@@ -15,24 +15,19 @@ import SUBSTITUTION
 //--- Processes ---
 syntax          Proc ::= "{" Proc "}"                              [bracket]
                        | "Nil"
-                       | Ground
                        | ProcVar
                        | RhoTuple
                        > "*" Name
-                       > Name "!" RhoTuple
+                       > Name "!" SendContent
                        | "for" "(" Receipt ")" "{" Proc "}"         [binder]
                        > Proc "|" Proc                                [left]
 
 syntax         Procs ::= Proc
                        | Proc "," Procs
 
-//--- Ground Terms ---
-syntax        Ground ::= Bool
-                       | Int
-                       | String
-
 //--- Tuples ---
-syntax      RhoTuple ::= "(" Procs ")"
+syntax      RhoTuple ::= "(" Proc ",)"
+                       | "(" Proc "," Procs ")"
 
 //--- Process Variables ---
 syntax           Var ::= Id
@@ -43,11 +38,15 @@ syntax       ProcVar ::= Var
 syntax      ProcVars ::= ProcVar
                        | ProcVar "," ProcVars
 
+//--- Sends ---
+syntax   SendContent ::= "(" Proc ")"
+                       | RhoTuple
+
 //--- Receives ---
 syntax       Receipt ::= LinearBinds
 
 // Linear binds
-syntax    LinearBind ::= NamePats "<-" Name
+syntax    LinearBind ::= NamePat "<-" Name
 
 syntax   LinearBinds ::= LinearBind
                        | LinearBind ";" LinearBinds
@@ -62,7 +61,6 @@ syntax          Name ::= "@" Proc
 syntax         Names ::= Name
                        | Name "," Names
                        | NameVars
-                       | "@" RhoTuple
 
 //--- Name Variables ---
 syntax       NameVar ::= Var
@@ -132,6 +130,8 @@ configuration
     </tuplespace>
   </T>
 
+syntax KVariable ::= Var | NameVar | ProcVar
+
 //-----------
 //--- PAR ---
 //-----------
@@ -145,13 +145,14 @@ rule <k> P:Proc | Q:Proc => . ...</k>
 rule <k> X:Name ! ( P:Proc ) => . ...</k>
    (. => <send>
            <schan> X </schan>
-           <msgs> @P  </msgs>
+           <msgs>  P  </msgs>
          </send>)                                     [structural]
 
+// Polyadic
 rule <k> X:Name ! R:RhoTuple => . ...</k>
    (. => <send>
            <schan> X </schan>
-           <msgs> @R  </msgs>
+           <msgs>  R  </msgs>
          </send>)                                     [structural]
 
 //---------------
@@ -164,6 +165,7 @@ rule <k> for ( Y:NamePat <- X:Name ) { P:Proc } => . ...</k>
          </receive>)
    (. => <cont> P </cont>)                            [structural]
 
+// Polyadic
 rule <k> for ( Y:NamePat <- X:Name ; B:LinearBinds ) { P:Proc } => for ( B ) {P} ...</k>
    (. => <receive>
            <rchs> X </rchs>
