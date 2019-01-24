@@ -1,4 +1,6 @@
 // RHO CALCULUS STATIC TYPE SYSTEM
+// Input: rho calc process
+// Output: top-level constructor
 
 module RHOTYPE-SYNTAX
 import ID
@@ -6,8 +8,9 @@ import DOMAINS
 
 
 // NAMES
+syntax Var  ::= Id
 syntax Name ::= "@" Proc                         [strict]       // Quote: Proc -> Name
-              | Id                                              // Id: -> Name (only for convenience)
+              | Var                                             // Id: -> Name (only for convenience)
 
 // PROCESSES
 syntax Proc ::= "Nil"                                           // Stop: -> Proc
@@ -36,26 +39,30 @@ configuration
   </T>
 
 syntax KResult ::= PType
+
+// TYPES
 syntax Proc ::= PType
-syntax PType ::= "receive" | "send" | "par" | "reify" | "proc"
+syntax PType ::= "receive" | "send" | "par" | "reify" | "nil"
 
-syntax NType ::= "name"
 syntax Name ::= NType
+syntax NType ::= "quote" | "variable"
 
-
-rule _:Name => name
-rule _:Proc => proc
+rule @ _:Proc => quote
+rule _:Var => variable
 
 // PAR TYPING
-rule proc | proc => par
+rule _:Proc | _:Proc => par
 
 // SEND TYPING
-rule name ! ( proc ) => send
+rule _:Name ! ( _:Proc ) => send
 
 // RECEIVE TYPING
-rule name ( name ) { proc } => receive
+rule _:Name ( _:Name ) { _:Proc } => receive
 
 // REIFY TYPING
-rule * name => reify
+rule * _:Name => reify
+
+// NIL TYPING
+rule Nil => nil
 
 endmodule
