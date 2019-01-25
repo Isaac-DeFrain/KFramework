@@ -1,4 +1,3 @@
-<!-- Copyright (c) 2014-2018 K Team. All Rights Reserved. -->
 # [Tuorial 5 - Lesson 2](http://youtu.be/7P2QtR9jM2o)
 ## Substitution-Based Higher-Order Type Systems
 
