@@ -1,5 +1,7 @@
 # K Framework Cheat Sheet
 
+This is very much a work in progress!
+
 Just do yourself a favor and put the K binary files in your PATH, by
 1. Adding `export PATH=$PATH:pathto/nightly/k/bin`
 
@@ -25,6 +27,12 @@ In a terminal, either go to the directory containing the language definition or 
 				kompile lang.k --backend haskell
 ```
 
+When defining K rules, we can give a variable it's sort in order for the K tool to perform a runtime sort check. E.g. the rule
+```
+	rule (lambda X:Id . E:Exp) V:Val => E[V / X]
+```
+instructs the K tool to check that `X` is an `Id`, `E` is an `Exp`, and `V` is a `Val` at runtime.
+
 ## Attributes
 ### K labels
 Constructs can be given a *K label*. Using the attribute `[klabel(labelName)]` is syntactic sugar for replacing the node names in the KAST. Using `KLabels` is also a way to use overloaded sorts, e.g.
@@ -35,6 +43,16 @@ Constructs can be given a *K label*. Using the attribute `[klabel(labelName)]` i
 ```
 
 The K tool is now able to distinguish between a list of `Id`s as a list of name variables or process variables.
+
+### Rules applying anywhere
+If we have a rule which we want to apply outside of the `k` cell, in fact we want it to apply anywhere, then we can use the `[anywhere]` attribute. E.g.
+```
+				rule P:Proc | Nil => P  [anywhere]
+```
+Now this rule applies in all cells.
+
+### Macros
+The `[macro]` attribute is reserved for syntactic desugaring. Macros desugar statically.
 
 ### Re: Nondeterminism
 #### Concurrency
