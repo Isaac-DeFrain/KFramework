@@ -15,7 +15,7 @@ syntax      Name ::= "@" Proc                                        [strict]  /
 // PROCESSES
 syntax      Proc ::= "Nil"                                                     // Stop: -> Proc
                    | Ground
-                   | AExp
+                   | Exp
                    | Name "(" Name ")"  "{" Proc "}"              [binder(2)]  // Rec: Name*Name*Proc -> Proc
                    | Name "!" "(" Proc ")"                        [strict(2)]  // Send: Name*Proc -> Proc
                    > Proc "|" Proc                                     [left]  // Par: Proc*Proc -> Proc
@@ -32,7 +32,7 @@ syntax      Name ::= "{" Name "}"                     [bracket]
 syntax      Proc ::= "{" Proc "}"                     [bracket]
                    | "(" Proc ")"                     [bracket]
 
-// Expressions
+// Expressions - resolve to ground term
 syntax Exp ::= AExp | BExp
 
 // Arithmetic
@@ -47,6 +47,7 @@ syntax AExp ::= Int
 syntax BExp ::= Bool
               | "(" BExp ")"
               | Reify
+              | String
               | AExp "<=" AExp  [seqstrict]
               | "not" BExp         [strict]
               | BExp "&&" BExp  [strict(1)]
@@ -158,15 +159,10 @@ rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //Nil threads
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
 // NAME REDUCTIONS
-context       @ * HOLE                              //write as single context reduction?
-rule @ * HOLE => HOLE
-//  rule    <msg> @ * X:Name => X </msg>          [structural]  //name equivalence in <msg/>
-//  rule  <rchan> @ * X:Name => X </rchan>        [structural]  //name equivalence in <rchan/>
-//  rule  <schan> @ * X:Name => X </schan>        [structural]  //name equivalence class rep in <schan/>
+rule   @ * N:Name => N                          [anywhere]
 
-// *@ operator is idempotent [experimental]
-context   * @ HOLE                                      //write as single context reduction?
-rule * @ HOLE => HOLE
+// INVERSES
+rule   * @ P:Proc => P                          [anywhere]
 //  rule        * @ * @ P:Proc => * @ P           [structural]  // in <k/>
 
 //  rule <cont> * @ * @ P:Proc => * @ P </cont>   [structural]  // in <cont/>
