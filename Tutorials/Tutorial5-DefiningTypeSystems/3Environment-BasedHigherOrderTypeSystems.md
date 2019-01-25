@@ -32,7 +32,7 @@ So do the rules for arithmetic and Boolean constructs, and those for the conditi
 
 The `mu` rule needs to change, because it was previously defined using substitution.  We modify it in the same spirit as we modified the `lambda` rule: bind `X` to its type in the environment, schedule its body for typing in its right context, and then recover the type environment.
 ```
-  rule <k> mu X : T . E => E ~> Rho ...</k>
+  rule <k> mu X : T . E => (T -> T) E ~> Rho ...</k>
        <tenv> Rho => Rho[X <- T] </tenv>
 ```
 
