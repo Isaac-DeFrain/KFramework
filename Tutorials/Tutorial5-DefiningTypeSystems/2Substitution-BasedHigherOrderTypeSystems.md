@@ -19,7 +19,7 @@ As explained, the syntax of the `lambda` construct needs to change, to also decl
 
 ### Typing Rules
 
-Let us start with the typing rule for lambda abstraction: `lambda X : T . E` types to the function type `T -> T'`, where `T'` is the type obtained by further typing `E[T/X]`.  This can be elegantly achieved by reducing the lambda abstraction to `T -> E[T/X]`, provided that we extend the function type construct to take expressions, not only types, as arguments, and to be strict.  This can be easily achieved by declaring it as a strict expression construct (strictness in the second argument would suffice in this example, but it is more uniform to define it as strict overall).
+Let us start with the typing rule for lambda abstraction: `lambda X : T . E` types to the function type `T -> T'`, where `T'` is the type obtained by further typing `E[T / X]`.  This can be elegantly achieved by reducing the lambda abstraction to `T -> E[T / X]`, provided that we extend the function type construct to take expressions, not only types, as arguments, and to be strict.  This can be easily achieved by declaring it as a strict expression construct (strictness in the second argument would suffice in this example, but it is more uniform to define it as strict overall).
 ```
   syntax Type ::= Type "->" Type  [strict]
 ```
