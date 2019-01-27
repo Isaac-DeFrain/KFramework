@@ -8,8 +8,8 @@
 module STDIN-STREAM
   imports K-IO
 
-  syntax Stream ::= #istream(Int)
-  syntax Stream ::= #parseInput(String, String)
+  syntax Stream ::= #istream ( Int )
+  syntax Stream ::= #parseInput ( String , String )
 
   configuration <stdin> ListItem(#buffer($STDIN:String)) ListItem($IO:String) ListItem(#istream(#stdin)) </stdin>
 

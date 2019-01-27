@@ -1,4 +1,3 @@
-// Dependencies?
 
 module LIST
   imports INT-SYNTAX

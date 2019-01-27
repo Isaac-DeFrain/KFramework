@@ -50,13 +50,13 @@ module STRING
   rule S1:String =/=String S2:String => notBool (S1 ==String S2)
   rule S1:String ==String S2:String => S1 ==K S2
 
-  syntax Bool ::= String  "<String" String [function, functional, hook(STRING.lt)]
-                | String "<=String" String [function, functional, hook(STRING.le)]
-                | String  ">String" String [function, functional, hook(STRING.gt)]
-                | String ">=String" String [function, functional, hook(STRING.ge)]
+  syntax Bool ::= String  "<String" String              [function, functional, hook(STRING.lt)]
+                | String "<=String" String              [function, functional, hook(STRING.le)]
+                | String  ">String" String              [function, functional, hook(STRING.gt)]
+                | String ">=String" String              [function, functional, hook(STRING.ge)]
 
-  syntax String ::= categoryChar(String)       [function, hook(STRING.category)]
-                  | directionalityChar(String) [function, hook(STRING.directionality)]
+  syntax String ::= categoryChar(String)                [function, hook(STRING.category)]
+                  | directionalityChar(String)          [function, hook(STRING.directionality)]
 
   syntax String ::= "newUUID" [function, hook(STRING.uuid), impure]
 

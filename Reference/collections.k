@@ -1,4 +1,3 @@
-// Dependencies?
 
 module COLLECTIONS
   imports LIST

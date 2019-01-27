@@ -1,4 +1,3 @@
-// Dependencies?
 
 module BOOL-SYNTAX
   syntax Bool [hook(BOOL.Bool)]

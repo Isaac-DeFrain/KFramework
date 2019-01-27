@@ -5,11 +5,11 @@ module STRATEGY
     syntax #RuleTag ::= #LowerId                           [token]
                       | #UpperId                           [token]
 
-    syntax Strategy ::= #STUCK() [symbol]
+    syntax Strategy ::= #STUCK()                           [symbol]
 
-    syntax Strategy ::= "^" #RuleTag                      [klabel(#applyRule), symbol]
+    syntax Strategy ::= "^" #RuleTag                       [klabel(#applyRule), symbol]
 
-    syntax Strategy ::= "~" #RuleTag                    [klabel(#appliedRule), symbol]
+    syntax Strategy ::= "~" #RuleTag                       [klabel(#appliedRule), symbol]
 
     configuration <s> $STRATEGY:K  </s>
 endmodule
