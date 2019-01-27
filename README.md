@@ -2,6 +2,8 @@
 
 I am currently learning K Framework. I will compile all of the relevant materials that I encounter/create here.
 
+Check out my attempt at a [cheat sheet for K Framework](CheatSheet-KFramework.md)
+
 ## Resources
 * [Tutorials/Grigore Rosu on Youtube](https://www.youtube.com/user/grigorerosu/feed) / [My YouTube K Framework playlist (tutorial videos in order)](https://www.youtube.com/watch?v=eSaIKHQOo4c&list=PLx_U8qR-tMtLQEDPvVk1y9gTIdUIWGaQd)
 
