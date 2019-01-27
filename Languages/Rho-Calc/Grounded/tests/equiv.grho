@@ -1,0 +1,3 @@
+// Structural equivalence
+
+  x!("a") equiv y!("a")

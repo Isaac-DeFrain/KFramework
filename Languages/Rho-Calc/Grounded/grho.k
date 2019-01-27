@@ -8,51 +8,53 @@ module GRHO-SYNTAX
   import SUBSTITUTION
 
 
-// NAMES
-syntax      Name ::= "@" Proc                                        [strict]  // Quote: Proc -> Name
-                   | Id                                                        // Id: -> Name (only for convenience)
+//-------------
+//--- NAMES ---
+//-------------
+syntax      Name ::= Id                                            // Id: -> Name (only for convenience)
+                   | "@" Proc                            [strict]  // Quote: Proc -> Name
+                   | "{" Name "}"                       [bracket]
 
-// PROCESSES
-syntax      Proc ::= "Nil"                                                     // Stop: -> Proc
-                   | Ground
-                   | Exp
-                   | Name "(" Name ")"  "{" Proc "}"              [binder(2)]  // Rec: Name*Name*Proc -> Proc
-                   | Name "!" "(" Proc ")"                        [strict(2)]  // Send: Name*Proc -> Proc
-                   > Proc "|" Proc                                     [left]  // Par: Proc*Proc -> Proc
+//-----------------
+//--- PROCESSES ---
+//-----------------
+syntax      Proc ::= "{" Proc "}"                       [bracket]
+                   | "Nil"                                         // Stop: -> Proc
+                   | Ground                                        // Bool, Int, String
+                   | Exp                                           // Bool, Int, String expressions
+                   | Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
+                   | Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc -> Proc
+                   > Proc "|" Proc                         [left]  // Par: Proc*Proc -> Proc
 
-syntax Reify ::= "*" Name
+syntax     Reify ::= "*" Name
 
 // GROUND TERMS
-syntax    Ground ::= Int | Bool | String                                       //Int, Bool, and String ground terms
-                
-// BRACKETS
-syntax      Name ::= "{" Name "}"                     [bracket]
-                   | "(" Name ")"                     [bracket]
-
-syntax      Proc ::= "{" Proc "}"                     [bracket]
-                   | "(" Proc ")"                     [bracket]
+syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String ground terms
 
 // Expressions - resolve to ground term
-syntax Exp ::= AExp | BExp
+syntax       Exp ::= AExp | BExp
 
 // Arithmetic
-syntax AExp ::= Int
-              | "(" AExp ")"
-              | Reify
-              | String
-              | AExp "+" AExp  [strict]
-              | AExp "*" AExp  [strict]
+syntax      AExp ::= Int
+                   | "(" AExp ")"
+                   | Reify                    //for interesting message passing: x(y){ *y + 5 }
+                   | String                   // S1 + S2 => S1 +String S2
+                   | AExp "+" AExp  [strict]
+                   | AExp "*" AExp  [strict]
 
 // Boolean
-syntax BExp ::= Bool
-              | "(" BExp ")"
-              | Reify
-              | String
-              | AExp "<=" AExp  [seqstrict]
-              | "not" BExp         [strict]
-              | BExp "&&" BExp  [strict(1)]
+syntax      BExp ::= Bool
+                   | "(" BExp ")"
+                   | Reify
+                   | String
+                   | AExp "<=" AExp  [seqstrict]
+                   | "not" BExp         [strict]
+                   | BExp "&&" BExp  [strict(1)]
 
-syntax KVariable ::= Name
+// Structural Equivalence
+syntax      Bool ::= Proc "equiv" Proc   [left]
+
+//syntax KVariable ::= Name
 
 endmodule
 
@@ -143,11 +145,8 @@ rule                                                          //dissolve send an
 // (P | Q) | R \equiv P | (Q | R)
 
 // Clean up parred expressions
-//context HOLE | Nil
-//context Nil | HOLE
-rule        P:Proc | Nil => P                 [structural]  //Nils in <k/>
-
-rule <cont> P:Proc | Nil => P </cont>         [structural]  //Nils in <cont/>
+rule    Nil | P:Proc => P                       [anywhere]
+rule P:Proc | Nil    => P                       [anywhere]
 
 // Dissolve computationally meaningless threads
 rule  <thread> <k> .K </k> </thread> => .Bag  [structural]  //empty threads
@@ -163,9 +162,6 @@ rule   @ * N:Name => N                          [anywhere]
 
 // INVERSES
 rule   * @ P:Proc => P                          [anywhere]
-//  rule        * @ * @ P:Proc => * @ P           [structural]  // in <k/>
-
-//  rule <cont> * @ * @ P:Proc => * @ P </cont>   [structural]  // in <cont/>
 
 // PAR: P|Q -> P'|Q when P -> P'
 
@@ -174,5 +170,7 @@ rule   * @ P:Proc => P                          [anywhere]
 // SYNTACTIC SUBSTITUTION
 
 // SEMANTIC SUBSTITUTION
+
+rule P1:Proc equiv P2:Proc => P1 ==K P2
 
 endmodule
