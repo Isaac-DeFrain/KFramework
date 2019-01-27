@@ -10,22 +10,14 @@ In a terminal, either go to the directory containing the language definition or 
 
 ### Backend options
 * OCAML is default
-* Java
-```
-	kompile lang.k --backend java
-```
-* LLVM
-```
-	kompile lang.k --backend llvm
-```
-* KORE
-```
-	kompile lang.k --backend kore
-```
-* Haskell
-```
-	kompile lang.k --backend haskell
-```
+
+* Java: `kompile lang.k --backend java`
+
+* LLVM: `kompile lang.k --backend llvm`
+
+* KORE: `kompile lang.k --backend kore`
+
+* Haskell: `kompile lang.k --backend haskell`
 
 When defining K rules, we can give a variable it's sort in order for the K tool to perform a runtime sort check. E.g. the rule
 ```
@@ -35,6 +27,7 @@ instructs the K tool to check that `X` is an `Id`, `E` is an `Exp`, and `V` is a
 
 ## Declaring fresh variables
 To declare a fresh integer, for example, it looks like you can use either `!I:Int` or `?I:Int`.
+
 
 ## Construct Attributes
 
@@ -98,17 +91,355 @@ Constructors and rules can be given a *tag*. For the strictly-evaluated construc
 
 In both cases, the tag syntax is the same:
 ```
-	syntax Sort ::= ...  [cTag, strict]
+  syntax Sort ::= ...     [cTag, strict]
 
-	rule ... => ...              [rTag]
+  rule Left => Right              [rTag]
 ```
 
 E.g.
 ```
-	syntax Exp ::= Exp "+" Exp       [plus, strict]
+  syntax Exp ::= Exp "+" Exp       [plus, strict]
 
-	rule <k> print I:Int => I ...</k>
-			 <out>... . => ListItem(I) </out>  [output]
+  rule <k> print I:Int => I ...</k>
+       <out>... . => ListItem(I) </out>  [output]
+```
+
+## Syntax for built-ins
+
+#### Array
+```
+  syntax Array                                         [hook(ARRAY.Array), unit(arrayCtor), element(_[_<-_])]
+
+  syntax KItem ::= Array "[" Int "]"                   [function, hook(ARRAY.lookup)]
+                 | Array "[" Int "<-" KItem "]"        [function, hook(ARRAY.update), klabel(_[_<-_]), symbol]
+                 | Array "[" Int "<-" "undef" "]"      [function, hook(ARRAY.remove)]
+                 | updateArray(Array, Int, List)       [function, hook(ARRAY.updateAll)]
+
+  // Sets a range of indices (given by an index into the array and the number of indices to set) to the same value
+  syntax Array ::= fillArray(Array, Int, Int, KItem)   [function, hook(ARRAY.fill)]
+
+  syntax  Bool ::= Int "in_keys" "(" Array ")"         [function, functional, hook(ARRAY.in_keys)]
+
+  syntax Array ::= makeEmptyArray(Int)                 [function, hook(ARRAY.makeEmpty), impure]
+                 | arrayCtor(String, Int)              [function, hook(ARRAY.ctor), symbol]
+                 | makeArray(Int, KItem)               [function, hook(ARRAY.make), impure, klabel(makeArrayOcaml)]
+
+  syntax Array ::= makeArray(Int, KItem)               [function, hook(ARRAY.make)]
+                 | arr(List, Int, KItem)
+
+    rule makeArray(I::Int, D::KItem) => arr(.List, I, D)
+
+    rule arr(L::List, _, D::KItem) [ IDX::Int ] => #if IDX >=Int size(L) #then D #else L[IDX] #fi
+
+
+  syntax List ::= ensureOffsetList(List, Int, KItem)   [function]
+
+    rule ensureOffsetList(L::List, IDX::Int, D::KItem) => #if IDX >=Int size(L) #then updateList(makeList(IDX +Int 1, D), 0, L) #else L #fi
+
+    rule arr(L::List, I::Int, D::KItem) [ IDX::Int <- VAL::KItem ] => arr(ensureOffsetList(L, IDX, D) [ IDX <- VAL ], I, D)
+
+    rule arr(L::List, I::Int, D::KItem) [ IDX::Int <- undef ] => arr(L, I, D) [ IDX <- D ]
+
+    rule updateArray(arr(L::List, I::Int, D::KItem), IDX::Int, L2::List) => arr(updateList(ensureOffsetList(L, IDX +Int size(L2) -Int 1, D), IDX, L2), I, D)
+
+    rule fillArray(arr(L::List, I::Int, D::KItem), IDX::Int, LEN::Int, VAL::KItem) => arr(fillList(ensureOffsetList(L, IDX +Int LEN -Int 1, D), IDX, LEN, VAL), I, D)
+
+    rule IDX::Int in_keys(arr(_, I::Int, _)) => IDX >=Int 0 andBool IDX <Int I
+```
+
+#### Bool
+```
+  syntax   Bool ::=          "notBool" Bool   [function, functional, boolOperation]
+                  > Bool     "andBool" Bool   [function, functional, boolOperation]
+                  | Bool "andThenBool" Bool   [function, functional, left, boolOperation]
+                  | Bool     "xorBool" Bool   [function, functional, left, boolOperation]
+                  | Bool      "orBool" Bool   [function, functional, left, boolOperation]
+                  | Bool  "orElseBool" Bool   [function, functional, left, boolOperation]
+                  | Bool "impliesBool" Bool   [function, functional, left, boolOperation]
+                  > left:
+                    Bool      "==Bool" Bool   [function, functional, left]
+                  | Bool     "=/=Bool" Bool   [function, functional, left]
+```
+
+#### Collection
+```
+  syntax   List ::= Set2List(Set)   [function]
+  syntax    Set ::= List2Set(List)  [function, functional]
+```
+
+#### Integer
+```
+  syntax   Bool ::= Int      "<=Int" Int    [function, functional, left]
+                  | Int       "<Int" Int    [function, functional, left]
+                  | Int      ">=Int" Int    [function, functional, left]
+                  | Int       ">Int" Int    [function, functional, left]
+                  | Int      "==Int" Int    [function, functional, left]
+                  | Int     "=/=Int" Int    [function, functional, left]
+                  | Int "dividesInt" Int    [function]
+                  | freshInt(Int)           [freshGenerator, function, functional]
+                  | randInt(Int)            [function]
+
+    rule I1:Int ==Int I2:Int => I1 ==K I2
+    rule I1:Int =/=Int I2:Int => notBool (I1 ==Int I2)
+    rule (I1:Int dividesInt I2:Int) => (I2 %Int I1) ==Int 0
+    rule freshInt(I:Int) => I
+
+  syntax    Int ::= "~Int" Int                                                  [function, functional]
+                  > left:
+                    Int "^Int" Int                                              [function, left]
+                  | Int "^%Int" Int Int                                         [function, left]
+                  > left:
+                    Int "*Int" Int                                              [function, functional, left]
+                  | Int "/Int" Int                                              [function, left]
+                  | Int "%Int" Int                                              [function, left]
+                  | Int "divInt" Int                                            [function, left]
+                  | Int "modInt" Int                                            [function, left]
+                  > left:
+                    Int "+Int" Int                                              [function, functional, left]
+                  | Int "-Int" Int                                              [function, functional, left]
+                  > left:
+                    Int ">>Int" Int                                             [function, left]
+                  | Int "<<Int" Int                                             [function, left]
+                  > left:
+                    Int "&Int" Int                                              [function, functional, left]
+                  > left:
+                    Int "xorInt" Int                                            [function, functional, left]
+                  > left:
+                    Int "|Int" Int                                              [function, functional, left]
+
+  syntax    Int ::= minInt  ( Int , Int )                                       [function, functional]
+                  | maxInt  ( Int , Int )                                       [function, functional]
+                  | absInt  ( Int )                                             [function, functional]
+                  | log2Int ( Int )                                             [function]
+                  | bitRangeInt           ( Int, indexInt:Int, lengthInt:Int )  [function]
+                  | signExtendBitRangeInt ( Int, indexInt:Int, lengthInt:Int )  [function]
+
+    rule bitRangeInt(I, IDX, LEN) => (I >>Int IDX) modInt (1 <<Int LEN)
+
+    rule signExtendBitRangeInt(I, IDX, LEN) => (bitRangeInt(I, IDX, LEN) +Int (1 <<Int (LEN -Int 1))) modInt (1 <<Int LEN) -Int (1 <<Int (LEN -Int 1))
+
+    rule I1:Int divInt I2:Int => (I1 -Int (I1 modInt I2)) /Int I2  requires I2 =/=Int 0
+
+    rule I1:Int modInt I2:Int => ((I1 %Int absInt(I2)) +Int absInt(I2)) %Int absInt(I2)  requires I2 =/=Int 0    [concrete]
+
+    rule minInt(I1:Int, I2:Int) => I1 requires I1 <=Int I2
+    rule minInt(I1:Int, I2:Int) => I2 requires I1 >=Int I2
+
+  syntax      K ::= srandInt(Int)     [function]
+```
+
+#### K
+```
+  syntax   Bool ::= left: K "==K" K                        [function, functional, smtlib(=), hook(KEQUAL.eq), klabel(_==K_), symbol, latex({#1}\mathrel{=_K}{#2}), equalEqualK]
+                  | K "=/=K" K                             [function, functional, smtlib(distinct), hook(KEQUAL.ne), klabel(_=/=K_), symbol, latex({#1}\mathrel{\neq_K}{#2}), notEqualEqualK]
+
+  syntax priorities equalEqualK notEqualEqualK > boolOperation mlOp
+
+    rule K1:K =/=K K2:K => notBool (K1 ==K K2)
+    rule K1:Bool ==Bool K2:Bool => K1 ==K K2
+
+  syntax      K ::= "#if" Bool "#then" K "#else" K "#fi"   [function, functional, smtlib(ite), hook(KEQUAL.ite), poly(0, 2, 3)]
+
+    rule #if C:Bool #then B1 #else _ #fi => B1 requires C
+    rule #if C:Bool #then _ #else B2 #fi => B2 requires notBool C
+
+  syntax      K ::= "#configuration"                       [function, impure hook(KREFLECTION.configuration)]
+  syntax  KItem ::= #fresh(String)                         [function, hook(KREFLECTION.fresh), impure]
+                  | getKLabel(K)                           [function, hook(KREFLECTION.getKLabel)]
+
+  syntax String ::= #getenv(String)                        [function, impure, hook(KREFLECTION.getenv)]
+                  | #sort(K)                               [function, hook(KREFLECTION.sort)]
+
+  // return empty string if the term has no klabel
+  syntax String ::= #getKLabelString(K)                    [function, hook(KREFLECTION.getKLabel)]
+
+  // return true if no variable nor unresolved function appears in any subterm
+  syntax   Bool ::= #isConcrete(K)                         [function, hook(KREFLECTION.isConcrete)]
+                  | #isVariable(K)                         [function, hook(KREFLECTION.isVariable)]
+
+  // To be used to parse semantic rules
+  syntax non-assoc #KRewrite
+  syntax      K ::= K "=>" K                               [klabel(#KRewrite), symbol, poly(0, 1, 2)]
+
+  syntax      K ::= K "#as" K                              [klabel(#KAs), symbol, poly(0, 1, 2)]
+
+  // functions that preserve sorts and can therefore have inner rewrites
+  syntax      K ::= "#fun" "(" K ")" "(" K ")"             [klabel(#fun2), symbol, poly(0, 1, 2), prefer]
+
+  // functions that do not preserve sort and therefore cannot have inner rewrites
+  syntax      K ::= "#fun" "(" K "=>" K ")" "(" K ")"      [klabel(#fun3), symbol, poly(0, 2; 1, 3)]
+```
+
+#### List
+```
+  // Concatenation of two Lists. This is similar to the append "@" operation in many functional programming languages.
+  syntax   List ::= List List                              [left, function, functional, hook(LIST.concat), klabel(_List_), symbol, smtlib(smt_seq_concat), assoc, unit(.List), element(ListItem), format(%1%n%2)]
+
+  // Empty List.
+  syntax   List ::= ".List"                                [function, functional, hook(LIST.unit), klabel(.List), symbol, smtlib(smt_seq_nil), latex(\dotCt{List})]
+
+  // Singleton List.
+  syntax   List ::= ListItem(KItem)                        [function, functional, hook(LIST.element), klabel(ListItem), symbol, smtlib(smt_seq_elem)]
+
+  // Get an element form the List by index. Positive indices mean from the beginning (0 is the first element), and negative indices mean from the end (-1 is the last element).
+  syntax  KItem ::= List "[" Int "]"                       [function, hook(LIST.get), klabel(List:get), symbol]
+
+  syntax   List ::= List "[" Int "<-" KItem "]"            [function, hook(LIST.update), klabel(List:set)]
+
+  syntax   List ::= makeList(Int, KItem)                   [function, hook(LIST.make)]
+
+  syntax   List ::= updateList(List, Int, List)            [function, hook(LIST.updateAll)]
+
+  syntax   List ::= fillList(List, Int, Int, KItem)        [function, hook(LIST.fill)]
+
+  // Remove elements from the beginning and the end of the List.
+  syntax   List ::= range(List, Int, Int)                  [function, hook(LIST.range), klabel(List:range), symbol]
+
+  // Check element membership in the given list.
+  syntax   Bool ::= KItem "in" List                        [function, functional, hook(LIST.in), klabel(_inList_)]
+
+  // Get the list length.
+  syntax    Int ::= size(List)                             [function, functional, hook(LIST.size), klabel (sizeList), smtlib(smt_seq_len)]
+```
+
+#### Map
+```
+  // The Map represents a generalized associative array. Each key can be paired with an arbitrary value, and can be used to reference its associated value. Multiple bindings for the same key are not allowed.
+
+  // Map consisting of key/value pairs of two Maps (the keys of the two Maps are assumed disjoint)
+  syntax   Map ::= Map Map                              [left, function, hook(MAP.concat), klabel(_Map_), symbol, assoc, comm, unit(.Map), element(_|->_), index(0), format(%1%n%2)]
+
+  //  Construct an empty Map
+  syntax   Map ::= ".Map"                               [function, functional, hook(MAP.unit), klabel(.Map), symbol, latex(\dotCt{Map})]
+
+  // Singleton Map (a Map with only one key/value pair). The key is on the left and the value is on the right
+  syntax   Map ::= KItem "|->" KItem                    [function, functional, hook(MAP.element), klabel(_|->_), symbol, latex({#1}\mapsto{#2})]
+
+  syntax priorities _|->_ > _Map_ .Map
+  syntax non-assoc _|->_
+
+  // Retrieve the value associated with the given key
+  syntax KItem ::= Map "[" KItem "]"                    [function, hook(MAP.lookup), klabel(Map:lookup), symbol]
+
+  syntax KItem ::= Map "[" KItem "]" "orDefault" KItem  [function, functional, hook(MAP.lookupOrDefault), klabel(Map:lookupOrDefault)]
+
+  // Update a Map on the level of keys and values:
+  syntax   Map ::= Map "[" KItem "<-" KItem "]"         [function, functional, hook(MAP.update), prefer]
+
+  // Remove key/value pair associated with the key from map
+  syntax   Map ::= Map "[" KItem "<-" "undef" "]"       [function, functional, hook(MAP.remove), klabel(_[_<-undef]), symbol]
+
+  // Get the difference of two maps interpreted as sets of entries ($M_1 \setminus M2$)
+  syntax   Map ::= Map "-Map" Map                       [function, functional, hook(MAP.difference), latex({#1}-_{\it Map}{#2})]
+
+  // Update the first map by adding all key/value pairs in the second map. If a key in the first map exists also in the second map, its associated value will be overwritten by the value from the second map.
+  syntax   Map ::= updateMap(Map, Map)                  [function, functional, hook(MAP.updateAll)]
+
+  // Update the Map by removing all key/value pairs with the key in the Set
+  syntax   Map ::= removeAll(Map, Set)                  [function, functional, hook(MAP.removeAll)]
+
+  // Get a List consisting of all keys in the Map:
+  syntax  List ::= "keys_list" "(" Map ")"              [function, hook(MAP.keys_list)]
+
+  // Get a Set consisting of all keys in the Map:
+  syntax   Set ::= keys(Map)                            [function, functional, hook(MAP.keys)]
+
+  syntax  Bool ::= KItem "in_keys" "(" Map ")"          [function, functional, hook(MAP.in_keys)]
+
+  // Get a List consisting of all values in the Map:
+  syntax  List ::= values(Map)                          [function, hook(MAP.values)]
+
+  // Get the Map size (number of key/value pairs)
+  syntax   Int ::= size(Map)                            [function, functional, hook(MAP.size), klabel(sizeMap)]
+
+  // Check map inclusion
+  syntax  Bool ::= Map "<=Map" Map                      [function, functional, hook(MAP.inclusion)]
+
+  // Get an arbitrarily chosen key of the Map
+  syntax KItem ::= choice(Map)                          [function, hook(MAP.choice), klabel(Map:choice)]
+```
+
+#### Set
+```
+  // The Set represents a mathematical set (a collection of unique items).
+
+  // Construct a new Set as the union of two different sets ($A \cup B$)
+  syntax   Set ::= Set Set                              [left, function, functional, hook(SET.concat), klabel(_Set_), symbol, assoc, comm, unit(.Set), idem, element(SetItem), format(%1%n%2)]
+
+  // Construct an empty Set
+  syntax   Set ::= ".Set"                               [function, functional, hook(SET.unit), klabel(.Set), symbol, latex(\dotCt{Set})]
+
+  // Construct a singleton Set (e.g. $\{ a \}$). To add an element $a$ to a set $A$, construct the union of the singleton set $\{ a \}$ and $A$ (i.e. $\{ a \} \cup A$).
+  syntax   Set ::= SetItem ( KItem )                    [function, functional, hook(SET.element), klabel(SetItem), symbol]
+
+  // Get the intersection of two sets (i.e. $A \cap B$)
+  syntax   Set ::= intersectSet ( Set , Set )           [function, functional, hook(SET.intersection)]
+
+  // Get the difference of two sets (i.e. $A \setminus B$)
+  syntax   Set ::= Set  "-Set" Set                      [function, functional, hook(SET.difference), latex({#1}-_{\it Set}{#2}), klabel(Set:difference), symbol]
+
+  // Check element membership in a set (i.e. $a \in A$)
+  syntax  Bool ::= KItem  "in" Set                      [function, functional, hook(SET.in), klabel(Set:in), symbol]
+
+  // Check set inclusion (i.e. $A \subseteq B$)
+  syntax  Bool ::= Set "<=Set" Set                      [function, functional, hook(SET.inclusion)]
+
+  // Get the cardinality of a set (i.e. $|A|$)
+  syntax   Int ::= size ( Set )                         [function, functional, hook(SET.size)]
+
+  //Arbitrarily chose an element of a Set
+  syntax KItem ::= choice ( Set )                       [function, hook(SET.choice), klabel(Set:choice)]
+```
+
+#### String
+```
+  syntax   Bool ::= String  ==String String                       [function, functional, left]
+                  | String =/=String String                       [function, functional, left]
+                  | String   <String String                       [function, functional]
+                  | String  <=String String                       [function, functional]
+                  | String   >String String                       [function, functional]
+                  | String  >=String String                       [function, functional]
+
+    rule S1:String  ==String S2:String => S1 ==K S2
+    rule S1:String =/=String S2:String => notBool (S1 ==String S2)
+    rule S1:String  <=String S2:String => notBool (S2 <String S1)
+    rule S1:String   >String S2:String => S2 <String S1
+    rule S1:String  >=String S2:String => notBool (S1 <String S2)
+
+  syntax  Float ::= String2Float ( String )                       [function]
+
+  syntax    Int ::= lengthString ( String )                       [function, functional]
+                  | findString ( String , String , Int )          [function]
+                  | rfindString ( String , String , Int )         [function]
+                  | findChar ( String , String , Int )            [function]
+                  | rfindChar ( String , String , Int )           [function]
+                  | ordChar ( String )                            [function]
+                  | String2Int ( String )                         [function]
+                  | String2Base ( String , Int )                  [function]
+                  | countAllOccurrences ( String , String )       [function, functional]
+
+  syntax String ::= String +String String                         [function, functional, left]
+                  | Base2String ( Int , Int )                     [function]
+                  | chrChar ( Int )                               [function]
+                  | substrString ( String , Int , Int )           [function, functional]
+                  | Float2String ( Float )                        [function, functional]
+                  | Int2String ( Int )                            [function, functional]
+                  | Float2String ( Float , String )               [function]
+                  | replaceAll ( String , String , String )       [function, functional]
+                  | replace ( String , String , String , Int )    [function]
+                  | replaceFirst ( String , String , String )     [function, functional]
+                  | categoryChar ( String )                       [function]
+                  | directionalityChar ( String )                 [function]
+                  | "newUUID"                                     [function, impure]
+```
+
+#### Substitution
+```
+  // used for user-defined substitution only
+  syntax KVariable
+
+  syntax K ::= K "[" K "/" K "]"  [function, hook(SUBSTITUTION.substOne), impure, poly(0, 1)]
+  syntax K ::= K "[" Map "]"      [function, hook(SUBSTITUTION.substMany), impure, poly(0, 1)]
 ```
 
 ----------------------------------------------------------------------
