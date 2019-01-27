@@ -117,13 +117,7 @@ module RHO
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
 // NAME REDUCTIONS
-//context       @ * []     => []                              //write as single context reduction?
-
-  rule    <msg> @ * X:Name => X </msg>          [structural]  //name equivalence in <msg/>
-
-  rule  <rchan> @ * X:Name => X </rchan>        [structural]  //name equivalence in <rchan/>
-
-  rule  <schan> @ * X:Name => X </schan>        [structural]  //name equivalence class rep in <schan/>
+rule @ * N:Name => N                              [anywhere]
 
 // *@ operator is idempotent [experimental]
 //  context   * @ * @ []     => * @ []                        //write as single context reduction?
