@@ -40,7 +40,11 @@ syntax     Reify ::= "*" Name
 
 syntax       Set ::= "FN(" Proc ")"
 
+// Sets
 syntax      Proc ::= Set
+                   | "(" Set ")"                        [bracket]
+                   | Set "+" Set                         [strict]
+                   | Set "-" Set                         [strict]
 
 // GROUND TERMS
 syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String ground terms
@@ -73,7 +77,7 @@ syntax      Bool ::= Proc "equiv" Proc   [left]
 
 //syntax KVariable ::= Name
 
-syntax     KItem ::= Name | Proc
+syntax     KItem ::= Name
 
 endmodule
 
@@ -118,20 +122,26 @@ rule not B:Bool => notBool B
 rule true && B:Bool => B
 rule false && _ => false
 
+// Set
+rule S1:Set + S2:Set => S1 S2
+rule S1:Set - S2:Set => S1 -Set S2
+
 // String
 rule S1:String + S2:String => S1 +String S2
 
 // Free & Bound Names
 rule FN( Nil )      => .Set
-rule FN( _:Ground ) => .Set                                                               [strict]
+rule FN( _:Bool   ) => .Set
+rule FN( _:Int    ) => .Set
+rule FN( _:String ) => .Set
 
-rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))            [strict]
+rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) + (FN(P) -Set SetItem(Y))
 
-rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)                                       [strict]
+rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) + FN(P)
 
-rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)                                            [strict]
+rule FN( P:Proc | Q:Proc )      => FN(P) + FN(Q)
 
-rule FN( * X:Name )             => SetItem(X)                                             [strict]
+rule FN( * X:Name )             => SetItem(X)
 
 // PAR OPERATOR SEMANTICS
 rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
