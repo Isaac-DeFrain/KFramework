@@ -1,17 +1,20 @@
 // RHO CALCULUS with additional Ground terms
 
+require "domains.k"
 require "substitution.k"
 
 module GRHO-SYNTAX
-  import ID
-  import DOMAINS
-  import SUBSTITUTION
+import DOMAINS
+import SET
+import SUBSTITUTION
 
 
 //-------------
 //--- NAMES ---
 //-------------
-syntax      Name ::= Id                                            // Id: -> Name (only for convenience)
+syntax       Var ::= Id
+
+syntax      Name ::= Var                                           // Var: Id     -> Name (Name variable)
                    | "@" Proc                            [strict]  // Quote: Proc -> Name
                    | "{" Name "}"                       [bracket]
 
@@ -22,11 +25,22 @@ syntax      Proc ::= "{" Proc "}"                       [bracket]
                    | "Nil"                                         // Stop: -> Proc
                    | Ground                                        // Bool, Int, String
                    | Exp                                           // Bool, Int, String expressions
-                   | Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
-                   | Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc -> Proc
-                   > Proc "|" Proc                         [left]  // Par: Proc*Proc -> Proc
+                   | Receive                                       // Receive
+                   | Send                                          // Send
+                   | Reify                                         // Reify/evaluate
+                   > Par                                           // Par
+
+syntax       Par ::= Proc "|" Proc                         [left]  // Par: Proc*Proc -> Proc
+
+syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
+
+syntax      Send ::= Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc -> Proc
 
 syntax     Reify ::= "*" Name
+
+syntax       Set ::= "FN(" Proc ")"
+
+syntax      Proc ::= Set
 
 // GROUND TERMS
 syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String ground terms
@@ -51,17 +65,22 @@ syntax      BExp ::= Bool
                    | "not" BExp         [strict]
                    | BExp "&&" BExp  [strict(1)]
 
+// Alpha Equivalence
+syntax      Bool ::= Set "==" Set
+
 // Structural Equivalence
 syntax      Bool ::= Proc "equiv" Proc   [left]
 
 //syntax KVariable ::= Name
 
+syntax     KItem ::= Name | Proc
+
 endmodule
 
 
 module GRHO
-  import GRHO-SYNTAX
-  import SUBSTITUTION
+import GRHO-SYNTAX
+import SUBSTITUTION
 
   configuration
     <T>
@@ -87,20 +106,32 @@ module GRHO
       </tuplespace>
     </T>
 
-syntax KResult ::= Ground
+syntax KResult ::= Ground | Reify | Set
 
 // Arithmetic
 rule I1:Int + I2:Int => I1 +Int I2
 rule I1:Int * I2:Int => I1 *Int I2
-
-// String
-rule S1:String + S2:String => S1 +String S2
 
 // Boolean
 rule I1:Int <= I2:Int => I1 <=Int I2
 rule not B:Bool => notBool B
 rule true && B:Bool => B
 rule false && _ => false
+
+// String
+rule S1:String + S2:String => S1 +String S2
+
+// Free & Bound Names
+rule FN( Nil )      => .Set
+rule FN( _:Ground ) => .Set                                                               [strict]
+
+rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))            [strict]
+
+rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)                                       [strict]
+
+rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)                                            [strict]
+
+rule FN( * X:Name )             => SetItem(X)                                             [strict]
 
 // PAR OPERATOR SEMANTICS
 rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
