@@ -50,13 +50,15 @@ syntax       Set ::= "FN(" Proc ")"                    [function]  // free names
                    | "BN(" Proc ")"                    [function]  // bound names
                    | "BV(" Proc ")"                    [function]  // bound variables
                    | "RN(" Proc ")"                    [function]  // receive names
-                   | "RV(" Proc ")"                    [function]  // receive variables*
+                   | "RC(" Proc ")"                    [function]  // receive channels
+                   | "RV(" Proc ")"                    [function]  // receive variables
                    | "SN(" Proc ")"                    [function]  // send names
-                   | "SV(" Proc ")"                    [function]  // send variables*
+                   | "SC(" Proc ")"                    [function]  // send channels
+                   | "SV(" Proc ")"                    [function]  // send variables
                    |  "N(" Proc ")"                    [function]  // names
                    |  "V(" Proc ")"                    [function]  // variables
                    |  "Q(" Proc ")"                    [function]  // quoted
-                   | "CH(" Proc ")"                    [function]  // channel set
+                   | "CH(" Proc ")"                    [function]  // channels
                    | "PP(" Proc ")"                    [function]  // process patterns
                    | "NP(" Proc ")"                    [function]  // name patterns
                    |   "(" Set  ")"                     [bracket]
@@ -355,5 +357,11 @@ rule SV( A1:AExp  * A2:AExp )             => SV(A1) SV(A2)
 
 rule SV( not B:BExp )                     => SV(B)
 rule SV( B1:BExp && B2:BExp )             => SV(B1) SV(B2)
+
+// Receive Channel set
+rule RC( P:Proc ) => intersectSet( RN(P) , CH(P) )
+
+// Send Channel set
+rule SC( P:Proc ) => intersectSet( SN(P) , CH(P) )
 
 endmodule
