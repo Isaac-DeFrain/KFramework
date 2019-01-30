@@ -3,7 +3,7 @@
 require "domains.k"
 require "substitution.k"
 
-module ALPHAEQ-SYNTAX
+module NAMEVAR-SYNTAX
 import DOMAINS
 import SET
 import SUBSTITUTION
@@ -101,8 +101,8 @@ syntax     KItem ::= Name | Var | Proc
 endmodule
 
 
-module ALPHAEQ
-import ALPHAEQ-SYNTAX
+module NAMEVAR
+import NAMEVAR-SYNTAX
 import SUBSTITUTION
 
   configuration
