@@ -1,6 +1,7 @@
-# Rho-Calculus with Functions for Alpha Equivalence
+# Rho-Calculus with Functions for Names and Variables
+Functions added to rho calc syntax
 
-## Functions: Proc -> Set
+## Proc -> Set
 * `N`: Names
 * `V`: Variables
 * `Q`: Quoted processes
