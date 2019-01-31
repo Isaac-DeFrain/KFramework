@@ -18,33 +18,33 @@ module STRING
   imports FLOAT-SYNTAX
   imports K-EQUAL
 
-  syntax String ::= String "+String" String    [function, functional, left, latex({#1}+_{\scriptstyle\it String}{#2}), hook(STRING.concat)]
+  syntax String ::= String "+String" String                [function, functional, left, latex({#1}+_{\scriptstyle\it String}{#2}), hook(STRING.concat)]
 
-  syntax Bool ::= String "==String" String [function, functional, left, hook(STRING.eq)]
+  syntax   Bool ::= String "==String" String               [function, functional, left, hook(STRING.eq)]
 
-  syntax Int ::= lengthString ( String ) [function, functional, hook(STRING.length)]
-  syntax String ::= chrChar ( Int )      [function, hook(STRING.chr)]
-  syntax Int ::= ordChar ( String )      [function, hook(STRING.ord)]
+  syntax    Int ::= lengthString ( String )                [function, functional, hook(STRING.length)]
+  syntax String ::= chrChar ( Int )                        [function, hook(STRING.chr)]
+  syntax    Int ::= ordChar ( String )                     [function, hook(STRING.ord)]
 
-  syntax String ::= substrString ( String , Int , Int ) [function, functional, hook(STRING.substr)]
-  syntax Int ::= findString ( String , String , Int )   [function, hook(STRING.find)]
-  syntax Int ::= rfindString ( String , String , Int )  [function, hook(STRING.rfind)]
-  syntax Int ::= findChar ( String , String , Int )     [function, hook(STRING.findChar)]
-  syntax Int ::= rfindChar ( String , String , Int )    [function, hook(STRING.rfindChar)]
+  syntax String ::= substrString ( String , Int    , Int ) [function, functional, hook(STRING.substr)]
+  syntax    Int ::= findString (   String , String , Int ) [function, hook(STRING.find)]
+  syntax    Int ::= rfindString (  String , String , Int ) [function, hook(STRING.rfind)]
+  syntax    Int ::= findChar (     String , String , Int ) [function, hook(STRING.findChar)]
+  syntax    Int ::= rfindChar (    String , String , Int ) [function, hook(STRING.rfindChar)]
 
-  syntax String ::= Float2String ( Float )              [function, functional, hook(STRING.float2string)]
-  syntax String ::= Float2String ( Float , String )     [function, klabel(FloatFormat), hook(STRING.floatFormat)]
-  syntax Float  ::= String2Float ( String )             [function, hook(STRING.string2float)]
-  syntax Int    ::= String2Int   ( String )             [function, hook(STRING.string2int)]
-  syntax String ::= Int2String   ( Int )                [function, functional, hook(STRING.int2string)]
-  syntax String ::= Base2String  ( Int , Int )          [function, hook(STRING.base2string)]
-  syntax Int    ::= String2Base  ( String , Int )       [function, hook(STRING.string2base)]
+  syntax String ::= Float2String ( Float )                 [function, functional, hook(STRING.float2string)]
+  syntax String ::= Float2String ( Float , String )        [function, klabel(FloatFormat), hook(STRING.floatFormat)]
+  syntax  Float ::= String2Float ( String )                [function, hook(STRING.string2float)]
+  syntax    Int ::= String2Int   ( String )                [function, hook(STRING.string2int)]
+  syntax String ::= Int2String   ( Int )                   [function, functional, hook(STRING.int2string)]
+  syntax String ::= Base2String  ( Int , Int )             [function, hook(STRING.base2string)]
+  syntax    Int ::= String2Base  ( String , Int )          [function, hook(STRING.string2base)]
 
 
   syntax String ::= "replaceAll" "(" String "," String "," String ")"      [function, functional, hook(STRING.replaceAll)]
   syntax String ::= "replace" "(" String "," String "," String "," Int ")" [function, hook(STRING.replace)]
   syntax String ::= "replaceFirst" "(" String "," String "," String ")"    [function, functional, hook(STRING.replaceFirst)]
-  syntax Int ::= "countAllOccurrences" "(" String "," String ")"            [function, functional, hook(STRING.countAllOccurrences)]
+  syntax Int ::= "countAllOccurrences" "(" String "," String ")"           [function, functional, hook(STRING.countAllOccurrences)]
 
   syntax Bool ::= String "=/=String" String      [function, functional, left, hook(STRING.ne)]
   rule S1:String =/=String S2:String => notBool (S1 ==String S2)
