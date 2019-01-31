@@ -7,23 +7,25 @@ module RHO-SYNTAX
   import DOMAINS
   import SUBSTITUTION
 
+// Variables
+syntax    Var ::= Id
+
+// Channels
+syntax   Chan ::= "@" Proc
 
 // NAMES
-  syntax Name ::= "@" Proc                         [klabel(Quote)]          // Quote: Proc -> Name
-                | Id                                                        // Id: -> Name (only for convenience)
-
-// PROCESSES
-  syntax Proc ::= "Nil"                            [klabel(Stop)]           // Stop: -> Proc
-                | Name "(" Name ")"  "{" Proc "}"  [klabel(Rec),binder(2)]  // Rec: Name*Name*Proc -> Proc
-                | Proc "|" Proc                    [klabel(Par),left]       // Par: Proc*Proc -> Proc
-                | Name "!" "(" Proc ")"            [klabel(Send)]           // Send: Name*Proc -> Proc
-                | "*" Name                         [klabel(Reify)]          // Reify: Name -> Proc
-                
-// BRACKETS
-  syntax Name ::= "{" Name "}"                     [bracket]
+  syntax Name ::= Chan                                          // Chan: Proc ----------> Name
+                | Var                                           // Var: ----------------> Name
+                | "{" Name "}"                     [bracket]
                 | "(" Name ")"                     [bracket]
 
-  syntax Proc ::= "{" Proc "}"                     [bracket]
+// PROCESSES
+  syntax Proc ::= "Nil"                                         // Stop: ---------------> Proc
+                | Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
+                | Proc "|" Proc                    [left]       // Par: Proc*Proc ------> Proc
+                | Name "!" "(" Proc ")"                         // Send: Name*Proc -----> Proc
+                | "*" Name                                      // Reify: Name ---------> Proc
+                | "{" Proc "}"                     [bracket]
                 | "(" Proc ")"                     [bracket]
 
   syntax KVariable ::= Name
@@ -37,22 +39,22 @@ module RHO
   configuration
     <T>
       <threadpool color="red">
-        <thread multiplicity="*">                             //collection of threads
-          <k> $PGM:Proc </k>                                  //programs and computations are process-based
-        </thread>                                             //
-      </threadpool>                                           //tuplespace stores sends and receives
-      <tuplespace color="blue">                               //
-        <sends color="teal">                                  //**sends**
-          <send color="cyan" multiplicity="*">                //
-            <schan> .K </schan>                               //sending channel (many messages on same channel)
-            <msg>   .K   </msg>                               //message
-          </send>                                             //
-        </sends>                                              //
-        <receives color="green">                              //**receives**
-          <rec color="yellow" multiplicity="*">               //
-            <rchan> .K </rchan>                               //receiving channel (many messages on same channel)
-            <bvar>  .K  </bvar>                               //binding varible in continuation
-            <cont>  .K  </cont>                               //continuation
+        <thread multiplicity="*">                               //collection of threads
+          <k> $PGM:Proc </k>                                    //programs and computations are process-based
+        </thread>                                               //
+      </threadpool>                                             //tuplespace stores sends and receives
+      <tuplespace color="blue">                                 //
+        <sends color="teal">                                    //**sends**
+          <send color="cyan" multiplicity="*">                  //
+            <schan> .K </schan>                                 //sending channel (many messages on same channel)
+            <msg>   .K   </msg>                                 //message
+          </send>                                               //
+        </sends>                                                //
+        <receives color="green">                                //**receives**
+          <rec color="yellow" multiplicity="*">                 //
+            <rchan> .K </rchan>                                 //receiving channel (many messages on same channel)
+            <bvar>  .K  </bvar>                                 //binding varible in continuation
+            <cont>  .K  </cont>                                 //continuation
           </rec>
         </receives>
       </tuplespace>
