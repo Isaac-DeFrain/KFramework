@@ -1,0 +1,3 @@
+// Type rewrite - String
+
+type[ "abc" ]

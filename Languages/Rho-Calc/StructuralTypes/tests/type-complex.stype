@@ -1,0 +1,3 @@
+// Type - complex
+
+ type[ x!(Nil) | for( y <- @Nil ){ Nil } ]

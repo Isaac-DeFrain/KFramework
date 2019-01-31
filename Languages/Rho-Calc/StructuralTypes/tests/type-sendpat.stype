@@ -1,0 +1,11 @@
+// Type - send pattern
+
+ type[ x!(Nil) ]
+
+// Output:
+// <T>
+//   <k>
+//     type[ "sendpat" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+//   </k>
+// </T>
+
