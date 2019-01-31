@@ -1,0 +1,6 @@
+// Comms - three sends on same channel
+
+  (x)!(a) | (x)!(b) | (x)!(c) | for( y <- x ){Nil}
+
+// Three reductions:
+// x!(b) | x!(c) or x!(a) | x!(c) or x!(a) | x!(b)
