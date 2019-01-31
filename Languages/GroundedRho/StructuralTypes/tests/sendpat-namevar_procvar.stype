@@ -1,0 +1,11 @@
+// Type - send pattern
+
+ type[ x!(y) ]
+
+// Output:
+// <T>
+//   <k>
+//     type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "procvar" ;; y ] ]
+//   </k>
+// </T>
+

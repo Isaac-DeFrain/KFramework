@@ -1,0 +1,3 @@
+// Type - reify
+
+  type[ * { @{x!(Nil)} } ]

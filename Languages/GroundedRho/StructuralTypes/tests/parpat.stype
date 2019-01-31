@@ -1,6 +1,6 @@
-// Type - send pattern
+// Type - par pattern
 
- type[ x!(Nil) ]
+ type[ x | x!(Nil) ]
 
 // Output:
 // <T>
