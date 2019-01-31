@@ -7,23 +7,24 @@ require "substitution.k"
 module STYPE-SYNTAX
 import DOMAINS
 import SUBSTITUTION
+import KAST
 //import RHO-SYNTAX
 
-syntax              Var ::= Id                                       // General Variables
+syntax              Var ::= Id                               // General Variables
 
 //-------------
 //--- NAMES ---
 //-------------
 
 // Channels
-syntax             Chan ::= "@" Proc                       [strict]  // Chan: Proc --> Name
+syntax             Chan ::= "@" Proc               [strict]  // Chan: Proc --> Name
 
 // Name Variables
-syntax          NameVar ::= Var
+syntax          NameVar ::= #LowerId              [namevar]
 
 // Names
 syntax             Name ::= Chan
-                          | "{" Name "}"                  [bracket]
+                          | "{" Name "}"          [bracket]
 
 // Name Patterns
 syntax          NamePat ::= NameVar
@@ -155,50 +156,50 @@ import STYPE-SYNTAX
       <k> $PGM:Type </k>
     </T>
 
-syntax KResult ::= TerminalType | String
+syntax KResult ::= TerminalType
 
 // Normalizer: Order processes by <=Int and String2Int( toString( Proc ) )
 
 //---------------------
 //--- Type function ---
 //---------------------
-rule #type( T:Type ) => T          [strict]
+rule #type( T:Type ) => T         [strict]
 
 //-----------------------------
 //--- Process Type Rewrites ---
 //-----------------------------
-rule type[ B:Bool                        ] => type[ "leaf"       ;; "bool"    ;; B               ]  // Bool
-rule type[ I:Int                         ] => type[ "leaf"       ;; "int"     ;; I               ]  // Int
-rule type[ S:String                      ] => type[ "leaf"       ;; "string"  ;; S               ]  // String
+rule type[ B:Bool                       ] => type[ "leaf"       ;; "bool"    ;; B               ]  // Bool
+rule type[ I:Int                        ] => type[ "leaf"       ;; "int"     ;; I               ]  // Int
+rule type[ S:String                     ] => type[ "leaf"       ;; "string"  ;; S               ]  // String
 
-//rule type[ PV:ProcVar                  ] => type[ "leaf"       ;; "procvar" ;; PV              ]  // Process variables
+rule type[ PV:ProcVar                   ] => type[ "leaf"       ;; "procvar" ;; PV              ]  // Process variable
 
-rule type[ Nil                           ] => type[ "leaf"       ;; "nil"     ;; "Nil"           ]  // Nil
+rule type[ Nil                          ] => type[ "leaf"       ;; "nil"     ;; "Nil"           ]  // Nil
 
-rule type[ * N:Name                      ] => type[ "reify"      ;; type[N]   ;; type[#truncate] ]  // Reify
-rule type[ * NP:NamePat                  ] => type[ "reifypat"   ;; type[NP]  ;; type[#truncate] ]  // Reify pattern
+rule type[ * N:Name                     ] => type[ "reify"      ;; type[N]   ;; type[#truncate] ]  // Reify
+rule type[ * P:NamePat                  ] => type[ "reifypat"   ;; type[P]   ;; type[#truncate] ]  // Reify pattern
 
-rule type[   N:Name    ! (P:Proc   )     ] => type[ "send"       ;; type[N]   ;; type[P]         ]  // Send
-rule type[   N:Name    ! (P:ProcPat)     ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
-rule type[   N:NamePat ! (P:ProcPat)     ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
-rule type[   N:NamePat ! (P:Proc   )     ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
+rule type[ N:Name    ! (P:Proc   )      ] => type[ "send"       ;; type[N]   ;; type[P]         ]  // Send
+rule type[ N:Name    ! (P:ProcPat)      ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
+rule type[ N:NamePat ! (P:ProcPat)      ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
+rule type[ N:NamePat ! (P:Proc   )      ] => type[ "sendpat"    ;; type[N]   ;; type[P]         ]  // Send pattern
 
-rule type[ for(R:Receipt) { P:Proc    }  ] => type[ "receive"    ;; type[R]   ;; type[P]         ]  // Receive
-rule type[ for(R:Receipt) { P:ProcPat }  ] => type[ "receivepat" ;; type[R]   ;; type[P]         ]  // Receive pattern
+rule type[ for(R:Receipt) { P:Proc    } ] => type[ "receive"    ;; type[R]   ;; type[P]         ]  // Receive
+rule type[ for(R:Receipt) { P:ProcPat } ] => type[ "receivepat" ;; type[R]   ;; type[P]         ]  // Receive pattern
 
-rule type[ P:NamePat <- N:Name           ] => type[ "bind"       ;; type[P]   ;; type[N]         ]  // Receipt
+rule type[ P:NamePat <- N:NameOrPat     ] => type[ "bind"       ;; type[N]   ;; type[P]         ]  // Receipt
 
-rule type[ P:Proc      | Q:Proc          ] => type[ "par"        ;; type[P]   ;; type[Q]         ]  // Par
-rule type[ P:Proc      | Q:ProcPat       ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
-rule type[ P:ProcPat   | Q:Proc          ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
-rule type[ P:ProcPat   | Q:ProcPat       ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
+rule type[ P:Proc     | Q:Proc          ] => type[ "par"        ;; type[P]   ;; type[Q]         ]  // Par
+rule type[ P:Proc     | Q:ProcPat       ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
+rule type[ P:ProcPat  | Q:Proc          ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
+rule type[ P:ProcPat  | Q:ProcPat       ] => type[ "parpat"     ;; type[P]   ;; type[Q]         ]  // Par pattern
 
 //--------------------------
 //--- Name Type Rewrites ---
 //--------------------------
 
 // Channels
-rule type[ @ P:Proc      ] => type[ "chan"  ;; type[P]      ;; type[#truncate] ]
+rule type[ @ P:Proc      ] => type[ "quote" ;; type[P]      ;; type[#truncate] ]
 
 // Name patterns
 rule type[ @ P:ProcPat   ] => type[ "quote" ;; type[P]      ;; type[#truncate] ]
