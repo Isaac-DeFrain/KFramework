@@ -16,19 +16,19 @@ import SUBSTITUTION
 // Variables
 syntax       Var ::= Id
 
-// Quoted Process
-syntax     Quote ::= "@" Proc                            [strict]  // Quote: Proc -> Name
+// Chand Process
+syntax      Chan ::= "@" Proc                            [strict]
 
 // Names
-syntax      Name ::= Var                                           // Var: Id     -> Name (Name variable)
-                   | Quote
+syntax      Name ::= Var                                           // Var: -------> Name
+                   | Chan                                          // Chan: Proc -> Name
                    | "{" Name "}"                       [bracket]
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
 syntax      Proc ::= "{" Proc "}"                       [bracket]
-                   | "Nil"                                         // Stop: -> Proc
+                   | "Nil"                                         // Nil: -> Proc
                    | Ground                                        // Bool, Int, String
                    | Exp                                           // Bool, Int, String expressions
                    | Receive                                       // Receive
@@ -36,13 +36,13 @@ syntax      Proc ::= "{" Proc "}"                       [bracket]
                    | Reify                                         // Reify/evaluate
                    > Par                                           // Par
 
-syntax       Par ::= Proc "|" Proc                         [left]  // Par: Proc*Proc -> Proc
+syntax       Par ::= Proc "|" Proc                         [left]  // Par: Proc*Proc ----------> Proc
 
-syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
+syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Receive: Name*Name*Proc -> Proc
 
-syntax      Send ::= Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc -> Proc
+syntax      Send ::= Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc ---------> Proc
 
-syntax     Reify ::= "*" Name
+syntax     Reify ::= "*" Name                                      // Reify: Name -------------> Proc
 
 // Sets
 syntax       Set ::= "FN(" Proc ")"                    [function]  // free names
@@ -57,7 +57,7 @@ syntax       Set ::= "FN(" Proc ")"                    [function]  // free names
                    | "SV(" Proc ")"                    [function]  // send variables
                    |  "N(" Proc ")"                    [function]  // names
                    |  "V(" Proc ")"                    [function]  // variables
-                   |  "Q(" Proc ")"                    [function]  // quoted
+                   |  "Q(" Proc ")"                    [function]  // Chand
                    | "CH(" Proc ")"                    [function]  // channels
                    | "PP(" Proc ")"                    [function]  // process patterns
                    | "NP(" Proc ")"                    [function]  // name patterns
@@ -120,8 +120,8 @@ rule I1:Int <= I2:Int => I1 <=Int I2
 rule I1:Int == I2:Int => I1 ==Int I2
 
 // Boolean
-rule not B:Bool         => notBool B
-rule true && B:Bool     => B
+rule      not B:Bool    => notBool B
+rule true  && B:Bool    => B
 rule false && _         => false
 rule B1:Bool == B2:Bool => B1 ==Bool B2
 
@@ -189,25 +189,25 @@ rule V( _:Bool   ) => .Set
 rule V( _:Int    ) => .Set
 rule V( _:String ) => .Set
 
-rule V( X:Var   ( Y:Var   )  { P:Proc } )  => SetItem(X) SetItem(Y) V(P)
-rule V( X:Var   ( _:Quote )  { P:Proc } )  => SetItem(X) V(P)
-rule V( _:Quote ( Y:Var   )  { P:Proc } )  => SetItem(Y) V(P)
-rule V( _:Quote ( _:Quote )  { P:Proc } )  => V(P)
+rule V( X:Var  ( Y:Var  )  { P:Proc } )  => SetItem(X) SetItem(Y) V(P)
+rule V( X:Var  ( _:Chan )  { P:Proc } )  => SetItem(X) V(P)
+rule V( _:Chan ( Y:Var  )  { P:Proc } )  => SetItem(Y) V(P)
+rule V( _:Chan ( _:Chan )  { P:Proc } )  => V(P)
 
-rule V( X:Var   ! ( P:Proc ) )             => SetItem(X) V(P)
-rule V( _:Quote ! ( P:Proc ) )             => V(P)
+rule V( X:Var  ! ( P:Proc ) )            => SetItem(X) V(P)
+rule V( _:Chan ! ( P:Proc ) )            => V(P)
 
-rule V( P:Proc | Q:Proc )                  => V(P) V(Q)
+rule V( P:Proc | Q:Proc )                => V(P) V(Q)
 
-rule V( * X:Var   )                        => SetItem(X)
-rule V( * _:Quote )                        => .Set
+rule V( * X:Var  )                       => SetItem(X)
+rule V( * _:Chan )                       => .Set
 
-rule V( A1:AExp  + A2:AExp )               => V(A1) V(A2)
-rule V( A1:AExp  - A2:AExp )               => V(A1) V(A2)
-rule V( A1:AExp  * A2:AExp )               => V(A1) V(A2)
+rule V( A1:AExp  + A2:AExp )             => V(A1) V(A2)
+rule V( A1:AExp  - A2:AExp )             => V(A1) V(A2)
+rule V( A1:AExp  * A2:AExp )             => V(A1) V(A2)
 
-rule V( not B:BExp )                       => V(B)
-rule V( B1:BExp && B2:BExp )               => V(B1) V(B2)
+rule V( not B:BExp )                     => V(B)
+rule V( B1:BExp && B2:BExp )             => V(B1) V(B2)
 
 // Bound Variable set
 rule BV( P:Proc ) => intersectSet( BN(P) , V(P) )
@@ -215,7 +215,7 @@ rule BV( P:Proc ) => intersectSet( BN(P) , V(P) )
 // Free Variable set
 rule FV( P:Proc ) => intersectSet( FN(P) , V(P) )
 
-// Quoted set
+// Chand set
 rule Q( P:Proc )  => N(P) -Set V(P)
 
 // Channel set
@@ -224,23 +224,23 @@ rule CH( _:Bool   ) => .Set
 rule CH( _:Int    ) => .Set
 rule CH( _:String ) => .Set
 
-rule CH( X:Quote ( _:Name )  { P:Proc } )  => SetItem(X) CH(P)
-rule CH( _:Var   ( _:Name )  { P:Proc } )  => CH(P)
+rule CH( X:Chan ( _:Name )  { P:Proc } )  => SetItem(X) CH(P)
+rule CH( _:Var  ( _:Name )  { P:Proc } )  => CH(P)
 
-rule CH( X:Quote ! ( P:Proc ) )            => SetItem(X) CH(P)
-rule CH( _:Var   ! ( P:Proc ) )            => CH(P)
+rule CH( X:Chan ! ( P:Proc ) )            => SetItem(X) CH(P)
+rule CH( _:Var  ! ( P:Proc ) )            => CH(P)
 
-rule CH( P:Proc | Q:Proc )                 => CH(P) CH(Q)
+rule CH( P:Proc | Q:Proc )                => CH(P) CH(Q)
 
-rule CH( * X:Quote )                       => SetItem(X)
-rule CH( * _:Var   )                       => .Set
+rule CH( * X:Chan )                       => SetItem(X)
+rule CH( * _:Var  )                       => .Set
 
-rule CH( A1:AExp  + A2:AExp )              => CH(A1) CH(A2)
-rule CH( A1:AExp  - A2:AExp )              => CH(A1) CH(A2)
-rule CH( A1:AExp  * A2:AExp )              => CH(A1) CH(A2)
+rule CH( A1:AExp  + A2:AExp )             => CH(A1) CH(A2)
+rule CH( A1:AExp  - A2:AExp )             => CH(A1) CH(A2)
+rule CH( A1:AExp  * A2:AExp )             => CH(A1) CH(A2)
 
-rule CH( not B:BExp )                      => CH(B)
-rule CH( B1:BExp && B2:BExp )              => CH(B1) CH(B2)
+rule CH( not B:BExp )                     => CH(B)
+rule CH( B1:BExp && B2:BExp )             => CH(B1) CH(B2)
 
 // Process Pattern set
 rule PP(   Nil    ) => .Set
@@ -296,22 +296,22 @@ rule RV( _:Bool   ) => .Set
 rule RV( _:Int    ) => .Set
 rule RV( _:String ) => .Set
 
-rule RV( X:Var   ( _:Name )  { P:Proc } )   => SetItem(X) RV(P)
-rule RV( _:Quote ( _:Name )  { P:Proc } )   => RV(P)
+rule RV( X:Var  ( _:Name )  { P:Proc } )   => SetItem(X) RV(P)
+rule RV( _:Chan ( _:Name )  { P:Proc } )   => RV(P)
 
-rule RV( _:Name ! ( P:Proc ) )              => RV(P)
+rule RV( _:Name ! ( P:Proc ) )             => RV(P)
 
-rule RV( P:Proc | Q:Proc )                  => RV(P) RV(Q)
+rule RV( P:Proc | Q:Proc )                 => RV(P) RV(Q)
 
-rule RV( * @P:Proc )                        => RV(P)
-rule RV( * _:Var   )                        => .Set
+rule RV( * @P:Proc )                       => RV(P)
+rule RV( * _:Var   )                       => .Set
 
-rule RV( A1:AExp  + A2:AExp )               => RV(A1) RV(A2)
-rule RV( A1:AExp  - A2:AExp )               => RV(A1) RV(A2)
-rule RV( A1:AExp  * A2:AExp )               => RV(A1) RV(A2)
+rule RV( A1:AExp  + A2:AExp )              => RV(A1) RV(A2)
+rule RV( A1:AExp  - A2:AExp )              => RV(A1) RV(A2)
+rule RV( A1:AExp  * A2:AExp )              => RV(A1) RV(A2)
 
-rule RV( not B:BExp )                       => RV(B)
-rule RV( B1:BExp && B2:BExp )               => RV(B1) RV(B2)
+rule RV( not B:BExp )                      => RV(B)
+rule RV( B1:BExp && B2:BExp )              => RV(B1) RV(B2)
 
 // Send Name set
 rule SN(   Nil    ) => .Set
@@ -344,7 +344,7 @@ rule SV( _:String ) => .Set
 rule SV( _:Name ( _:Name )  { P:Proc } )  => SV(P)
 
 rule SV( X:Var   ! ( P:Proc ) )           => SetItem(X) SV(P)
-rule SV( _:Quote  ! ( P:Proc ) )          => SV(P)
+rule SV( _:Chan  ! ( P:Proc ) )           => SV(P)
 
 rule SV( P:Proc | Q:Proc )                => SV(P) SV(Q)
 
