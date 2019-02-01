@@ -57,7 +57,7 @@ syntax       Set ::= "FN(" Proc ")"                    [function]  // free names
                    | "SV(" Proc ")"                    [function]  // send variables
                    |  "N(" Proc ")"                    [function]  // names
                    |  "V(" Proc ")"                    [function]  // variables
-                   |  "Q(" Proc ")"                    [function]  // Chand
+                   |  "Q(" Proc ")"                    [function]  // Chan
                    | "CH(" Proc ")"                    [function]  // channels
                    | "PP(" Proc ")"                    [function]  // process patterns
                    | "NP(" Proc ")"                    [function]  // name patterns
