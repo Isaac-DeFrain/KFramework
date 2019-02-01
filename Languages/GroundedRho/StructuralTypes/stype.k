@@ -59,7 +59,7 @@ syntax              Par ::= Proc "|" Proc                              [left,par
 // Receive
 syntax          Receive ::= "for" "(" Bind ")" "{" Proc    "}"   [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
                           | "for" "(" Bind ")" "{" ProcPat "}"   [binder,receive]  // for(_){_}: Bind x ProcPat ---> Receive  // countAllOccurrences( BindNamePat , ProcPat ) > 0 ???
-                                                                                                                              // requires ProcPat[N / BindNamePat] to be concrete when N:Name 
+                                                                                                                              // requires ProcPat[N / BindNamePat] to be concrete when N:Name
 syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name -----------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
                                                                                                                               // BindNamePat = y and ProcPat = y!("hi") thus
 syntax      BindNamePat ::= NamePat                                                // NamePat < BindNamePat                   // {y!("hi")}[N / y] = N!("hi") is a concrete process
@@ -93,7 +93,7 @@ syntax         ParOrPat ::= Par                                                 
 
 // Receive Pattern
 syntax       ReceivePat ::= "for" "(" Bind    ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat  // requires ProcPat[N / BindNamePat] to be a process pattern?
-                          | "for" "(" BindPat ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat 
+                          | "for" "(" BindPat ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat
 
 syntax     ReceiveOrPat ::= Receive                                                //    Receive < ReciveOrPat
                           | ReceivePat                                             // ReceivePat < ReciveOrPat
@@ -117,6 +117,7 @@ syntax         ReifyPat ::= "*" NamePat                                         
 syntax       ReifyOrPat ::= Reify                                                  //    Reify < ReifyOrPat
                           | ReifyPat                                               // ReifyPat < ReifyOrPat
 
+// Process Pattern
 syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat ------------------> ProcPat
                           | SimpleType                                             //  SimplType < ProcPat
                           | ProcVar                                                //    ProcVar < ProcPat
@@ -150,9 +151,10 @@ syntax       SimpleType ::= "Bool"                                              
 
 // Recursive syntax for the type rewrites
 //  Initial type
-syntax      InitialType ::= "type[" OrPat     "]"
-                          | "type[" Leaf      "]"
-                          | "type[" BindOrPat "]"
+syntax      InitialType ::= "type[" OrPat       "]"
+                          | "type[" Leaf        "]"
+                          | "type[" BindOrPat   "]"
+                          | "type[" BindNamePat "]"
 
 //  Intermediate type
 syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
@@ -166,10 +168,7 @@ syntax     TerminalType ::= "type[" String ";;" Leaf             ";;" Leaf      
                           | "type[" String ";;" TerminalType     ";;" TerminalType     "]"
 
 //  Leaf
-syntax             Leaf ::= Ground                                                 //  Ground < Leaf
-                          | "Nil"                                                  //     Nil < Leaf
-                          | NameVar                                                // NameVar < Leaf
-                          | ProcVar                                                // ProcVar < Leaf
+syntax             Leaf ::= OrPat                                                  // OrPat < Leaf
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
@@ -223,13 +222,13 @@ rule type[ N:NamePat ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; typ
 rule type[ N:NamePat ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
 
 // ReceiveOrPat
-rule type[ for(R:Bind){ P:Proc    }    ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive
-rule type[ for(R:Bind){ P:ProcPat }    ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
+rule type[ for(R:Bind   ){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive
+rule type[ for(R:Bind   ){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
 rule type[ for(R:BindPat){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
 
 // BindOrPat
-rule type[ B:BindNamePat <- N:Name     ] => type[ "bind"    ;; type[B]    ;; type[P] ]  // Bind
-rule type[ B:BindNamePat <- N:NamePat  ] => type[ "bind"    ;; type[B]    ;; type[P] ]  // Bind
+rule type[ B:BindNamePat <- N:Name     ] => type[ "bind"    ;; type[B]    ;; type[N] ]  // Bind
+rule type[ B:BindNamePat <- N:NamePat  ] => type[ "bind"    ;; type[B]    ;; type[N] ]  // Bind
 
 // ParOrPat
 rule type[ P:Proc     | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
