@@ -12,61 +12,62 @@ import SUBSTITUTION
 //-------------
 //--- NAMES ---
 //-------------
-syntax       Var ::= Id
+syntax       Var ::= Id                                            //    Id < Var
 
-syntax      Name ::= Var                                           // Var: Id     -> Name (Name variable)
-                   | "@" Proc                            [strict]  // Quote: Proc -> Name
-                   | "{" Name "}"                       [bracket]
+syntax      Name ::= Quote                                         // Quote < Name
+                   | "{" Name "}"                       [bracket]  //    {_}: Name -----> Name
+                   | Var
+
+syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
-syntax      Proc ::= "{" Proc "}"                       [bracket]
-                   | "Nil"                                         // Stop: -> Proc
-                   | Ground                                        // Bool, Int, String
-                   | Exp                                           // Bool, Int, String expressions
-                   | Receive                                       // Receive
-                   | Send                                          // Send
-                   | Reify                                         // Reify/evaluate
-                   > Par                                           // Par
+syntax      Proc ::= "{" Proc "}"                       [bracket]  // {_}: Proc --------> Proc
+                   | "Nil"                                         // Nil: -------------> Proc
+                   | Ground                                        // Bool, Int, String < Proc
+                   | Exp                                           // Bool, Int, String expressions: Exp < Proc
+                   | Receive                                       // Receive < Proc
+                   | Send                                          //    Send < Proc
+                   | Reify                                         //   Reify < Proc
+                   > Par                                           //     Par < Proc
 
-syntax       Par ::= Proc "|" Proc                         [left]  // Par: Proc*Proc -> Proc
+syntax       Par ::= Proc "|" Proc                         [left]  // Proc x Proc --------------> Par
 
-syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
+syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Name x Name x Proc ---> Receive
 
-syntax      Send ::= Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc -> Proc
+syntax      Send ::= Name "!" "(" Proc ")"                         // Name x Proc -------------> Send
 
-syntax     Reify ::= "*" Name
+syntax     Reify ::=   "*" Name
 
-syntax       Set ::= "FN(" Proc ")"
+syntax       Set ::= "FN(" Proc ")"                    [function]  // FN: Proc ------------> FN(Proc) < Set
 
 // Sets
-syntax      Proc ::= Set
-                   | "(" Set ")"                        [bracket]
-                   | Set "+" Set                         [strict]
-                   | Set "-" Set                         [strict]
+syntax      Proc ::= Set                                           // Set < Proc
+                   | "(" Set ")"                        [bracket]  // (_): Set -----------------> Set
 
 // GROUND TERMS
-syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String ground terms
+syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String < Ground
 
 // Expressions - resolve to ground term
-syntax       Exp ::= AExp | BExp
+syntax       Exp ::= AExp                                          // AExp < Exp
+                   | BExp                                          // BExp < Exp
 
 // Arithmetic
-syntax      AExp ::= Int
-                   | "(" AExp ")"
-                   | Reify                    //for interesting message passing: x(y){ *y + 5 }
-                   | String                   // S1 + S2 => S1 +String S2
-                   | AExp "+" AExp  [strict]
-                   | AExp "*" AExp  [strict]
+syntax      AExp ::= "(" AExp ")"                                  //     (_): AExp ------> AExp
+                   | Int                                           //    Int < AExp
+                   > Reify                                         //  Reify < AExp , for interesting message passing: x(y){ *y + 5 }
+                   | String                                        // String < AExp (S1 + S2 => S1 +String S2)
+                   | AExp "+" AExp  [strict]                       // _+_: AExp x AExp ---> AExp
+                   | AExp "*" AExp  [strict]                       // _*_: AExp x AExp ---> AExp
 
 // Boolean
-syntax      BExp ::= Bool
-                   | "(" BExp ")"
-                   | Reify
-                   | String
-                   | AExp "<=" AExp  [seqstrict]
-                   | "not" BExp         [strict]
+syntax      BExp ::= Bool                                          //   Bool < BExp
+                   | "(" BExp ")"                                  // (_): BExp -----------> BExp
+                   | Reify                                         //  Reify < BExp
+                   | String                                        // String < BExp
+                   | AExp "<=" AExp                   [seqstrict]  // _<=_: AExp x AExp ---> BExp
+                   | "not" BExp                          [strict]  // not_: BExp ----------> BExp
                    | BExp "&&" BExp  [strict(1)]
 
 // Alpha Equivalence
@@ -75,7 +76,7 @@ syntax      Bool ::= Set "==" Set
 // Structural Equivalence
 syntax      Bool ::= Proc "equiv" Proc   [left]
 
-//syntax KVariable ::= Name
+syntax KVariable ::= Name
 
 syntax     KItem ::= Name
 
@@ -123,8 +124,8 @@ rule true && B:Bool => B
 rule false && _ => false
 
 // Set
-rule S1:Set + S2:Set => S1 S2
-rule S1:Set - S2:Set => S1 -Set S2
+//rule S1:Set + S2:Set => S1 S2
+//rule S1:Set - S2:Set => S1 -Set S2
 
 // String
 rule S1:String + S2:String => S1 +String S2
@@ -135,11 +136,11 @@ rule FN( _:Bool   ) => .Set
 rule FN( _:Int    ) => .Set
 rule FN( _:String ) => .Set
 
-rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) + (FN(P) -Set SetItem(Y))
+rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
 
-rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) + FN(P)
+rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
 
-rule FN( P:Proc | Q:Proc )      => FN(P) + FN(Q)
+rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
 
 rule FN( * X:Name )             => SetItem(X)
 
@@ -149,7 +150,7 @@ rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
      (.Bag => <thread> <k> P2 </k> </thread>)                 //[structural]
 
 // SEND OPERATOR SEMANTICS
-rule <k> X:Name ! ( P:Ground ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
+rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
      (.Bag => <send>
                 <schan> X </schan>                            //sending channel X
                 <msg>  @P   </msg>                            //message sent @P
