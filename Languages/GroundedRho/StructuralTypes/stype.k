@@ -152,7 +152,6 @@ syntax       SimpleType ::= "Bool"                                              
 // Recursive syntax for the type rewrites
 //  Initial type
 syntax      InitialType ::= "type[" OrPat       "]"
-                          | "type[" Leaf        "]"
                           | "type[" BindOrPat   "]"
                           | "type[" BindNamePat "]"
 
@@ -163,12 +162,9 @@ syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" Intermedia
                           | InitialType
 
 //  Terminal type
-syntax     TerminalType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"
-                          | "type[" String ";;" Leaf             ";;" TerminalType     "]"
+syntax     TerminalType ::= "type[" String ";;" String           ";;" OrPat            "]"
+                          | "type[" String ";;" String           ";;" TerminalType     "]"
                           | "type[" String ";;" TerminalType     ";;" TerminalType     "]"
-
-//  Leaf
-syntax             Leaf ::= OrPat                                                  // OrPat < Leaf
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
