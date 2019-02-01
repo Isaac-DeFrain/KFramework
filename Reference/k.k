@@ -87,7 +87,7 @@ import K-TOP-SORT
   syntax left #KSequence
 
   syntax           KBott ::= ".K"                                   [klabel(#EmptyK), symbol, unparseAvoid]
-                           | "."                                    [klabel(#EmptyK), symbol]
+//                         | "."                                    [klabel(#EmptyK), symbol]
                            | ".::K"                                 [klabel(#EmptyK), symbol, unparseAvoid]
 
   syntax               K ::= K "~>" K                               [klabel(#KSequence), left, assoc, unit(#EmptyK), symbol]

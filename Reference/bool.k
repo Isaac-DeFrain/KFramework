@@ -1,13 +1,15 @@
 
 module BOOL-SYNTAX
+
   syntax Bool [hook(BOOL.Bool)]
   syntax Bool ::= "true"  [token]
   syntax Bool ::= "false" [token]
+
 endmodule
 
 module BOOL
-  imports BASIC-K
-  imports BOOL-SYNTAX
+import BASIC-K
+import BOOL-SYNTAX
   syntax Bool ::= "notBool" Bool          [function, functional, klabel(notBool_), symbol, smtlib(not), boolOperation, latex(\neg_{\scriptstyle\it Bool}{#1}), hook(BOOL.not)]
                 > Bool "andBool" Bool     [function, functional, klabel(_andBool_), symbol, left, smtlib(and), boolOperation, latex({#1}\wedge_{\scriptstyle\it Bool}{#2}), hook(BOOL.and)]
                 | Bool "andThenBool" Bool [function, functional, left, smtlib(and), boolOperation, hook(BOOL.andThen)]
