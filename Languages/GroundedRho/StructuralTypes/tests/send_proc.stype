@@ -1,0 +1,6 @@
+// Type - send
+
+ type[ @{@{@Nil!(true)}!(42)}!("myString") ]
+
+
+

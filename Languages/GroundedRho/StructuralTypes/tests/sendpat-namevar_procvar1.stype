@@ -1,0 +1,7 @@
+// Type - send pattern
+
+ type[ x!( x!(0) | for( z <- @Nil ){1} ) ]
+
+// Output:
+
+
