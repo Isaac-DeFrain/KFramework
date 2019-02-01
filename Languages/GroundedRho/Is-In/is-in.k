@@ -1,6 +1,9 @@
 // The #isIn predicate - checks for type inclusion
 
-require "../StructuralType/stype.k"
+// Patterns detected by appearance of "pat" as substring of the first or second type argument!!!
+// Concrete processes may only have "pat" appear as a substring in the third type argument!!!
+
+require "stype.k"
 
 module IS-IN-SYNTAX
 import STYPE
@@ -18,21 +21,21 @@ module IS-IN
 import IS-IN-SYNTAX
 /*
 // Semantics for the #isIn predicate
-rule [ StringPCS:String ;; PCSType1:Type ;; PCSType2:Type ] #isIn
-     [ StringPTN:String ;; PTNType1:Type ;; PTNType2:Type ]
+rule [     StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ] #isIn
+     [ StrProOrPat:String ;; ProcOrPatType1:Type ;; ProcOrPatType2:Type ]
      =>
-     #if toString([ StringPCS:String ;; PCSType1:Type ;; PCSType2:Type ]) ==String
-         toString([ StringPTN:String ;; PTNType1:Type ;; PTNType2:Type ])
+     #if toString([      StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ]) ==String
+         toString([ StrProcOrPat:String ;; ProcOrPatType1:Type ;; ProcOrPatType2:Type ])
      #then
-       true
+       true                                                                                            // ProcOrPat == Proc
      #else
-       #if StringPCS ==String StringPTN
+       #if StrProc ==String StrProcOrPat
        #then
-         // #if LEAF
-         // Leaves are: #truncate, NameVar, Nil, ProcVar, bool, int, string, uri, unforgeable
+         // Leaves are: truncate, procvar, namevar, nil, bool, int, string
          // RECURSION
-         // #then TRUE
-         // #else FALSE
+         // #if StrProc ==String "truncate"
+         // #then true(?) ...continue...
+         // #else #if ...procvar...continue...
          #if
            {PCSType1 #isIn PTNType1} and {PCSType2 #isIn PTNType2}
          #then
@@ -41,7 +44,7 @@ rule [ StringPCS:String ;; PCSType1:Type ;; PCSType2:Type ] #isIn
            false
          #fi
        #else
-         #if StringPTN ==String "procvar"
+         #if StrProcOrPat ==String "procvar"       (don't understand this yet)
           #then
             // #if WILDCARD #then OK
             // #else ...
