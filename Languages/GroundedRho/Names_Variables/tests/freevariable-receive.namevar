@@ -1,0 +1,3 @@
+// Free variables - receive
+
+  FV( @Nil(y){y!(x)} )
