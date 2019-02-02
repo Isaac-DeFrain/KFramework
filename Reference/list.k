@@ -33,19 +33,16 @@ module LIST
    syntax Elts = List\{Elt\} \\
    would define a comma-separated list containing elements of sort Elt.
   */
-
-  /*@ Construct a new List as the concatenation of two Lists. This is similar to
-   the append "@" operation in many functional programming languages. */
+  /*@ Construct a new List as the concatenation of two Lists. This is similar to the append "@" operation in many functional programming languages. */
   syntax List ::= List List               [left, function, functional, hook(LIST.concat), klabel(_List_), symbol, smtlib(smt_seq_concat), assoc, unit(.List), element(ListItem), format(%1%n%2)]
+
   /*@ Construct an empty List: */
   syntax List ::= ".List"                 [function, functional, hook(LIST.unit), klabel(.List), symbol, smtlib(smt_seq_nil), latex(\dotCt{List})]
-                //| "."
+
   /*@ Construct a singleton List (a list with only  one element) */
   syntax List ::= ListItem(KItem)             [function, functional, hook(LIST.element), klabel(ListItem), symbol, smtlib(smt_seq_elem)]
 
-  /*@ Get an element form the List by index. Positive indices mean from the
-   beginning (0 is the first element), and negative indices mean from the end
-   (-1 is the last element). */
+  /*@ Get an element from the List by index. Positive indices mean from the beginning (0 is the first element), and negative indices mean from the end (-1 is the last element). */
   syntax KItem ::= List "[" Int "]"           [function, hook(LIST.get), klabel(List:get), symbol]
 
   syntax List ::= List "[" Int "<-" KItem "]" [function, hook(LIST.update), klabel(List:set)]
@@ -65,4 +62,3 @@ module LIST
   /*@ Get the list length */
   syntax Int ::= size(List)               [function, functional, hook(LIST.size), klabel (sizeList), smtlib(smt_seq_len)]
 endmodule
-
