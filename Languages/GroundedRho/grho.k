@@ -1,4 +1,5 @@
-// RHO CALCULUS with additional Ground terms
+// RHO CALCULUS with Bool, Int, String ground terms and free name function
+// No patterns, only name variables
 
 require "domains.k"
 require "substitution.k"
@@ -14,9 +15,11 @@ import SUBSTITUTION
 //-------------
 syntax       Var ::= Id                                            //    Id < Var
 
+syntax   NameVar ::= Var                                           //   Var < NameVar
+
 syntax      Name ::= Quote                                         // Quote < Name
                    | "{" Name "}"                       [bracket]  //    {_}: Name -----> Name
-                   | Var
+                   | NameVar
 
 syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
 
@@ -47,7 +50,7 @@ syntax      Proc ::= Set                                           // Set < Proc
                    | "(" Set ")"                        [bracket]  // (_): Set -----------------> Set
 
 // GROUND TERMS
-syntax    Ground ::= Int | Bool | String                           //Int, Bool, and String < Ground
+syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
 
 // Expressions - resolve to ground term
 syntax       Exp ::= AExp                                          // AExp < Exp
@@ -58,27 +61,28 @@ syntax      AExp ::= "(" AExp ")"                                  //     (_): A
                    | Int                                           //    Int < AExp
                    > Reify                                         //  Reify < AExp , for interesting message passing: x(y){ *y + 5 }
                    | String                                        // String < AExp (S1 + S2 => S1 +String S2)
-                   | AExp "+" AExp  [strict]                       // _+_: AExp x AExp ---> AExp
-                   | AExp "*" AExp  [strict]                       // _*_: AExp x AExp ---> AExp
+                   | AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
+                   > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
 
 // Boolean
 syntax      BExp ::= Bool                                          //   Bool < BExp
                    | "(" BExp ")"                                  // (_): BExp -----------> BExp
                    | Reify                                         //  Reify < BExp
                    | String                                        // String < BExp
-                   | AExp "<=" AExp                   [seqstrict]  // _<=_: AExp x AExp ---> BExp
+                   | AExp  "<=" AExp                  [seqstrict]  // _<=_: AExp x AExp ---> BExp
                    | "not" BExp                          [strict]  // not_: BExp ----------> BExp
-                   | BExp "&&" BExp  [strict(1)]
+                   | BExp "and" BExp                  [strict(1)]  // and: BExp -----------> BExp
+                   > BExp  "or" BExp                     [strict]  // or: BExp ------------> BExp
 
 // Alpha Equivalence
 syntax      Bool ::= Set "==" Set
 
 // Structural Equivalence
-syntax      Bool ::= Proc "equiv" Proc   [left]
+syntax      Bool ::= Proc "equiv" Proc                     [left]
 
 syntax KVariable ::= Name
 
-syntax     KItem ::= Name
+syntax     KItem ::= Name | Proc
 
 endmodule
 
