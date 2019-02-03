@@ -157,17 +157,20 @@ syntax      InitialType ::= "type[" OrPat       "]"
 
 //  Intermediate type
 syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
-                          | "type[" String ";;" String           ";;" IntermediateType "]"    [strict(3)]
+                          | "type[" String ";;" String           ";;" IntermediateType "]"  [strict(2,3)]
                           | TerminalType
                           | InitialType
 
 //  Terminal type
-syntax     TerminalType ::= "type[" String ";;" String           ";;" OrPat            "]"
-                          | "type[" String ";;" String           ";;" TerminalType     "]"
+syntax     TerminalType ::= "type[" String ";;" String           ";;" Leaf             "]"
                           | "type[" String ";;" TerminalType     ";;" TerminalType     "]"
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
+
+syntax             Leaf ::= Ground
+                          | NameVar
+                          | ProcVar
 
 endmodule
 
@@ -197,7 +200,7 @@ rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I  
 rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S       ]  // String ====> Leaf
 
 // Nil
-rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; Nil     ]  // Nil =======> Leaf
+rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil"   ]  // Nil =======> Leaf
 
 // ProcVar
 rule type[ PV:ProcVar                  ] => type[ "leaf"    ;; "procvar"  ;; PV      ]  // ProcVar ===> Leaf
@@ -209,13 +212,13 @@ rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV 
 
 // ReifyOrPat
 rule type[ * N:Name                    ] => type[ "reify"   ;; "name"     ;; type[N] ]  // Reify
-rule type[ * P:NamePat                 ] => type[ "reify"   ;; "procvar"  ;; type[P] ]  // Reify pattern
+rule type[ * P:NamePat                 ] => type[ "reify"   ;; "namepat"  ;; type[P] ]  // Reify pattern
 
 // SendOrPat
 rule type[ N:Name    ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send
 rule type[ N:Name    ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
-rule type[ N:NamePat ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
 rule type[ N:NamePat ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
+rule type[ N:NamePat ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
 
 // ReceiveOrPat
 rule type[ for(R:Bind   ){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive
@@ -233,13 +236,11 @@ rule type[ P:ProcPat  | Q:Proc         ] => type[ "par"     ;; type[P]    ;; typ
 rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
 
 // SimpleType
-rule type[ ST:SimpleType   ] => type[ "simple" ;; "procpat" ;; type[toString(ST)]    ]
+rule type[ ST:SimpleType    ] => type[ "simpletype" ;; "procpat" ;; type[toString(ST)] ]
 
 // Channels
-rule type[ @ P:Proc        ] => type[ "quote"  ;; "name"    ;; type[P] ]
-
-// Name patterns
-rule type[ @ P:ProcPat     ] => type[ "quote"  ;; "procpat" ;; type[P] ]
+rule type[ @ P:Proc         ] => type[ "quote"  ;; "proc"    ;; type[P] ]
+rule type[ @ P:ProcPat      ] => type[ "quote"  ;; "procpat" ;; type[P] ]
 
 // Resolving brackets
 rule type[ { P:ProcOrPat } ] => type[P]                                                 // bracketed ProcOrPat type resolution
