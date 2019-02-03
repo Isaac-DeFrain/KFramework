@@ -1,0 +1,16 @@
+digraph G {
+
+    rankdir=BT
+
+    proc  [label="Proc"];
+    nil   [label="Nil"];
+    name  [label="Name"];
+
+    proc , proc -> proc
+    name , proc -> proc
+    name , name , proc -> proc
+    nil  -> proc
+    name -> proc
+
+    proc -> name
+}
