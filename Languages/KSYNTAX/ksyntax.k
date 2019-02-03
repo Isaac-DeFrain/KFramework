@@ -34,7 +34,7 @@ import KAST
 syntax   Exp ::= AExp
                | BExp
                | OExp
-               | "(" Exp ")"             [bracket]
+               | "(" Exp ")"                             [bracket]
                | "if" BExp "then" Exp "else" Exp "fi"  [strict(1)]
 
 syntax Other ::= List{Id,","}
@@ -58,7 +58,7 @@ syntax  AExp ::= Int                                 //   Int < AExp
 syntax  OExp ::= Other                               // Other < OExp
                | "(" OExp ")"            [bracket]   //    (_): OExp ----------> OExp
                > OExp "+" OExp         [seqstrict]   //    _+_: OExp x OExp ---> OExp
-               | OExp "-" OExp         [seqstrict]   //    _-_: OExp x OExp ---> OExp
+//             | OExp "-" OExp         [seqstrict]   //    _-_: OExp x OExp ---> OExp
 
 
 /* This syntax does not work!!! Use builtin List{Id} instead.
@@ -73,7 +73,7 @@ endmodule
 module KSYNTAX
 import KSYNTAX-SYNTAX
 
-syntax KResult ::= Bool | Int | Id | Other
+syntax KResult ::= Bool | Int | Other
 
 // Arithmetic Expressions
 rule I1:Int  * I2:Int  => I1 *Int I2
@@ -104,21 +104,23 @@ rule true  implies B:Bool => B
 // Other Expressions
 rule   .Other         + X:Other => X
 rule  X:Other         +  .Other => X
-rule  X:Id            + Y:Other => X , Y
-rule X1:Id , X2:Other + Y:Other => X1 , X2 + Y
+rule  X:Id            + Y:Other => X , Y        [strict]
+rule X1:Id , X2:Other + Y:Other => X1 , X2 + Y  [strict]
 
+/*
 rule   .Other         -  _:Other         => .Other
 rule  X:Other         -   .Other         => X
 rule  X:Id , .Other   -  Y:Id            => if (X  ==K Y ) then .Other else X  , .Other     fi  [strict]
-rule X1:Id , X2:Other -  Y:Id            => if (X1 ==K Y ) then  X2    else X1 + ( X2 - Y ) fi  [strict]
+rule X1:Id , X2:Other -  Y:Id            => if (X1 ==K Y ) then  X2    else X1 , ( X2 - Y ) fi  [strict]
 rule  X:Other         - Y1:Id , Y2:Other => ( X - Y1 ) - Y2                                     [strict]
-//rule ( X1:Other - Y:Id ) , X2:Other      =>
+rule ( X1:Other - Y:Id ) , X2:Other      =>
+*/
 
 rule  X:Id , .Other =>  X
 
 // Conditional
-rule if true  then X:Exp   else _:Exp fi => X
-rule if false then _:Exp   else Y:Exp fi => Y
+rule if true  then X:Exp else _:Exp fi => X
+rule if false then _:Exp else Y:Exp fi => Y
 
 rule ( ( E:Exp ) ) => ( E )
 
