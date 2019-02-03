@@ -124,8 +124,8 @@ rule I1:Int * I2:Int => I1 *Int I2
 // Boolean
 rule I1:Int <= I2:Int => I1 <=Int I2
 rule not B:Bool => notBool B
-rule true && B:Bool => B
-rule false && _ => false
+rule true and B:Bool => B
+rule false and _ => false
 
 // Set
 //rule S1:Set + S2:Set => S1 S2
@@ -157,7 +157,7 @@ rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
 rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
      (.Bag => <send>
                 <schan> X </schan>                            //sending channel X
-                <msg>  @P   </msg>                            //message sent @P
+                <msg>   P   </msg>                            //message sent @P
               </send>)                                        //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
@@ -180,9 +180,9 @@ rule                                                          //dissolve send an
  </rec> => .Bag)
 (<send>                                                       //dissolve send:
    <schan> X    </schan>                                      // channel X
-   <msg>   Z:Name </msg>                                      // message Z
+   <msg>   Q:Proc </msg>                                      // message Q
  </send> => .Bag)
-(.Bag => <thread> <k> P[Z / Y] </k> </thread>)                //spawn single <thread/> holding sub P[Z / Y]
+(.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                //spawn single <thread/> holding sub P[Z / Y]
 [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
