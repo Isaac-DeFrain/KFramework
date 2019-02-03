@@ -199,14 +199,14 @@ rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B  
 rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I       ]  // Int =======> Leaf
 rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S       ]  // String ====> Leaf
 
-// Nil
-rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil"   ]  // Nil =======> Leaf
-
 // ProcVar
 rule type[ PV:ProcVar                  ] => type[ "leaf"    ;; "procvar"  ;; PV      ]  // ProcVar ===> Leaf
 
 // NameVar
 rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV      ]  // NameVar ===> Leaf
+
+// Nil
+rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil"   ]  // Nil =======> Leaf
 
 //*** Nodes ***
 

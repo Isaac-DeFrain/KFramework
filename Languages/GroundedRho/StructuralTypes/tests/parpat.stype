@@ -5,7 +5,6 @@
 // Output:
 // <T>
 //   <k>
-//     type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+//     type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
 //   </k>
 // </T>
-
