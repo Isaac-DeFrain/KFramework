@@ -1,0 +1,1 @@
+untype( type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; Nil ] ] )
