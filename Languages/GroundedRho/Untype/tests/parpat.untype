@@ -3,6 +3,8 @@ type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" 
 // Output:
 // <T>
 //   <k>
-//
+//     type[ "leaf" ;; "namevar" ;; x ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX1_ ( "send" , type[ Nil ] ) ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "par" , type[ x ] )
 //   </k>
 // </T>
+//
+//  x | x!(Nil)

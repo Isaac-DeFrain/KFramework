@@ -1,0 +1,3 @@
+// 4untype - par
+
+  type[ @Bool!(Nil | true) | "true" | for( @1 <- @0 ){ Nil } ]

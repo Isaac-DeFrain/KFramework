@@ -1,0 +1,3 @@
+// Parpat for untype
+
+  type[ x | x!(Nil) ]
