@@ -163,7 +163,9 @@ syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" Intermedia
 
 //  Terminal type
 syntax     TerminalType ::= "type[" String ";;" TerminalType     ";;" TerminalType     "]"
-                          | "type[" String ";;" Leaf             ";;" Leaf             "]"
+                          | LeafType
+
+syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
