@@ -21,8 +21,8 @@ module IS-IN
 import IS-IN-SYNTAX
 /*
 // Semantics for the #isIn predicate
-rule [     StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ] #isIn
-     [ StrProOrPat:String ;; ProcOrPatType1:Type ;; ProcOrPatType2:Type ]
+rule [      StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ] #isIn
+     [ StrProcOrPat:String ;; ProcOrPatType1:Type ;; ProcOrPatType2:Type ]
      =>
      #if toString([      StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ]) ==String
          toString([ StrProcOrPat:String ;; ProcOrPatType1:Type ;; ProcOrPatType2:Type ])
@@ -33,7 +33,7 @@ rule [     StrProc:String ;;      ProcType1:Type ;;      ProcType2:Type ] #isIn
        #then
          // Leaves are: truncate, procvar, namevar, nil, bool, int, string
          // RECURSION
-         // #if StrProc ==String "truncate"
+         // #if ProcType1 ==String "truncate"
          // #then true(?) ...continue...
          // #else #if ...procvar...continue...
          #if
