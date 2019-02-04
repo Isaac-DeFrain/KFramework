@@ -16,7 +16,7 @@ module DEPTH-SYNTAX
   //----------------------
   //--- Depth Function ---
   //----------------------
-  syntax           Int ::= "#dep" "(" Type ")"   [function,klabel(dep)]
+  syntax           Int ::= "#depth" "(" Type ")"   [function,klabel(depth)]
 
   syntax      LeafType ::= "type[" String ";;" Leaf ";;" Leaf "]"    // type[ String ;; Leaf ;; Leaf ] < LeafType and we know that type[ String ;; Leaf ;; Leaf ] < TerminalType
 
@@ -37,11 +37,10 @@ module DEPTH
 
 // Leaves are the base case
   rule _:LeafType => 1
+  rule #depth( _:LeafType ) => 1
 
 // The depth of a non-leaf terminaltype is computed recursively
-  rule type[ _:String ;; A:TerminalType ;; B:TerminalType ] => 1 +Int maxInt ( #dep(A) , #dep(B) )
-
-  rule #dep( _:LeafType ) => 1
-  rule #dep( type[ _:String ;; A:TerminalType ;; B:TerminalType ] ) => 1 +Int maxInt( #dep(A) , #dep(B) )  [strict]
+  rule type[ _:String ;; A:TerminalType ;; B:TerminalType ] => 1 +Int maxInt ( #depth(A) , #depth(B) )
+  rule #depth( type[ _:String ;; A:TerminalType ;; B:TerminalType ] ) => 1 +Int maxInt( #depth(A) , #depth(B) )  [strict]
 
 endmodule
