@@ -1,0 +1,7 @@
+// Depth - send
+
+  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+
+/*
+Output: 
+*/
