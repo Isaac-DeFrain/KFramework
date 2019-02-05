@@ -1,4 +1,3 @@
 // Free Names - complex
 
-  FN( @{x!(Nil)}!(*z) | @"a"(z){ 1 + *y} )
-
+  FN( @{x!(Nil)}!(*z) | for( z <- @"a" ){ 1 + *y} )

@@ -1,82 +1,169 @@
 // RHO CALCULUS with additional Ground terms
 
 require "domains.k"
+require "kast.k"
 require "substitution.k"
 
 module NAMEVAR-SYNTAX
 import DOMAINS
+import KAST
+import KSEQ-SYMBOLIC
 import SET
 import SUBSTITUTION
 
+//************************************
+//*** Grounded Rho-Calculus Syntax ***
+//************************************
+
+syntax              Var ::= Id                                                     // Id < Var, General Variables
 
 //-------------
 //--- NAMES ---
 //-------------
 
-// Variables
-syntax       Var ::= Id
+// Channels
+syntax             Name ::= "{" Name "}"                                [bracket]  // {_}: Name ---> Name
+                          | "@" Proc                                     [strict]  // @: Proc -----> Name
 
-// Chand Process
-syntax      Chan ::= "@" Proc                            [strict]
+// Name Variables
+syntax          NameVar ::= Var                                 [klabel(namevar)]  // Var < NameVar
+// Name Patterns
+syntax          NamePat ::= "{" NamePat "}"                             [bracket]  //   {_}: NamePat ---> NamePat
+                          | NameVar                                                //           NameVar < NamePat
+                          | "@" ProcPat                                            //   @: ProcPat -----> NamePat
 
-// Names
-syntax      Name ::= Var                                           // Var: -------> Name
-                   | Chan                                          // Chan: Proc -> Name
-                   | "{" Name "}"                       [bracket]
+syntax        NameOrPat ::= "{" NameOrPat "}"                                      // {_}: NameOrPat ---> NameOrPat
+                          | Name                                                   //              Name < NameOrPat
+                          | NamePat                                                //           NamePat < NameOrPat
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
-syntax      Proc ::= "{" Proc "}"                       [bracket]
-                   | "Nil"                                         // Nil: -> Proc
-                   | Ground                                        // Bool, Int, String
-                   | Exp                                           // Bool, Int, String expressions
-                   | Receive                                       // Receive
-                   | Send                                          // Send
-                   | Reify                                         // Reify/evaluate
-                   > Par                                           // Par
 
-syntax       Par ::= Proc "|" Proc                         [left]  // Par: Proc*Proc ----------> Proc
+// Process Variables
+syntax          ProcVar ::= Var                                 [klabel(procvar)]  // Var < ProcVar
 
-syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Receive: Name*Name*Proc -> Proc
+// Processes
+syntax             Proc ::= "{" Proc "}"                                [bracket]  // {_}: Proc -> Proc
+                          | "Nil"                                                  //        Nil < Proc
+                          | Ground                                                 //     Ground < Proc
+                          | Receive                                                //    Receive < Proc
+                          | Send                                                   //       Send < Proc
+                          | Reify                                                  //      Reify < Proc
+                          | Exp
+                          > Par                                                    //        Par < Proc
 
-syntax      Send ::= Name "!" "(" Proc ")"            [strict(2)]  // Send: Name*Proc ---------> Proc
+// Par
+syntax              Par ::= Proc "|" Proc                              [left,par]  // _|_: Proc x Proc ----------------> Par
 
-syntax     Reify ::= "*" Name                                      // Reify: Name -------------> Proc
+// Receive
+syntax          Receive ::= "for" "(" Bind ")" "{" Proc    "}"   [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
+                                                                                                                              // requires ProcPat[N / BindNamePat] to be concrete when N:Name
+syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name -----------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
+                                                                                                                              // BindNamePat = y and ProcPat = y!("hi") thus
+syntax      BindNamePat ::= NamePat                                                // NamePat < BindNamePat                   // {y!("hi")}[N / y] = N!("hi") is a concrete process
+
+// Send
+syntax             Send ::= Name "!" "(" Proc ")"                [strict(2),send]  // _!(_): Name x Proc -------------> Send
+
+// Reify
+syntax            Reify ::= "*" Name                                      [reify]  // *: Name -----------------------> Reify
+
+// Ground terms
+syntax           Ground ::= Bool                                                   //   Bool < Ground
+                          | Int                                                    //    Int < Ground
+                          | String                                                 // String < Ground
+
+//syntax      KVariable ::= Proc | ProcPat
+
+//syntax        Pattern ::= ProcPat
+
+//------------------------
+//--- Process Patterns ---
+//------------------------
+
+// Par Pattern
+syntax           ParPat ::= Proc    "|" ProcPat                            [left]  //    _|_: Proc x ProcPat ---------> ParPat
+                          | ProcPat "|" Proc                               [left]  // _|_: ProcPat x Proc ------------> ParPat
+                          | ProcPat "|" ProcPat                            [left]  // _|_: ProcPat x ProcPat ---------> ParPat
+
+syntax         ParOrPat ::= Par                                                    //     Par < ParOrPat
+                          | ParPat                                                 //  ParPat < ParOrPat
+
+// Receive Pattern
+syntax       ReceivePat ::= "for" "(" Bind    ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat  // requires ProcPat[Name / BindNamePat] to be a process pattern?
+                          | "for" "(" BindPat ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat
+
+syntax     ReceiveOrPat ::= Receive                                                //    Receive < ReciveOrPat
+                          | ReceivePat                                             // ReceivePat < ReciveOrPat
+
+syntax          BindPat ::= BindNamePat "<-" NamePat                               // _<-_: BindNamePat x NamePat ---> BindPat
+
+syntax        BindOrPat ::= Bind                                                   //    Bind < BindOrPat
+                          | BindPat                                                // BindPat < BindOrPat
+
+// Send Pattern
+syntax          SendPat ::= Name    "!" "(" ProcPat ")"                            //    _!(_): Name x ProcPat ------> SendPat
+                          | NamePat "!" "(" ProcPat ")"                            // _!(_): NamePat x ProcPat ------> SendPat
+                          | NamePat "!" "(" Proc    ")"                            // _!(_): NamePat x Proc ---------> SendPat
+
+syntax        SendOrPat ::= Send                                                   //    Send < SendOrPat
+                          | SendPat                                                // SendPat < SendOrPat
+
+// Reify Pattern
+syntax         ReifyPat ::= "*" NamePat                                            // *: NamePat -------------------> ReifyPat
+
+syntax       ReifyOrPat ::= Reify                                                  //    Reify < ReifyOrPat
+                          | ReifyPat                                               // ReifyPat < ReifyOrPat
+
+// Process Pattern
+syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat ------------------> ProcPat
+//                        | SimpleType                                             //  SimplType < ProcPat
+                          | ProcVar                                                //    ProcVar < ProcPat
+                          | ReceivePat                                             // ReceivePat < ProcPat
+                          | SendPat                                                //    SendPat < ProcPat
+                          | ReifyPat                                               //   ReifyPat < ProcPat
+                          > ParPat                                                 //     ParPat < ProcPat
+
+syntax        ProcOrPat ::= "{" ProcOrPat "}"                                      //       {_}: ProcOrPat --------> ProcOrPat
+                          | Proc                                                   //     Proc < ProcOrPat
+                          | ProcPat                                                //  ProcPat < ProcOrPat
+
+syntax            OrPat ::= NameOrPat
+                          | ProcOrPat
 
 // Sets
-syntax       Set ::= "FN(" Proc ")"                    [function]  // free names
-                   | "FV(" Proc ")"                    [function]  // free variables
-                   | "BN(" Proc ")"                    [function]  // bound names
-                   | "BV(" Proc ")"                    [function]  // bound variables
-                   | "RN(" Proc ")"                    [function]  // receive names
-                   | "RC(" Proc ")"                    [function]  // receive channels
-                   | "RV(" Proc ")"                    [function]  // receive variables
-                   | "SN(" Proc ")"                    [function]  // send names
-                   | "SC(" Proc ")"                    [function]  // send channels
-                   | "SV(" Proc ")"                    [function]  // send variables
-                   |  "N(" Proc ")"                    [function]  // names
-                   |  "V(" Proc ")"                    [function]  // variables
-                   |  "Q(" Proc ")"                    [function]  // Chan
-                   | "CH(" Proc ")"                    [function]  // channels
-                   | "PP(" Proc ")"                    [function]  // process patterns
-                   | "NP(" Proc ")"                    [function]  // name patterns
-                   |   "(" Set  ")"                     [bracket]
+syntax       Set ::= "FN(" OrPat ")"                    [function]  // free names
+                   | "FV(" OrPat ")"                    [function]  // free variables
+                   | "BN(" OrPat ")"                    [function]  // bound names
+                   | "BV(" OrPat ")"                    [function]  // bound variables
+                   | "RN(" OrPat ")"                    [function]  // receive names
+                   | "RC(" OrPat ")"                    [function]  // receive channels
+                   | "RV(" OrPat ")"                    [function]  // receive variables
+                   | "SN(" OrPat ")"                    [function]  // send names
+                   | "SC(" OrPat ")"                    [function]  // send channels
+                   | "SV(" OrPat ")"                    [function]  // send variables
+                   |  "N(" OrPat ")"                    [function]  // names
+                   |  "V(" OrPat ")"                    [function]  // variables
+                   | "CH(" OrPat ")"                    [function]  // channels
+                   | "PP(" OrPat ")"                    [function]  // process patterns
+                   | "NP(" OrPat ")"                    [function]  // name patterns
+                   |   "(" Set   ")"                     [bracket]
 
-//syntax       Int ::= "howMany" "(" Set ")"             [strict]
+//syntax     Int ::= "howMany" "(" Set ")"                    [strict]
 
 // GROUND TERMS
-syntax    Ground ::= Int | Bool | String | Set                     //Int, Bool, and String ground terms
+syntax    Ground ::= Int | Bool | String | Set                          //Int, Bool, and String ground terms
 
 // Expressions - resolve to ground term
 syntax       Exp ::= AExp | BExp
 
-//syntax       Int ::= "sizeSet" "(" Set ")"           [function]
+//syntax     Int ::= "sizeSet" "(" Set ")"              [function]
 
 // Arithmetic
 syntax      AExp ::= Int
                    | "(" AExp ")"                       [bracket]
-                   | Reify                                         //for interesting message passing: x(y){ *y + 5 }
+                   | ReifyPat                                      //for interesting message passing: x(y){ *y + 5 }
                    | String
                    | Set
                    | AExp "+" AExp                       [strict]
@@ -87,6 +174,7 @@ syntax      AExp ::= Int
 syntax      BExp ::= Bool
                    | "(" BExp ")"                       [bracket]
                    | Reify
+                   | ReifyPat
                    | String
                    | Set
                    | AExp "<=" AExp                   [seqstrict]
@@ -96,7 +184,7 @@ syntax      BExp ::= Bool
                    | BExp "==" BExp                      [strict]
 
 // For sets...
-syntax     KItem ::= Name | Var | Proc
+syntax     KItem ::= OrPat
 
 endmodule
 
@@ -107,261 +195,282 @@ import SUBSTITUTION
 
   configuration
     <T>
-      <k> $PGM:Ground </k>
+      <k> $PGM:OrPat </k>
     </T>
 
-syntax KResult ::= Ground | Reify
+syntax KResult ::= Ground | Reify | Set
 
 // Arithmetic
-rule I1:Int  + I2:Int => I1  +Int I2
-rule I1:Int  - I2:Int => I1  -Int I2
-rule I1:Int  * I2:Int => I1  *Int I2
-rule I1:Int <= I2:Int => I1 <=Int I2
-rule I1:Int == I2:Int => I1 ==Int I2
+rule I1:Int  + I2:Int => I1  +Int I2  [anywhere]
+rule I1:Int  - I2:Int => I1  -Int I2  [anywhere]
+rule I1:Int  * I2:Int => I1  *Int I2  [anywhere]
+rule I1:Int <= I2:Int => I1 <=Int I2  [anywhere]
+rule I1:Int == I2:Int => I1 ==Int I2  [anywhere]
 
 // Boolean
-rule      not B:Bool    => notBool B
-rule true  && B:Bool    => B
-rule false && _         => false
-rule B1:Bool == B2:Bool => B1 ==Bool B2
+rule      not B:Bool    => notBool B  [anywhere]
+rule true  && B:Bool    => B          [anywhere]
+rule false && _         => false      [anywhere]
+rule B1:Bool == B2:Bool => B1 ==Bool B2  [anywhere]
 
 // Set
-rule S1:Set +  S2:Set  => S1 S2
-rule S1:Set -  S2:Set  => S1 -Set S2
-rule S1:Set *  S2:Set  => intersectSet(S1,S2)
-rule S1:Set <= S2:Set  => S1 <=Set S2
-rule S1:Set == S2:Set  => (S1 <=Set S2) && (S2 <=Set S1)
+rule S1:Set +  S2:Set  => S1 S2  [anywhere]
+rule S1:Set -  S2:Set  => S1 -Set S2  [anywhere]
+rule S1:Set *  S2:Set  => intersectSet(S1,S2)  [anywhere,strict]
+rule S1:Set <= S2:Set  => S1 <=Set S2  [anywhere]
+rule S1:Set == S2:Set  => (S1 <=Set S2) && (S2 <=Set S1)  [anywhere]
 //rule howMany ( S:Set ) => size(S)
 
 // String
-rule S1:String  + S2:String => S1  +String S2
-rule S1:String == S2:String => S1 ==String S2
+rule S1:String  + S2:String => S1  +String S2  [anywhere]
+rule S1:String == S2:String => S1 ==String S2  [anywhere]
 
 // Name set
-rule N(   Nil    ) => .Set
-rule N( _:Bool   ) => .Set
-rule N( _:Int    ) => .Set
-rule N( _:String ) => .Set
+rule N(   Nil     ) => .Set  [anywhere]
+rule N( _:Bool    ) => .Set  [anywhere]
+rule N( _:Int     ) => .Set  [anywhere]
+rule N( _:String  ) => .Set  [anywhere]
+rule N( N:Name    ) => SetItem(N)  [anywhere]
+rule N( N:NamePat ) => SetItem(N)  [anywhere]
 
-rule N( X:Name ( Y:Name )  { P:Proc } )  => SetItem(X) SetItem(Y) N(P)
+rule N( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) N(P)  [anywhere]
+rule N( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) N(P)  [anywhere]
+rule N( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) N(P)  [anywhere]
 
-rule N( X:Name ! ( P:Proc ) )            => SetItem(X) N(P)
+rule N( X:Name    ! ( P:Proc    ) ) => SetItem(X) N(P)  [anywhere]
+rule N( X:NamePat ! ( P:Proc    ) ) => SetItem(X) N(P)  [anywhere]
+rule N( X:Name    ! ( P:ProcPat ) ) => SetItem(X) N(P)  [anywhere]
+rule N( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) N(P)  [anywhere]
 
-rule N( P:Proc | Q:Proc )                => N(P) N(Q)
+rule N( P:Proc    | Q:Proc    ) => N(P) N(Q)  [anywhere]
+rule N( P:ProcPat | Q:Proc    ) => N(P) N(Q)  [anywhere]
+rule N( P:Proc    | Q:ProcPat ) => N(P) N(Q)  [anywhere]
+rule N( P:ProcPat | Q:ProcPat ) => N(P) N(Q)  [anywhere]
 
-rule N( * X:Name )                       => SetItem(X)
+rule N( * X:Name    ) => SetItem(X)  [anywhere]
+rule N( * X:NamePat ) => SetItem(X)  [anywhere]
 
-rule N( A1:AExp  + A2:AExp )             => N(A1) N(A2)
-rule N( A1:AExp  - A2:AExp )             => N(A1) N(A2)
-rule N( A1:AExp  * A2:AExp )             => N(A1) N(A2)
+rule N( A1:AExp  + A2:AExp ) => N(A1) N(A2)  [anywhere]
+rule N( A1:AExp  - A2:AExp ) => N(A1) N(A2)  [anywhere]
+rule N( A1:AExp  * A2:AExp ) => N(A1) N(A2)  [anywhere]
 
-rule N( not B:BExp )                     => N(B)
-rule N( B1:BExp && B2:BExp )             => N(B1) N(B2)
+rule N( not B:BExp )         => N(B)  [anywhere]
+rule N( B1:BExp && B2:BExp ) => N(B1) N(B2)  [anywhere]
 
 // Free Name set
-rule FN(   Nil    ) => .Set
-rule FN( _:Bool   ) => .Set
-rule FN( _:Int    ) => .Set
-rule FN( _:String ) => .Set
+rule FN(   Nil    ) => .Set  [anywhere]
+rule FN( _:Bool   ) => .Set  [anywhere]
+rule FN( _:Int    ) => .Set  [anywhere]
+rule FN( _:String ) => .Set  [anywhere]
 
-rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
+rule FN( _:Name    ) => .Set  [anywhere]
+rule FN( N:NamePat ) => SetItem(N)  [anywhere]
 
-rule FN( X:Name ! ( P:Proc ) )           => FN(P) SetItem(X)
+rule FN( for( Y:NamePat <- X:Name    ) { P:Proc    } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [anywhere]
+rule FN( for( Y:NamePat <- X:Name    ) { P:ProcPat } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [anywhere]
+rule FN( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [anywhere]
 
-rule FN( P:Proc | Q:Proc )               => FN(P) FN(Q)
+rule FN( X:Name    ! ( P:Proc    ) ) => SetItem(X) FN(P)  [anywhere]
+rule FN( X:NamePat ! ( P:Proc    ) ) => SetItem(X) FN(P)  [anywhere]
+rule FN( X:Name    ! ( P:ProcPat ) ) => SetItem(X) FN(P)  [anywhere]
+rule FN( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) FN(P)  [anywhere]
 
-rule FN( * X:Name )                      => SetItem(X)
+rule FN( P:Proc    | Q:Proc    ) => FN(P) FN(Q)  [anywhere]
+rule FN( P:ProcPat | Q:Proc    ) => FN(P) FN(Q)  [anywhere]
+rule FN( P:Proc    | Q:ProcPat ) => FN(P) FN(Q)  [anywhere]
+rule FN( P:ProcPat | Q:ProcPat ) => FN(P) FN(Q)  [anywhere]
 
-rule FN( A1:AExp +  A2:AExp )            => FN(A1) FN(A2)
-rule FN( A1:AExp -  A2:AExp )            => FN(A1) FN(A2)
-rule FN( A1:AExp *  A2:AExp )            => FN(A1) FN(A2)
-rule FN( A1:AExp <= A2:AExp )            => FN(A1) FN(A2)
+rule FN( * X:Name    ) => SetItem(X)  [anywhere]
+rule FN( * X:NamePat ) => SetItem(X)  [anywhere]
 
-rule FN( not B:BExp )                    => FN(B)
-rule FN( B1:BExp && B2:BExp )            => FN(B1) FN(B2)
+rule FN( A1:AExp +  A2:AExp ) => FN(A1) FN(A2)  [anywhere]
+rule FN( A1:AExp -  A2:AExp ) => FN(A1) FN(A2)  [anywhere]
+rule FN( A1:AExp *  A2:AExp ) => FN(A1) FN(A2)  [anywhere]
+rule FN( A1:AExp <= A2:AExp ) => FN(A1) FN(A2)  [anywhere]
+
+rule FN( not B:BExp )         => FN(B)  [anywhere]
+rule FN( B1:BExp && B2:BExp ) => FN(B1) FN(B2)  [anywhere]
 
 // Bound Name set
-rule BN( P:Proc ) => N(P) -Set FN(P)
+rule BN( P:Proc    ) => N(P) -Set FN(P)  [anywhere]
+rule BN( P:ProcPat ) => N(P) -Set FN(P)  [anywhere]
 
 // Variable set
-rule V(   Nil    ) => .Set
-rule V( _:Bool   ) => .Set
-rule V( _:Int    ) => .Set
-rule V( _:String ) => .Set
+rule V( _:Proc    ) => .Set  [anywhere]
 
-rule V( X:Var  ( Y:Var  )  { P:Proc } )  => SetItem(X) SetItem(Y) V(P)
-rule V( X:Var  ( _:Chan )  { P:Proc } )  => SetItem(X) V(P)
-rule V( _:Chan ( Y:Var  )  { P:Proc } )  => SetItem(Y) V(P)
-rule V( _:Chan ( _:Chan )  { P:Proc } )  => V(P)
+rule V( _:Name    ) => .Set  [anywhere]
+rule V( N:NamePat ) => SetItem(N)  [anywhere]
 
-rule V( X:Var  ! ( P:Proc ) )            => SetItem(X) V(P)
-rule V( _:Chan ! ( P:Proc ) )            => V(P)
+rule V( for( Y:NamePat <- X:Name    ) { P:ProcPat } ) => V(P) -Set SetItem(Y)  [anywhere]
+rule V( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => SetItem(X) ( V(P) -Set SetItem(Y) )  [anywhere]
 
-rule V( P:Proc | Q:Proc )                => V(P) V(Q)
+rule V( X:NamePat ! ( P:Proc    ) ) => SetItem(X)  [anywhere]
+rule V( X:Name    ! ( P:ProcPat ) ) => V(P)  [anywhere]
+rule V( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) V(P)  [anywhere]
 
-rule V( * X:Var  )                       => SetItem(X)
-rule V( * _:Chan )                       => .Set
+rule V( P:ProcPat | Q:Proc    ) => V(P)  [anywhere]
+rule V( P:Proc    | Q:ProcPat ) => V(Q)  [anywhere]
+rule V( P:ProcPat | Q:ProcPat ) => V(P) V(Q)  [anywhere]
 
-rule V( A1:AExp  + A2:AExp )             => V(A1) V(A2)
-rule V( A1:AExp  - A2:AExp )             => V(A1) V(A2)
-rule V( A1:AExp  * A2:AExp )             => V(A1) V(A2)
+rule V( * X:NamePat ) => SetItem(X)  [anywhere]
 
-rule V( not B:BExp )                     => V(B)
-rule V( B1:BExp && B2:BExp )             => V(B1) V(B2)
+rule V( A1:AExp  + A2:AExp ) => V(A1) V(A2)  [anywhere]
+rule V( A1:AExp  - A2:AExp ) => V(A1) V(A2)  [anywhere]
+rule V( A1:AExp  * A2:AExp ) => V(A1) V(A2)  [anywhere]
+
+rule V( not B:BExp ) => V(B)  [anywhere]
+rule V( B1:BExp && B2:BExp ) => V(B1) V(B2)  [anywhere]
 
 // Bound Variable set
-rule BV( P:Proc ) => intersectSet( BN(P) , V(P) )
+rule BV( _:Proc    ) => .Set  [anywhere]
+rule BV( P:ProcPat ) => intersectSet( BN(P) , V(P) )  [anywhere]
 
 // Free Variable set
-rule FV( P:Proc ) => intersectSet( FN(P) , V(P) )
-
-// Chand set
-rule Q( P:Proc )  => N(P) -Set V(P)
+rule FV( _:Proc    ) => .Set  [anywhere]
+rule FV( P:ProcPat ) => intersectSet( FN(P) , V(P) )  [anywhere]
 
 // Channel set
-rule CH(   Nil    ) => .Set
-rule CH( _:Bool   ) => .Set
-rule CH( _:Int    ) => .Set
-rule CH( _:String ) => .Set
+rule CH(   Nil    ) => .Set  [anywhere]
+rule CH( _:Bool   ) => .Set  [anywhere]
+rule CH( _:Int    ) => .Set  [anywhere]
+rule CH( _:String ) => .Set  [anywhere]
 
-rule CH( X:Chan ( _:Name )  { P:Proc } )  => SetItem(X) CH(P)
-rule CH( _:Var  ( _:Name )  { P:Proc } )  => CH(P)
+rule CH( for( Y:NamePat <- X:Name    ) { P:Proc    } ) => SetItem(X) ( CH(P) -Set SetItem(Y) )  [anywhere]
+rule CH( for( Y:NamePat <- X:Name    ) { P:ProcPat } ) => SetItem(X) ( CH(P) -Set SetItem(Y) )  [anywhere]
+rule CH( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => ( CH(P) -Set SetItem(Y) )  [anywhere]
 
-rule CH( X:Chan ! ( P:Proc ) )            => SetItem(X) CH(P)
-rule CH( _:Var  ! ( P:Proc ) )            => CH(P)
+rule CH( X:Name    ! ( P:Proc    ) ) => SetItem(X) CH(P)  [anywhere]
+rule CH( X:NamePat ! ( P:Proc    ) ) => CH(P)  [anywhere]
+rule CH( X:Name    ! ( P:ProcPat ) ) => SetItem(X) CH(P)  [anywhere]
+rule CH( X:NamePat ! ( P:ProcPat ) ) => CH(P)  [anywhere]
 
-rule CH( P:Proc | Q:Proc )                => CH(P) CH(Q)
+rule CH( P:Proc    | Q:Proc    ) => CH(P) CH(Q)  [anywhere]
+rule CH( P:ProcPat | Q:Proc    ) => CH(P) CH(Q)  [anywhere]
+rule CH( P:Proc    | Q:ProcPat ) => CH(P) CH(Q)  [anywhere]
+rule CH( P:ProcPat | Q:ProcPat ) => CH(P) CH(Q)  [anywhere]
 
-rule CH( * X:Chan )                       => SetItem(X)
-rule CH( * _:Var  )                       => .Set
+rule CH( * X:Name    ) => SetItem(X)  [anywhere]
+rule CH( * _:NamePat ) => .Set  [anywhere]
 
-rule CH( A1:AExp  + A2:AExp )             => CH(A1) CH(A2)
-rule CH( A1:AExp  - A2:AExp )             => CH(A1) CH(A2)
-rule CH( A1:AExp  * A2:AExp )             => CH(A1) CH(A2)
+rule CH( A1:AExp  + A2:AExp ) => CH(A1) CH(A2)  [anywhere]
+rule CH( A1:AExp  - A2:AExp ) => CH(A1) CH(A2)  [anywhere]
+rule CH( A1:AExp  * A2:AExp ) => CH(A1) CH(A2)  [anywhere]
 
-rule CH( not B:BExp )                     => CH(B)
-rule CH( B1:BExp && B2:BExp )             => CH(B1) CH(B2)
-
-// Process Pattern set
-rule PP(   Nil    ) => .Set
-rule PP( _:Bool   ) => .Set
-rule PP( _:Int    ) => .Set
-rule PP( _:String ) => .Set
-
-rule PP( _:Name ( @P:Proc )  { Q:Proc } )  => SetItem(P) PP(Q)
-rule PP( _:Name (  _:Var  )  { Q:Proc } )  => PP(Q)
-
-rule PP( _:Name ! ( Q:Proc ) )             => PP(Q)
-
-rule PP( P:Proc | Q:Proc )                 => PP(P) PP(Q)
-
-rule PP( * @P:Proc )                       => SetItem(P)
-rule PP( * _:Var   )                       => .Set
-
-rule PP( A1:AExp  + A2:AExp )              => PP(A1) PP(A2)
-rule PP( A1:AExp  - A2:AExp )              => PP(A1) PP(A2)
-rule PP( A1:AExp  * A2:AExp )              => PP(A1) PP(A2)
-
-rule PP( not B:BExp )                      => PP(B)
-rule PP( B1:BExp && B2:BExp )              => PP(B1) PP(B2)
-
-// Name Pattern set - will need to change when other patterns are introduced
-rule NP( P:Proc ) => V(P)
+rule CH( not B:BExp ) => CH(B)  [anywhere]
+rule CH( B1:BExp && B2:BExp ) => CH(B1) CH(B2)  [anywhere]
 
 // Receive Name set
-rule RN(   Nil    ) => .Set
-rule RN( _:Bool   ) => .Set
-rule RN( _:Int    ) => .Set
-rule RN( _:String ) => .Set
+rule RN(   Nil    ) => .Set  [anywhere]
+rule RN( _:Bool   ) => .Set  [anywhere]
+rule RN( _:Int    ) => .Set  [anywhere]
+rule RN( _:String ) => .Set  [anywhere]
 
-rule RN( X:Name ( _:Name )  { P:Proc } )  => SetItem(X) RN(P)
+rule RN( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [anywhere]
+rule RN( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [anywhere]
+rule RN( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [anywhere]
 
-rule RN( _:Name ! ( P:Proc ) )            => RN(P)
+rule RN( _:Name    ! ( P:Proc    ) ) => RN(P)  [anywhere]
+rule RN( _:NamePat ! ( P:Proc    ) ) => RN(P)  [anywhere]
+rule RN( _:Name    ! ( P:ProcPat ) ) => RN(P)  [anywhere]
+rule RN( _:NamePat ! ( P:ProcPat ) ) => RN(P)  [anywhere]
 
-rule RN( P:Proc | Q:Proc )                => RN(P) RN(Q)
+rule RN( P:Proc    | Q:Proc    ) => RN(P) RN(Q)  [anywhere]
+rule RN( P:ProcPat | Q:Proc    ) => RN(P) RN(Q)  [anywhere]
+rule RN( P:Proc    | Q:ProcPat ) => RN(P) RN(Q)  [anywhere]
+rule RN( P:ProcPat | Q:ProcPat ) => RN(P) RN(Q)  [anywhere]
 
-rule RN( * @P:Proc )                      => RN(P)
-rule RN( * _:Var   )                      => .Set
+rule RN( * _:Name    ) => .Set  [anywhere]
+rule RN( * _:NamePat ) => .Set  [anywhere]
 
-rule RN( A1:AExp  + A2:AExp )             => RN(A1) RN(A2)
-rule RN( A1:AExp  - A2:AExp )             => RN(A1) RN(A2)
-rule RN( A1:AExp  * A2:AExp )             => RN(A1) RN(A2)
+rule RN( A1:AExp  + A2:AExp ) => RN(A1) RN(A2)  [anywhere]
+rule RN( A1:AExp  - A2:AExp ) => RN(A1) RN(A2)  [anywhere]
+rule RN( A1:AExp  * A2:AExp ) => RN(A1) RN(A2)  [anywhere]
 
-rule RN( not B:BExp )                     => RN(B)
-rule RN( B1:BExp && B2:BExp )             => RN(B1) RN(B2)
+rule RN( not B:BExp ) => RN(B)  [anywhere]
+rule RN( B1:BExp && B2:BExp ) => RN(B1) RN(B2)  [anywhere]
 
 // Receive Variable set
-rule RV(   Nil    ) => .Set
-rule RV( _:Bool   ) => .Set
-rule RV( _:Int    ) => .Set
-rule RV( _:String ) => .Set
+rule RV( _:Proc ) => .Set  [anywhere]
 
-rule RV( X:Var  ( _:Name )  { P:Proc } )   => SetItem(X) RV(P)
-rule RV( _:Chan ( _:Name )  { P:Proc } )   => RV(P)
+rule RV( for( Y:NamePat <- _:Name    ) { P:ProcPat } ) => RV(P) -Set SetItem( Y )  [anywhere]
+rule RV( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => SetItem(X) ( RV(P)-Set SetItem(Y) )  [anywhere]
 
-rule RV( _:Name ! ( P:Proc ) )             => RV(P)
+rule RV( _:NamePat ! ( _:Proc    ) ) => .Set  [anywhere]
+rule RV( _:Name    ! ( P:ProcPat ) ) => RV(P)  [anywhere]
+rule RV( _:NamePat ! ( P:ProcPat ) ) => RV(P)  [anywhere]
 
-rule RV( P:Proc | Q:Proc )                 => RV(P) RV(Q)
+rule RV( P:ProcPat | _:Proc    ) => RV(P)  [anywhere]
+rule RV( _:Proc    | P:ProcPat ) => RV(P)  [anywhere]
+rule RV( P:ProcPat | Q:ProcPat ) => RV(P) RV(Q)  [anywhere]
 
-rule RV( * @P:Proc )                       => RV(P)
-rule RV( * _:Var   )                       => .Set
+rule RV( * _:NamePat  ) => .Set  [anywhere]
 
-rule RV( A1:AExp  + A2:AExp )              => RV(A1) RV(A2)
-rule RV( A1:AExp  - A2:AExp )              => RV(A1) RV(A2)
-rule RV( A1:AExp  * A2:AExp )              => RV(A1) RV(A2)
+rule RV( A1:AExp  + A2:AExp ) => RV(A1) RV(A2)  [anywhere]
+rule RV( A1:AExp  - A2:AExp ) => RV(A1) RV(A2)  [anywhere]
+rule RV( A1:AExp  * A2:AExp ) => RV(A1) RV(A2)  [anywhere]
 
-rule RV( not B:BExp )                      => RV(B)
-rule RV( B1:BExp && B2:BExp )              => RV(B1) RV(B2)
+rule RV( not B:BExp ) => RV(B)  [anywhere]
+rule RV( B1:BExp && B2:BExp ) => RV(B1) RV(B2)  [anywhere]
 
 // Send Name set
-rule SN(   Nil    ) => .Set
-rule SN( _:Bool   ) => .Set
-rule SN( _:Int    ) => .Set
-rule SN( _:String ) => .Set
+rule SN(   Nil    ) => .Set  [anywhere]
+rule SN( _:Bool   ) => .Set  [anywhere]
+rule SN( _:Int    ) => .Set  [anywhere]
+rule SN( _:String ) => .Set  [anywhere]
 
-rule SN( _:Name ( _:Name )  { P:Proc } )  => SN(P)
+rule SN( for( Y:NamePat <- _:Name    ) { P:Proc    }  ) => SN(P) -Set SetItem(Y)  [anywhere]
+rule SN( for( Y:NamePat <- _:Name    ) { P:ProcPat }  ) => SN(P) -Set SetItem(Y)  [anywhere]
+rule SN( for( Y:NamePat <- _:NamePat ) { P:ProcPat }  ) => SN(P) -Set SetItem(Y)  [anywhere]
 
-rule SN( X:Name ! ( P:Proc ) )            => SetItem(X) SN(P)
+rule SN( X:Name    ! ( P:Proc    ) ) => SetItem(X) SN(P)  [anywhere]
+rule SN( X:NamePat ! ( P:Proc    ) ) => SetItem(X) SN(P)  [anywhere]
+rule SN( X:Name    ! ( P:ProcPat ) ) => SetItem(X) SN(P)  [anywhere]
+rule SN( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) SN(P)  [anywhere]
 
-rule SN( P:Proc | Q:Proc )                => SN(P) SN(Q)
+rule SN( P:Proc    | Q:Proc    ) => SN(P) SN(Q)  [anywhere]
+rule SN( P:ProcPat | Q:Proc    ) => SN(P) SN(Q)  [anywhere]
+rule SN( P:Proc    | Q:ProcPat ) => SN(P) SN(Q)  [anywhere]
+rule SN( P:ProcPat | Q:ProcPat ) => SN(P) SN(Q)  [anywhere]
 
-rule SN( * @P:Proc )                      => SN(P)
-rule SN( * _:Var   )                      => .Set
+rule SN( * _:Name    ) => .Set  [anywhere]
+rule SN( * _:NamePat ) => .Set  [anywhere]
 
-rule SN( A1:AExp  + A2:AExp )             => SN(A1) SN(A2)
-rule SN( A1:AExp  - A2:AExp )             => SN(A1) SN(A2)
-rule SN( A1:AExp  * A2:AExp )             => SN(A1) SN(A2)
+rule SN( A1:AExp  + A2:AExp ) => SN(A1) SN(A2)  [anywhere]
+rule SN( A1:AExp  - A2:AExp ) => SN(A1) SN(A2)  [anywhere]
+rule SN( A1:AExp  * A2:AExp ) => SN(A1) SN(A2)  [anywhere]
 
-rule SN( not B:BExp )                     => SN(B)
-rule SN( B1:BExp && B2:BExp )             => SN(B1) SN(B2)
+rule SN( not B:BExp ) => SN(B)  [anywhere]
+rule SN( B1:BExp && B2:BExp ) => SN(B1) SN(B2)  [anywhere]
 
 // Send Variable set
-rule SV(   Nil    ) => .Set
-rule SV( _:Bool   ) => .Set
-rule SV( _:Int    ) => .Set
-rule SV( _:String ) => .Set
+rule SV( _:Proc ) => .Set  [anywhere]
 
-rule SV( _:Name ( _:Name )  { P:Proc } )  => SV(P)
+rule SV( for( _:NamePat <- _:Name    ) { P:ProcPat } )  => SV(P)  [anywhere]
+rule SV( for( _:NamePat <- _:NamePat ) { P:ProcPat } )  => SV(P)  [anywhere]
 
-rule SV( X:Var   ! ( P:Proc ) )           => SetItem(X) SV(P)
-rule SV( _:Chan  ! ( P:Proc ) )           => SV(P)
+rule SV( X:NamePat ! ( _:Proc    ) ) => SetItem(X)  [anywhere]
+rule SV( _:Name    ! ( P:ProcPat ) ) => SV(P)  [anywhere]
+rule SV( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) SV(P)  [anywhere]
 
-rule SV( P:Proc | Q:Proc )                => SV(P) SV(Q)
+rule SV( P:ProcPat | _:Proc    ) => SV(P)  [anywhere]
+rule SV( _:Proc    | P:ProcPat ) => SV(P)  [anywhere]
+rule SV( P:ProcPat | Q:ProcPat ) => SV(P) SV(Q)  [anywhere]
 
-rule SV( * @P:Proc )                      => SV(P)
-rule SV( * _:Var   )                      => .Set
+rule SV( * _:NamePat ) => .Set  [anywhere]
 
-rule SV( A1:AExp  + A2:AExp )             => SV(A1) SV(A2)
-rule SV( A1:AExp  - A2:AExp )             => SV(A1) SV(A2)
-rule SV( A1:AExp  * A2:AExp )             => SV(A1) SV(A2)
+rule SV( A1:AExp  - A2:AExp ) => SV(A1) SV(A2)  [anywhere]
+rule SV( A1:AExp  + A2:AExp ) => SV(A1) SV(A2)  [anywhere]
+rule SV( A1:AExp  * A2:AExp ) => SV(A1) SV(A2)  [anywhere]
 
-rule SV( not B:BExp )                     => SV(B)
-rule SV( B1:BExp && B2:BExp )             => SV(B1) SV(B2)
+rule SV( not B:BExp ) => SV(B)  [anywhere]
+rule SV( B1:BExp && B2:BExp ) => SV(B1) SV(B2)  [anywhere]
 
 // Receive Channel set
-rule RC( P:Proc ) => intersectSet( RN(P) , CH(P) )
+rule RC( P:Proc    ) => intersectSet( RN(P) , CH(P) )  [anywhere]
+rule RC( P:ProcPat ) => intersectSet( RN(P) , CH(P) )  [anywhere]
 
 // Send Channel set
-rule SC( P:Proc ) => intersectSet( SN(P) , CH(P) )
+rule SC( P:Proc    ) => intersectSet( SN(P) , CH(P) )  [anywhere]
+rule SC( P:ProcPat ) => intersectSet( SN(P) , CH(P) )  [anywhere]
 
 endmodule
