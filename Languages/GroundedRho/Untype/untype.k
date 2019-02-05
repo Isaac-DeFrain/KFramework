@@ -26,9 +26,9 @@ import UNTYPE-SYNTAX
       <k color="purple"> $PGM:Type </k>
     </T>
 
-syntax KResult ::= OrPat | InitialType
+syntax KResult ::= OrPatOrLeafType
 
-rule #untype( T:Type ) => T                       [strict]
+rule #untype( T:Type ) => T   [strict]
 
 /*
 4 kinds of rewrites (2 pairs of symmetric rules):
@@ -38,49 +38,37 @@ rule #untype( T:Type ) => T                       [strict]
 4. type[  S:String ;; I1:InitialType ;; I2:InitialType ] => I3:InitialType      i.e.
 */
 // Leaves
-// 1. type[ S1:String ;; S2:String ;; L:Leaf ] => type[ L/Nil ]
-rule type[ _:String ;; _:String   ;; L:Leaf     ] => type[ L         ]  [anywhere]
-rule type[ "leaf"   ;; "nil"      ;; "Nil"      ] => type[ Nil       ]  [anywhere]
-rule type[ "leaf"   ;; "truncate" ;;   _        ] => type[ #truncate ]  [anywhere]
+// 1. type[ _:String ;; _:String ;; L:Leaf ] => type[ L/Nil ]
+rule type[ _:String ;; _:String   ;; L:Leaf ] => type[ L         ]  [anywhere]
+rule type[ "leaf"   ;; "nil"      ;; "Nil"  ] => type[ Nil       ]  [anywhere]
+rule type[ "leaf"   ;; "truncate" ;;   _    ] => type[ #truncate ]  [anywhere]
 
-rule type[ "simpletype"  ;; type[ toString( ST:OrPat ) ] ;; type[ #truncate ] ] => type[ ST ]  [anywhere]
+rule type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _ ] => type[ ST ]  [anywhere]
 
-/* 2. type[  S:String ;; ( type[ S1:String ;; S2:String ;; L1:Leaf ] => type[ L1:Leaf ] ) ;; I:IntermediateType ]
+/* 2. type[  _:String ;; ( type[ _:String ;; _:String ;; L:Leaf ] => type[ L:Leaf ] ) ;; _:IntermediateType ]
            S
         /     \
       S1        I1
      / \ => I2
    S2  L1
 */
-// S = "quote"
-rule type[ "par"     ;; type[ S:Send    ] ;; type[ P:Proc    ] ] => type[ S | P ]  [anywhere]
-rule type[ "par"     ;; type[ S:Send    ] ;; type[ P:ProcPat ] ] => type[ S | P ]  [anywhere]
-rule type[ "par"     ;; type[ S:SendPat ] ;; type[ P:Proc    ] ] => type[ S | P ]  [anywhere]
-rule type[ "par"     ;; type[ S:SendPat ] ;; type[ P:ProcPat ] ] => type[ S | P ]  [anywhere]
-/*
-rule type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:Name   ] ] => type[ B <- N ]
-rule type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:NamePat] ] => type[ B <- N ]
+rule type[ _:String ;; ( type[ _:String     ;; _:String                     ;; L:Leaf ] => type[ L         ] ) ;; _:IntermediateType ]  [anywhere]
+rule type[ _:String ;; ( type[ "leaf"       ;; "nil"                        ;; "Nil"  ] => type[ Nil       ] ) ;; _:IntermediateType ]  [anywhere]
+rule type[ _:String ;; ( type[ "leaf"       ;; "truncate"                   ;; _      ] => type[ #truncate ] ) ;; _:IntermediateType ]  [anywhere]
+rule type[ _:String ;; ( type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _      ] => type[ ST        ] ) ;; _:IntermediateType ]  [anywhere]
 
-rule type[ "receive" ;; type[R:Bind        ] ;; type[P:Proc   ] ] => type[ for( R ){ P } ]
-rule type[ "receive" ;; type[R:Bind        ] ;; type[P:ProcPat] ] => type[ for( R ){ P } ]
-rule type[ "receive" ;; type[R:BindPat     ] ;; type[P:ProcPat] ] => type[ for( R ){ P } ]
-
-rule type[ "par"     ;; type[P:Proc        ] ;; type[Q:Proc   ] ] => type[ P | Q ]
-rule type[ "par"     ;; type[P:Proc        ] ;; type[Q:ProcPat] ] => type[ P | Q ]
-rule type[ "par"     ;; type[P:ProcPat     ] ;; type[Q:Proc   ] ] => type[ P | Q ]
-rule type[ "par"     ;; type[P:ProcPat     ] ;; type[Q:ProcPat] ] => type[ P | Q ]
-*/
 /* 3. type[  S:String ;; I1:InitialType  ;; ( type[ S1:String ;; S2:String ;; L:Leaf ] => type[ L ] ) ]
          S
         /  \
-      I1    S1
+     In1    S1
             / \ => I2
           S2  L1
 */
-rule type[ "send" ;; ( type[ "leaf" ;; "namevar" ;; NV:NameVar ] => type[ NV ] ) ;; _:IntermediateType ]  [anywhere]
-rule type[ "send" ;; ( type[ "leaf" ;; "namevar" ;; NV:NameVar ] => type[ NV ] ) ;; _:IntermediateType ]  [anywhere]
-rule type[ "send" ;; _:IntermediateType ;; ( type[ "leaf" ;; "namevar" ;; NV:NameVar ] => type[ NV ] ) ]  [anywhere]
-rule type[ "send" ;; _:IntermediateType ;; ( type[ "leaf" ;; "namevar" ;; NV:NameVar ] => type[ NV ] ) ]  [anywhere]
+rule type[ _:String ;; _:IntermediateType ;; ( type[ _:String     ;; _:String                     ;; L:Leaf ] => type[ L         ] ) ]  [anywhere]
+rule type[ _:String ;; _:IntermediateType ;; ( type[ "leaf"       ;; "nil"                        ;; "Nil"  ] => type[ Nil       ] ) ]  [anywhere]
+rule type[ _:String ;; _:IntermediateType ;; ( type[ "leaf"       ;; "truncate"                   ;; _      ] => type[ #truncate ] ) ]  [anywhere]
+rule type[ _:String ;; _:IntermediateType ;; ( type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _      ] => type[ ST        ] ) ]  [anywhere]
+
 // 4. type[  S:String ;; I1:InitialType ;; I2:InitialType ] => I3:InitialType   [anywhere]
 /*        S
         /  \   => I3
@@ -96,6 +84,8 @@ rule type[ "send"    ;; type[N:Name        ] ;; type[P:Proc   ] ] => type[ N ! (
 rule type[ "send"    ;; type[N:Name        ] ;; type[P:ProcPat] ] => type[ N ! ( P ) ]  [anywhere]
 rule type[ "send"    ;; type[N:NamePat     ] ;; type[P:Proc   ] ] => type[ N ! ( P ) ]  [anywhere]
 rule type[ "send"    ;; type[N:NamePat     ] ;; type[P:ProcPat] ] => type[ N ! ( P ) ]  [anywhere]
+rule type[ "send"    ;; type[N:Name        ] ;; type[ Nil     ] ] => type[ N ! (Nil) ]  [anywhere]
+rule type[ "send"    ;; type[N:NamePat     ] ;; type[ Nil     ] ] => type[ N ! (Nil) ]  [anywhere]
 
 rule type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:Name   ] ] => type[ B <- N ]  [anywhere]
 rule type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:NamePat] ] => type[ B <- N ]  [anywhere]
@@ -108,7 +98,5 @@ rule type[ "par"     ;; type[P:Proc        ] ;; type[Q:Proc   ] ] => type[ P | Q
 rule type[ "par"     ;; type[P:Proc        ] ;; type[Q:ProcPat] ] => type[ P | Q ]  [anywhere]
 rule type[ "par"     ;; type[P:ProcPat     ] ;; type[Q:Proc   ] ] => type[ P | Q ]  [anywhere]
 rule type[ "par"     ;; type[P:ProcPat     ] ;; type[Q:ProcPat] ] => type[ P | Q ]  [anywhere]
-
-rule type[ "send"    ;; type[N:Name        ] ;; type[ Nil     ] ] => type[ N ! (Nil) ] [anywhere]
 
 endmodule
