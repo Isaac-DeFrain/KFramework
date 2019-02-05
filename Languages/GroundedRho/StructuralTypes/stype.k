@@ -15,7 +15,8 @@ import SUBSTITUTION
 //*** Grounded Rho-Calculus Syntax ***
 //************************************
 
-syntax              Var ::= Id                                                     // Id < Var, General Variables
+// General Variables
+syntax              Var ::= Id                                                     // Id < Var
 
 //-------------
 //--- NAMES ---
@@ -149,12 +150,15 @@ syntax       SimpleType ::= "Bool"                                              
                           | "Int"                                                  //    Int < SimpleType
                           | "String"                                               // String < SimpleType
 
-// Recursive syntax for the type rewrites
+// Typical input for type rewrites
+syntax  OrPatOrLeafType ::= "type[" OrPat       "]"                                // type[OrPat] < OrPatOrLeafType
+                          | "type[" Leaf        "]"                                //  type[Leaf] < OrPatOrLeafType
+
 //  Initial type
-syntax      InitialType ::= "type[" OrPat       "]"
-                          | "type[" Leaf        "]"
-                          | "type[" BindOrPat   "]"
-                          | "type[" BindNamePat "]"
+syntax      InitialType ::= OrPatOrLeafType                                        //   OrPatOrLeafType < InitialType
+                          | "type[" BindOrPat   "]"                                //   type[BindOrPat] < InitialType
+                          | "type[" BindNamePat "]"                                // type[BindNamePat] < InitialType
+
 
 //  Intermediate type
 syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
@@ -165,7 +169,7 @@ syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" Intermedia
 syntax     TerminalType ::= "type[" String ";;" TerminalType     ";;" TerminalType     "]"
                           | LeafType
 
-syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"
+syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"  // correspond to the leaves in the structural binary tree
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
@@ -198,57 +202,57 @@ rule #type( T:Type ) => T    [strict]
 //*** Leaves ***
 
 // Ground
-rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ] [anywhere]  // Bool ======> Leaf
-rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ] [anywhere]  // Int =======> Leaf
-rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ] [anywhere]  // String ====> Leaf
+rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ]  // Bool ======> Leaf
+rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ]  // Int =======> Leaf
+rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ]  // String ====> Leaf
 
 // ProcVar
-rule type[ PV:ProcVar                  ] => type[ "leaf"    ;; "procvar"  ;; PV    ] [anywhere]  // ProcVar ===> Leaf
+rule type[ PV:ProcVar                  ] => type[ "leaf"    ;; "procvar"  ;; PV    ]  // ProcVar ===> Leaf
 
 // NameVar
-rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV    ] [anywhere]  // NameVar ===> Leaf
+rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV    ] // NameVar ===> Leaf
 
 // Nil
-rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] [anywhere]  // Nil =======> Leaf
+rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] // Nil =======> Leaf
 
 //*** Nodes ***
 // ReifyOrPat
-rule type[ * N:Name                    ] => type[ "reify"   ;; type[N]    ;; type[#truncate] ] [anywhere]  // Reify
-rule type[ * P:NamePat                 ] => type[ "reify"   ;; type[P]    ;; type[#truncate] ] [anywhere]  // Reify pattern
+rule type[ * N:Name                    ] => type[ "reify"   ;; type[N]    ;; type[#truncate] ]  // Reify
+rule type[ * P:NamePat                 ] => type[ "reify"   ;; type[P]    ;; type[#truncate] ]  // Reify pattern
 
 // SendOrPat
-rule type[ N:Name    ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ] [anywhere]  // Send
-rule type[ N:Name    ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ] [anywhere]  // Send pattern
-rule type[ N:NamePat ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ] [anywhere]  // Send pattern
-rule type[ N:NamePat ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ] [anywhere]  // Send pattern
+rule type[ N:Name    ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send
+rule type[ N:Name    ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
+rule type[ N:NamePat ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
+rule type[ N:NamePat ! (P:ProcPat)     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
 
 // ReceiveOrPat
-rule type[ for(R:Bind   ){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ] [anywhere]  // Receive
-rule type[ for(R:Bind   ){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ] [anywhere]  // Receive pattern
-rule type[ for(R:BindPat){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ] [anywhere]  // Receive pattern
+rule type[ for(R:Bind   ){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive
+rule type[ for(R:Bind   ){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
+rule type[ for(R:BindPat){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
 
 // BindOrPat
-rule type[ B:BindNamePat <- N:Name     ] => type[ "bind"    ;; type[B]    ;; type[N] ] [anywhere]  // Bind
-rule type[ B:BindNamePat <- N:NamePat  ] => type[ "bind"    ;; type[B]    ;; type[N] ] [anywhere]  // Bind
+rule type[ B:BindNamePat <- N:Name     ] => type[ "bind"    ;; type[B]    ;; type[N] ]  // Bind
+rule type[ B:BindNamePat <- N:NamePat  ] => type[ "bind"    ;; type[B]    ;; type[N] ]  // Bind
 
 // ParOrPat
-rule type[ P:Proc     | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ] [anywhere] // Par pattern
-rule type[ P:Proc     | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ] [anywhere]  // Par
-rule type[ P:ProcPat  | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ] [anywhere]  // Par pattern
-rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ] [anywhere]  // Par pattern
+rule type[ P:Proc     | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
+rule type[ P:Proc     | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
+rule type[ P:ProcPat  | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
+rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ] // Par pattern
 
 // SimpleType
-rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ] [anywhere]
+rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]
 
 // Channels
-rule type[ @ P:Proc         ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ] [anywhere]
-rule type[ @ P:ProcPat      ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ] [anywhere]
+rule type[ @ P:Proc         ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]
+rule type[ @ P:ProcPat      ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]
 
 // #truncate
-rule type[ #truncate         ] => type[ "leaf"       ;; "truncate"         ;;     #truncate  ] [anywhere]
+rule type[ #truncate         ] => type[ "leaf"       ;; "truncate"         ;;     #truncate  ]
 
 // Resolving brackets
-rule type[ { P:ProcOrPat }  ] => type[P] [anywhere]  // bracketed ProcOrPat type resolution
-rule type[ { N:NameOrPat }  ] => type[N] [anywhere]  // bracketed NameOrPat type resolution
+rule type[ { P:ProcOrPat }  ] => type[P]  // bracketed ProcOrPat type resolution
+rule type[ { N:NameOrPat }  ] => type[N]  // bracketed NameOrPat type resolution
 
 endmodule
