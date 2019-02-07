@@ -1,0 +1,3 @@
+// For untype - parsendpat
+
+  type[ @Nil!(x) | x!(Nil) ]
