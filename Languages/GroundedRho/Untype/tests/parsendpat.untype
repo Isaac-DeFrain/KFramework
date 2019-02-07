@@ -1,0 +1,7 @@
+// Untype - parsendpat: type[ @Nil!(x) | x!(Nil) ]
+
+  type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
+
+/* Output:
+type[ "send" ;; type[ x ] ;; type[ Nil ] ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "par" , type[ @ Nil ! ( x ) ] )
+*/
