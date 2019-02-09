@@ -15,9 +15,6 @@ import SUBSTITUTION
 //*** Grounded Rho-Calculus Syntax ***
 //************************************
 
-// General Variables
-syntax              Var ::= Id                                                     // Id < Var
-
 //-------------
 //--- NAMES ---
 //-------------
@@ -43,7 +40,7 @@ syntax        NameOrPat ::= "{" NameOrPat "}"                                   
 //-----------------
 
 // Process Variables
-syntax          ProcVar ::= Var                                         [procvar]  // Var < ProcVar
+syntax          ProcVar ::= Id                                          [procvar]  // Var < ProcVar
 
 // Processes
 syntax             Proc ::= "{" Proc "}"                                [bracket]  // {_}: Proc -> Proc
@@ -59,7 +56,6 @@ syntax              Par ::= Proc "|" Proc                              [left,par
 
 // Receive
 syntax          Receive ::= "for" "(" Bind ")" "{" Proc    "}"   [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
-                          | "for" "(" Bind ")" "{" ProcPat "}"   [binder,receive]  // for(_){_}: Bind x ProcPat ---> Receive  // countAllOccurrences( BindNamePat , ProcPat ) > 0 ???
                                                                                                                               // requires ProcPat[N / BindNamePat] to be concrete when N:Name
 syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name -----------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
                                                                                                                               // BindNamePat = y and ProcPat = y!("hi") thus
@@ -85,9 +81,9 @@ syntax           Ground ::= Bool                                                
 //------------------------
 
 // Par Pattern
-syntax           ParPat ::= Proc    "|" ProcPat                            [left]  //    _|_: Proc x ProcPat ---------> ParPat
-                          | ProcPat "|" Proc                               [left]  // _|_: ProcPat x Proc ------------> ParPat
-                          | ProcPat "|" ProcPat                            [left]  // _|_: ProcPat x ProcPat ---------> ParPat
+syntax           ParPat ::= Proc    "|" ProcPat                            [left]  // _|_: Proc x ProcPat ---------> ParPat
+                          | ProcPat "|" Proc                               [left]  // _|_: ProcPat x Proc ---------> ParPat
+                          | ProcPat "|" ProcPat                            [left]  // _|_: ProcPat x ProcPat ------> ParPat
 
 syntax         ParOrPat ::= Par                                                    //     Par < ParOrPat
                           | ParPat                                                 //  ParPat < ParOrPat
@@ -95,6 +91,7 @@ syntax         ParOrPat ::= Par                                                 
 // Receive Pattern
 syntax       ReceivePat ::= "for" "(" Bind    ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat  // requires ProcPat[Name / BindNamePat] to be a process pattern?
                           | "for" "(" BindPat ")" "{" ProcPat "}"        [binder]  // for(_){_}: Bind x ProcPat -----> ProcPat
+                          | "for" "(" BindPat ")" "{" Proc    "}"        [binder]
 
 syntax     ReceiveOrPat ::= Receive                                                //    Receive < ReciveOrPat
                           | ReceivePat                                             // ReceivePat < ReciveOrPat
@@ -133,6 +130,7 @@ syntax        ProcOrPat ::= "{" ProcOrPat "}"                                   
 
 syntax            OrPat ::= NameOrPat
                           | ProcOrPat
+                          | "{" OrPat "}"
 
 //******************************
 //*** STRUCTURAL TYPE SYNTAX ***
@@ -191,8 +189,6 @@ import STYPE-SYNTAX
     </T>
 
 syntax KResult ::= TerminalType
-
-// Normalizer: Order processes by <=String( toString( Proc ) )
 
 //---------------------
 //--- Type function ---
