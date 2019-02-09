@@ -1,10 +1,7 @@
+// Untype - type[ x | x!(Nil) ]
+
 type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
 
-// Output:
-// <T>
-//   <k>
-//     type[ "send" ;; type[ x ] ;; type[ Nil ] ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "par" , type[ x ] )
-//   </k>
-// </T>
-//
-//  x | x!(Nil)
+/*
+
+*/

@@ -3,7 +3,5 @@
 type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "string" ;; "false" ] ] ]
 
 /*
-type[ "leaf" ;; "namevar" ;; x ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX1_ ( "send" , type[ "false" ] ) ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "send" , type[ "quote" ;; type[ 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] )
-
-
+type[ "send" ;; type[ x ] ;; type[ "false" ] ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "send" , type[ @ 0 ] )
 */

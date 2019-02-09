@@ -1,8 +1,7 @@
-//  Untype - par
+//  Untype - type[ @Bool!(Nil | true) | "true" | for( @x <- @0 ){ Nil } ]
 
-type[ "par" ;; type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "leaf" ;; "string" ;; "a" ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ]
+type[ "par" ;; type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "bool" ;; true ] ] ] ;; type[ "leaf" ;; "string" ;; "true" ] ] ;; type[ "receive" ;; type[ "bind" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
 
 /*
-Output:
-
+type[ ( @ Bool ) ! ( Nil | true ) | "true" | for ( @ x <- @ 0 ) { Nil } ]
 */

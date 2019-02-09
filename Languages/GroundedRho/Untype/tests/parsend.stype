@@ -1,0 +1,8 @@
+// For untype - type[ @Nil!(x) | x ]
+
+
+  type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ]
+
+/*
+type[ @ Nil ! ( x ) | x ]
+*/
