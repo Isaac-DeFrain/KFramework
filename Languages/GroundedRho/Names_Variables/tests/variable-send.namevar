@@ -1,3 +1,3 @@
 // Variables - send
 
-  V( @"a"!(x!(*y) )
+  V( @"a"!(x!(y!(Nil))) | for( a <- @z ){ a!(z) } )

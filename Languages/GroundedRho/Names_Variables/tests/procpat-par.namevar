@@ -1,3 +1,8 @@
-// Channel - par
+// Process variables - par
 
-  PP( @"chan1"!(@"chan2"!( * var1 )) | var2(var3){@"chan3"(@"ProcPat1"){*@"ProcPat2"}} )
+ V( { @ pv1 }!(nv1!( * nv2 )) | for( pv3 <- { @ pv2 } ){ for( pv2 <- nv3 ){ * @ { for( nv4 <- @Nil ){ * nv4 } | pv4 } } } )
+
+ /*
+Output:
+
+ */
