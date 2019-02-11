@@ -1,12 +1,14 @@
 // Polyadic Rho-Calculus
 
-require "substitution.k"
 require "domains.k"
+require "kast.k"
+require "substitution.k"
 
 module POLYRHO-SYNTAX
-import ID
-import DOMAINS
-import SUBSTITUTION
+  import DOMAINS
+  import KAST
+  import KSEQ-SYMBOLIC
+  import SUBSTITUTION
 
 //-----------------
 //--- PROCESSES ---
@@ -15,164 +17,121 @@ import SUBSTITUTION
 //--- Processes ---
 syntax          Proc ::= "{" Proc "}"                              [bracket]
                        | "Nil"
-                       | ProcVar
                        | RhoTuple
-                       > "*" Name
-                       > Name "!" SendContent
-                       | "for" "(" Receipt ")" "{" Proc "}"         [binder]
-                       > Proc "|" Proc                                [left]
+                       > Eval
+                       > Send
+                       | Rec
+                       > Par
 
-syntax         Procs ::= Proc
-                       | Proc "," Procs
+//--- Par ---
+syntax           Par ::= List{Proc, "|"}
 
-//--- Tuples ---
-syntax      RhoTuple ::= "(" Proc ",)"
-                       | "(" Proc "," Procs ")"
+//--- Receive ---
+syntax           Rec ::= "for" "(" Receipt ")" "{" Proc "}"         [binder]
 
-//--- Process Variables ---
-syntax           Var ::= Id
-syntax          Vars ::= Var
-                       | Var "," Vars
+syntax       Receipt ::= Lbind
+                       | Lbinds
+                       | Rbind
+                       | Rbinds
 
-syntax       ProcVar ::= Var
-syntax      ProcVars ::= ProcVar
-                       | ProcVar "," ProcVars
+syntax         Lbind ::= NamePat "<-" Name
 
-//--- Sends ---
-syntax   SendContent ::= "(" Proc ")"
+syntax        Lbinds ::= List{Lbind, ";"}
+
+syntax         Rbind ::= NamePat "<=" Name
+
+syntax        Rbinds ::= List{Rbind, ";"}
+
+//--- Send ---
+syntax          Send ::= Name "!" "(" Content ")"
+
+syntax       Content ::= Proc
                        | RhoTuple
 
-//--- Receives ---
-syntax       Receipt ::= LinearBinds
+//--- Evaluate ---
+syntax          Eval ::= "*" Name
 
-// Linear binds
-syntax    LinearBind ::= NamePat "<-" Name
-
-syntax   LinearBinds ::= LinearBind
-                       | LinearBind ";" LinearBinds
-
+//--- Tuple ---
+syntax      RhoTuple ::= List{Proc, ","}
 
 //-------------
 //--- NAMES ---
 //-------------
-syntax          Name ::= "@" Proc
-                       | NameVar
+syntax          Name ::= "{" Name "}"                              [bracket]
+                       | "@" Proc
 
-syntax         Names ::= Name
-                       | Name "," Names
-                       | NameVars
-
-//--- Name Variables ---
-syntax       NameVar ::= Var
-syntax      NameVars ::= NameVar
-                       | NameVar "," NameVars
-
+syntax         Names ::= List{Name, ","}
 
 //----------------
 //--- PATTERNS ---
 //----------------
 
 //--- Process Patterns ---
+syntax       ProcVar ::= Id
+
+syntax      ProcVars ::= List{ProcVar, ","}
+
 syntax       ProcPat ::= "{" ProcPat "}"
                        | Proc
-                       > Proc "|" Proc
+                       | PatTuple
+                       | ProcVar
+                       > EvalPat
+                       > SendPat
+                       | RecPat
+                       > ParPat
 
-syntax      ProcPats ::= Procs
-                       | ProcPat
-                       | ProcPat "," ProcPats
+//--- ParPat ---
+syntax        ParPat ::= List{ProcPat, "|"}
+
+//--- RecPat ---
+syntax        RecPat ::= "for" "(" Receipt    ")" "{" ProcPat "}"      [binder]
+                       | "for" "(" ReceiptPat ")" "{" ProcPat "}"      [binder]
+
+syntax    ReceiptPat ::= LbindPat
+                       | LbindPats
+                       | RbindPat
+                       | RbindPats
+
+syntax      LbindPat ::= NamePat "<-" NamePat
+
+syntax     LbindPats ::= List{Lbind, ";"}
+
+syntax      RbindPat ::= NamePat "<=" NamePat
+
+syntax     RbindPats ::= List{Rbind, ";"}
+
+//--- SendPat ---
+syntax       SendPat ::= NamePat "!" "(" Content    ")"
+                       | Name    "!" "(" ContentPat ")"
+                       | NamePat "!" "(" ContentPat ")"
+
+syntax    ContentPat ::= ProcPat
+                       | PatTuple
+
+//--- EvalPat ---
+syntax       EvalPat ::= "*" NamePat
+
+//--- PatTuple ---
+syntax      PatTuple ::= List{ProcPat, ","}
 
 //--- Name Patterns ---
-syntax       NamePat ::= Name
+syntax       NameVar ::= #LowerId
+
+syntax      NameVars ::= List{NameVar, ","}
+
+syntax       NamePat ::= NameVar
                        | "@" ProcPat
 
-syntax      NamePats ::= Names
-                       | NamePat
-                       | NamePat "," NamePats
-
+syntax      NamePats ::= List{NamePat, ","}
 
 endmodule
 
 module POLYRHO
-import POLYRHO-SYNTAX
+  import POLYRHO-SYNTAX
 
-//---------------------
-//--- CONFIGURATION ---
-//---------------------
-configuration
-  <T>
-    <threadpool color="red">
-      <thread color="red" multiplicity="*">
-        <k> $PGM:Proc </k>
-      </thread>
-    </threadpool>
-    <tuplespace color="blue">
-      <rpackages>
-        <rpackage color="teal" multiplicity="*">
-          <receives>
-            <receive color="green" multiplicity="*">
-              <rchs> .K </rchs>
-              <pats> .K </pats>
-            </receive>
-            <cont>   .K  </cont>
-          </receives>
-        </rpackage>  
-      </rpackages>
-      <spackages>
-        <spackage color="purple" multiplicity="*">
-          <sends>
-            <send colr="orange" multiplicity="*">
-              <schan> .K </schan>
-              <msgs>  .K  </msgs>
-            </send>
-          </sends>
-        </spackage>
-      </spackages>
-    </tuplespace>
+  configuration
+  <T color="purple">
+    <k color="teal"> $PGM:ProcPat </k>
   </T>
 
-syntax KVariable ::= Var | NameVar | ProcVar
-
-//-----------
-//--- PAR ---
-//-----------
-rule <k> P:Proc | Q:Proc => . ...</k>
-   (. => <thread> <k> P </k> </thread>)
-   (. => <thread> <k> Q </k> </thread>)               [structural]
-
-//------------
-//--- SEND ---
-//------------
-rule <k> X:Name ! ( P:Proc ) => . ...</k>
-   (. => <send>
-           <schan> X </schan>
-           <msgs>  P  </msgs>
-         </send>)                                     [structural]
-
-// Polyadic
-rule <k> X:Name ! R:RhoTuple => . ...</k>
-   (. => <send>
-           <schan> X </schan>
-           <msgs>  R  </msgs>
-         </send>)                                     [structural]
-
-//---------------
-//--- RECEIVE ---
-//---------------
-rule <k> for ( Y:NamePat <- X:Name ) { P:Proc } => . ...</k>
-   (. => <receive>
-           <rchs> X </rchs>
-           <pats> Y </pats>
-         </receive>)
-   (. => <cont> P </cont>)                            [structural]
-
-// Polyadic
-rule <k> for ( Y:NamePat <- X:Name ; B:LinearBinds ) { P:Proc } => for ( B ) {P} ...</k>
-   (. => <receive>
-           <rchs> X </rchs>
-           <pats> Y </pats>
-         </receive>)                                  [structural]
-
-
-
 endmodule
-
