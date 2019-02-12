@@ -1,0 +1,3 @@
+// Polyrho - syntax
+
+  [ @Nil!(x) ] [ for( y <- @{* z} ){ Nil } , * {@ {Nil | x} } , Set(*y) ]

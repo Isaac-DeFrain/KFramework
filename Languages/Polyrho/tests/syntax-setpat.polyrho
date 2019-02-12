@@ -1,0 +1,3 @@
+// Polyrho - syntax
+
+  Set( x , @Nil!(x) ) Set( for( y <- @Nil ){ *z } , * {@ a} , Set(x!(x)) , Set(*y) )
