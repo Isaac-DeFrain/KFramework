@@ -6,6 +6,10 @@ require "substitution.k"
 
 module POLYRHO-SYNTAX
   import DOMAINS
+  import ID
+  import LIST
+  import MAP
+  import SET
   import KAST
   import KSEQ-SYMBOLIC
   import SUBSTITUTION
@@ -17,16 +21,16 @@ module POLYRHO-SYNTAX
 //--- Processes ---
 syntax          Proc ::= "{" Proc "}"                              [bracket]
                        | "Nil"
-                       | RhoTuple
+                       | Collection
                        > Eval
                        > Send
                        | Rec
                        > Par
 
-//--- Par ---
-syntax           Par ::= List{Proc, "|"}
+//--- Parallel ---
+syntax           Par ::= Proc "|" Proc
 
-//--- Receive ---
+//--- Receive/Input ---
 syntax           Rec ::= "for" "(" Receipt ")" "{" Proc "}"         [binder]
 
 syntax       Receipt ::= Lbind
@@ -36,31 +40,67 @@ syntax       Receipt ::= Lbind
 
 syntax         Lbind ::= NamePat "<-" Name
 
-syntax        Lbinds ::= List{Lbind, ";"}
+syntax        Lbinds ::= Lbind
+                       | Lbind ";" Lbinds
 
 syntax         Rbind ::= NamePat "<=" Name
 
-syntax        Rbinds ::= List{Rbind, ";"}
+syntax        Rbinds ::= Rbind
+                       | Rbind ";" Rbinds
 
-//--- Send ---
-syntax          Send ::= Name "!" "(" Content ")"
+//--- Send/Output ---
+syntax          Send ::= Name "!" Content
 
-syntax       Content ::= Proc
+syntax       Content ::= "(" Proc ")"
                        | RhoTuple
 
-//--- Evaluate ---
+//--- Evaluation ---
 syntax          Eval ::= "*" Name
 
-//--- Tuple ---
-syntax      RhoTuple ::= List{Proc, ","}
+//--- Collections ---
+syntax         KItem ::= Proc
+
+syntax    Collection ::= RhoList
+                       | RhoMap
+                       | RhoSet
+                       | RhoTuple
+
+syntax         Procs ::= Proc
+                       | Proc  "," Procs
+                       | Procs "," Proc
+                       | Procs "," Procs
+
+syntax       RhoList ::= ".RhoList"
+                       | "[" Procs "]"
+                       | RhoList RhoList                              [left]
+
+syntax        RhoMap ::= ".RhoMap"
+                       | "{" RhoKVPairs "}"
+                       | RhoMap RhoMap                                [left]
+
+syntax    RhoKVPairs ::= Proc ":" Proc
+                       | Proc ":" Proc "," RhoKVPairs
+                       | RhoKVPairs    "," Proc ":" Proc
+                       | RhoKVPairs    "," RhoKVPairs
+
+syntax        RhoSet ::= ".RhoSet"                                            // multiset
+                       | "Set" "(" Procs ")"
+                       | RhoSet RhoSet                                [left]
+
+syntax      RhoTuple ::= "(" Proc ",)"
+                       | "(" Proc "," Procs ")"
 
 //-------------
 //--- NAMES ---
 //-------------
 syntax          Name ::= "{" Name "}"                              [bracket]
                        | "@" Proc
+                       | NameVar
 
-syntax         Names ::= List{Name, ","}
+syntax         Names ::= Name
+                       | Name  "," Names
+                       | Names "," Name
+                       | Names "," Names
 
 //----------------
 //--- PATTERNS ---
@@ -69,11 +109,13 @@ syntax         Names ::= List{Name, ","}
 //--- Process Patterns ---
 syntax       ProcVar ::= Id
 
-syntax      ProcVars ::= List{ProcVar, ","}
+syntax      ProcVars ::= ProcVar
+                       | ProcVar  "," ProcVars
+                       | ProcVars "," ProcVar
+                       | ProcVars "," ProcVars
 
 syntax       ProcPat ::= "{" ProcPat "}"
-                       | Proc
-                       | PatTuple
+                       | CollectionPat
                        | ProcVar
                        > EvalPat
                        > SendPat
@@ -81,10 +123,13 @@ syntax       ProcPat ::= "{" ProcPat "}"
                        > ParPat
 
 //--- ParPat ---
-syntax        ParPat ::= List{ProcPat, "|"}
+syntax        ParPat ::= Proc    "|" ProcPat
+                       | ProcPat "|" Proc
+                       | ProcPat "|" ProcPat
 
 //--- RecPat ---
 syntax        RecPat ::= "for" "(" Receipt    ")" "{" ProcPat "}"      [binder]
+                       | "for" "(" ReceiptPat ")" "{" Proc    "}"      [binder]
                        | "for" "(" ReceiptPat ")" "{" ProcPat "}"      [binder]
 
 syntax    ReceiptPat ::= LbindPat
@@ -113,16 +158,22 @@ syntax       EvalPat ::= "*" NamePat
 
 //--- PatTuple ---
 syntax      PatTuple ::= List{ProcPat, ","}
-
+*/
 //--- Name Patterns ---
 syntax       NameVar ::= #LowerId
 
-syntax      NameVars ::= List{NameVar, ","}
+syntax      NameVars ::= NameVar
+                       | NameVar  "," NameVars
+                       | NameVars "," NameVar
+                       | NameVars "," NameVars
 
 syntax       NamePat ::= NameVar
-                       | "@" ProcPat
+//                       | "@" ProcPat
 
-syntax      NamePats ::= List{NamePat, ","}
+syntax      NamePats ::= NamePat
+                       | NamePat  "," NamePats
+                       | NamePats "," NamePat
+                       | NamePats "," NamePats
 
 endmodule
 
@@ -131,7 +182,27 @@ module POLYRHO
 
   configuration
   <T color="purple">
-    <k color="teal"> $PGM:ProcPat </k>
+    <k color="teal"> $PGM:Proc </k>
   </T>
+
+//--- Collections ---
+
+// RhoList
+  rule L:RhoList .RhoList => L
+  rule .RhoList L:RhoList => L
+  rule [ P:Procs ] [ Q:Procs ] => [ P , Q ]
+
+// RhoMap
+  rule M:RhoMap .RhoMap => M
+  rule .RhoMap M:RhoMap => M
+  rule { K:RhoKVPairs } { L:RhoKVPairs } => { K , L }
+
+// RhoSet
+  rule S:RhoSet .RhoSet => S
+  rule .RhoSet S:RhoSet => S
+  rule Set( P:Procs ) Set( Q:Procs ) => Set( P , Q )
+
+// RhoTuple
+
 
 endmodule

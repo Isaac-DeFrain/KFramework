@@ -291,31 +291,6 @@ module CONFIGURATION-PRIMITIVES$SYNTAX [org.kframework.attributes.Location(Locat
 endmodule
 
 
-module DEFAULT-CONFIGURATION [org.kframework.attributes.Location(Location(208,1,212,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
-  imports MAP
-  imports DEFAULT-CONFIGURATION$SYNTAX
-  imports BASIC-K
-  syntax KItem ::= Cell
-  syntax K
-  syntax Cell ::= KCell
-  syntax Bool ::= "isCell" "(" K ")"
-  rule initKCell(Init)=>`<k>`(`Map:lookup`(Init,#token("$PGM","KConfigVar"))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(50df27554c5ef29c708c95aef0e887fc69a80c463e2a23a592466fc3e546fbce) initializer()]
-  Bubble(config,<k> $PGM:K </k>,[UNIQUE_ID(db5289ec2c4c1e0bc3324003ba9cef0f11fb265bbb4081a986ceaf7ea8a9cc0c) contentStartColumn(17) contentStartLine(211) org.kframework.attributes.Location(Location(211,3,211,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
-endmodule
-
-
-module DEFAULT-CONFIGURATION$SYNTAX [org.kframework.attributes.Location(Location(208,1,212,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
-  imports MAP$SYNTAX
-  imports BASIC-K$SYNTAX
-  syntax KItem ::= KCell
-  syntax KCell ::= "initKCell" "(" Map ")"
-  syntax KCell ::= "<k>" K "</k>"
-  syntax K
-  syntax Bool ::= "isKCell" "(" K ")"
-  Bubble(config,<k> $PGM:K </k>,[UNIQUE_ID(db5289ec2c4c1e0bc3324003ba9cef0f11fb265bbb4081a986ceaf7ea8a9cc0c) contentStartColumn(17) contentStartLine(211) org.kframework.attributes.Location(Location(211,3,211,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
-endmodule
-
-
 module DEFAULT-LAYOUT [org.kframework.attributes.Location(Location(202,1,206,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
   imports DEFAULT-LAYOUT$SYNTAX
   syntax K
@@ -1046,24 +1021,7 @@ module LANGUAGE-PARSING
   imports POLYRHO
   imports K-TERM
   imports ID-PROGRAM-PARSING
-  syntax RhoTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Rbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax RbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax ProcVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax PatTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax ParPat ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Par ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Names ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NameVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NamePats ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Lbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax LbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX}
+  rule `<T>`(`<k>`(#KRewrite(#KSequence(`___POLYRHO-SYNTAX`(#Or(#And(`.RhoMap_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("108959405","K")))),#And(`.RhoList_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("-80039543","K")))),#And(`Set(_)_POLYRHO-SYNTAX`(P),#Or(isRule(#token("764645829","K")))),#And(`.RhoSet_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("-1158758072","K")))),#And(`{_}_POLYRHO-SYNTAX`(K),#Or(isRule(#token("-1929946135","K")))),#And(`[_]_POLYRHO-SYNTAX`(P),#Or(isRule(#token("-469176344","K")))),#And(L,isRule(#token("2029270395","K"))),#And(S,isRule(#token("1910675151","K"))),#And(M,isRule(#token("961160374","K")))),#Or(#And(`.RhoMap_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("961160374","K")))),#And(`.RhoList_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("2029270395","K")))),#And(`.RhoSet_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("1910675151","K")))),#And(`{_}_POLYRHO-SYNTAX`(L),#Or(isRule(#token("-1929946135","K")))),#And(`Set(_)_POLYRHO-SYNTAX`(Q),#Or(isRule(#token("764645829","K")))),#And(`[_]_POLYRHO-SYNTAX`(Q),#Or(isRule(#token("-469176344","K")))),#And(L,isRule(#token("-80039543","K"))),#And(S,isRule(#token("-1158758072","K"))),#And(M,isRule(#token("108959405","K"))))),DotVar1),#Or(#And(#KSequence(`Set(_)_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1),isRule(#token("764645829","K"))),#And(#KSequence(M,DotVar1),isRule(#token("108959405","K"))),#And(#KSequence(S,DotVar1),isRule(#token("-1158758072","K"))),#And(#KSequence(S,DotVar1),isRule(#token("1910675151","K"))),#And(#KSequence(M,DotVar1),isRule(#token("961160374","K"))),#And(#KSequence(`[_]_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1),isRule(#token("-469176344","K"))),#And(#KSequence(L,DotVar1),isRule(#token("-80039543","K"))),#And(#KSequence(L,DotVar1),isRule(#token("2029270395","K"))),#And(#KSequence(`{_}_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(K,L)),DotVar1),isRule(#token("-1929946135","K"))))))) requires #token("true","Bool") ensures #token("true","Bool") [automaton()]
 endmodule
 
 
@@ -1255,203 +1213,214 @@ module MINT$SYNTAX [org.kframework.attributes.Location(Location(1096,1,1288,9)) 
 endmodule
 
 
-module POLYRHO [org.kframework.attributes.Location(Location(130,1,134,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
+module POLYRHO [org.kframework.attributes.Location(Location(169,1,197,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
   imports POLYRHO-SYNTAX
   imports POLYRHO$SYNTAX
-  imports DEFAULT-CONFIGURATION
-  syntax RhoTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Rbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax RbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax ProcVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax PatTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax ParPat ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Par ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Names ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NameVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NamePats ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Lbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax LbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX}
+  imports MAP
+  syntax KItem ::= Cell
+  syntax K
+  syntax Cell ::= TCell
+  syntax Cell ::= KCell
+  syntax Bool ::= "isCell" "(" K ")"
+  rule initTCell(Init)=>`<T>`(initKCell(Init)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(623376af74dfaeda6a86bdda5731739da449095be242d1221052ef584914be4d) initializer()]
+  rule initKCell(Init)=>`<k>`(`project:Proc`(`Map:lookup`(Init,#token("$PGM","KConfigVar")))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d3d92662c16a4dde1625ade96c567eef65d6dc0ed7c3f0ee2b3d4001d0c3f393) initializer()]
+  rule `project:Proc`(K)=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cb126cf017df4e6349622538a0090ca4f49fe00ccf73259bbd5ec5a3e59e3beb) projection()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`{_}_POLYRHO-SYNTAX`(K),`{_}_POLYRHO-SYNTAX`(L)),DotVar1)=>#KSequence(`{_}_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(K,L)),DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(dc4fb8aea4b50823e70c06e4a5bcc613faff87863ea498de9fb077cedb6df703) contentStartColumn(8) contentStartLine(187) org.kframework.attributes.Location(Location(187,8,187,54)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`[_]_POLYRHO-SYNTAX`(P),`[_]_POLYRHO-SYNTAX`(Q)),DotVar1)=>#KSequence(`[_]_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(1d5a713b68a42ab17ade4ad4240403d17f8cfbb458b136e448dbc05cb17f6e8a) contentStartColumn(8) contentStartLine(182) org.kframework.attributes.Location(Location(182,8,182,44)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`Set(_)_POLYRHO-SYNTAX`(P),`Set(_)_POLYRHO-SYNTAX`(Q)),DotVar1)=>#KSequence(`Set(_)_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(766bf417c27e3ef7e12797110fd6eb26dd849b055233e7901d2905daf9862fe3) contentStartColumn(8) contentStartLine(192) org.kframework.attributes.Location(Location(192,8,192,53)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`.RhoSet_POLYRHO-SYNTAX`(.KList),S),DotVar1)=>#KSequence(S,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(8c8525cc45f257cafddf1f95377ca8f4c9cd029f54f37a21a8226dd3b31a380e) contentStartColumn(8) contentStartLine(191) org.kframework.attributes.Location(Location(191,8,191,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`.RhoMap_POLYRHO-SYNTAX`(.KList),M),DotVar1)=>#KSequence(M,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(25948207e3b1721acbbce12b009bc5bcd2e1b022051d7444a2619fe104e07dfd) contentStartColumn(8) contentStartLine(186) org.kframework.attributes.Location(Location(186,8,186,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(`.RhoList_POLYRHO-SYNTAX`(.KList),L),DotVar1)=>#KSequence(L,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(752439cfbaaedbf96d56eb8ae45720b6041247e4288ebd29e94ce0d078358488) contentStartColumn(8) contentStartLine(181) org.kframework.attributes.Location(Location(181,8,181,31)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(S,`.RhoSet_POLYRHO-SYNTAX`(.KList)),DotVar1)=>#KSequence(S,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cf3b9474e24e6da22f2405d30afbae51edba3a6e49743a75b9b6a4e5cda54f1a) contentStartColumn(8) contentStartLine(190) org.kframework.attributes.Location(Location(190,8,190,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(M,`.RhoMap_POLYRHO-SYNTAX`(.KList)),DotVar1)=>#KSequence(M,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(3eccd25187b50f3c99e1940cddc770d3f9b59eb0f0d881c62feeb0cfb33014ae) contentStartColumn(8) contentStartLine(185) org.kframework.attributes.Location(Location(185,8,185,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KSequence(`___POLYRHO-SYNTAX`(L,`.RhoList_POLYRHO-SYNTAX`(.KList)),DotVar1)=>#KSequence(L,DotVar1))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(3b3ff2d04674f3eb203c8c43d14db1709497288efec58f26574077c5adbbf606) contentStartColumn(8) contentStartLine(180) org.kframework.attributes.Location(Location(180,8,180,31)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k)) org.kframework.definition.Production(syntax RuleContent ::= K) topRule()]
+  rule `<T>`(`<k>`(#KRewrite(#KSequence(`___POLYRHO-SYNTAX`(#Or(#And(`.RhoMap_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("108959405","K")))),#And(`.RhoList_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("-80039543","K")))),#And(`Set(_)_POLYRHO-SYNTAX`(P),#Or(isRule(#token("764645829","K")))),#And(`.RhoSet_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("-1158758072","K")))),#And(`{_}_POLYRHO-SYNTAX`(K),#Or(isRule(#token("-1929946135","K")))),#And(`[_]_POLYRHO-SYNTAX`(P),#Or(isRule(#token("-469176344","K")))),#And(L,isRule(#token("2029270395","K"))),#And(S,isRule(#token("1910675151","K"))),#And(M,isRule(#token("961160374","K")))),#Or(#And(`.RhoMap_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("961160374","K")))),#And(`.RhoList_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("2029270395","K")))),#And(`.RhoSet_POLYRHO-SYNTAX`(.KList),#Or(isRule(#token("1910675151","K")))),#And(`{_}_POLYRHO-SYNTAX`(L),#Or(isRule(#token("-1929946135","K")))),#And(`Set(_)_POLYRHO-SYNTAX`(Q),#Or(isRule(#token("764645829","K")))),#And(`[_]_POLYRHO-SYNTAX`(Q),#Or(isRule(#token("-469176344","K")))),#And(L,isRule(#token("-80039543","K"))),#And(S,isRule(#token("-1158758072","K"))),#And(M,isRule(#token("108959405","K"))))),DotVar1),#Or(#And(#KSequence(`Set(_)_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1),isRule(#token("764645829","K"))),#And(#KSequence(M,DotVar1),isRule(#token("108959405","K"))),#And(#KSequence(S,DotVar1),isRule(#token("-1158758072","K"))),#And(#KSequence(S,DotVar1),isRule(#token("1910675151","K"))),#And(#KSequence(M,DotVar1),isRule(#token("961160374","K"))),#And(#KSequence(`[_]_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(P,Q)),DotVar1),isRule(#token("-469176344","K"))),#And(#KSequence(L,DotVar1),isRule(#token("-80039543","K"))),#And(#KSequence(L,DotVar1),isRule(#token("2029270395","K"))),#And(#KSequence(`{_}_POLYRHO-SYNTAX`(`_,__POLYRHO-SYNTAX`(K,L)),DotVar1),isRule(#token("-1929946135","K"))))))) requires #token("true","Bool") ensures #token("true","Bool") [automaton()]
+  ModuleComment(--- Collections ---,[UNIQUE_ID(16f0a8a30bc28d270734f2ddcc576dc3f162ba09468e350e97437397e3627980) org.kframework.attributes.Location(Location(177,1,177,22)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment( RhoTuple,[UNIQUE_ID(6228750a6a0300a1755eebf8ad982575b187c4bc8809b55fa19699beb9df1789) org.kframework.attributes.Location(Location(194,1,194,12)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment( RhoSet,[UNIQUE_ID(d947186706857f6b6d777b5787f21bfa645140e83f4b291a53d980ecb466332b) org.kframework.attributes.Location(Location(189,1,189,10)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment( RhoMap,[UNIQUE_ID(844f6f0a8c685ff59eb98e981955b99cdb084cd687af11894229f8b0293f81da) org.kframework.attributes.Location(Location(184,1,184,10)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment( RhoList,[UNIQUE_ID(0b81ac037e2864fa0ef0f0018dc9285651a2f40c0a4b1866ca53c6f00028fd1a) org.kframework.attributes.Location(Location(179,1,179,11)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
 endmodule
 
 
-module POLYRHO$SYNTAX [org.kframework.attributes.Location(Location(130,1,134,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
+module POLYRHO$SYNTAX [org.kframework.attributes.Location(Location(169,1,197,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
   imports POLYRHO-SYNTAX$SYNTAX
-  syntax RhoTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Rbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax RbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax ProcVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax PatTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax ParPat ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Par ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Names ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NameVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NamePats ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Lbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax LbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX}
+  imports MAP$SYNTAX
+  syntax TCellFragment ::= "<T>-fragment" KCellOpt "</T>-fragment"
+  syntax TCell ::= "initTCell" "(" Map ")"
+  syntax TCell ::= "<T>" KCell "</T>"
+  syntax Proc ::= "project:Proc" "(" K ")"
+  syntax KItem ::= TCellFragment
+  syntax KItem ::= TCell
+  syntax KItem ::= KCellOpt
+  syntax KItem ::= KCell
+  syntax KCellOpt ::= KCell
+  syntax KCellOpt ::= "noKCell"
+  syntax KCell ::= "initKCell" "(" Map ")"
+  syntax KCell ::= "<k>" K "</k>"
+  syntax K
+  syntax Bool ::= "isTCellFragment" "(" K ")"
+  syntax Bool ::= "isTCell" "(" K ")"
+  syntax Bool ::= "isKCellOpt" "(" K ")"
+  syntax Bool ::= "isKCell" "(" K ")"
+  Bubble(config,<T color="purple">
+    <k color="teal"> $PGM:Proc </k>
+  </T>,[UNIQUE_ID(6f50725be280a00fce09b72da5e50d6d2d67a1737989b3e5eea6609b5df65a53) contentStartColumn(3) contentStartLine(173) org.kframework.attributes.Location(Location(172,3,175,6)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
 endmodule
 
 
-module POLYRHO-SYNTAX [org.kframework.attributes.Location(Location(7,1,128,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
+module POLYRHO-SYNTAX [org.kframework.attributes.Location(Location(7,1,167,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
   imports SUBSTITUTION
+  imports SET
   imports POLYRHO-SYNTAX$SYNTAX
+  imports MAP
+  imports LIST
   imports KSEQ-SYMBOLIC
   imports KAST
+  imports ID
   imports DOMAINS
-  syntax RhoTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Rbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax RbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax ProcVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax PatTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax ParPat ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Par ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Names ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NameVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NamePats ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Lbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax LbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  ModuleComment(-----------------,[UNIQUE_ID(a84a5a361e76ed6a0587499a13ce19824e8b762d860d9cbb1748718731bc0ccf) org.kframework.attributes.Location(Location(15,1,15,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(-----------------,[UNIQUE_ID(a84a5a361e76ed6a0587499a13ce19824e8b762d860d9cbb1748718731bc0ccf) org.kframework.attributes.Location(Location(13,1,13,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(----------------,[UNIQUE_ID(97d959d7316be30f05f65ae594ea2b2c9b4d97d6b8f706adfb16601c12785123) org.kframework.attributes.Location(Location(67,1,67,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(----------------,[UNIQUE_ID(97d959d7316be30f05f65ae594ea2b2c9b4d97d6b8f706adfb16601c12785123) org.kframework.attributes.Location(Location(65,1,65,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(-------------,[UNIQUE_ID(d30cf460f91dca970f250633dec6458b0c280cff226a308f2f1cb706344ea185) org.kframework.attributes.Location(Location(59,1,59,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(-------------,[UNIQUE_ID(d30cf460f91dca970f250633dec6458b0c280cff226a308f2f1cb706344ea185) org.kframework.attributes.Location(Location(57,1,57,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Tuple ---,[UNIQUE_ID(1c511fcb828ff549d434202092164edadd5cbe1dd1e419e16be6bba12ed98c1b) org.kframework.attributes.Location(Location(54,1,54,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- SendPat ---,[UNIQUE_ID(a45256f51143cbaedc7efaf13764b6c62fc6d6d63000eb377b60b521d73e7042) org.kframework.attributes.Location(Location(103,1,103,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Send ---,[UNIQUE_ID(9b5f5a58ffd5a2abfd1707e05177d3b0a06ef29d3b76cb1e495af457cac59672) org.kframework.attributes.Location(Location(45,1,45,15)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Receive ---,[UNIQUE_ID(db64539a490e046e76c99b68c8c775b39729341a9b3b9d29a6cf7ed92ef6d32a) org.kframework.attributes.Location(Location(29,1,29,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- RecPat ---,[UNIQUE_ID(7690f7a20db327d48d1ac5662eae07ae2d801d704adb1ef0cc11a726f28b848e) org.kframework.attributes.Location(Location(86,1,86,17)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Processes ---,[UNIQUE_ID(994a68596facef25260376a93098b4435eadaecc461b329f2320302b54fb1518) org.kframework.attributes.Location(Location(17,1,17,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Process Patterns ---,[UNIQUE_ID(adc22210a3cef8fada2aeec1d37436173d5cb7356b305d0457bf0ee16e3bcbec) org.kframework.attributes.Location(Location(69,1,69,27)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- PatTuple ---,[UNIQUE_ID(b33823d3edbb30d709cd8402153ce56632688681c08f890ff5a8ca41ff841455) org.kframework.attributes.Location(Location(114,1,114,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- ParPat ---,[UNIQUE_ID(ffccadb9eb2c501471bb6c7fe69ccadb5375dbef1318a1dd4f9da0f5f58a2f30) org.kframework.attributes.Location(Location(83,1,83,17)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Par ---,[UNIQUE_ID(92d3bdd5014a0fd37605bea86b868677a43e6a0d9eb9c8f73312db026e360189) org.kframework.attributes.Location(Location(26,1,26,14)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- PROCESSES ---,[UNIQUE_ID(3a24862f6596553bee07ce20557358f699afbc44bc3ba112bef141c16fc39140) org.kframework.attributes.Location(Location(14,1,14,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- PATTERNS ---,[UNIQUE_ID(8e23f0a6e658eaec8287fe8599ae792b030a2fc6ce4f3a6b455273c056596732) org.kframework.attributes.Location(Location(66,1,66,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Name Patterns ---,[UNIQUE_ID(acd3ecd197641bbf88fbbd31abc86dc2c40c144c09c272ffc91e4ba922365ae9) org.kframework.attributes.Location(Location(117,1,117,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- NAMES ---,[UNIQUE_ID(75fa027aa765d49d1dd767c8187188d178dc685085a833c35677778f8946fb5d) org.kframework.attributes.Location(Location(58,1,58,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- Evaluate ---,[UNIQUE_ID(608a1fb58bc554152d2cbd5617af8a447bcaa2aa25091078649fc34a77cbd808) org.kframework.attributes.Location(Location(51,1,51,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
-  ModuleComment(--- EvalPat ---,[UNIQUE_ID(ef52ad23da15424fbee698fdae1a627705b8fd2712415cdb2b1151bd83987595) org.kframework.attributes.Location(Location(111,1,111,18)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(-----------------,[UNIQUE_ID(a84a5a361e76ed6a0587499a13ce19824e8b762d860d9cbb1748718731bc0ccf) org.kframework.attributes.Location(Location(19,1,19,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(-----------------,[UNIQUE_ID(a84a5a361e76ed6a0587499a13ce19824e8b762d860d9cbb1748718731bc0ccf) org.kframework.attributes.Location(Location(17,1,17,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(----------------,[UNIQUE_ID(97d959d7316be30f05f65ae594ea2b2c9b4d97d6b8f706adfb16601c12785123) org.kframework.attributes.Location(Location(105,1,105,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(----------------,[UNIQUE_ID(97d959d7316be30f05f65ae594ea2b2c9b4d97d6b8f706adfb16601c12785123) org.kframework.attributes.Location(Location(103,1,103,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(-------------,[UNIQUE_ID(d30cf460f91dca970f250633dec6458b0c280cff226a308f2f1cb706344ea185) org.kframework.attributes.Location(Location(95,1,95,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(-------------,[UNIQUE_ID(d30cf460f91dca970f250633dec6458b0c280cff226a308f2f1cb706344ea185) org.kframework.attributes.Location(Location(93,1,93,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Send/Output ---,[UNIQUE_ID(90093c6593f4e8eb09e99bd6343def771286efa26af463b037578231e2a55426) org.kframework.attributes.Location(Location(51,1,51,22)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Receive/Input ---,[UNIQUE_ID(9a3209fa288451718b98f3ff1f9fa80c854f8de24428a12e0a4a2706edf20bf4) org.kframework.attributes.Location(Location(33,1,33,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Processes ---,[UNIQUE_ID(994a68596facef25260376a93098b4435eadaecc461b329f2320302b54fb1518) org.kframework.attributes.Location(Location(21,1,21,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Parallel ---,[UNIQUE_ID(ccb4dd5a90323d0ddcfe3f78fa8f49e928e523c45f5c58df5fc993036f1011ce) org.kframework.attributes.Location(Location(30,1,30,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- PROCESSES ---,[UNIQUE_ID(3a24862f6596553bee07ce20557358f699afbc44bc3ba112bef141c16fc39140) org.kframework.attributes.Location(Location(18,1,18,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- PATTERNS ---,[UNIQUE_ID(8e23f0a6e658eaec8287fe8599ae792b030a2fc6ce4f3a6b455273c056596732) org.kframework.attributes.Location(Location(104,1,104,19)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Name Patterns ---,[UNIQUE_ID(acd3ecd197641bbf88fbbd31abc86dc2c40c144c09c272ffc91e4ba922365ae9) org.kframework.attributes.Location(Location(155,1,155,24)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- NAMES ---,[UNIQUE_ID(75fa027aa765d49d1dd767c8187188d178dc685085a833c35677778f8946fb5d) org.kframework.attributes.Location(Location(94,1,94,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Evaluation ---,[UNIQUE_ID(a91c498e000baa71359b4d45b480b114d9911194f42f3527e17a9d1068101ab5) org.kframework.attributes.Location(Location(57,1,57,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(--- Collections ---,[UNIQUE_ID(16f0a8a30bc28d270734f2ddcc576dc3f162ba09468e350e97437397e3627980) org.kframework.attributes.Location(Location(60,1,60,22)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(                       | "@" ProcPat,[UNIQUE_ID(8aa16dcf124784a8a33a2e0fe9d7d2da0fd4d23931ee782fdff838e98246f1c8) org.kframework.attributes.Location(Location(162,1,162,39)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
+  ModuleComment(
+//--- Process Patterns ---
+syntax       ProcVar ::= Id
+
+syntax      ProcVars ::= List{ProcVar, ","}
+
+syntax       ProcPat ::= "{" ProcPat "}"
+                       | Proc
+                       | PatTuple
+                       | ProcVar
+                       > EvalPat
+                       > SendPat
+                       | RecPat
+                       > ParPat
+
+//--- ParPat ---
+syntax        ParPat ::= List{ProcPat, "|"}
+
+//--- RecPat ---
+syntax        RecPat ::= "for" "(" Receipt    ")" "{" ProcPat "}"      [binder]
+                       | "for" "(" ReceiptPat ")" "{" ProcPat "}"      [binder]
+
+syntax    ReceiptPat ::= LbindPat
+                       | LbindPats
+                       | RbindPat
+                       | RbindPats
+
+syntax      LbindPat ::= NamePat "<-" NamePat
+
+syntax     LbindPats ::= List{Lbind, ";"}
+
+syntax      RbindPat ::= NamePat "<=" NamePat
+
+syntax     RbindPats ::= List{Rbind, ";"}
+
+//--- SendPat ---
+syntax       SendPat ::= NamePat "!" "(" Content    ")"
+                       | Name    "!" "(" ContentPat ")"
+                       | NamePat "!" "(" ContentPat ")"
+
+syntax    ContentPat ::= ProcPat
+                       | PatTuple
+
+//--- EvalPat ---
+syntax       EvalPat ::= "*" NamePat
+
+//--- PatTuple ---
+syntax      PatTuple ::= List{ProcPat, ","}
+,[UNIQUE_ID(c6219e8f117f9ff0602b7929ccb0bd274833e34d8bbe11c5e512df67e2bfe7e8) org.kframework.attributes.Location(Location(106,1,154,2)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))])
 endmodule
 
 
-module POLYRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(7,1,128,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
+module POLYRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(7,1,167,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Polyrho/./polyrho.k))]
   imports SUBSTITUTION$SYNTAX
+  imports SET$SYNTAX
+  imports MAP$SYNTAX
+  imports LIST$SYNTAX
   imports KSEQ-SYMBOLIC$SYNTAX
   imports KAST$SYNTAX
+  imports ID$SYNTAX
   imports DOMAINS$SYNTAX
-  syntax priority {_}_POLYRHO-SYNTAX >  >  > 
   syntax priority Nil_POLYRHO-SYNTAX >  >  > 
-  syntax SendPat ::= NamePat "!" "(" ContentPat ")"
-  syntax SendPat ::= NamePat "!" "(" Content ")"
-  syntax SendPat ::= Name "!" "(" ContentPat ")"
-  syntax Send ::= Name "!" "(" Content ")"
-  syntax RhoTuple ::= Proc "," RhoTuple
-  syntax RhoTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax RhoTuple ::= ".RhoTuple"
-  syntax ReceiptPat ::= RbindPats
-  syntax ReceiptPat ::= RbindPat
-  syntax ReceiptPat ::= LbindPats
-  syntax ReceiptPat ::= LbindPat
+  syntax associativity left ___POLYRHO-SYNTAX [UNIQUE_ID(3641cb8608505f8b201196da54b97eb39e51a4cfcc822fcfa1333cc7410f144b)]
+  syntax Send ::= Name "!" Content
+  syntax RhoTuple ::= "(" Proc ",)"
+  syntax RhoTuple ::= "(" Proc "," Procs ")"
+  syntax RhoSet ::= RhoSet RhoSet
+  syntax RhoSet ::= "Set" "(" Procs ")"
+  syntax RhoSet ::= ".RhoSet"
+  syntax RhoMap ::= RhoMap RhoMap
+  syntax RhoMap ::= "{" RhoKVPairs "}"
+  syntax RhoMap ::= ".RhoMap"
+  syntax RhoList ::= RhoList RhoList
+  syntax RhoList ::= "[" Procs "]"
+  syntax RhoList ::= ".RhoList"
+  syntax RhoKVPairs ::= RhoKVPairs "," RhoKVPairs
+  syntax RhoKVPairs ::= RhoKVPairs "," Proc ":" Proc
+  syntax RhoKVPairs ::= Proc ":" Proc "," RhoKVPairs
+  syntax RhoKVPairs ::= Proc ":" Proc
   syntax Receipt ::= Rbinds
   syntax Receipt ::= Rbind
   syntax Receipt ::= Lbinds
   syntax Receipt ::= Lbind
-  syntax RecPat ::= "for" "(" ReceiptPat ")" "{" ProcPat "}"
-  syntax RecPat ::= "for" "(" Receipt ")" "{" ProcPat "}"
   syntax Rec ::= "for" "(" Receipt ")" "{" Proc "}"
   syntax Rbinds ::= Rbind ";" Rbinds
-  syntax Rbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax Rbinds ::= ".Rbinds"
-  syntax RbindPats ::= Rbind ";" RbindPats
-  syntax RbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax RbindPats ::= ".RbindPats"
-  syntax RbindPat ::= NamePat "<=" NamePat
+  syntax Rbinds ::= Rbind
   syntax Rbind ::= NamePat "<=" Name
-  syntax ProcVars ::= ProcVar "," ProcVars
-  syntax ProcVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax ProcVars ::= ".ProcVars"
-  syntax ProcVar ::= Id
-  syntax ProcPat ::= SendPat
-  syntax ProcPat ::= RecPat
-  syntax ProcPat ::= ProcVar
-  syntax ProcPat ::= Proc
-  syntax ProcPat ::= PatTuple
-  syntax ProcPat ::= ParPat
-  syntax ProcPat ::= EvalPat
-  syntax ProcPat ::= "{" ProcPat "}"
+  syntax Procs ::= Procs "," Procs
+  syntax Procs ::= Procs "," Proc
+  syntax Procs ::= Proc "," Procs
+  syntax Procs ::= Proc
   syntax Proc ::= Send
-  syntax Proc ::= RhoTuple
   syntax Proc ::= Rec
   syntax Proc ::= Par
   syntax Proc ::= Eval
+  syntax Proc ::= Collection
   syntax Proc ::= "{" Proc "}"
   syntax Proc ::= "Nil"
-  syntax PatTuple ::= ProcPat "," PatTuple
-  syntax PatTuple ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax PatTuple ::= ".PatTuple"
-  syntax ParPat ::= ProcPat "|" ParPat
-  syntax ParPat ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax ParPat ::= ".ParPat"
-  syntax Par ::= Proc "|" Par
-  syntax Par ::= GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax Par ::= ".Par"
+  syntax Par ::= Proc "|" Proc
   syntax Names ::= Name "," Names
-  syntax Names ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax Names ::= ".Names"
+  syntax Names ::= Name
   syntax NameVars ::= NameVar "," NameVars
-  syntax NameVars ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NameVars ::= ".NameVars"
+  syntax NameVars ::= NameVar
   syntax NameVar ::= #LowerId
-  syntax NamePats ::= NamePat "," NamePats
-  syntax NamePats ::= GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax NamePats ::= ".NamePats"
+  syntax NamePats ::= NamePat "," NamePat
+  syntax NamePats ::= NamePat
   syntax NamePat ::= NameVar
-  syntax NamePat ::= "@" ProcPat
+  syntax Name ::= NameVar
   syntax Name ::= "{" Name "}"
   syntax Name ::= "@" Proc
   syntax Lbinds ::= Lbind ";" Lbinds
-  syntax Lbinds ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax Lbinds ::= ".Lbinds"
-  syntax LbindPats ::= Lbind ";" LbindPats
-  syntax LbindPats ::= GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax LbindPats ::= ".LbindPats"
-  syntax LbindPat ::= NamePat "<-" NamePat
+  syntax Lbinds ::= Lbind
   syntax Lbind ::= NamePat "<-" Name
-  syntax KItem ::= SendPat
   syntax KItem ::= Send
   syntax KItem ::= RhoTuple
-  syntax KItem ::= ReceiptPat
+  syntax KItem ::= RhoSet
+  syntax KItem ::= RhoMap
+  syntax KItem ::= RhoList
+  syntax KItem ::= RhoKVPairs
   syntax KItem ::= Receipt
-  syntax KItem ::= RecPat
   syntax KItem ::= Rec
   syntax KItem ::= Rbinds
-  syntax KItem ::= RbindPats
-  syntax KItem ::= RbindPat
   syntax KItem ::= Rbind
-  syntax KItem ::= ProcVars
-  syntax KItem ::= ProcVar
-  syntax KItem ::= ProcPat
+  syntax KItem ::= Procs
   syntax KItem ::= Proc
-  syntax KItem ::= PatTuple
-  syntax KItem ::= ParPat
   syntax KItem ::= Par
   syntax KItem ::= Names
   syntax KItem ::= NameVars
@@ -1460,43 +1429,30 @@ module POLYRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(7,1,12
   syntax KItem ::= NamePat
   syntax KItem ::= Name
   syntax KItem ::= Lbinds
-  syntax KItem ::= LbindPats
-  syntax KItem ::= LbindPat
   syntax KItem ::= Lbind
-  syntax KItem ::= EvalPat
   syntax KItem ::= Eval
-  syntax KItem ::= ContentPat
   syntax KItem ::= Content
+  syntax KItem ::= Collection
   syntax K
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_|__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_;__POLYRHO-SYNTAX}
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX} ::= ".GeneratedListBottom"
-  syntax GeneratedListBottom{_,__POLYRHO-SYNTAX}
-  syntax EvalPat ::= "*" NamePat
   syntax Eval ::= "*" Name
-  syntax ContentPat ::= ProcPat
-  syntax ContentPat ::= PatTuple
   syntax Content ::= RhoTuple
-  syntax Content ::= Proc
-  syntax Bool ::= "isSendPat" "(" K ")"
+  syntax Content ::= "(" Proc ")"
+  syntax Collection ::= RhoTuple
+  syntax Collection ::= RhoSet
+  syntax Collection ::= RhoMap
+  syntax Collection ::= RhoList
   syntax Bool ::= "isSend" "(" K ")"
   syntax Bool ::= "isRhoTuple" "(" K ")"
-  syntax Bool ::= "isReceiptPat" "(" K ")"
+  syntax Bool ::= "isRhoSet" "(" K ")"
+  syntax Bool ::= "isRhoMap" "(" K ")"
+  syntax Bool ::= "isRhoList" "(" K ")"
+  syntax Bool ::= "isRhoKVPairs" "(" K ")"
   syntax Bool ::= "isReceipt" "(" K ")"
-  syntax Bool ::= "isRecPat" "(" K ")"
   syntax Bool ::= "isRec" "(" K ")"
   syntax Bool ::= "isRbinds" "(" K ")"
-  syntax Bool ::= "isRbindPats" "(" K ")"
-  syntax Bool ::= "isRbindPat" "(" K ")"
   syntax Bool ::= "isRbind" "(" K ")"
-  syntax Bool ::= "isProcVars" "(" K ")"
-  syntax Bool ::= "isProcVar" "(" K ")"
-  syntax Bool ::= "isProcPat" "(" K ")"
+  syntax Bool ::= "isProcs" "(" K ")"
   syntax Bool ::= "isProc" "(" K ")"
-  syntax Bool ::= "isPatTuple" "(" K ")"
-  syntax Bool ::= "isParPat" "(" K ")"
   syntax Bool ::= "isPar" "(" K ")"
   syntax Bool ::= "isNames" "(" K ")"
   syntax Bool ::= "isNameVars" "(" K ")"
@@ -1505,13 +1461,10 @@ module POLYRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(7,1,12
   syntax Bool ::= "isNamePat" "(" K ")"
   syntax Bool ::= "isName" "(" K ")"
   syntax Bool ::= "isLbinds" "(" K ")"
-  syntax Bool ::= "isLbindPats" "(" K ")"
-  syntax Bool ::= "isLbindPat" "(" K ")"
   syntax Bool ::= "isLbind" "(" K ")"
-  syntax Bool ::= "isEvalPat" "(" K ")"
   syntax Bool ::= "isEval" "(" K ")"
-  syntax Bool ::= "isContentPat" "(" K ")"
   syntax Bool ::= "isContent" "(" K ")"
+  syntax Bool ::= "isCollection" "(" K ")"
 endmodule
 
 

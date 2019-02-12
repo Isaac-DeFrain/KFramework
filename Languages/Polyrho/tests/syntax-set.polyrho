@@ -1,0 +1,7 @@
+// Polyrho - syntax
+
+  Set( Nil , @Nil!(Nil) ) Set( for( y <- @Nil ){ Nil } , * {@ Nil} , Set(Nil) , Set(Nil) )
+
+
+
+//  @{Nil , @Nil!(Nil)}!(Nil , @Nil!(Nil)) | @Nil!(@Nil!(Nil))
