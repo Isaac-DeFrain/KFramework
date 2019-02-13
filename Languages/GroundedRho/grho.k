@@ -29,13 +29,13 @@ module GRHO-SYNTAX
   syntax      Proc ::= "{" Proc "}"                       [bracket]  // {_}: Proc --------> Proc
                      | "Nil"                                         // Nil: -------------> Proc
                      | Collection                                    // Collection of processes
-                     > Ground                                        // Bool, Int, String < Proc
+                     | Ground                                        // Bool, Int, String < Proc
                      | AExp                                          // Arithmetic expressions: AExp < Proc
                      | BExp                                          //    Boolean expressions: BExp < Proc
-                     > Reify                                         //   Reify < Proc
-                     > Receive                                       // Receive < Proc
+                     | Reify                                         //   Reify < Proc
+                     | Receive                                       // Receive < Proc
                      | Send                                          //    Send < Proc
-                     > Par                                           //     Par < Proc
+                     | Par                                           //     Par < Proc
 
   syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
@@ -52,8 +52,8 @@ module GRHO-SYNTAX
   syntax      Proc ::= Set                                           // Set < Proc
                      | "(" Set ")"                        [bracket]  // (_): Set ------------> Set
 
-  syntax     Procs ::= Proc  "," Proc                      [strict]   // _,_: Proc x Proc ----> Procs
-                     | Proc  "," Procs                     [strict]  // _,_: Proc x Procs ---> Procs
+  syntax     Procs ::= Proc "," Proc                       [strict]   // _,_: Proc x Proc ----> Procs
+                     | Proc "," Procs                      [strict]  // _,_: Proc x Procs ---> Procs
 
 // Collection
   syntax
@@ -62,8 +62,8 @@ module GRHO-SYNTAX
                      | RhoSet
                      | RhoTuple
 
-  syntax   RhoList ::= "[" Proc  "]"
-                     | "[" Procs "]"
+  syntax   RhoList ::= "[" Proc  "]"                       [strict]
+                     | "[" Procs "]"                       [strict]
 
   syntax    RhoMap ::= "{" RhoKVPairs "}"
 
@@ -71,11 +71,11 @@ module GRHO-SYNTAX
         RhoKVPairs ::= Proc ":" Proc
                      | Proc ":" Proc "," RhoKVPairs
 
-  syntax    RhoSet ::= "Set" "(" Proc  ")"
-                     | "Set" "(" Procs ")"
+  syntax    RhoSet ::= "Set" "(" Proc  ")"                 [strict]
+                     | "Set" "(" Procs ")"                 [strict]
 
-  syntax  RhoTuple ::= "(" Proc ",)"                       [strict]   // 1-tuple
-                     | "(" Procs ")"                       [strict]  // n-tuple, n > 2
+  syntax  RhoTuple ::= "(" Proc ",)"                                  // 1-tuple
+                     | "(" Procs ")"                                  // n-tuple, n > 2
 
 // GROUND TERMS
   syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
@@ -197,7 +197,7 @@ rule                                                          //dissolve send an
    <msg>   Q:Proc </msg>                                      // message Q
  </send> => .Bag)
 (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
-[comm,strict]                                                 //tagged "comm" for tracking nondeterminism
+[comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
