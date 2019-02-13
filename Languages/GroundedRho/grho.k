@@ -5,80 +5,102 @@ require "domains.k"
 require "substitution.k"
 
 module GRHO-SYNTAX
-import DOMAINS
-import SET
-import SUBSTITUTION
+  import DOMAINS
+  import SET
+  import SUBSTITUTION
 
 
 //-------------
 //--- NAMES ---
 //-------------
-syntax       Var ::= Id                                            //    Id < Var
+  syntax       Var ::= Id                                            //    Id < Var
 
-syntax   NameVar ::= Var                                           //   Var < NameVar
+  syntax   NameVar ::= Var                                           //   Var < NameVar
 
-syntax      Name ::= Quote                                         // Quote < Name
-                   | "{" Name "}"                       [bracket]  //    {_}: Name -----> Name
-                   | NameVar
+  syntax      Name ::= Quote                                         // Quote < Name
+                     | "{" Name "}"                       [bracket]  //    {_}: Name -----> Name
+                     | NameVar
 
-syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
+  syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
-syntax      Proc ::= "{" Proc "}"                       [bracket]  // {_}: Proc --------> Proc
-                   | "Nil"                                         // Nil: -------------> Proc
-                   | Ground                                        // Bool, Int, String < Proc
-                   | Exp                                           // Bool, Int, String expressions: Exp < Proc
-                   | Receive                                       // Receive < Proc
-                   | Send                                          //    Send < Proc
-                   | Reify                                         //   Reify < Proc
-                   > Par                                           //     Par < Proc
+  syntax      Proc ::= "{" Proc "}"                       [bracket]  // {_}: Proc --------> Proc
+                     | "Nil"                                         // Nil: -------------> Proc
+                     | Collection                                    // Collection of processes
+                     > Ground                                        // Bool, Int, String < Proc
+                     | AExp                                          // Arithmetic expressions: AExp < Proc
+                     | BExp                                          //    Boolean expressions: BExp < Proc
+                     > Reify                                         //   Reify < Proc
+                     > Receive                                       // Receive < Proc
+                     | Send                                          //    Send < Proc
+                     > Par                                           //     Par < Proc
 
-syntax       Par ::= Proc "|" Proc                         [left]  // Proc x Proc --------------> Par
+  syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
-syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Name x Name x Proc ---> Receive
+  syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name x Proc ---> Receive
 
-syntax      Send ::= Name "!" "(" Proc ")"                         // Name x Proc -------------> Send
+  syntax      Send ::= Name "!" "(" Proc ")"                         // _!(_): Name x Proc -------------> Send
+                     | Name "!" RhoTuple                             //   _!_: Name x RhoTuple ---------> Send
 
-syntax     Reify ::=   "*" Name
+  syntax     Reify ::= "*" Name
 
-syntax       Set ::= "FN(" Proc ")"                    [function]  // FN: Proc ------------> FN(Proc) < Set
+  syntax       Set ::= "FN(" Proc ")"                    [function]  // FN: Proc ------------> Set
 
 // Sets
-syntax      Proc ::= Set                                           // Set < Proc
-                   | "(" Set ")"                        [bracket]  // (_): Set -----------------> Set
+  syntax      Proc ::= Set                                           // Set < Proc
+                     | "(" Set ")"                        [bracket]  // (_): Set ------------> Set
+
+  syntax     Procs ::= Proc  "," Proc                      [strict]   // _,_: Proc x Proc ----> Procs
+                     | Proc  "," Procs                     [strict]  // _,_: Proc x Procs ---> Procs
+
+// Collection
+  syntax
+        Collection ::= RhoList
+                     | RhoMap
+                     | RhoSet
+                     | RhoTuple
+
+  syntax   RhoList ::= "[" Proc  "]"
+                     | "[" Procs "]"
+
+  syntax    RhoMap ::= "{" RhoKVPairs "}"
+
+  syntax
+        RhoKVPairs ::= Proc ":" Proc
+                     | Proc ":" Proc "," RhoKVPairs
+
+  syntax    RhoSet ::= "Set" "(" Proc  ")"
+                     | "Set" "(" Procs ")"
+
+  syntax  RhoTuple ::= "(" Proc ",)"                       [strict]   // 1-tuple
+                     | "(" Procs ")"                       [strict]  // n-tuple, n > 2
 
 // GROUND TERMS
-syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
-
-// Expressions - resolve to ground term
-syntax       Exp ::= AExp                                          // AExp < Exp
-                   | BExp                                          // BExp < Exp
+  syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
 
 // Arithmetic
-syntax      AExp ::= "(" AExp ")"                                  //     (_): AExp ------> AExp
-                   | Int                                           //    Int < AExp
-                   > Reify                                         //  Reify < AExp , for interesting message passing: x(y){ *y + 5 }
-                   | String                                        // String < AExp (S1 + S2 => S1 +String S2)
-                   | AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
-                   > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
+  syntax      AExp ::= "(" AExp ")"                                  //     (_): AExp ------> AExp
+                     | Int                                           //    Int < AExp
+                     | Reify                                         //  Reify < AExp , for interesting message passing: x(y){ *y + 5 }
+                     | String                                        // String < AExp (S1 + S2 => S1 +String S2)
+                     > AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
+                     > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
 
 // Boolean
-syntax      BExp ::= Bool                                          //   Bool < BExp
-                   | "(" BExp ")"                                  // (_): BExp -----------> BExp
-                   | Reify                                         //  Reify < BExp
-                   | String                                        // String < BExp
-                   | AExp  "<=" AExp                  [seqstrict]  // _<=_: AExp x AExp ---> BExp
-                   | "not" BExp                          [strict]  // not_: BExp ----------> BExp
-                   | BExp "and" BExp                  [strict(1)]  // and: BExp -----------> BExp
-                   > BExp  "or" BExp                     [strict]  // or: BExp ------------> BExp
+  syntax      BExp ::= Bool                                          //   Bool < BExp
+                     | "(" BExp ")"                                  //  (_): BExp ----------> BExp
+                     | Reify                                         //  Reify < BExp
+                     | String                                        // String < BExp
+                     | AExp  "<=" AExp                  [seqstrict]  // _<=_: AExp x AExp ---> BExp
+                     | "not" BExp                          [strict]  // not_: BExp ----------> BExp
+                     > BExp "and" BExp                  [strict(1)]  //  and: BExp ----------> BExp
+                     > BExp  "or" BExp                     [strict]  //   or: BExp ----------> BExp
 
-// Alpha Equivalence
-syntax      Bool ::= Set "==" Set
-
-// Structural Equivalence
-syntax      Bool ::= Proc "equiv" Proc                     [left]
+// Structural & Name Equivalences
+syntax      Bool ::= Proc "equiv"  Proc
+                   | Name "equivN" Name
 
 syntax KVariable ::= Name
 
@@ -92,7 +114,7 @@ import GRHO-SYNTAX
 import SUBSTITUTION
 
   configuration
-    <T>
+    <T color="purple">
       <threadpool color="red">
         <thread multiplicity="*">                             //collection of threads
           <k> $PGM:Proc </k>                                  //programs and computations are process-based
@@ -118,46 +140,38 @@ import SUBSTITUTION
 syntax KResult ::= Ground | Reify | Set
 
 // Arithmetic
-rule I1:Int + I2:Int => I1 +Int I2
-rule I1:Int * I2:Int => I1 *Int I2
+rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
+rule I1:Int * I2:Int => I1 *Int I2    [anywhere]
 
 // Boolean
-rule I1:Int <= I2:Int => I1 <=Int I2
-rule not B:Bool => notBool B
-rule true and B:Bool => B
-rule false and _ => false
+rule I1:Int <= I2:Int => I1 <=Int I2  [anywhere]
+rule not B:Bool => notBool B          [anywhere]
+rule true and B:Bool => B             [anywhere]
+rule false and _ => false             [anywhere]
 
 // Set
 //rule S1:Set + S2:Set => S1 S2
 //rule S1:Set - S2:Set => S1 -Set S2
 
 // String
-rule S1:String + S2:String => S1 +String S2
-
-// Free & Bound Names
-rule FN( Nil )      => .Set
-rule FN( _:Bool   ) => .Set
-rule FN( _:Int    ) => .Set
-rule FN( _:String ) => .Set
-
-rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
-
-rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
-
-rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
-
-rule FN( * X:Name )             => SetItem(X)
+rule S1:String + S2:String => S1 +String S2  [anywhere]
 
 // PAR OPERATOR SEMANTICS
-rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
-     (.Bag => <thread> <k> P1 </k> </thread>)
-     (.Bag => <thread> <k> P2 </k> </thread>)                 //[structural]
+rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>
+     (.Bag => <thread> <k> P </k> </thread>)
+     (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
 // SEND OPERATOR SEMANTICS
-rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
+rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
      (.Bag => <send>
                 <schan> X </schan>                            //sending channel X
-                <msg>   P   </msg>                            //message sent @P
+                <msg>   P   </msg>                            //message sent P
+              </send>)                                        //[structural]
+
+rule <k> X:Name ! T:RhoTuple => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
+     (.Bag => <send>
+                <schan> X </schan>                            //sending channel X
+                <msg>   T   </msg>                            //message sent T
               </send>)                                        //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
@@ -182,28 +196,26 @@ rule                                                          //dissolve send an
    <schan> X    </schan>                                      // channel X
    <msg>   Q:Proc </msg>                                      // message Q
  </send> => .Bag)
-(.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                //spawn single <thread/> holding sub P[Z / Y]
-[comm]                                                        //tagged "comm" for tracking nondeterminism
+(.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
+[comm,strict]                                                 //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
 //  P | Q      \equiv Q | P
 // (P | Q) | R \equiv P | (Q | R)
 
-// Clean up parred expressions
-rule    Nil | P:Proc => P                       [anywhere]
-rule P:Proc | Nil    => P                       [anywhere]
+// Eliminate unnecessary Nils
+rule    Nil | P:Proc => P                   //  [anywhere]
+rule P:Proc | Nil    => P                   //  [anywhere]
 
 // Dissolve computationally meaningless threads
-rule  <thread> <k> .K </k> </thread> => .Bag  [structural]  //empty threads
-
+rule <thread> <k> .K  </k> </thread> => .Bag  [structural]  //empty threads
 rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
-// NAME REDUCTIONS
 rule   @ * N:Name => N                          [anywhere]
 
 // INVERSES
@@ -215,8 +227,18 @@ rule   * @ P:Proc => P                          [anywhere]
 
 // SYNTACTIC SUBSTITUTION
 
-// SEMANTIC SUBSTITUTION
+// Free & Bound Names
+rule FN(   Nil    ) => .Set
+rule FN( _:Bool   ) => .Set
+rule FN( _:Int    ) => .Set
+rule FN( _:String ) => .Set
 
-rule P1:Proc equiv P2:Proc => P1 ==K P2
+rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
+
+rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
+
+rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
+
+rule FN( * X:Name )             => SetItem(X)
 
 endmodule
