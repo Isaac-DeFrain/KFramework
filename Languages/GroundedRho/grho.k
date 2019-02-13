@@ -99,19 +99,19 @@ module GRHO-SYNTAX
                      > BExp  "or" BExp                     [strict]  //   or: BExp ----------> BExp
 
 // Structural & Name Equivalences
-syntax      Bool ::= Proc "equiv"  Proc
-                   | Name "equivN" Name
+  syntax      Bool ::= Proc "equiv"  Proc
+                     | Name "equivN" Name
 
-syntax KVariable ::= Name
+  syntax KVariable ::= Name
 
-syntax     KItem ::= Name | Proc
+  syntax     KItem ::= Name | Proc
 
 endmodule
 
 
 module GRHO
-import GRHO-SYNTAX
-import SUBSTITUTION
+  import GRHO-SYNTAX
+  import SUBSTITUTION
 
   configuration
     <T color="purple">
