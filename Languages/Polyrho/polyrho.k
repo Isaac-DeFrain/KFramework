@@ -1,13 +1,13 @@
 // Polyadic Rho-Calculus
 
 require "domains.k"
-require "kast.k"
+//require "kast.k"
 require "substitution.k"
 
 module POLYRHO-SYNTAX
   import DOMAINS
-  import KAST
-  import KSEQ-SYMBOLIC
+//  import KAST
+//  import KSEQ-SYMBOLIC
   import SUBSTITUTION
 
 //-----------------
@@ -105,9 +105,10 @@ syntax         Names ::= "{" Names "}"                             [bracket]
 //----------------
 //--- PATTERNS ---
 //----------------
+syntax           Var ::= Id
 
 //--- Pure Process Patterns ---
-syntax       ProcVar ::= Id                                [klabel(procvar)]
+syntax       ProcVar ::= Var                               [klabel(procvar)]
 
 syntax      ProcVars ::= "{" ProcVars "}"                          [bracket]
                        | ProcVar
@@ -157,11 +158,11 @@ syntax     RbindPats ::= RbindPat
                        | RbindPats ";" RbindPats
 
 // SendPat
-syntax       SendPat ::= NamePat "!" "(" Content    ")"
-                       | Name    "!" "(" ContentPat ")"
-                       | NamePat "!" "(" ContentPat ")"
+syntax       SendPat ::= NamePat "!" Content
+                       | Name    "!" ContentPat
+                       | NamePat "!" ContentPat
 
-syntax    ContentPat ::= ProcPat
+syntax    ContentPat ::= "(" ProcPat ")"
                        | RhoTuplePat
 
 // EvalPat
@@ -212,7 +213,7 @@ syntax    ProcOrPats ::= "{" ProcOrPats "}"
                        | ProcOrPats "," ProcOrPats
 */
 //--- Name Patterns ---
-syntax       NameVar ::= #LowerId                          [klabel(namevar)]
+syntax       NameVar ::= Var                               [klabel(namevar)]
 
 syntax      NameVars ::= "{" NameVars "}"
                        | NameVar
@@ -228,7 +229,16 @@ syntax      NamePats ::= "{" NamePats "}"
                        | NamePat
                        | NamePat  "," NamePats
                        | NamePats "," NamePat
+                       | NamePats "," NamePat "," NamePats
                        | NamePats "," NamePats
+
+syntax         KItem ::= ProcOrPat
+                       | Name
+                       | NamePat
+                       | Content
+                       | ContentPat
+                       | Receipt
+                       | ReceiptPat
 
 endmodule
 
@@ -239,7 +249,7 @@ module POLYRHO
     <T>
       <threadpool color="red">
         <thread multiplicity="*">                               //collection of threads
-          <k> $PGM:ProcOrPat </k>                                    //programs and computations are process-based
+          <k> $PGM:ProcOrPat </k>                               //programs and computations are process-based
         </thread>                                               //
       </threadpool>                                             //tuplespace stores sends and receives
       <tuplespace color="blue">                                 //
@@ -251,22 +261,22 @@ module POLYRHO
         </sends>                                                //
         <receives color="green">                                //**receives**
           <rec color="yellow" multiplicity="*">                 //
-            <bind> .K </bind>                                 //binding varible in continuation
-            <cont> .K </cont>                                 //continuation
+            <bind> .K </bind>                                   //pattern or variable binding in continuation
+            <cont> .K </cont>                                   //continuation
           </rec>
         </receives>
       </tuplespace>
     </T>
 
-//--- Collections and Patterns ---
-// RhoList & Pat
+//--- Collections ---
+// RhoList
   rule L:RhoList .RhoList => L
   rule .RhoList L:RhoList => L
   rule [ P:Proc  ] [ Q:Procs ] => [ P , Q ]
   rule [ P:Procs ] [ Q:Proc  ] => [ P , Q ]
   rule [ P:Procs ] [ Q:Procs ] => [ P , Q ]
 
-// RhoList & Pat
+// RhoListPat
   rule L:RhoListPat .RhoListPat => L
   rule .RhoListPat L:RhoListPat => L
   rule [ P:ProcPat  ] [ Q:ProcPats ] => [ P , Q ]
@@ -302,42 +312,73 @@ module POLYRHO
   rule Set( P:ProcPats ) Set( Q:ProcPats ) => Set( P , Q )
 
 // RhoTuple
+// Arithmetic & Boolean operations
 
 // PAR OPERATOR SEMANTICS
-  rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
-       (.Bag => <thread> <k> P1 </k> </thread>)
-       (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
+  rule <thread> <k> P:Proc | Q:Proc => .K ...</k> </thread>
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)               //[structural]
 
-  rule <thread> <k> P1:ProcPat | P2:Proc => . ...</k> </thread>
-       (.Bag => <thread> <k> P1 </k> </thread>)
-       (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
+  rule <thread> <k> P:ProcPat | Q:Proc => .K ...</k> </thread>
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)                //[structural]
 
-  rule <thread> <k> P1:Proc | P2:ProcPat => . ...</k> </thread>
-       (.Bag => <thread> <k> P1 </k> </thread>)
-       (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
+  rule <thread> <k> P:Proc | Q:ProcPat => .K ...</k> </thread>
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)                //[structural]
 
 
-  rule <thread> <k> P1:ProcPat | P2:ProcPat => . ...</k> </thread>
-       (.Bag => <thread> <k> P1 </k> </thread>)
-       (.Bag => <thread> <k> P2 </k> </thread>)               //[structural]
+  rule <thread> <k> P:ProcPat | Q:ProcPat => .K ...</k> </thread>
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)                //[structural]
 
 // SEND OPERATOR SEMANTICS
-  rule <k> X:Name ! ( P:Proc ) =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name ! C:Content => .K ...</k>                   //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>
                   <schan> X </schan>                          //sending channel X
-                  <msg>   P   </msg>                          //message sent @P
+                  <msg>   C   </msg>                          //content
                 </send>)                                      //[structural]
 
-  rule <k> X:Name ! T:RhoTuple =>  . ...</k>                  //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name ! C:ContentPat => .K ...</k>                //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>
                   <schan> X </schan>                          //sending channel X
-                  <msg>   T   </msg>                          //message sent @P
+                  <msg>   C   </msg>                          //content
+                </send>)                                      //[structural]
+
+  rule <k> X:NamePat ! C:Content => .K ...</k>                //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>
+                  <schan> X </schan>                          //sending channel X
+                  <msg>   C   </msg>                          //content
+                </send>)                                      //[structural]
+
+  rule <k> X:NamePat ! C:ContentPat => .K ...</k>             //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>
+                  <schan> X </schan>                          //sending channel X
+                  <msg>   C   </msg>                          //content
                 </send>)                                      //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
-  rule <k>  for( R:Receipt ) { P:Proc } => . ...</k> //dissolve Rec in <threadpool/> and spawn <rec/>
+  rule <k>  for( Y:NamePat <- X:Name ) { P:Proc } => .K ...</k>          //dissolve Rec in <threadpool/> and spawn <rec/>
        (.Bag => <rec>
-                  <bind> R </bind>
+                  <bind> Y <- X </bind>
+                  <cont> P  </cont>                           //continuation P
+                </rec>)                                       //[structural]
+
+  rule <k>  for( Y:NamePat <- X:Name ) { P:ProcPat } => .K ...</k>       //dissolve Rec in <threadpool/> and spawn <rec/>
+       (.Bag => <rec>
+                  <bind> Y <- X </bind>
+                  <cont> P  </cont>                           //continuation P
+                </rec>)                                       //[structural]
+
+  rule <k>  for( Y:NamePat <- X:NamePat ) { P:Proc } => .K ...</k>       //dissolve Rec in <threadpool/> and spawn <rec/>
+       (.Bag => <rec>
+                  <bind> Y <- X </bind>
+                  <cont> P  </cont>                           //continuation P
+                </rec>)                                       //[structural]
+
+  rule <k>  for( Y:NamePat <- X:NamePat ) { P:ProcPat } => .K ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
+       (.Bag => <rec>
+                  <bind> Y <- X </bind>
                   <cont> P  </cont>                           //continuation P
                 </rec>)                                       //[structural]
 
@@ -347,8 +388,7 @@ module POLYRHO
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
   rule                                                        //dissolve send and receive on "same" channel
   (<rec>                                                      //dissolve receive:
-     <rchan> X:Name </rchan>                                  // channel X
-     <bvar>  Y:Name  </bvar>                                  // binding variable Y
+     <bind> Y:NamePat <- X:Name </bind>
      <cont>  P:Proc  </cont>                                  // continuation P
    </rec> => .Bag)
   (<send>                                                     //dissolve send:
@@ -364,8 +404,8 @@ module POLYRHO
 // (P | Q) | R \equiv P | (Q | R)
 
 // Clean up parred expressions
-  rule        P:Proc | Nil => P                 [structural]  //Nils in <k/>
-  rule <cont> P:Proc | Nil => P </cont>         [structural]  //Nils in <cont/>
+  rule P:Proc | Nil => P                        [structural,anywhere]  //Nils in <k/>
+  rule Nil | P:Proc => P                        [structural,anywhere]  //Nils in <cont/>
 
 // Dissolve computationally meaningless threads
   rule <thread> <k> .K  </k> </thread> => .Bag  [structural]  //empty threads
