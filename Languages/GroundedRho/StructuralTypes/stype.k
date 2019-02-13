@@ -1,4 +1,4 @@
-// Structural type system for RHO-CALCULUS
+// Structural type system for Grounded RHO-CALCULUS
 // Type = Structural binary tree
 
 require "domains.k"
@@ -71,10 +71,6 @@ syntax            Reify ::= "*" Name                                      [reify
 syntax           Ground ::= Bool                                                   //   Bool < Ground
                           | Int                                                    //    Int < Ground
                           | String                                                 // String < Ground
-
-//syntax      KVariable ::= Proc | ProcPat
-
-//syntax        Pattern ::= ProcPat
 
 //------------------------
 //--- Process Patterns ---
@@ -171,6 +167,7 @@ syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf      
 
 //-- toString --
 syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
+                          | "toString(" Type ")"
 
 syntax             Leaf ::= Ground
                           | NameVar
