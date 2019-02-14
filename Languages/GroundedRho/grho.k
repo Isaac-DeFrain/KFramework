@@ -25,6 +25,7 @@ module GRHO-SYNTAX
 
 	syntax     Names ::= Name "," Name                                 // _,_: Name x Name ----> Names
 	                   | Name "," Names                                // _,_: Name x Names ---> Names
+										 | "@" Procs                                     // for tuple comms
 
 //-----------------
 //--- PROCESSES ---
@@ -108,7 +109,7 @@ module GRHO-SYNTAX
 
   syntax KVariable ::= Name | Names
 
-  syntax     KItem ::= Name | Proc
+  syntax     KItem ::= Name | Names | Proc | Procs
 
 endmodule
 
@@ -129,7 +130,6 @@ module GRHO
           <send color="cyan" multiplicity="*">                //
             <schan> .K </schan>                               //sending channel (many messages on same channel)
             <msg>   .K   </msg>                               //message
-            <tuple> .K </tuple>                               //true = tuple / false = proc
           </send>                                             //
         </sends>                                              //
         <receives color="green">                              //**receives**
@@ -167,72 +167,72 @@ module GRHO
        (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
 // SEND OPERATOR SEMANTICS
+// Process messages
   rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
-       (.Bag => <send>
+       (.Bag => <send>                                          //
                   <schan>   X   </schan>                        //sending channel X
                   <msg>     P     </msg>                        //message sent P
-                  <tuple> false </tuple>                        //process
                 </send>)                                        //[structural]
 
-  rule <k> X:Name ! T:RhoTuple => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
-       (.Bag => <send>
+// 1-tuple messages = Process messages?
+  rule <k> X:Name ! ( P:Proc ,) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>                                          //
                   <schan>  X   </schan>                         //sending channel X
-                  <msg>    T     </msg>                         //message sent T
-                  <tuple> true </tuple>                         //tuple
+                  <msg>    P     </msg>                         //message sent P
                 </send>)                                        //[structural]
+
+// N-tuple messages, N > 1
+  rule <k> X:Name ! ( P:Procs ) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
+			 (.Bag => <send>                                          //
+			            <schan> X </schan>                            //sending channel X
+			            <msg>   P   </msg>                            //message sent P
+			          </send>)                                        //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
   rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>           //dissolve Rec in <threadpool/> and spawn <rec/>
-       (.Bag => <rec>
+       (.Bag => <rec>                                           //
                   <rchan> X </rchan>                            //receiving channel X
                   <bvar>  Y  </bvar>                            //variable Y binding in continuation P
                   <cont>  P  </cont>                            //continuation P
                 </rec>)                                         //[structural]
 
 	rule <k>  X:Name ( Y:Names ) { P:Proc } => . ...</k>          //dissolve Rec in <threadpool/> and spawn <rec/>
-	     (.Bag => <rec>
+	     (.Bag => <rec>                                           //
 	                <rchan> X </rchan>                            //receiving channel X
 	                <bvar>  Y  </bvar>                            //variable Y binding in continuation P
 	                <cont>  P  </cont>                            //continuation P
 	              </rec>)                                         //[structural]
 
+// COMM EVENT: x!(Q) | y(z){P} and x equivN y => P[@Q / y]
 
-// REDUCTION RULES
-
-// COMM EVENT
-// Comm: x!(Q) | x(y){P} => P[@Q / y]
-// Process messages
+//--- Process messages ---
   rule                                                          //dissolve send and receive on "same" channel
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
      <bvar>  Y:Name  </bvar>                                    // binding variable Y
      <cont>  P:Proc  </cont>                                    // continuation P
-   </rec> => .Bag)
+   </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X     </schan>                                     // channel X
      <msg>   Q:Proc  </msg>                                     // message Q
-     <tuple> false </tuple>                                     // process
-   </send> => .Bag)
+   </send> => .Bag)                                             //
   (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
-// Tuple messages
+//--- Tuple messages ---
 // requires binding variable Y to be a tuple of the same length as T
 // substitution is done by mapping the coordinates
   rule                                                          //dissolve send and receive on "same" channel
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
-     <bvar>  Y:Name  </bvar>                                    // binding variable Y
+     <bvar>  Y:Names  </bvar>                                   // binding variable Y
      <cont>  P:Proc  </cont>                                    // continuation P
-   </rec> => .Bag)
+   </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
-     <schan> X         </schan>                                 // channel X
-     <msg>   T:RhoTuple  </msg>                                 // message Q
-     <tuple> true      </tuple>                                 // process
-   </send> => .Bag)
-// first create the map {T_i : Y_i} and then substitute into P
-//
-  (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
+     <schan> X      </schan>                                    // channel X
+     <msg>   Q:Procs  </msg>                                    // message Q
+   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution
+  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
