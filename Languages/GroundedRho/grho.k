@@ -42,7 +42,8 @@ module GRHO-SYNTAX
 
   syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
-  syntax   Receive ::= Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name x Proc ---> Receive
+  syntax   Receive ::= Name "(" Name  ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name  x Proc ---> Receive
+	                   | Name "(" Names ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive
 
   syntax      Send ::= Name "!" "(" Proc ")"                         // _!(_): Name x Proc -------------> Send
                      | Name "!" RhoTuple                             //   _!_: Name x RhoTuple ---------> Send
@@ -105,7 +106,7 @@ module GRHO-SYNTAX
   syntax      Bool ::= Proc "equiv"  Proc
                      | Name "equivN" Name
 
-  syntax KVariable ::= Name
+  syntax KVariable ::= Name | Names
 
   syntax     KItem ::= Name | Proc
 
