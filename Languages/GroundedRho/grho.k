@@ -52,7 +52,7 @@ module GRHO-SYNTAX
   syntax      Proc ::= Set                                           // Set < Proc
                      | "(" Set ")"                        [bracket]  // (_): Set ------------> Set
 
-  syntax     Procs ::= Proc "," Proc                       [strict]   // _,_: Proc x Proc ----> Procs
+  syntax     Procs ::= Proc "," Proc                       [strict]  // _,_: Proc x Proc ----> Procs
                      | Proc "," Procs                      [strict]  // _,_: Proc x Procs ---> Procs
 
 // Collection
@@ -125,6 +125,7 @@ module GRHO
           <send color="cyan" multiplicity="*">                //
             <schan> .K </schan>                               //sending channel (many messages on same channel)
             <msg>   .K   </msg>                               //message
+            <tuple> .K </tuple>                               //true = tuple / false = proc
           </send>                                             //
         </sends>                                              //
         <receives color="green">                              //**receives**
@@ -137,67 +138,85 @@ module GRHO
       </tuplespace>
     </T>
 
-syntax KResult ::= Ground | Reify | Set
+  syntax KResult ::= Ground | Reify | Set
 
 // Arithmetic
-rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
-rule I1:Int * I2:Int => I1 *Int I2    [anywhere]
+  rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
+  rule I1:Int * I2:Int => I1 *Int I2    [anywhere]
 
 // Boolean
-rule I1:Int <= I2:Int => I1 <=Int I2  [anywhere]
-rule not B:Bool => notBool B          [anywhere]
-rule true and B:Bool => B             [anywhere]
-rule false and _ => false             [anywhere]
+  rule I1:Int <= I2:Int => I1 <=Int I2  [anywhere]
+  rule not B:Bool => notBool B          [anywhere]
+  rule true and B:Bool => B             [anywhere]
+  rule false and _ => false             [anywhere]
 
 // Set
 //rule S1:Set + S2:Set => S1 S2
 //rule S1:Set - S2:Set => S1 -Set S2
 
 // String
-rule S1:String + S2:String => S1 +String S2  [anywhere]
+  rule S1:String + S2:String => S1 +String S2  [anywhere]
 
 // PAR OPERATOR SEMANTICS
-rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>
-     (.Bag => <thread> <k> P </k> </thread>)
-     (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
+  rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
 // SEND OPERATOR SEMANTICS
-rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
-     (.Bag => <send>
-                <schan> X </schan>                            //sending channel X
-                <msg>   P   </msg>                            //message sent P
-              </send>)                                        //[structural]
+  rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>
+                  <schan>   X   </schan>                        //sending channel X
+                  <msg>     P     </msg>                        //message sent P
+                  <tuple> false </tuple>                        //process
+                </send>)                                        //[structural]
 
-rule <k> X:Name ! T:RhoTuple => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
-     (.Bag => <send>
-                <schan> X </schan>                            //sending channel X
-                <msg>   T   </msg>                            //message sent T
-              </send>)                                        //[structural]
+  rule <k> X:Name ! T:RhoTuple => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>
+                  <schan>  X   </schan>                         //sending channel X
+                  <msg>    T     </msg>                         //message sent T
+                  <tuple> true </tuple>                         //tuple
+                </send>)                                        //[structural]
 
 // RECEIVE OPERATOR SEMANTICS
-rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>           //dissolve Rec in <threadpool/> and spawn <rec/>
-     (.Bag => <rec>
-                <rchan> X </rchan>                            //receiving channel X
-                <bvar>  Y  </bvar>                            //variable Y binding in continuation P
-                <cont>  P  </cont>                            //continuation P
-              </rec>)                                         //[structural]
+  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>           //dissolve Rec in <threadpool/> and spawn <rec/>
+       (.Bag => <rec>
+                  <rchan> X </rchan>                            //receiving channel X
+                  <bvar>  Y  </bvar>                            //variable Y binding in continuation P
+                  <cont>  P  </cont>                            //continuation P
+                </rec>)                                         //[structural]
 
 // REDUCTION RULES
 
 // COMM EVENT
 // Comm: x!(Q) | x(y){P} => P[@Q / y]
-rule                                                          //dissolve send and receive on "same" channel
-(<rec>                                                        //dissolve receive:
-   <rchan> X:Name </rchan>                                    // channel X
-   <bvar>  Y:Name  </bvar>                                    // binding variable Y
-   <cont>  P:Proc  </cont>                                    // continuation P
- </rec> => .Bag)
-(<send>                                                       //dissolve send:
-   <schan> X    </schan>                                      // channel X
-   <msg>   Q:Proc </msg>                                      // message Q
- </send> => .Bag)
-(.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
-[comm]                                                        //tagged "comm" for tracking nondeterminism
+// Process messages
+  rule                                                          //dissolve send and receive on "same" channel
+  (<rec>                                                        //dissolve receive:
+     <rchan> X:Name </rchan>                                    // channel X
+     <bvar>  Y:Name  </bvar>                                    // binding variable Y
+     <cont>  P:Proc  </cont>                                    // continuation P
+   </rec> => .Bag)
+  (<send>                                                       //dissolve send:
+     <schan> X     </schan>                                     // channel X
+     <msg>   Q:Proc  </msg>                                     // message Q
+     <tuple> false </tuple>                                     // process
+   </send> => .Bag)
+  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+  rule                                                          //dissolve send and receive on "same" channel
+  (<rec>                                                        //dissolve receive:
+     <rchan> X:Name </rchan>                                    // channel X
+     <bvar>  Y:Name  </bvar>                                    // binding variable Y - restrict to matching only tuples of same length!
+     <cont>  P:Proc  </cont>                                    // continuation P
+   </rec> => .Bag)
+  (<send>                                                       //dissolve send:
+     <schan> X         </schan>                                 // channel X
+     <msg>   T:RhoTuple  </msg>                                 // message Q
+     <tuple> true      </tuple>                                 // process
+   </send> => .Bag)
+  (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
@@ -205,21 +224,21 @@ rule                                                          //dissolve send an
 // (P | Q) | R \equiv P | (Q | R)
 
 // Eliminate unnecessary Nils
-rule    Nil | P:Proc => P                   //  [anywhere]
-rule P:Proc | Nil    => P                   //  [anywhere]
+  rule    Nil | P:Proc => P                   //  [anywhere]
+  rule P:Proc | Nil    => P                   //  [anywhere]
 
 // Dissolve computationally meaningless threads
-rule <thread> <k> .K  </k> </thread> => .Bag  [structural]  //empty threads
-rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //Nil threads
+  rule <thread> <k> .K  </k> </thread> => .Bag  [structural]  //empty threads
+  rule <thread> <k> Nil </k> </thread> => .Bag  [structural]  //Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
 
-rule   @ * N:Name => N                          [anywhere]
+  rule   @ * N:Name => N                          [anywhere]
 
 // INVERSES
-rule   * @ P:Proc => P                          [anywhere]
+  rule   * @ P:Proc => P                          [anywhere]
 
 // PAR: P|Q -> P'|Q when P -> P'
 
@@ -228,17 +247,17 @@ rule   * @ P:Proc => P                          [anywhere]
 // SYNTACTIC SUBSTITUTION
 
 // Free & Bound Names
-rule FN(   Nil    ) => .Set
-rule FN( _:Bool   ) => .Set
-rule FN( _:Int    ) => .Set
-rule FN( _:String ) => .Set
+  rule FN(   Nil    ) => .Set
+  rule FN( _:Bool   ) => .Set
+  rule FN( _:Int    ) => .Set
+  rule FN( _:String ) => .Set
 
-rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
+  rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
 
-rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
+  rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
 
-rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
+  rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
 
-rule FN( * X:Name )             => SetItem(X)
+  rule FN( * X:Name )             => SetItem(X)
 
 endmodule
