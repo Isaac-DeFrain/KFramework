@@ -36,20 +36,41 @@ module GRHO-SYNTAX
                      | Ground                                        // Bool, Int, String < Proc
                      | AExp                                          // Arithmetic expressions: AExp < Proc
                      | BExp                                          //    Boolean expressions: BExp < Proc
-                     | Reify                                         //   Reify < Proc
+                     | Eval                                          //    Eval < Proc
                      | Receive                                       // Receive < Proc
                      | Send                                          //    Send < Proc
                      > Par                                           //     Par < Proc
 
   syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
-  syntax   Receive ::= Name "(" Name  ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name  x Proc ---> Receive, monadic
-	                   | Name "(" Names ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive, polyadic
+	syntax   Receive ::= "for" "(" Name  "<-" Name ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name  x Proc ---> Receive, single pattern
+	                   | "for" "(" Names "<-" Name ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive, several patterns
+/*
+  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"  [binder(2)]  // for(_){_}: Bind  x Proc ---> Receive, monadic
+	                   | "for" "(" Binds ")" "{" Proc "}"  [binder(2)]  // for(_){_}: Binds x Proc ---> Receive, polyadic
 
+	syntax      Bind ::= Lbind                                         // linear bind, for( y <- x ){ P }
+	                   | Rbind                                         // repeated bind, for( y <= x ){ P }
+
+  syntax     Binds ::= Lbinds
+	                   | Rbinds
+
+	syntax     Lbind ::= Name  "<-" Name
+	                   | Names "<-" Name
+
+	syntax    Lbinds ::= Lbind
+	                   | Lbind ";" Lbinds
+
+	syntax     Rbind ::= Name  "<=" Name
+	                   | Names "<=" Name
+
+ 	syntax    Rbinds ::= Rbind
+ 	                   | Rbind ";" Rbinds
+*/
   syntax      Send ::= Name "!" "(" Proc ")"                         // _!(_): Name x Proc -------------> Send, monadic
                      | Name "!" RhoTuple                             //   _!_: Name x RhoTuple ---------> Send, polyadic
 
-  syntax     Reify ::= "*" Name
+  syntax      Eval ::= "*" Name
 
   syntax       Set ::= "FN(" Proc ")"                    [function]  // FN: Proc ------------> Set
 
@@ -82,13 +103,14 @@ module GRHO-SYNTAX
   syntax  RhoTuple ::= "(" Proc ",)"                                  // 1-tuple
                      | "(" Procs ")"                                  // n-tuple, n > 2
 
-// GROUND TERMS
+// Ground terms
   syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
 
+// AExp & BExp resolve to ground terms
 // Arithmetic
   syntax      AExp ::= "(" AExp ")"                                  //     (_): AExp ------> AExp
                      | Int                                           //    Int < AExp
-                     | Reify                                         //  Reify < AExp , for interesting message passing: x(y){ *y + 5 }
+                     | Eval                                          //   Eval < AExp , for interesting message passing: x(y){ *y + 5 }
                      | String                                        // String < AExp (S1 + S2 => S1 +String S2)
                      > AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
                      > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
@@ -96,14 +118,14 @@ module GRHO-SYNTAX
 // Boolean
   syntax      BExp ::= Bool                                          //   Bool < BExp
                      | "(" BExp ")"                                  //  (_): BExp ----------> BExp
-                     | Reify                                         //  Reify < BExp
+                     | Eval                                          //   Eval < BExp
                      | String                                        // String < BExp
                      | AExp  "<=" AExp                  [seqstrict]  // _<=_: AExp x AExp ---> BExp
                      | "not" BExp                          [strict]  // not_: BExp ----------> BExp
                      > BExp "and" BExp                  [strict(1)]  //  and: BExp ----------> BExp
                      > BExp  "or" BExp                     [strict]  //   or: BExp ----------> BExp
 
-// Structural & Name Equivalences
+// Structural & Name Equivalences - not finished yet
   syntax      Bool ::= Proc "equiv"  Proc
                      | Name "equivN" Name
 
@@ -129,20 +151,24 @@ module GRHO
         <sends color="teal">                                  //**sends**
           <send color="cyan" multiplicity="*">                //
             <schan> .K </schan>                               //sending channel (many messages on same channel)
-            <msg>   .K   </msg>                               //message
+            <msg>   .K   </msg>                               //sent message
+						<tuple> .K </tuple>                               //equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
+						<sper>  .K  </sper>                               //1 for persistent send, 0 for single send
           </send>                                             //
         </sends>                                              //
-        <receives color="green">                              //**receives**
+        <receives color="green">                              //**receives** - add join cell with fresh int from same join
           <rec color="yellow" multiplicity="*">               //
             <rchan> .K </rchan>                               //receiving channel (many messages on same channel)
             <bvar>  .K  </bvar>                               //binding varible in continuation
+						<join>  .K  </join>                               // 0 for linear listen, else all listens in join get the same fresh int upon entering the tuplespace
+						<rper>  .K  </rper>                               // 1 for persistent listen, 0 for single listen
             <cont>  .K  </cont>                               //continuation
           </rec>
         </receives>
       </tuplespace>
     </T>
 
-  syntax KResult ::= Ground | Reify | Set
+  syntax KResult ::= Ground | Eval | Set
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
@@ -166,19 +192,22 @@ module GRHO
        (.Bag => <thread> <k> P </k> </thread>)
        (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
-// SEND OPERATOR SEMANTICS
+//--- Send Operator Semantics ---
 // Process messages
   rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>                                          //
-                  <schan>   X   </schan>                        //sending channel X
-                  <msg>     P     </msg>                        //message sent P
+                  <schan> X </schan>                            //sending channel X
+                  <msg>   P   </msg>                            //message sent P
+									<tuple> 0 </tuple>                            //
                 </send>)                                        //[structural]
 
+// Tuple messages
 // 1-tuple messages = Process messages?
   rule <k> X:Name ! ( P:Proc ,) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>                                          //
-                  <schan>  X   </schan>                         //sending channel X
-                  <msg>    P     </msg>                         //message sent P
+                  <schan> X </schan>                            //sending channel X
+                  <msg>   P   </msg>                            //message sent P
+									<tuple> 1 </tuple>                            //1-tuple
                 </send>)                                        //[structural]
 
 // N-tuple messages, N > 1
@@ -186,37 +215,40 @@ module GRHO
 			 (.Bag => <send>                                          //
 			            <schan> X </schan>                            //sending channel X
 			            <msg>   P   </msg>                            //message sent P
+									<tuple> 2 </tuple>                            //length - need to write this function
 			          </send>)                                        //[structural]
 
-// RECEIVE OPERATOR SEMANTICS
-  rule <k>  X:Name ( Y:Name ) { P:Proc } => . ...</k>           //dissolve Rec in <threadpool/> and spawn <rec/>
+//--- Receive Operator Semantics ---
+  rule <k> for ( Y:Name <- X:Name ) { P:Proc } => . ...</k>     //dissolve Rec in <threadpool/> and spawn <rec/>
        (.Bag => <rec>                                           //
                   <rchan> X </rchan>                            //receiving channel X
                   <bvar>  Y  </bvar>                            //variable Y binding in continuation P
+									<join>  0  </join>                            //no join
                   <cont>  P  </cont>                            //continuation P
                 </rec>)                                         //[structural]
 
-	rule <k>  X:Name ( Y:Names ) { P:Proc } => . ...</k>          //dissolve Rec in <threadpool/> and spawn <rec/>
+	rule <k> for ( Y:Names <- X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
 	     (.Bag => <rec>                                           //
 	                <rchan> X </rchan>                            //receiving channel X
 	                <bvar>  Y  </bvar>                            //variable Y binding in continuation P
+									<join>  0  </join>                            //no join
 	                <cont>  P  </cont>                            //continuation P
 	              </rec>)                                         //[structural]
 
 // COMM EVENT: x!(Q) | y(z){P} and x equivN y => P[@Q / y]
-
 //--- Process messages ---
   rule                                                          //dissolve send and receive on "same" channel
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
      <bvar>  Y:Name  </bvar>                                    // binding variable Y
+		 <join>  0       </join>                                    // no join
      <cont>  P:Proc  </cont>                                    // continuation P
    </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X     </schan>                                     // channel X
      <msg>   Q:Proc  </msg>                                     // message Q
    </send> => .Bag)                                             //
-  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
+  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 //--- Tuple messages ---
@@ -230,9 +262,9 @@ module GRHO
    </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X      </schan>                                    // channel X
-     <msg>   Q:Procs  </msg>                                    // message Q
+     <msg>   T:Procs  </msg>                                    // message T
    </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution
-  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
+  (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
