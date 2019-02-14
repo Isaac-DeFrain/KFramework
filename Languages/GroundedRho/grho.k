@@ -35,7 +35,7 @@ module GRHO-SYNTAX
                      | Reify                                         //   Reify < Proc
                      | Receive                                       // Receive < Proc
                      | Send                                          //    Send < Proc
-                     | Par                                           //     Par < Proc
+                     > Par                                           //     Par < Proc
 
   syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
@@ -204,10 +204,13 @@ module GRHO
   (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
+// Tuple messages
+// requires binding variable Y to be a tuple of the same length as T
+// substitution is done by mapping the coordinates
   rule                                                          //dissolve send and receive on "same" channel
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
-     <bvar>  Y:Name  </bvar>                                    // binding variable Y - restrict to matching only tuples of same length!
+     <bvar>  Y:Name  </bvar>                                    // binding variable Y
      <cont>  P:Proc  </cont>                                    // continuation P
    </rec> => .Bag)
   (<send>                                                       //dissolve send:
@@ -215,6 +218,7 @@ module GRHO
      <msg>   T:RhoTuple  </msg>                                 // message Q
      <tuple> true      </tuple>                                 // process
    </send> => .Bag)
+// need to create the map {T_i : Y_i} for substitution
   (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
