@@ -23,6 +23,9 @@ module GRHO-SYNTAX
 
   syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
 
+	syntax     Names ::= Name "," Name                                 // _,_: Name x Name ----> Names
+	                   | Name "," Names                                // _,_: Name x Names ---> Names
+
 //-----------------
 //--- PROCESSES ---
 //-----------------
@@ -218,7 +221,8 @@ module GRHO
      <msg>   T:RhoTuple  </msg>                                 // message Q
      <tuple> true      </tuple>                                 // process
    </send> => .Bag)
-// need to create the map {T_i : Y_i} for substitution
+// first create the map {T_i : Y_i} and then substitute into P
+//
   (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[Z / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
