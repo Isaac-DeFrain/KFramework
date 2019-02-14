@@ -42,11 +42,11 @@ module GRHO-SYNTAX
 
   syntax       Par ::= Proc "|" Proc                         [left]  //     _|_: Proc x Proc --------------> Par
 
-  syntax   Receive ::= Name "(" Name  ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name  x Proc ---> Receive
-	                   | Name "(" Names ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive
+  syntax   Receive ::= Name "(" Name  ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Name  x Proc ---> Receive, monadic
+	                   | Name "(" Names ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive, polyadic
 
-  syntax      Send ::= Name "!" "(" Proc ")"                         // _!(_): Name x Proc -------------> Send
-                     | Name "!" RhoTuple                             //   _!_: Name x RhoTuple ---------> Send
+  syntax      Send ::= Name "!" "(" Proc ")"                         // _!(_): Name x Proc -------------> Send, monadic
+                     | Name "!" RhoTuple                             //   _!_: Name x RhoTuple ---------> Send, polyadic
 
   syntax     Reify ::= "*" Name
 
@@ -188,6 +188,14 @@ module GRHO
                   <bvar>  Y  </bvar>                            //variable Y binding in continuation P
                   <cont>  P  </cont>                            //continuation P
                 </rec>)                                         //[structural]
+
+	rule <k>  X:Name ( Y:Names ) { P:Proc } => . ...</k>          //dissolve Rec in <threadpool/> and spawn <rec/>
+	     (.Bag => <rec>
+	                <rchan> X </rchan>                            //receiving channel X
+	                <bvar>  Y  </bvar>                            //variable Y binding in continuation P
+	                <cont>  P  </cont>                            //continuation P
+	              </rec>)                                         //[structural]
+
 
 // REDUCTION RULES
 
