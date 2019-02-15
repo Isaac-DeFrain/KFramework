@@ -3,6 +3,7 @@
 
 require "domains.k"
 require "substitution.k"
+require "TupLen/tuplen.k"
 
 module GRHO-SYNTAX
   import DOMAINS
@@ -110,7 +111,7 @@ module GRHO-SYNTAX
 // Arithmetic
   syntax      AExp ::= "(" AExp ")"                                  //     (_): AExp ------> AExp
                      | Int                                           //    Int < AExp
-                     | Eval                                          //   Eval < AExp , for interesting message passing: x(y){ *y + 5 }
+                     | Eval                                          //   Eval < AExp , for interesting message passing: for( y <- x ){ *y + 5 }
                      | String                                        // String < AExp (S1 + S2 => S1 +String S2)
                      > AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
                      > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
@@ -139,30 +140,34 @@ endmodule
 module GRHO
   import GRHO-SYNTAX
   import SUBSTITUTION
+	import TUPLEN
 
   configuration
     <T color="purple">
       <threadpool color="red">
-        <thread multiplicity="*">                             //collection of threads
-          <k> $PGM:Proc </k>                                  //programs and computations are process-based
+        <thread multiplicity="*">                             // collection of threads
+          <k> $PGM:Proc </k>                                  // programs and computations are process-based
         </thread>                                             //
-      </threadpool>                                           //tuplespace stores sends and receives
+      </threadpool>                                           // tuplespace stores sends and receives
       <tuplespace color="blue">                               //
         <sends color="teal">                                  //**sends**
           <send color="cyan" multiplicity="*">                //
-            <schan> .K </schan>                               //sending channel (many messages on same channel)
-            <msg>   .K   </msg>                               //sent message
-						<tuple> .K </tuple>                               //equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
-						<sper>  .K  </sper>                               //1 for persistent send, 0 for single send
+					// type of message
+            <schan> .K </schan>                               // sending channel (many messages on same channel)
+            <msg>   .K   </msg>                               // sent message
+						<tuple> .K </tuple>                               // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
+						<sper>  .K  </sper>                               // 1 for persistent send, 0 for single send
           </send>                                             //
         </sends>                                              //
         <receives color="green">                              //**receives** - add join cell with fresh int from same join
           <rec color="yellow" multiplicity="*">               //
-            <rchan> .K </rchan>                               //receiving channel (many messages on same channel)
-            <bvar>  .K  </bvar>                               //binding varible in continuation
+					// allowed type(s)
+            <rchan> .K </rchan>                               // receiving channel (many messages on same channel)
+            <bvar>  .K  </bvar>                               // binding varible in continuation
+						<bnum>  .K  </bnum>                               // number of bindings
 						<join>  .K  </join>                               // 0 for linear listen, else all listens in join get the same fresh int upon entering the tuplespace
 						<rper>  .K  </rper>                               // 1 for persistent listen, 0 for single listen
-            <cont>  .K  </cont>                               //continuation
+            <cont>  .K  </cont>                               // continuation
           </rec>
         </receives>
       </tuplespace>
@@ -198,7 +203,8 @@ module GRHO
        (.Bag => <send>                                          //
                   <schan> X </schan>                            //sending channel X
                   <msg>   P   </msg>                            //message sent P
-									<tuple> 0 </tuple>                            //
+									<tuple> 0 </tuple>                            //"0-tuple"
+									<sper>  0  </sper>                            //single send
                 </send>)                                        //[structural]
 
 // Tuple messages
@@ -208,14 +214,16 @@ module GRHO
                   <schan> X </schan>                            //sending channel X
                   <msg>   P   </msg>                            //message sent P
 									<tuple> 1 </tuple>                            //1-tuple
+									<sper>  0  </sper>                            //single send
                 </send>)                                        //[structural]
 
 // N-tuple messages, N > 1
   rule <k> X:Name ! ( P:Procs ) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
 			 (.Bag => <send>                                          //
-			            <schan> X </schan>                            //sending channel X
-			            <msg>   P   </msg>                            //message sent P
-									<tuple> 2 </tuple>                            //length - need to write this function
+			            <schan>      X        </schan>                //sending channel X
+			            <msg>        P          </msg>                //message sent P
+									<tuple> #length ( P ) </tuple>                //length of tuple
+									<sper>       0         </sper>                //single send
 			          </send>)                                        //[structural]
 
 //--- Receive Operator Semantics ---
@@ -223,16 +231,20 @@ module GRHO
        (.Bag => <rec>                                           //
                   <rchan> X </rchan>                            //receiving channel X
                   <bvar>  Y  </bvar>                            //variable Y binding in continuation P
+									<bnum>  1  </bnum>                            //
 									<join>  0  </join>                            //no join
+									<rper>  0  </rper>                            //single listen
                   <cont>  P  </cont>                            //continuation P
                 </rec>)                                         //[structural]
 
 	rule <k> for ( Y:Names <- X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
 	     (.Bag => <rec>                                           //
-	                <rchan> X </rchan>                            //receiving channel X
-	                <bvar>  Y  </bvar>                            //variable Y binding in continuation P
-									<join>  0  </join>                            //no join
-	                <cont>  P  </cont>                            //continuation P
+	                <rchan>     X     </rchan>                    //receiving channel X
+	                <bvar>      Y      </bvar>                    //variable Y binding in continuation P
+									<bnum>  #length Y  </bnum>                    //number of binding names
+									<join>      0      </join>                    //no join
+									<rper>      0      </rper>                    //single listen
+	                <cont>      P      </cont>                    //continuation P
 	              </rec>)                                         //[structural]
 
 // COMM EVENT: x!(Q) | y(z){P} and x equivN y => P[@Q / y]
@@ -241,12 +253,16 @@ module GRHO
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
      <bvar>  Y:Name  </bvar>                                    // binding variable Y
+		 <bnum>  1       </bnum>                                    // one name to bind
 		 <join>  0       </join>                                    // no join
+		 <rper>  0       </rper>                                    // single listen
      <cont>  P:Proc  </cont>                                    // continuation P
    </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X     </schan>                                     // channel X
      <msg>   Q:Proc  </msg>                                     // message Q
+		 <tuple> 0     </tuple>                                     // 0-tuple
+		 <sper>  0      </sper>                                     // single send
    </send> => .Bag)                                             //
   (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
@@ -254,18 +270,27 @@ module GRHO
 //--- Tuple messages ---
 // requires binding variable Y to be a tuple of the same length as T
 // substitution is done by mapping the coordinates
+// 1-tuple
   rule                                                          //dissolve send and receive on "same" channel
   (<rec>                                                        //dissolve receive:
      <rchan> X:Name </rchan>                                    // channel X
-     <bvar>  Y:Names  </bvar>                                   // binding variable Y
+     <bvar>  Y:Name  </bvar>                                    // binding variable Y
+		 <bnum>  1       </bnum>                                    // one name to bind
+		 <join>  0       </join>                                    // no join
+		 <rper>  0       </rper>                                    // single listen
      <cont>  P:Proc  </cont>                                    // continuation P
    </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X      </schan>                                    // channel X
-     <msg>   T:Procs  </msg>                                    // message T
-   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution
+     <msg>   T:Proc   </msg>                                    // message T
+		 <tuple> 1      </tuple>                                    // 1-tuple
+		 <sper>  0       </sper>                                    // single send
+   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
   (.Bag => <thread> <k> P[@ T / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+// N-tuple, N > 1
+
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
@@ -296,7 +321,7 @@ module GRHO
 // SYNTACTIC SUBSTITUTION
 
 // Free & Bound Names
-  rule FN(   Nil    ) => .Set
+/*rule FN(   Nil    ) => .Set
   rule FN( _:Bool   ) => .Set
   rule FN( _:Int    ) => .Set
   rule FN( _:String ) => .Set
@@ -308,5 +333,5 @@ module GRHO
   rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
 
   rule FN( * X:Name )             => SetItem(X)
-
+*/
 endmodule
