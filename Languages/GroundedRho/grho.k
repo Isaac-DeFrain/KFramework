@@ -115,6 +115,7 @@ module GRHO-SYNTAX
                      | String                                        // String < AExp (S1 + S2 => S1 +String S2)
                      > AExp "*" AExp                       [strict]  // _*_: AExp x AExp ---> AExp
                      > AExp "+" AExp                       [strict]  // _+_: AExp x AExp ---> AExp
+										 | AExp "-" AExp                       [strict]
 
 // Boolean
   syntax      BExp ::= Bool                                          //   Bool < BExp
@@ -152,7 +153,7 @@ module GRHO
       <tuplespace color="blue">                               //
         <sends color="teal">                                  //**sends**
           <send color="cyan" multiplicity="*">                //
-					// type of message
+					// type of message?
             <schan> .K </schan>                               // sending channel (many messages on same channel)
             <msg>   .K   </msg>                               // sent message
 						<tuple> .K </tuple>                               // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
@@ -161,7 +162,7 @@ module GRHO
         </sends>                                              //
         <receives color="green">                              //**receives** - add join cell with fresh int from same join
           <rec color="yellow" multiplicity="*">               //
-					// allowed type(s)
+					// allowed type(s)?
             <rchan> .K </rchan>                               // receiving channel (many messages on same channel)
             <bvar>  .K  </bvar>                               // binding varible in continuation
 						<bnum>  .K  </bnum>                               // number of bindings
@@ -177,6 +178,7 @@ module GRHO
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
+	rule I1:Int - I2:Int => I1 -Int I2    [anywhere]
   rule I1:Int * I2:Int => I1 *Int I2    [anywhere]
 
 // Boolean
@@ -220,10 +222,10 @@ module GRHO
 // N-tuple messages, N > 1
   rule <k> X:Name ! ( P:Procs ) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
 			 (.Bag => <send>                                          //
-			            <schan>      X        </schan>                //sending channel X
-			            <msg>        P          </msg>                //message sent P
-									<tuple> #length ( P ) </tuple>                //length of tuple
-									<sper>       0         </sper>                //single send
+			            <schan>      X      </schan>                  //sending channel X
+			            <msg>        P        </msg>                  //message sent P
+									<tuple> #length (P) </tuple>                  //length of tuple
+									<sper>       0       </sper>                  //single send
 			          </send>)                                        //[structural]
 
 //--- Receive Operator Semantics ---
@@ -290,7 +292,40 @@ module GRHO
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // N-tuple, N > 1
+  rule                                                          //dissolve send and receive on "same" channel
+  (<rec>                                                        //dissolve receive:
+  	 <rchan> X:Name </rchan>                                    // channel X
+  	 <bvar>  Y:Name , Z:Name </bvar>                            // binding variables Y, Z
+  	 <bnum>  2       </bnum>                                    // N names to bind
+	   <join>  0       </join>                                    // no join
+  	 <rper>  0       </rper>                                    // single listen
+  	 <cont>  P:Proc  </cont>                                    // continuation P
+   </rec> => .Bag)                                              //
+  (<send>                                                       //dissolve send:
+  	 <schan> X             </schan>                             // channel X
+  	 <msg>   Q:Proc , R:Proc </msg>                             // message(s) Q, R
+  	 <tuple> 2             </tuple>                             // 2-tuple
+  	 <sper>  0              </sper>                             // single send
+   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
+  (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)     //spawn single <thread/> holding sub P[@Q / Y]
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
 
+	rule                                                          //dissolve send and receive on "same" channel
+   <rec>                                                        //dissolve receive:
+  	 <rchan> X:Name                </rchan>                     // channel X
+  	 <bvar> Y:Name , Z:Names => Z </bvar>                     // binding variable Y
+  	 <bnum> N:Int => N - 1     </bnum>                     // N names to bind
+	   <join>  0                      </join>                     // no join
+  	 <rper>  0                      </rper>                     // single listen
+  	 <cont> P:Proc => P[@ Q / Y]  </cont>                     // continuation P
+   </rec>                                                       //
+   <send>                                                       //
+  	 <schan>  X                    </schan>                     // channel X
+  	 <msg>   Q:Proc , R:Procs => R </msg>                     // message
+  	 <tuple> N => N - 1       </tuple>                     // N-tuple
+  	 <sper>   0                     </sper>                     // single send
+   </send>                                                      // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
@@ -308,7 +343,6 @@ module GRHO
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
-
   rule   @ * N:Name => N                          [anywhere]
 
 // INVERSES
@@ -325,13 +359,9 @@ module GRHO
   rule FN( _:Bool   ) => .Set
   rule FN( _:Int    ) => .Set
   rule FN( _:String ) => .Set
-
   rule FN( X:Name ( Y:Name )  { P:Proc } ) => SetItem(X) (FN(P) -Set SetItem(Y))
-
   rule FN( X:Name ! ( P:Proc ) )  => SetItem(X) FN(P)
-
   rule FN( P:Proc | Q:Proc )      => FN(P) FN(Q)
-
   rule FN( * X:Name )             => SetItem(X)
 */
 endmodule
