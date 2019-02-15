@@ -312,18 +312,18 @@ module GRHO
 
 	rule                                                          //dissolve send and receive on "same" channel
    <rec>                                                        //dissolve receive:
-  	 <rchan> X:Name                </rchan>                     // channel X
-  	 <bvar> Y:Name , Z:Names => Z </bvar>                     // binding variable Y
-  	 <bnum> N:Int => N - 1     </bnum>                     // N names to bind
-	   <join>  0                      </join>                     // no join
-  	 <rper>  0                      </rper>                     // single listen
-  	 <cont> P:Proc => P[@ Q / Y]  </cont>                     // continuation P
+  	 <rchan> X:Name               </rchan>                      // channel X
+  	 <bvar>  Y:Name , Z:Names => Z </bvar>                      // binding variable Y
+  	 <bnum>  N:Int => N - 1        </bnum>                      // N names to bind
+	   <join>  0                     </join>                      // no join
+  	 <rper>  0                     </rper>                      // single listen
+  	 <cont>  P:Proc => P[@ Q / Y]  </cont>                      // continuation P
    </rec>                                                       //
    <send>                                                       //
-  	 <schan>  X                    </schan>                     // channel X
-  	 <msg>   Q:Proc , R:Procs => R </msg>                     // message
-  	 <tuple> N => N - 1       </tuple>                     // N-tuple
-  	 <sper>   0                     </sper>                     // single send
+  	 <schan>  X                   </schan>                      // channel X
+  	 <msg>    Q:Proc , R:Procs => R </msg>                      // message
+  	 <tuple>  N => N - 1          </tuple>                      // N-tuple
+  	 <sper>   0                    </sper>                      // single send
    </send>                                                      // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
