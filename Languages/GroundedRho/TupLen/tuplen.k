@@ -17,7 +17,7 @@ module TUPLEN
   syntax KResult ::= Int
 
 // Tuples
-  rule #length ( _:Proc ,) => 1
+  rule #length ( _:Proc ) => 1
 	rule #length ( _:Proc , _:Proc  ) => 2
 	rule #length ( _:Proc , P:Procs ) => 1 +Int #length ( P )  [strict]
 
