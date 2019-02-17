@@ -194,7 +194,7 @@ module GRHO
 // PAR OPERATOR SEMANTICS
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>
        (.Bag => <thread> <k> P </k> </thread>)
-       (.Bag => <thread> <k> Q </k> </thread>)    [structural]
+       (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
 //--- Send Operator Semantics ---
 // Process message = 1-tuple
@@ -204,7 +204,7 @@ module GRHO
                   <msg>   P   </msg>                            //message sent P
 									<tuple> 1 </tuple>                            //1-tuple
 									<sper>  0  </sper>                            //single send
-                </send>)                          [structural]
+                </send>)                                        //[structural]
 
 // N-tuple messages, N > 1
   rule <k> X:Name ! ( P:Procs ) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
@@ -213,7 +213,7 @@ module GRHO
 			            <msg>        P        </msg>                  //message sent P
 									<tuple> #length (P) </tuple>                  //length of tuple
 									<sper>       0       </sper>                  //single send
-			          </send>)                          [structural]
+			          </send>)                                        //[structural]
 
 // Persistent receives
 // Process message = 1-tuple
@@ -223,7 +223,7 @@ module GRHO
                   <msg>   P   </msg>                            //message sent P
 									<tuple> 1 </tuple>                            //1-tuple
 									<sper>  1  </sper>                            //single send
-                </send>)                          [structural]
+                </send>)                                        //[structural]
 
 // N-tuple messages, N > 1
   rule <k> X:Name !! ( P:Procs ) => . ...</k>                   //dissolve send in <threadpool/> and spawn <send/>
@@ -232,7 +232,7 @@ module GRHO
 			            <msg>        P        </msg>                  //message sent P
 									<tuple> #length (P) </tuple>                  //length of tuple
 									<sper>       1       </sper>                  //single send
-			          </send>)                          [structural]
+			          </send>)                                        //[structural]
 
 //--- Receive Operator Semantics ---
 // Single receives
@@ -243,7 +243,7 @@ module GRHO
 								  <bnum>  1  </bnum>                            //
 								  <rper>  0  </rper>                            //single listen
                   <cont>  P  </cont>                            //continuation P
-                </rec>)                           [structural]
+                </rec>)                                         //[structural]
 
 	rule <k> for ( Y:Names <- X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
 	     (.Bag => <rec>                                           //
@@ -252,7 +252,7 @@ module GRHO
 			     				<bnum>  #length Y  </bnum>                    //
 					     		<rper>      0      </rper>                    //single listen
 							    <cont>      P      </cont>                    //continuation P
-		     				</rec>)                           [structural]
+		     				</rec>)                                         //[structural]
 
 // Persistent receives
   rule <k> for ( Y:Name <= X:Name ) { P:Proc } => . ...</k>     //dissolve Rec in <threadpool/> and spawn <rec/>
@@ -262,7 +262,7 @@ module GRHO
 				  				<bnum>  1  </bnum>                            //
 					  			<rper>  1  </rper>                            //single listen
 						  		<cont>  P  </cont>                            //continuation P
-							  </rec>)                           [structural]
+							  </rec>)                                         //[structural]
 
   rule <k> for ( Y:Names <= X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
 	  	 (.Bag => <rec>                                           //
@@ -271,7 +271,7 @@ module GRHO
 				  				<bnum>  #length Y  </bnum>                    //
 					  			<rper>      1      </rper>                    //single listen
 						  		<cont>      P      </cont>                    //continuation P
-							  </rec>)                           [structural]
+							  </rec>)                                         //[structural]
 
 // COMM EVENT: x!(Q) | y(z){P} and x equivN y => P[@Q / y]
 
@@ -349,7 +349,7 @@ module GRHO
 		         <bnum>  1  </bnum>                                 // one name to bind
 		         <rper>  0  </rper>                                 // single listen
 		         <cont>  P  </cont>                                 // continuation
-	         </rec>)                                [structural]
+	         </rec>)                                              //[structural]
 
 // 2-tuple (base case for several processes)
   rule                                                          //consume send and keep persistent receive
@@ -372,7 +372,7 @@ module GRHO
   	 <msg>   _:Proc , _:Proc  </msg>                            // message(s)
 	   <tuple> 2              </tuple>                            // 2-tuple
 	   <sper>  0               </sper>                            // single send
-   </send>                                        [structural]
+   </send>                                                      //[structural]
 
 // N-tuple, N > 2
   rule                                                          //consume single send, keep persistent receive
@@ -417,7 +417,7 @@ module GRHO
 		         <msg>   Q   </msg>                                 // message
 		         <tuple> 1 </tuple>                                 // 1-tuple
 		         <sper>  0  </sper>                                 // single send
-	         </send>)                               [structural]
+	         </send>)                                             //[structural]
 
 // 2-tuple (base case for several processes)
   rule                                                          //consume single receive and keep single receive
@@ -439,7 +439,7 @@ module GRHO
 		         <msg>   Q , R    </msg>                            // messages
 		         <tuple> 2      </tuple>                            // 2-tuple
 		         <sper>  0       </sper>                            // single send
-	         </send>)                               [structural]
+	         </send>)                                             //[structural]
 
 // N-tuple, N > 2
   rule                                                          //consume single receive and keep single receive
