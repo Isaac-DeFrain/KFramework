@@ -1,0 +1,7 @@
+// Grounded rho - comm with persistent send
+
+  x!!(1,2,Nil) | for( a,b,c <- x ){ (*a,*b,*c) }
+
+/*
+  Bug: Not retaining send cell in tuplespace
+*/
