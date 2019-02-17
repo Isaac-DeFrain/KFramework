@@ -48,39 +48,29 @@ module GRHO-SYNTAX
 // Receive
 	syntax   Receive ::= "for" "(" Binds ")" "{" Proc "}"  [binder(2)]  // _(_){_}: Name x Names x Proc ---> Receive, several patterns
 
-	syntax      Bind ::= Lbind                                         // linear bind, for( y <- x ){ P }
-	                   | Rbind                                         // repeated bind, for( y <= x ){ P }
-
-  syntax     Binds ::= Lbinds
-	                   | Rbinds
+	syntax     Binds ::= Lbind                                         // single linear bind, for( y <- x ){ P }
+	                   | Lbinds                                        // several linear binds
+	                   | Rbind                                         // single repeated bind, for( y <= x ){ P }
+									 	 | Rbinds                                        // several repeated binds
 
 	syntax     Lbind ::= Name  "<-" Name
 	                   | Names "<-" Name
 
-	syntax    Lbinds ::= Lbind
+	syntax    Lbinds ::= Lbind ";" Lbind
 	                   | Lbind ";" Lbinds
 
 	syntax     Rbind ::= Name  "<=" Name
 	                   | Names "<=" Name
 
- 	syntax    Rbinds ::= Rbind
+ 	syntax    Rbinds ::= Rbind ";" Rbind
  	                   | Rbind ";" Rbinds
 
 // Send
-  syntax      Send ::= Name "!"  "(" Proc ")"                        // _!(_): Name x Proc -------------> Send, monadic
-                     | Name "!"  RhoTuple                            //   _!_: Name x RhoTuple ---------> Send, polyadic
-										 | Name "!!" "(" Proc ")"                        // _!(_): Name x Proc -------------> Send, monadic
-									   | Name "!!" RhoTuple                            //   _!_: Name x RhoTuple ---------> Send, polyadic
+  syntax      Send ::= Name "!"  RhoTuple                            //   _!_: Name x RhoTuple ---------> Send, single send
+									   | Name "!!" RhoTuple                            //   _!_: Name x RhoTuple ---------> Send, repeated send
 
 // Eval
   syntax      Eval ::= "*" Name
-
-/*syntax       Set ::= "FN(" Proc ")"                    [function]  // FN: Proc ------------> Set
-
-  // Sets
-  syntax      Proc ::= Set                                           // Set < Proc
-                     | "(" Set ")"                        [bracket]  // (_): Set ------------> Set
-*/
 
 // Several Processes
   syntax     Procs ::= Proc "," Proc                       [strict]  // _,_: Proc x Proc ----> Procs
@@ -109,7 +99,7 @@ module GRHO-SYNTAX
                      | "Set" "(" Procs ")"                 [strict]
 
 // Process tuples
-  syntax  RhoTuple ::= "(" Proc ",)"                                  // 1-tuple
+  syntax  RhoTuple ::= "(" Proc  ")"                                  // 1-tuple
                      | "(" Procs ")"                                  // n-tuple, n > 2
 
 // Ground terms
@@ -152,8 +142,8 @@ module GRHO
 	import TUPLEN
 
   configuration
-    <T color="purple">
-      <threadpool color="red">
+    <T color="purple">                                        //
+      <threadpool color="red">                                //
         <thread multiplicity="*">                             // collection of threads
           <k> $PGM:Proc </k>                                  // programs and computations are process-based
         </thread>                                             //
@@ -161,31 +151,27 @@ module GRHO
       <tuplespace color="blue">                               //
         <sends color="teal">                                  //**sends**
           <send color="cyan" multiplicity="*">                //
-					// type of message?
+					// guard for type of message?                       //
             <schan> .K </schan>                               // sending channel (many messages on same channel)
             <msg>   .K   </msg>                               // sent message
 						<tuple> .K </tuple>                               // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
 						<sper>  .K  </sper>                               // 1 for persistent send (not dissolved), 0 for single send (dissolved)
           </send>                                             //
         </sends>                                              //
-        <receives>
-				  <rpack multiplicity="*">
-				    <join multiplicity="*">
-              <rec color="yellow" multiplicity="*">           //
-					      // allowed type(s)?
-                <rchan> .K </rchan>                           // receiving channel (many messages on same channel)
-                <bvar>  .K  </bvar>                           // binding varible in continuation
-						    <bnum>  .K  </bnum>                           // number of bindings
-						    <rper>  .K  </rper>                           // 1 for persistent listen, 0 for single listen
-                <cont>  .K  </cont>                           // continuation
-              </rec>
-				    </join>
-				  </rpack>
-				</receives>
-      </tuplespace>
-    </T>
+        <receives>                                            //
+          <rec color="yellow" multiplicity="*">               //
+					  // guard for allowed type(s)?                     //
+            <rchan> .K </rchan>                               // receiving channel (many messages on same channel)
+            <bvars> .K </bvars>                               // binding varible in continuation
+						<bnum>  .K  </bnum>                               // number of bindings
+						<rper>  .K  </rper>                               // 1 for persistent listen, 0 for single listen
+            <cont>  .K  </cont>                               // continuation
+          </rec>                                              //
+				</receives>                                           //
+      </tuplespace>                                           //
+    </T>                                                      //
 
-  syntax KResult ::= Ground | Eval | Set
+  syntax KResult ::= Ground | Eval
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2    [anywhere]
@@ -211,18 +197,8 @@ module GRHO
        (.Bag => <thread> <k> Q </k> </thread>)                  //[structural]
 
 //--- Send Operator Semantics ---
-// Process messages
+// Process message = 1-tuple
   rule <k> X:Name ! ( P:Proc ) => . ...</k>                     //dissolve send in <threadpool/> and spawn <send/>
-       (.Bag => <send>                                          //
-                  <schan> X </schan>                            //sending channel X
-                  <msg>   P   </msg>                            //message sent P
-									<tuple> 0 </tuple>                            //"0-tuple"
-									<sper>  0  </sper>                            //single send
-                </send>)                                        //[structural]
-
-// Tuple messages
-// 1-tuple messages = Process messages?
-  rule <k> X:Name ! ( P:Proc ,) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
        (.Bag => <send>                                          //
                   <schan> X </schan>                            //sending channel X
                   <msg>   P   </msg>                            //message sent P
@@ -239,122 +215,181 @@ module GRHO
 									<sper>       0       </sper>                  //single send
 			          </send>)                                        //[structural]
 
+// Persistent receives
+// Process message = 1-tuple
+  rule <k> X:Name !! ( P:Proc ) => . ...</k>                    //dissolve send in <threadpool/> and spawn <send/>
+       (.Bag => <send>                                          //
+                  <schan> X </schan>                            //sending channel X
+                  <msg>   P   </msg>                            //message sent P
+									<tuple> 1 </tuple>                            //1-tuple
+									<sper>  1  </sper>                            //single send
+                </send>)                                        //[structural]
+
+// N-tuple messages, N > 1
+  rule <k> X:Name !! ( P:Procs ) => . ...</k>                   //dissolve send in <threadpool/> and spawn <send/>
+			 (.Bag => <send>                                          //
+			            <schan>      X      </schan>                  //sending channel X
+			            <msg>        P        </msg>                  //message sent P
+									<tuple> #length (P) </tuple>                  //length of tuple
+									<sper>       1       </sper>                  //single send
+			          </send>)                                        //[structural]
+
 //--- Receive Operator Semantics ---
+// Single receives
   rule <k> for ( Y:Name <- X:Name ) { P:Proc } => . ...</k>     //dissolve Rec in <threadpool/> and spawn <rec/>
-       (.Bag => <rpack>                                         //
-                  <join>                                        //
-									  <rec>                                       //
-                      <rchan> X </rchan>                        //receiving channel X
-                      <bvar>  Y  </bvar>                        //variable Y binding in continuation P
-								      <bnum>  1  </bnum>                        //
-								      <rper>  0  </rper>                        //single listen
-                      <cont>  P  </cont>                        //continuation P
-                    </rec>                                      //
-								  </join>                                       //
-								</rpack>)                                       //[structural]
+       (.Bag => <rec>                                           //
+                  <rchan> X </rchan>                            //receiving channel X
+                  <bvars> Y </bvars>                            //variable Y binding in continuation P
+								  <bnum>  1  </bnum>                            //
+								  <rper>  0  </rper>                            //single listen
+                  <cont>  P  </cont>                            //continuation P
+                </rec>)                                         //[structural]
 
 	rule <k> for ( Y:Names <- X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
-	     (.Bag => <rpack>                                         //
-			     			  <join>                                        //
-					     		  <rec>                                       //
-									    <rchan>     X     </rchan>                //receiving channel X
-	     						  	<bvar>      Y      </bvar>                //variable Y binding in continuation P
-			     					  <bnum>  #length Y  </bnum>                //
-					     			  <rper>      0      </rper>                //single listen
-							     	  <cont>      P      </cont>                //continuation P
-		     					  </rec>                                      //
-						      </join>                                       //
-		     			  </rpack>)                                       //[structural]
+	     (.Bag => <rec>                                           //
+									<rchan>     X     </rchan>                    //receiving channel X
+	     						<bvars>     Y     </bvars>                    //variable Y binding in continuation P
+			     				<bnum>  #length Y  </bnum>                    //
+					     		<rper>      0      </rper>                    //single listen
+							    <cont>      P      </cont>                    //continuation P
+		     				</rec>)                                         //[structural]
+
+// Persistent receives
+  rule <k> for ( Y:Name <= X:Name ) { P:Proc } => . ...</k>     //dissolve Rec in <threadpool/> and spawn <rec/>
+	  	 (.Bag => <rec>                                           //
+		  						<rchan> X </rchan>                            //receiving channel X
+			  					<bvars> Y </bvars>                            //variable Y binding in continuation P
+				  				<bnum>  1  </bnum>                            //
+					  			<rper>  0  </rper>                            //single listen
+						  		<cont>  P  </cont>                            //continuation P
+							  </rec>)                                         //[structural]
+
+  rule <k> for ( Y:Names <= X:Name ) { P:Proc } => . ...</k>    //dissolve Rec in <threadpool/> and spawn <rec/>
+	  	 (.Bag => <rec>                                           //
+		  						<rchan>     X     </rchan>                    //receiving channel X
+			  					<bvars>     Y     </bvars>                    //variable Y binding in continuation P
+				  				<bnum>  #length Y  </bnum>                    //
+					  			<rper>      0      </rper>                    //single listen
+						  		<cont>      P      </cont>                    //continuation P
+							  </rec>)                                         //[structural]
 
 // COMM EVENT: x!(Q) | y(z){P} and x equivN y => P[@Q / y]
-//--- Process messages ---
+// Single listen, single send
+// Process messages (1-tuples)
   rule                                                          //dissolve send and receive on "same" channel
-  (<rpack>                                                      //dissolve rpack:
-		 <join>                                                     //
-		   <rec>                                                    //
-         <rchan> X:Name </rchan>                                // channel X
-         <bvar>  Y:Name  </bvar>                                // binding variable Y
-		     <bnum>  1       </bnum>                                // one name to bind
-		     <rper>  0       </rper>                                // single listen
-         <cont>  P:Proc  </cont>                                // continuation P
-			 </rec>                                                   //
-		 </join>                                                    //
-   </rpack> => .Bag)                                            //
-  (<send>                                                       //dissolve send:
-     <schan> X     </schan>                                     // channel X
-     <msg>   Q:Proc  </msg>                                     // message Q
-		 <tuple> 0     </tuple>                                     // 0-tuple
-		 <sper>  0      </sper>                                     // single send
-   </send> => .Bag)                                             //
-  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
-  [comm]                                                        //tagged "comm" for tracking nondeterminism
-
-//--- Tuple messages ---
-// requires binding variable Y to be a tuple of the same length as T
-// substitution is done by mapping the coordinates
-// 1-tuple
-  rule                                                          //dissolve send and receive on "same" channel
-  (<rpack>                                                      //dissolve rpack:
-		 <join>                                                     //
-		   <rec>                                                    //
-         <rchan> X:Name </rchan>                                // channel X
-         <bvar>  Y:Name  </bvar>                                // binding variable Y
-		     <bnum>  1       </bnum>                                // one name to bind
-		     <rper>  0       </rper>                                // single listen
-         <cont>  P:Proc  </cont>                                // continuation P
-		   </rec>                                                   //
-	   </join>                                                    //
-	 </rpack> => .Bag)                                            //
+  (<rec>                                                        //dissolve <rec/>:
+     <rchan> X:Name </rchan>                                    // channel X
+     <bvars> Y:Name </bvars>                                    // binding variable Y
+		 <bnum>  1       </bnum>                                    // one name to bind
+		 <rper>  0       </rper>                                    // single listen
+     <cont>  P:Proc  </cont>                                    // continuation P
+	 </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
      <schan> X      </schan>                                    // channel X
      <msg>   Q:Proc   </msg>                                    // message Q
 		 <tuple> 1      </tuple>                                    // 1-tuple
 		 <sper>  0       </sper>                                    // single send
-   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
+   </send> => .Bag)                                             //
   (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
-// N-tuple, N > 1
+// 2-tuple (base case for several processes)
   rule                                                          //dissolve send and receive on "same" channel
-  (<rpack>                                                      //dissolve rpack:
-		 <join>                                                     //
-		   <rec>                                                    //
-  	     <rchan> X:Name         </rchan>                        // channel X
-  	     <bvar>  Y:Name , Z:Name </bvar>                        // binding variables Y, Z
-  	     <bnum>  2               </bnum>                        // N names to bind
-  	     <rper>  0               </rper>                        // single listen
-  	     <cont>  P:Proc          </cont>                        // continuation P
-		   </rec>                                                   //
-	   </join>                                                    //
-	 </rpack> => .Bag)                                            //
+  (<rec>                                                        //
+     <rchan> X:Name          </rchan>                           // channel X
+  	 <bvars> Y:Name , Z:Name </bvars>                           // binding variables Y, Z
+  	 <bnum>  2                </bnum>                           // N names to bind
+     <rper>  0                </rper>                           // single listen
+  	 <cont>  P:Proc           </cont>                           // continuation P
+	 </rec> => .Bag)                                              //
   (<send>                                                       //dissolve send:
-  	 <schan> X             </schan>                             // channel X
-  	 <msg>   Q:Proc , R:Proc </msg>                             // message(s) Q, R
-  	 <tuple> 2             </tuple>                             // 2-tuple
-  	 <sper>  0              </sper>                             // single send
-   </send> => .Bag)                                             // FIRST create the map {T_i |-> Y_i} and THEN use it for substitution (may require another module)
-  (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)     //spawn single <thread/> holding sub P[@Q / Y]
+  	 <schan> X              </schan>                            // channel X
+  	 <msg>   Q:Proc , R:Proc  </msg>                            // message(s) Q, R
+  	 <tuple> 2              </tuple>                            // 2-tuple
+  	 <sper>  0               </sper>                            // single send
+   </send> => .Bag)                                             //
+  (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)     //
   [comm]                                                        //tagged "comm" for tracking nondeterminism
 
+// N-tuple, N > 2
 	rule                                                          //dissolve send and receive on "same" channel
-	 <rpack>                                                      //dissolve rpack:
-	 	 <join>                                                     //
-			 <rec>                                                    //
-  	     <rchan> X:Name               </rchan>                  // channel X
-  	     <bvar>  Y:Name , Z:Names => Z </bvar>                  // binding variable Y
-  	     <bnum>  N:Int => N - 1        </bnum>                  // N names to bind
-  	     <rper>  0                     </rper>                  // single listen
-  	     <cont>  P:Proc => P[@ Q / Y]  </cont>                  // continuation P
-       </rec>                                                   //
-		 </join>                                                    //
-	 </rpack>                                                     //
+	 <rec>                                                        //
+  	 <rchan> X:Name                </rchan>                     // channel X
+  	 <bvars> Y:Name , Z:Names => Z </bvars>                     // binding variable Y
+  	 <bnum>  N:Int => N - 1         </bnum>                     // N names to bind
+  	 <rper>  0                      </rper>                     // single listen
+  	 <cont>  P:Proc => P[@ Q / Y]   </cont>                     // continuation P
+   </rec>                                                       //
    <send>                                                       //
-  	 <schan>  X                   </schan>                      // channel X
-  	 <msg>    Q:Proc , R:Procs => R </msg>                      // message
-  	 <tuple>  N => N - 1          </tuple>                      // N-tuple
-  	 <sper>   0                    </sper>                      // single send
+  	 <schan>  X                    </schan>                     // channel X
+  	 <msg>    Q:Proc , R:Procs => R  </msg>                     // message
+  	 <tuple>  N => N - 1           </tuple>                     // N-tuple
+  	 <sper>   0                     </sper>                     // single send
    </send>                                                      //
   [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+// Persistent listen, single send
+  rule                                                          //dissolve send and keep receive on "same" channel
+   <rec>                                                        //DON'T dissolve <rec/>:
+	   <rchan> X:Name </rchan>                                    // channel X
+  	 <bvars> Y:Name </bvars>                                    // binding variable Y
+	   <bnum>  1       </bnum>                                    // one name to bind
+	   <rper>  1       </rper>                                    // single listen
+	   <cont>  P:Proc  </cont>                                    // continuation P
+   </rec>                                                       //
+  (<send>                                                       //dissolve <send/>:
+  	 <schan> X      </schan>                                    // channel X
+	   <msg>   Q:Proc   </msg>                                    // message Q
+  	 <tuple> 1      </tuple>                                    // 1-tuple
+	   <sper>  0       </sper>                                    // single send
+   </send> => .Bag)                                             //
+  (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)              //spawn single <thread/> holding sub P[@Q / Y]
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+// 2-tuple (base case for several processes)
+  rule                                                          //dissolve send and keep receive on "same" channel
+   <rec>                                                        //DON'T dissolve <rec/>:
+  	 <rchan> X:Name          </rchan>                           // channel X
+	   <bvars> Y:Name , Z:Name </bvars>                           // binding variables Y, Z
+	   <bnum>  2                </bnum>                           // N names to bind
+	   <rper>  1                </rper>                           // single listen
+  	 <cont>  P:Proc           </cont>                           // continuation P
+   </rec>                                                       //
+  (<send>                                                       //dissolve <send/>:
+	   <schan> X              </schan>                            // channel X
+  	 <msg>   Q:Proc , R:Proc  </msg>                            // message(s) Q, R
+	   <tuple> 2              </tuple>                            // 2-tuple
+	   <sper>  0               </sper>                            // single send
+   </send> => .Bag)                                             //
+  (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)     //
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+// N-tuple, N > 2
+  rule                                                          //dissolve send and keep receive on "same" channel
+   <rec>                                                        //DON'T dissolve <rec/>:
+	   <rchan> X:Name                </rchan>                     // channel X
+  	 <bvars> Y:Name , Z:Names => Z </bvars>                     // binding variable Y
+	   <bnum>  N:Int => N - 1         </bnum>                     // N names to bind
+  	 <rper>  1                      </rper>                     // single listen
+	   <cont>  P:Proc => P[@ Q / Y]   </cont>                     // continuation P
+   </rec>                                                       //
+   <send>                                                       //
+	   <schan>  X                    </schan>                     // channel X
+  	 <msg>    Q:Proc , R:Procs => R  </msg>                     // message
+  	 <tuple>  N => N - 1           </tuple>                     // N-tuple
+  	 <sper>   0                     </sper>                     // single send
+   </send>                                                      //
+	 (.Bag => <rec>                                                //spawn identical <rec/>:
+ 		         <rchan> X     </rchan>                             // channel X
+ 		         <bvars> Y , Z </bvars>                             // binding variable Y
+ 		         <bnum>  N      </bnum>                             // N names to bind
+ 		         <rper>  1      </rper>                             // single listen
+ 		         <cont>  P      </cont>                             // continuation P
+ 	         </rec>)                                              //
+  [comm]                                                        //tagged "comm" for tracking nondeterminism
+
+// Single listen, persistent send
+
 
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
