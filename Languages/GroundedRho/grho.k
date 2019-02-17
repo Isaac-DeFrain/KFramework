@@ -407,14 +407,14 @@ module GRHO
 
 // 2-tuple (base case for several processes)
   rule                                                          //dissolve send and keep receive on "same" channel
-  (<rec>                                                        //DON'T dissolve <rec/>:
+  (<rec>                                                        //dissolve <rec/>:
 	   <rchan> X:Name          </rchan>                           // channel X
 	   <bvars> Y:Name , Z:Name </bvars>                           // binding variables Y, Z
 	   <bnum>  2                </bnum>                           // N names to bind
-  	 <rper>  1                </rper>                           // single listen
+  	 <rper>  0                </rper>                           // single listen
   	 <cont>  P:Proc           </cont>                           // continuation P
    </rec> => .Bag)                                              //
-   <send>                                                       //dissolve <send/>:
+   <send>                                                       //DON'T dissolve <send/>:
   	 <schan> X              </schan>                            // channel X
   	 <msg>   Q:Proc , R:Proc  </msg>                            // message(s) Q, R
   	 <tuple> 2              </tuple>                            // 2-tuple
@@ -425,14 +425,14 @@ module GRHO
 
 // N-tuple, N > 2
   rule                                                          //dissolve send and keep receive on "same" channel
-   <rec>                                                        //DON'T dissolve <rec/>:
+   <rec>                                                        //ultimately dissolve <rec/>:
   	 <rchan> X:Name                </rchan>                     // channel X
   	 <bvars> Y:Name , Z:Names => Z </bvars>                     // binding variable Y
   	 <bnum>  N:Int => N - 1         </bnum>                     // N names to bind
-  	 <rper>  1                      </rper>                     // single listen
+  	 <rper>  0                      </rper>                     // single listen
   	 <cont>  P:Proc => P[@ Q / Y]   </cont>                     // continuation P
    </rec>                                                       //
-   <send>                                                       //
+   <send>                                                       //DON'T dissolve <send/>:
   	 <schan>  X                    </schan>                     // channel X
   	 <msg>    Q:Proc , R:Procs => R  </msg>                     // message
   	 <tuple>  N => N - 1           </tuple>                     // N-tuple
