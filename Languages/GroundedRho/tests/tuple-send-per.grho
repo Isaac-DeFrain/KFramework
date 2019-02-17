@@ -1,0 +1,3 @@
+// Grounded rho - send tuple
+
+  x!!(1,"a",Nil)

@@ -1,7 +1,7 @@
 // Grounded rho - comm with tuple message
 
-  x!(1,2,Nil) | for( a,b,c <= x ){ (*a,*b,*c) }
+  x!(1,2,Nil) | for( a,b,c <= x ){ (*c,*a,*b) }
 
 /*
-  Bug: Not retaining rec cell in tuplespace
+  Bug: Not retaining persistent <rec/> in tuplespace
 */
