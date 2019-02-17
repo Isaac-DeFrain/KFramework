@@ -336,9 +336,9 @@ module GRHO
 	   <rper>  1       </rper>                                    // single listen
 	   <cont>  P:Proc  </cont>                                    // continuation P
    </rec>                                                       //
-	 <send>                                                       //dissolve <send/>:
+	 <send>                                                       //
 		 <schan> X      </schan>                                    // channel X
-		 <msg>   Q:Proc   </msg>                                    // message Q
+		 <msg>   _:Proc   </msg>                                    // message
 		 <tuple> 1      </tuple>                                    // 1-tuple
 		 <sper>  0       </sper>                                    // single send
 	 </send>                                                      //
@@ -368,7 +368,7 @@ module GRHO
             </rec>)                                             //
    <send>                                                       //dissolve <send/>:
 	   <schan> X              </schan>                            // channel X
-  	 <msg>   Q:Proc , R:Proc  </msg>                            // message(s) Q, R
+  	 <msg>   _:Proc , _:Proc  </msg>                            // message(s)
 	   <tuple> 2              </tuple>                            // 2-tuple
 	   <sper>  0               </sper>                            // single send
    </send>                                   [comm,structural]  //tagged "comm" for tracking nondeterminism
@@ -391,20 +391,20 @@ module GRHO
             </rec>)                                             //
    <send>                                                       //
 	   <schan>  X              </schan>                           // channel X
-  	 <msg>    Q:Proc , R:Procs </msg>                           // message
+  	 <msg>    _:Proc , _:Procs </msg>                           // message(s)
   	 <tuple>  N              </tuple>                           // N-tuple
   	 <sper>   0               </sper>                           // single send
    </send>                                       [comm,strict]  //tagged "comm" for tracking nondeterminism
 
 // Single listen, persistent send
   rule                                                          //dissolve send and keep receive on "same" channel
-  (<rec>                                                        //dissolve <rec/>:
+   <rec>                                                        //dissolve <rec/>:
   	 <rchan> X:Name </rchan>                                    // channel X
-  	 <bvars> Y:Name </bvars>                                    // binding variable Y
+  	 <bvars> _:Name </bvars>                                    // binding variable(s)
    	 <bnum>  1       </bnum>                                    // one name to bind
 	   <rper>  0       </rper>                                    // single listen
-	   <cont>  P:Proc  </cont>                                    // continuation P
-   </rec> => .Bag)                                              //
+	   <cont>  _:Proc  </cont>                                    // continuation
+   </rec>                                                       //
    <send>                                                       //DON'T dissolve <send/>:
   	 <schan> X      </schan>                                    // channel X
   	 <msg>   Q:Proc   </msg>                                    // message Q
@@ -420,13 +420,13 @@ module GRHO
 
 // 2-tuple (base case for several processes)
   rule                                                          //dissolve send and keep receive on "same" channel
-  (<rec>                                                        //dissolve <rec/>:
+   <rec>                                                        //dissolve <rec/>:
 	   <rchan> X:Name          </rchan>                           // channel X
-	   <bvars> Y:Name , Z:Name </bvars>                           // binding variables Y, Z
+	   <bvars> _:Name , _:Name </bvars>                           // binding variable(s)
 	   <bnum>  2                </bnum>                           // N names to bind
   	 <rper>  0                </rper>                           // single listen
-  	 <cont>  P:Proc           </cont>                           // continuation P
-   </rec> => .Bag)                                              //
+  	 <cont>  _:Proc           </cont>                           // continuation
+   </rec>                                                       //
    <send>                                                       //DON'T dissolve <send/>:
   	 <schan> X              </schan>                            // channel X
   	 <msg>   Q:Proc , R:Proc  </msg>                            // message(s) Q, R
@@ -444,10 +444,10 @@ module GRHO
   rule                                                          //dissolve send and keep receive on "same" channel
    <rec>                                                        //ultimately dissolve <rec/>:
   	 <rchan> X:Name           </rchan>                          // channel X
-  	 <bvars> Y:Name , Z:Names </bvars>                          // binding variable Y
+  	 <bvars> _:Name , _:Names </bvars>                          // binding variable(s)
   	 <bnum>  N:Int             </bnum>                          // N names to bind
   	 <rper>  0                 </rper>                          // single listen
-  	 <cont>  P:Proc            </cont>                          // continuation P
+  	 <cont>  _:Proc            </cont>                          // continuation
    </rec>                                                       //
    <send>                                                       //DON'T dissolve <send/>:
   	 <schan> X                </schan>                          // channel X

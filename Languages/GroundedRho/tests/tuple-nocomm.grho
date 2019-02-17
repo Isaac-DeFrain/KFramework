@@ -1,8 +1,7 @@
-// Grounded rho - comm with tuple message
+// Grounded rho - no comm
 
   x!(1,2,3,Nil) | for( a,b,c <- x ){ (*b,*a,*c) }
 
 /*
-  (Nil,2,1,3)
-	Whoop whoop!YAY!
+  No comm
 */
