@@ -24,7 +24,8 @@ module GRHO-SYNTAX
 
   syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
 
-  syntax     Names ::= Name "," Name                                 // _,_: Name x Name ----> Names
+  syntax     Names ::= "{" Names "}"
+                     | Name "," Name                                 // _,_: Name x Name ----> Names
                      | Name "," Names                                // _,_: Name x Names ---> Names
                      | "@" Procs                                     // for tuple comms
 

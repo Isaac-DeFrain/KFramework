@@ -23,7 +23,7 @@ endmodule
 module TUPLEN
   import TUPLEN-SYNTAX
 
-  syntax KResult ::= Int | Proc | Procs | Name | Names
+  syntax KResult ::= Int | Proc | Proc | Name | Name
 
 // Tuple Length
   rule #length ( _:Proc ) => 1
@@ -58,5 +58,17 @@ module TUPLEN
   rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)  [strict]
   rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)   [strict]
   rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)  [strict]
+
+// Bind Variables
+  rule #bvar ( N:Name  <- _:Name ) => { N }
+  rule #bvar ( N:Names <- _:Name ) => { N }
+  rule #bvar ( N:Name  <= _:Name ) => { N }
+  rule #bvar ( N:Names <= _:Name ) => { N }
+
+// Binds Variables
+  rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)   [strict]
+  rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)  [strict]
+  rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)   [strict]
+  rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)  [strict]
 
 endmodule
