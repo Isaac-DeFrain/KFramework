@@ -1,8 +1,11 @@
-// Length of tuple/name list/int list for GRHO configuration
+// #lengths of RhoTuple/Names/Procs/Binds
+// #chans of Binds
+// #bvars of Binds
+// for GRHO configuration
 
 requires "../grho.k"
 
-module TUPLEN-SYNTAX
+module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
   syntax   Int ::= "#length" RhoTuple        [function]
@@ -20,10 +23,10 @@ module TUPLEN-SYNTAX
 
 endmodule
 
-module TUPLEN
-  import TUPLEN-SYNTAX
+module AUXFUN
+  import AUXFUN-SYNTAX
 
-  syntax KResult ::= Int | Proc | Proc | Name | Name
+  syntax KResult ::= Int | Procs | Name
 
 // Tuple Length
   rule #length ( _:Proc ) => 1
@@ -54,10 +57,10 @@ module TUPLEN
   rule #chan ( _:Names <= N:Name ) => N
 
 // Binds Channels
-  rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)   [strict]
-  rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)  [strict]
-  rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)   [strict]
-  rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)  [strict]
+  rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)         [strict]
+  rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)        [strict]
+  rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)         [strict]
+  rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)        [strict]
 
 // Bind Variables
   rule #bvar ( N:Name  <- _:Name ) => { N }
@@ -66,9 +69,9 @@ module TUPLEN
   rule #bvar ( N:Names <= _:Name ) => { N }
 
 // Binds Variables
-  rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)   [strict]
-  rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)  [strict]
-  rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)   [strict]
-  rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)  [strict]
+  rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)         [strict]
+  rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)        [strict]
+  rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)         [strict]
+  rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)        [strict]
 
 endmodule
