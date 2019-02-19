@@ -3,6 +3,6 @@
   x!(1,2,3,Nil) | for( a,b,c,d <- x ){ (*d,*b,*a,*c) }
 
 /*
-  (Nil,2,1,3)
-	Whoop whoop!YAY!
+  ( Nil , 2 , 1 , 3 )
+  Whoop whoop! YAY!
 */

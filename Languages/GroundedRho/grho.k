@@ -171,7 +171,11 @@ module GRHO
           </rec>                                              //
         </receives>                                           //
       </tuplespace>                                           //
-      <reaction>    .K    </reaction>                         // put comming <send/> & <receive/> info here
+      <reaction>                                              // put comming <send/> & <receive/> info here
+        <who>   .K   </who>                                   // continuation process
+        <what>  .K  </what>                                   // msg process(es)
+        <where> .K </where>                                   // binding variable(s)
+      </reaction>                                             //
     </T>                                                      //
 
   syntax KResult ::= Ground | Eval
@@ -342,19 +346,40 @@ module GRHO
 
 // N-tuple, N > 2
   rule                                                          //consume single send, single receive
-   <rec>                                                        //consume single receive
-     <rchan> X:Name                </rchan>                     // channel X
-     <bvars> Y:Name , Z:Names => Z </bvars>                     // binding variable Y
-     <bnum>  N:Int => N - 1         </bnum>                     // N names to bind
-     <rper>  0                      </rper>                     // single listen
-     <cont>  P:Proc => P[@ Q / Y]   </cont>                     // continuation P
-   </rec>                                                       //
-   <send>                                                       //consume single send
-     <schan> X                     </schan>                     // channel
-     <msg>   Q:Proc , R:Procs => R   </msg>                     // message
-     <tuple> N => N - 1            </tuple>                     // N-tuple
-     <sper>  0                      </sper>                     // single send
-   </send>                                              [comm]
+  (<rec>                                                        //consume single receive
+     <rchan> X:Name           </rchan>                     // channel X
+     <bvars> Y:Name , Z:Names </bvars>                     // binding variable Y
+     <bnum>  N:Int             </bnum>                     // N names to bind
+     <rper>  0                 </rper>                     // single listen
+     <cont>  P:Proc            </cont>                     // continuation P
+   </rec> => .Bag)                                                       //
+  (<send>                                                       //consume single send
+     <schan> X                </schan>                     // channel
+     <msg>   Q:Proc , R:Procs   </msg>                     // message
+     <tuple> N                </tuple>                     // N-tuple
+     <sper>  0                 </sper>                     // single send
+   </send> => .Bag)
+   <reaction>
+     <who>   .K => P       </who>
+     <what>  .K => Q , R  </what>
+     <where> .K => Y , Z </where>
+   </reaction>                                        [comm]
+
+  rule 
+    <reaction>
+      <who>   P:Proc => P[@ Q / Y]    </who>
+      <what>  Q:Proc , R:Procs => R  </what>
+      <where> Y:Name , Z:Names => Z </where>
+    </reaction>                                     [strict]
+
+  rule
+    <reaction>
+      <who>   P:Proc          => .K   </who>
+      <what>  Q:Proc , R:Proc => .K  </what>
+      <where> Y:Name , Z:Name => .K </where>
+    </reaction>
+   (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)
+
 /*
 // Persistent listen, single send
   rule                                                          //consume single send, keep persistent receive
