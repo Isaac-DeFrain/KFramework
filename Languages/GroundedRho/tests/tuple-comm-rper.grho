@@ -1,7 +1,7 @@
-// Grounded rho - comm with tuple message
+// Grounded rho - multiple comms with persistent receive
 
-  x!(1,2,Nil) | for( a,b,c <= x ){ (*c,*a,*b) }
+  x!(19,23,0) | for( a,b,c <= x ){ *a + *b + *c } | y!(true,true,true) | x!(1,2,3) | x!("a","b") | for( a <- x ){ Nil }
 
 /*
-  Bug: Not retaining persistent <rec/> in tuplespace
+  
 */
