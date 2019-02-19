@@ -1,7 +1,3 @@
 // Grounded rho - comm with persistent send
 
-  x!!(1,"a",Nil) | for( a,b,c <- x ){ (*c,*a,*b) } | for( a,b <- x ){ "should not appear in thread" }
-
-/*
-  Only recognizes send for some reason...
-*/
+  x!!(1,"a",Nil) | for( a,b,c <- x ){ (*c,*a,*b) } | for( a,b,c <= x ){ "should not appear in thread" }
