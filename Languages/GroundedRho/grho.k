@@ -448,73 +448,70 @@ module GRHO
      <what>  .K => Q , R  </what>
      <where> .K => Y , Z </where>
    </reaction>                                           [comm,strict]
-/*
+
 // Single listen, persistent send
   rule                                                          //consume single receive, keep persistent send
-   <rec>                                                        //consume single receive
+  (<rec>                                                        //consume single receive
      <rchan> X:Name </rchan>                                    // channel X
-     <bvars> _:Name </bvars>                                    // binding variable(s)
+     <bvars> Y:Name </bvars>                                    // binding variable(s)
      <bnum>  1       </bnum>                                    // one name to bind
      <rper>  0       </rper>                                    // single listen
-     <cont>  _:Proc  </cont>                                    // continuation
-   </rec>                                                       //
+     <cont>  P:Proc  </cont>                                    // continuation
+   </rec> => .Bag)                                              //
    <send>                                                       //DON'T consume persistent send
      <schan> X      </schan>                                    // channel X
      <msg>   Q:Proc   </msg>                                    // message Q
      <tuple> 1      </tuple>                                    // 1-tuple
      <sper>  1       </sper>                                    // single send
    </send>                                                      //
-  (.Bag => <send>                                               //produce single send to consume in comm
-             <schan> X </schan>                                 // channel
-             <msg>   Q   </msg>                                 // message
-             <tuple> 1 </tuple>                                 // 1-tuple
-             <sper>  0  </sper>                                 // single send
-           </send>)                                             //[structural]
+   <reaction>
+     <who>   .K => P   </who>
+     <what>  .K => Q  </what>
+     <where> .K => Y </where>
+   </reaction>                                           [comm]
 
 // 2-tuple (base case for several processes)
   rule                                                          //consume single receive and keep single receive
-   <rec>                                                        //consume single receive
+  (<rec>                                                        //consume single receive
      <rchan> X:Name          </rchan>                           // channel X
-     <bvars> _:Name , _:Name </bvars>                           // binding variables
+     <bvars> Y:Name , Z:Name </bvars>                           // binding variables
      <bnum>  2                </bnum>                           // N names to bind
      <rper>  0                </rper>                           // single listen
-     <cont>  _:Proc           </cont>                           // continuation
-   </rec>                                                       //
+     <cont>  P:Proc           </cont>                           // continuation
+   </rec> => .Bag)                                              //
    <send>                                                       //DON'T consume persistent send
      <schan> X              </schan>                            // channel X
      <msg>   Q:Proc , R:Proc  </msg>                            // messages
      <tuple> 2              </tuple>                            // 2-tuple
      <sper>  1               </sper>                            // single send
    </send>                                                      //
-  (.Bag => <send>                                               //produce single send to consume in comm
-             <schan> X   </schan>                               // channel
-             <msg>   Q , R </msg>                               // messages
-             <tuple> 2   </tuple>                               // 2-tuple
-             <sper>  0    </sper>                               // single send
-           </send>)                                             //[structural]
+   <reaction>
+     <who>   .K => P       </who>
+     <what>  .K => Q , R  </what>
+     <where> .K => Y , Z </where>
+   </reaction>                                           [comm]
 
 // N-tuple, N > 2
   rule                                                          //consume single receive and keep single receive
-   <rec>                                                        //consume single receive
+  (<rec>                                                        //consume single receive
      <rchan> X:Name           </rchan>                          // channel X
-     <bvars> _:Name , _:Names </bvars>                          // binding variable(s)
+     <bvars> Y:Name , Z:Names </bvars>                          // binding variable(s)
      <bnum>  N:Int             </bnum>                          // N names to bind
      <rper>  0                 </rper>                          // single listen
-     <cont>  _:Proc            </cont>                          // continuation
-   </rec>                                                       //
+     <cont>  P:Proc            </cont>                          // continuation
+   </rec> => .Bag)                                              //
    <send>                                                       //DON'T consume persistent send
      <schan> X                </schan>                          // channel X
      <msg>   Q:Proc , R:Procs   </msg>                          // messages
      <tuple> N                </tuple>                          // N-tuple
      <sper>  1                 </sper>                          // persistent send
    </send>                                                      //
-   (.Bag => <send>                                              //produce single send to consume in comm
-              <schan> X </schan>                                // channel
-              <msg> Q , R </msg>                                // messages
-              <tuple> N </tuple>                                // N-tuple
-              <sper>  0  </sper>                                // single send
-            </send>)                                  //[strict]
-*/
+   <reaction>
+     <who>   .K => P       </who>
+     <what>  .K => Q , R  </what>
+     <where> .K => Y , Z </where>
+   </reaction>                                           [comm,strict]
+
 // STRUCTURAL EQUIVALENCE
 //  P | 0      \equiv P
 //  P | Q      \equiv Q | P

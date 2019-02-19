@@ -2,6 +2,3 @@
 
   x!(19,23,0) | for( a,b,c <= x ){ *a + *b + *c } | y!(true,true,true) | x!(1,2,3) | x!("a","b") | for( a <- x ){ Nil }
 
-/*
-  
-*/
