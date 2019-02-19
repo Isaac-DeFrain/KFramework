@@ -292,12 +292,21 @@ module GRHO
                 </rec>)                                                //[structural]
 
 //--- Joins ---
-  rule <k> for ( L:Lbinds ){ P:Proc } => . ...</k>
+  rule <k> for ( B:Lbinds ){ P:Proc } => . ...</k>
        (.Bag => <rec>
-                  <rchan> #chans   (L) </rchan>
-                  <bvars> #bvars   (L) </bvars>
-                  <bnum>  #lengths (L)  </bnum>
+                  <rchan> #chans   (B) </rchan>
+                  <bvars> #bvars   (B) </bvars>
+                  <bnum>  #lengths (B)  </bnum>
                   <rper>        0       </rper>
+                  <cont>        P       </cont>
+                </rec>)
+
+  rule <k> for ( B:Rbinds ){ P:Proc } => . ...</k>
+       (.Bag => <rec>
+                  <rchan> #chans   (B) </rchan>
+                  <bvars> #bvars   (B) </bvars>
+                  <bnum>  #lengths (B)  </bnum>
+                  <rper>        1       </rper>
                   <cont>        P       </cont>
                 </rec>)
 
