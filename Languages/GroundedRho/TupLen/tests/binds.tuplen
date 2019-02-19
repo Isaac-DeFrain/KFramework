@@ -1,0 +1,8 @@
+// Lengths of binds
+
+  #length ( a <- x ; b , c <- y ; d , e , f , g <- z ; a1 , a2 <- x1 )
+
+/*
+Expected output: 1 , 2 , 4 , 2
+Output: 2 , 4 ~> #freezer_,__GRHO-SYNTAX0_ ( 1 )
+*/
