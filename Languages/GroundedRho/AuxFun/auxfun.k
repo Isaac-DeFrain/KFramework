@@ -1,7 +1,7 @@
-// #lengths of RhoTuple/Names/Procs/Binds
+// Auxilary functions for GRHO configuration
+// #lengths of RhoTuple | Names | Procs | Binds
 // #chans of Binds
 // #bvars of Binds
-// for GRHO configuration
 
 requires "../grho.k"
 
