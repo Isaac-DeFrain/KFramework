@@ -3,7 +3,7 @@
 
 require "domains.k"
 require "substitution.k"
-require "TupLen/tuplen.k"
+require "AuxFun/auxfun.k"
 
 // SYNTAX MODULE
 module GRHO-SYNTAX
@@ -142,7 +142,7 @@ endmodule
 module GRHO
   import GRHO-SYNTAX
   import SUBSTITUTION
-  import TUPLEN
+  import AUXFUN
 
 //---------------------
 //--- CONFIGURATION ---
