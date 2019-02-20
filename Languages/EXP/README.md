@@ -68,7 +68,7 @@ Strict functions evaluate arguments to `Int`
 * Concurrency semantics
 ```
   rule <k> spawn E => 0 ...</k>
-    ( . => <k> E </k>)
+    (.Bag => <thread> <k> E </k> </thread>)
 
   rule <k> rendezvous I:Int => I ...</k>
        <k> rendezvous I     => I ...</k>
