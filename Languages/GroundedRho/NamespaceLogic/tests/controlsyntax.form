@@ -1,3 +1,3 @@
 // Namespace Logic - controlling access to namespaces
 
-  ( @ * x ? y ) true & ( @ not * x ? y ) true
+  ( @ {* x} ? y ) true & ( @ {not {* x}} ? y ) true
