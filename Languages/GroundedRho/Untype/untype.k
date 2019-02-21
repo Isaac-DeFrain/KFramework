@@ -13,7 +13,7 @@ module UNTYPE-SYNTAX
   import SUBSTITUTION
   import STYPE-SYNTAX
 
-  syntax IntermediateType ::= "#untype(" Type ")"   [function]
+  syntax IntermediateType ::= "#untype(" Type ")"                                                  [function]
                             | "untype[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
 
   syntax  OrPatOrLeafType ::= "untype[" OrPat       "]"                              // untype[OrPat] < OrPatOrLeafType
@@ -39,7 +39,7 @@ module UNTYPE
       <k color="purple"> #untype( $PGM:Type ) </k>
     </T>
 
-  syntax KResult ::= OrPatOrLeafType
+  syntax KResult ::= InitialType
 
   rule #untype( type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] ) => untype[ S:String ;; #untype(A) ;; #untype(B) ]  [strict(2,3)]
 
@@ -59,63 +59,35 @@ module UNTYPE
   rule #untype( type[ "leaf" ;; "nil"      ;; "Nil"  ] ) => untype[ Nil       ] [anywhere]
   rule #untype( type[ "leaf" ;; "truncate" ;;   _    ] ) => untype[ #truncate ] [anywhere]
 
-  rule untype[ "simpletype" ;; #untype( type[ toString( ST:OrPat ) ] ) ;; #untype( type[#truncate] ) ] => untype[ ST ] [anywhere]
-/*
-2. type[  _:String ;; ( type[ _:String ;; _:String ;; L:Leaf ] => type[ L:Leaf ] ) ;; _:InitialType ]
-           S
-         /    \
-    "leaf"     I1
-    / \ => I2
- S2  L1
+  rule untype[ "simpletype" ;; untype[ toString( ST:OrPat ) ] ;; untype[#truncate] ] => untype[ ST ] [anywhere]
 
-rule type[ _:String ;; ( type[ "leaf"       ;; S:String   ;; L:Leaf ] => type[ L   ] ) ;; _:IntermediateType ]  requires S =/=String "nil" [anywhere]
-rule type[ _:String ;; ( type[ "leaf"       ;; "nil"      ;; "Nil"  ] => type[ Nil ] ) ;; _:IntermediateType ] [anywhere]
-rule type[ _:String ;; ( type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _ ] => type[ ST ] ) ;; _:InitialType ] [anywhere]
-
-rule type[ _:String ;; ( type[ "send" ;; type[ N:Name    ] ;; type[ P:Proc    ] ] => type[ N ! ( P ) ] ) ;; _:IntermediateType ] [anywhere]
-rule type[ _:String ;; ( type[ "send" ;; type[ N:NamePat ] ;; type[ P:Proc    ] ] => type[ N ! ( P ) ] ) ;; _:IntermediateType ] [anywhere]
-rule type[ _:String ;; ( type[ "send" ;; type[ N:Name    ] ;; type[ P:ProcPat ] ] => type[ N ! ( P ) ] ) ;; _:IntermediateType ] [anywhere]
-rule type[ _:String ;; ( type[ "send" ;; type[ N:NamePat ] ;; type[ P:ProcPat ] ] => type[ N ! ( P ) ] ) ;; _:IntermediateType ] [anywhere]
-
-3. type[  _:String ;; I1:InitialType  ;; ( type[ _:String ;; _:String ;; L:Leaf ] => type[ L ] ) ]
-         S
-        /  \
-      I1   "leaf"
-            / \ => I2
-          S2  L1
-
-rule type[ _:String ;; _:IntermediateType ;; ( type[ "leaf"       ;; S:String                     ;; L:Leaf ] => type[ L         ] ) ]  requires S =/=String "nil" andBool S =/=String "truncate" [anywhere]
-rule type[ _:String ;; _:IntermediateType ;; ( type[ "leaf"       ;; "nil"                        ;; "Nil"  ] => type[ Nil       ] ) ] [anywhere]
-rule type[ _:String ;; _:IntermediateType ;; ( type[ "leaf"       ;; "truncate"                   ;; _      ] => type[ #truncate ] ) ] [anywhere]
-rule type[ _:String ;; _:IntermediateType ;; ( type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _      ] => type[ ST        ] ) ] [anywhere]
-*/
-/* 4. type[  S:String ;; I1:InitialType ;; I2:InitialType ] => I3:InitialType   [anywhere]
+/* 2. type[  S:String ;; I1:InitialType ;; I2:InitialType ] => I3:InitialType   [anywhere]
           S
         /  \   => I3
       I1    I2
 */
-  rule untype[ "quote"   ;; type[P:Proc    ] ;; type[#truncate ] ] => untype[ @ P ] [anywhere]
-  rule untype[ "quote"   ;; type[P:ProcPat ] ;; type[#truncate ] ] => untype[ @ P ] [anywhere]
+  rule untype[ "quote"   ;; untype[P:Proc    ] ;; untype[#truncate ] ] => untype[ @ P ] [anywhere]
+  rule untype[ "quote"   ;; untype[P:ProcPat ] ;; untype[#truncate ] ] => untype[ @ P ] [anywhere]
 
-  rule untype[ "reify"   ;; type[N:Name    ] ;; type[#truncate ] ] => type[ * N ] [anywhere]
-  rule untype[ "reify"   ;; type[N:NamePat ] ;; type[#truncate ] ] => type[ * N ] [anywhere]
+  rule untype[ "eval"    ;; untype[N:Name    ] ;; untype[#truncate ] ] => untype[ * N ] [anywhere]
+  rule untype[ "eval"    ;; untype[N:NamePat ] ;; untype[#truncate ] ] => untype[ * N ] [anywhere]
 
-  rule untype[ "send"    ;; type[N:Name    ] ;; type[P:Proc    ] ] => type[ N ! ( P ) ] [anywhere]
-  rule untype[ "send"    ;; type[N:Name    ] ;; type[P:ProcPat ] ] => type[ N ! ( P ) ] [anywhere]
-  rule untype[ "send"    ;; type[N:NamePat ] ;; type[P:Proc    ] ] => type[ N ! ( P ) ] [anywhere]
-  rule untype[ "send"    ;; type[N:NamePat ] ;; type[P:ProcPat ] ] => type[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; untype[N:Name    ] ;; untype[P:Proc    ] ] => untype[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; untype[N:Name    ] ;; untype[P:ProcPat ] ] => untype[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; untype[N:NamePat ] ;; untype[P:Proc    ] ] => untype[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; untype[N:NamePat ] ;; untype[P:ProcPat ] ] => untype[ N ! ( P ) ] [anywhere]
 
-  rule type[ "bind"    ;; untype[B:NamePat ] ;; untype[N:Name    ] ] => untype[ B <- N ] [anywhere]
-  rule type[ "bind"    ;; untype[B:NamePat ] ;; untype[N:NamePat ] ] => untype[ B <- N ] [anywhere]
+  rule untype[ "bind"    ;; untype[B:NamePat ] ;; untype[N:Name    ] ] => untype[ B <- N ] [anywhere]
+  rule untype[ "bind"    ;; untype[B:NamePat ] ;; untype[N:NamePat ] ] => untype[ B <- N ] [anywhere]
 
-  rule type[ "receive" ;; untype[B:Bind    ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
-  rule type[ "receive" ;; untype[B:Bind    ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
-  rule type[ "receive" ;; untype[B:BindPat ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
-  rule type[ "receive" ;; untype[B:BindPat ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule untype[ "receive" ;; untype[B:Bind    ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule untype[ "receive" ;; untype[B:Bind    ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule untype[ "receive" ;; untype[B:BindPat ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule untype[ "receive" ;; untype[B:BindPat ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
 
-  rule type[ "par"     ;; type[P:Proc    ] ;; type[Q:Proc    ] ] => type[ P | Q ] [anywhere]
-  rule type[ "par"     ;; type[P:Proc    ] ;; type[Q:ProcPat ] ] => type[ P | Q ] [anywhere]
-  rule type[ "par"     ;; type[P:ProcPat ] ;; type[Q:Proc    ] ] => type[ P | Q ] [anywhere]
-  rule type[ "par"     ;; type[P:ProcPat ] ;; type[Q:ProcPat ] ] => type[ P | Q ] [anywhere]
+  rule untype[ "par"     ;; untype[P:Proc    ] ;; untype[Q:Proc    ] ] => untype[ P | Q ] [anywhere]
+  rule untype[ "par"     ;; untype[P:Proc    ] ;; untype[Q:ProcPat ] ] => untype[ P | Q ] [anywhere]
+  rule untype[ "par"     ;; untype[P:ProcPat ] ;; untype[Q:Proc    ] ] => untype[ P | Q ] [anywhere]
+  rule untype[ "par"     ;; untype[P:ProcPat ] ;; untype[Q:ProcPat ] ] => untype[ P | Q ] [anywhere]
 
 endmodule
