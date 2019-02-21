@@ -1809,7 +1809,7 @@ module UNSIGNED-INT-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(3
 endmodule
 
 
-module UNTYPE [org.kframework.attributes.Location(Location(34,1,93,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))]
+module UNTYPE [org.kframework.attributes.Location(Location(34,1,95,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))]
   imports UNTYPE-SYNTAX
   imports UNTYPE$SYNTAX
   imports MAP
@@ -1864,12 +1864,15 @@ module UNTYPE [org.kframework.attributes.Location(Location(34,1,93,9)) org.kfram
   rule `#untype(_)_UNTYPE-SYNTAX`(`type[_;;_;;_]_STYPE-SYNTAX`(#token("\"leaf\"","String"),S,L))=>`untype[_]_UNTYPE-SYNTAX`(L) requires `_andBool_`(`_=/=String__STRING`(S,#token("\"nil\"","String")),`_=/=String__STRING`(S,#token("\"truncate\"","String"))) ensures #token("true","Bool") [UNIQUE_ID(a89b620171e062e973999b57ebf1b143bb8dc56e0320972020e662c9f42934e8) anywhere() contentStartColumn(8) contentStartLine(58) org.kframework.attributes.Location(Location(58,8,58,138)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
   rule `#untype(_)_UNTYPE-SYNTAX`(`type[_;;_;;_]_STYPE-SYNTAX`(#token("\"leaf\"","String"),#token("\"truncate\"","String"),_19))=>`untype[_]_UNTYPE-SYNTAX`(`#truncate_STYPE-SYNTAX`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(9b8d490d1d46235d3c42f02c77487bf9229531353cbd7bb3209b9f7660d89b31) anywhere() contentStartColumn(8) contentStartLine(60) org.kframework.attributes.Location(Location(60,8,60,80)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#untype(_)_UNTYPE-SYNTAX`(`type[_;;_;;_]_STYPE-SYNTAX`(#token("\"leaf\"","String"),#token("\"nil\"","String"),#token("\"Nil\"","String")))=>`untype[_]_UNTYPE-SYNTAX`(`Nil_STYPE-SYNTAX`(.KList)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(df5915fd8abf816e29c1022446ae56fd7a6954db76f85acb1c4e122dcb96d4df) anywhere() contentStartColumn(8) contentStartLine(59) org.kframework.attributes.Location(Location(59,8,59,80)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  ModuleComment( Recursion,[UNIQUE_ID(5b47b2c378c621d1bc4780d3e4f6b75048437239d91d6e27472830f4a87d4aa4) org.kframework.attributes.Location(Location(44,1,44,13)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
+  ModuleComment( Main rewriting semantics,[UNIQUE_ID(907bb6739d3c44c4d7d3a8229c7eef402ca0fb10092a9671f00ffb3b85d16c98) org.kframework.attributes.Location(Location(68,1,68,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
+  ModuleComment( Leaves/SimpleType - base case,[UNIQUE_ID(a7d00bd122b3287cf3a32dc7280e54611b6298b6690f6a7133e16a9d7c7b05ac) org.kframework.attributes.Location(Location(58,1,58,33)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
   ModuleComment( Leaves,[UNIQUE_ID(a8f6c0abb544e4b557a3d8feb29770efa7e12a97d477ad17aaa26cc14cd92953) org.kframework.attributes.Location(Location(51,1,51,10)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
   ModuleComment( 2. type[  S:String ;; I1:InitialType ;; I2:InitialType ] => I3:InitialType   [anywhere]
           S
         /  \   => I3
       I1    I2
-,[UNIQUE_ID(cb9ee4da13b7aa8c70aa9e966199486460e5cf6bcedb6636a328c45e9d068a0b) org.kframework.attributes.Location(Location(64,1,68,2)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
+,[UNIQUE_ID(cb9ee4da13b7aa8c70aa9e966199486460e5cf6bcedb6636a328c45e9d068a0b) org.kframework.attributes.Location(Location(63,1,67,2)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
   ModuleComment( 1. type[ "leaf":String ;; _:String ;; L:Leaf ] => type[ L ]:InitialType,[UNIQUE_ID(6beec155a62aad6c468a1d8a8ef070070ddf9b01d0fc685d884836e42db0062c) org.kframework.attributes.Location(Location(52,1,52,75)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))])
   ModuleComment(
 2 kinds of rewrites:
@@ -1884,7 +1887,7 @@ module UNTYPE [org.kframework.attributes.Location(Location(34,1,93,9)) org.kfram
 endmodule
 
 
-module UNTYPE$SYNTAX [org.kframework.attributes.Location(Location(34,1,93,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))]
+module UNTYPE$SYNTAX [org.kframework.attributes.Location(Location(34,1,95,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Untype/./untype.k))]
   imports UNTYPE-SYNTAX$SYNTAX
   imports MAP$SYNTAX
   syntax Type ::= "project:Type" "(" K ")"
