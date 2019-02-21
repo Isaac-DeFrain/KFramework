@@ -1,7 +1,7 @@
 // Untype - send send
 
-type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "string" ;; "false" ] ] ]
+  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "string" ;; "false" ] ] ]
 
 /*
-type[ "send" ;; type[ x ] ;; type[ "false" ] ] ~> #freezertype[_;;_;;_]_STYPE-SYNTAX0_ ( "send" , type[ @ 0 ] )
+untype[ { @ 0 } ! ( { @ 1 } ! ( "false" ) ) ]
 */

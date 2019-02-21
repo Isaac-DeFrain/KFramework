@@ -1,7 +1,8 @@
-// Untype - type[ x | x!(Nil) ]
+// Untype - type[ *x | x!(Nil) ]
 
-type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
+  type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
 
 /*
-
+  Output:
+  untype[ * x | x ! ( Nil ) ]
 */

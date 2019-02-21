@@ -1,7 +1,0 @@
-// Untype - type[ @Nil!(x) | *x ]
-
-  type[ "par" ;; type[ "reify" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ]
-
-/*
-
-*/
