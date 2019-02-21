@@ -2,3 +2,96 @@
 
   x!(19,23,0) | for( a,b,c <= x ){ *a + *b + *c } | y!(true,true,true) | x!(1,2,3) | x!("a","b") | for( a <- x ){ Nil }
 
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        6
+      </k>
+    </thread> <thread>
+      <k>
+        42
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          x
+        </schan>
+        <msg>
+          "a" , "b"
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <sper>
+          0
+        </sper>
+      </send> <send>
+        <schan>
+          y
+        </schan>
+        <msg>
+          true , true , true
+        </msg>
+        <tuple>
+          3
+        </tuple>
+        <sper>
+          0
+        </sper>
+      </send>
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          x
+        </rchan>
+        <bvars>
+          a
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rper>
+          0
+        </rper>
+        <cont>
+          Nil
+        </cont>
+      </rec> <rec>
+        <rchan>
+          x
+        </rchan>
+        <bvars>
+          a , b , c
+        </bvars>
+        <bnum>
+          3
+        </bnum>
+        <rper>
+          1
+        </rper>
+        <cont>
+          ( * a + * b ) + * c
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+</T>
+*/
