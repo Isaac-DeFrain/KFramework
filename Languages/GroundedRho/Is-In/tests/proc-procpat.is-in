@@ -1,3 +1,0 @@
-// Structural type inclusion for pattern-matching
-
-  type[ "leaf" ;; "nil" ;; "Nil" ] isIn type[ "leaf" ;; "procvar" ;; x ]
