@@ -1,0 +1,7 @@
+// Untype - send send send
+
+type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "string" ;; "a" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "string" ;; "false" ] ] ] ]
+
+/*
+
+*/
