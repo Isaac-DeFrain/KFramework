@@ -435,7 +435,7 @@ Two sources of nondeterminism in programs: concurrency and evaluation strategies
 Strict, seqstrict
 
 #### Superheating/Supercooling: Tags
-Constructors and rules can be given a *tag*. For the strictly-evaluated constructor with , the tags allow the K tool to search for nondeterminism caused by evaluation order using the option `--superheat "cTag"`. For the rule with tag `[rTag]`, you can search for nondeterministic behavior caused by this rule using the option `--supercool "rTag"`.
+Constructors and rules can be given a *tag*. For the strictly-evaluated constructor with `[cTag]`, the tags allow the K tool to search for nondeterminism caused by evaluation order using the option `--superheat "cTag"`. For the rule with tag `[rTag]`, you can search for nondeterministic behavior caused by this rule using the option `--supercool "rTag"`.
 
 In both cases, the tag syntax is the same:
 ```
@@ -675,8 +675,7 @@ However, unfortunately, sometimes the name of the file (or the term itself) is n
 Contains the absolute path to the compiled definition directory on the file system, in case the external parser wishes to use this. This is especially useful if your external parser is a variant of `kast`.
 
 2. KRUN\_SORT
-Contains a sort name designed to provide the external parser information about the context in which the term is being parsed. As an example of how this is used, if you specify a model-checking formula using the
-`--ltlmc` flag, it is parsed using your external parser with the sort information of ``LtlFormula''.
+Contains a sort name designed to provide the external parser information about the context in which the term is being parsed. As an example of how this is used, if you specify a model-checking formula using the `--ltlmc` flag, it is parsed using your external parser with the sort information of ``LtlFormula''.
 
 3. KRUN\_IS\_NOT\_FILE
 Tells the external parser that because of the particular type of value being parsed, by default it is being passed as an argument on the command line instead of as a name to a file containing data to be parsed. For example, configuration variables, when parsed by an external parser, set this value. Note that this does not necessarily mean that the value actually being passed doesn't consist of a filename. A parser may behave however you wish it to, and as long as it receives an input it can understand, this is acceptable behavior. The flag merely indicates that unless you specify an external parser, the value provided is being assumed to be data to be parsed rather than a filename. This allows the same parser to be used both with a filename and with data to be parsed, without needing to specify separate parser commands for each.
