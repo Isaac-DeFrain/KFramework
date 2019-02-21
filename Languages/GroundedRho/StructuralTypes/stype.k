@@ -25,7 +25,7 @@ module STYPE-SYNTAX
 
 // Name Variables
   syntax          NameVar ::= #LowerId                                    [namevar]  // only lowerCamelCase NameVar (solves type parsing ambiguity with ProcVar)
-                                                                                   // #LowerId < NameVar
+                                                                                     // #LowerId < NameVar
 // Name Patterns
   syntax          NamePat ::= "{" NamePat "}"                             [bracket]  //   {_}: NamePat ---> NamePat
                             | NameVar                                                //           NameVar < NamePat
@@ -220,6 +220,7 @@ module STYPE
 // ReceiveOrPat
   rule type[ for(R:Bind   ){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive
   rule type[ for(R:Bind   ){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
+  rule type[ for(R:BindPat){ P:Proc    } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
   rule type[ for(R:BindPat){ P:ProcPat } ] => type[ "receive" ;; type[R]    ;; type[P] ]  // Receive pattern
 
 // BindOrPat

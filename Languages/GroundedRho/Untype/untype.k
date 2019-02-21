@@ -13,8 +13,20 @@ module UNTYPE-SYNTAX
   import SUBSTITUTION
   import STYPE-SYNTAX
 
-  syntax               Type ::= "#untype(" Type ")"   [function]
-                              | "type[" String ;; Type ;; Type "]"
+  syntax IntermediateType ::= "#untype(" Type ")"   [function]
+                            | "untype[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
+
+  syntax  OrPatOrLeafType ::= "untype[" OrPat       "]"                              // untype[OrPat] < OrPatOrLeafType
+                            | "untype[" Leaf        "]"                              //  untype[Leaf] < OrPatOrLeafType
+
+//  Initial type
+  syntax      InitialType ::= "untype[" BindOrPat   "]"                              //   untype[BindOrPat] < InitialType
+                            | "untype[" BindNamePat "]"                              // untype[BindNamePat] < InitialType
+
+//  Terminal type
+  syntax     TerminalType ::= "untype[" String ";;" TerminalType     ";;" TerminalType     "]"
+
+  syntax         LeafType ::= "untype[" String ";;" Leaf             ";;" Leaf             "]"
 
 endmodule
 
@@ -29,7 +41,7 @@ module UNTYPE
 
   syntax KResult ::= OrPatOrLeafType
 
-  rule #untype( type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] ) => type[ S:String ;; #untype(A) ;; #untype(B) ]  [strict(2,3)]
+  rule #untype( type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] ) => untype[ S:String ;; #untype(A) ;; #untype(B) ]  [strict(2,3)]
 
 /*
 2 kinds of rewrites:
@@ -43,11 +55,11 @@ module UNTYPE
        /  \  => I
       S2   L
 */
-  rule #untype( type[ "leaf" ;; S:String   ;; L:Leaf ] ) => type[ L         ]  requires S =/=String "nil" andBool S =/=String "truncate" [anywhere]
-  rule #untype( type[ "leaf" ;; "nil"      ;; "Nil"  ] ) => type[ Nil       ] [anywhere]
-  rule #untype( type[ "leaf" ;; "truncate" ;;   _    ] ) => type[ #truncate ] [anywhere]
+  rule #untype( type[ "leaf" ;; S:String   ;; L:Leaf ] ) => untype[ L         ] requires S =/=String "nil" andBool S =/=String "truncate" [anywhere]
+  rule #untype( type[ "leaf" ;; "nil"      ;; "Nil"  ] ) => untype[ Nil       ] [anywhere]
+  rule #untype( type[ "leaf" ;; "truncate" ;;   _    ] ) => untype[ #truncate ] [anywhere]
 
-  rule #untype( type[ "simpletype" ;; type[ toString( ST:OrPat ) ] ;; _ ] ) => type[ ST ] [anywhere]
+  rule untype[ "simpletype" ;; #untype( type[ toString( ST:OrPat ) ] ) ;; #untype( type[#truncate] ) ] => untype[ ST ] [anywhere]
 /*
 2. type[  _:String ;; ( type[ _:String ;; _:String ;; L:Leaf ] => type[ L:Leaf ] ) ;; _:InitialType ]
            S
@@ -82,28 +94,28 @@ rule type[ _:String ;; _:IntermediateType ;; ( type[ "simpletype" ;; type[ toStr
         /  \   => I3
       I1    I2
 */
-  rule #untype( type[ "quote"   ;; type[P:Proc    ]  ;; _:InitialType  ] ) => type[ @ P ] [anywhere]
-  rule #untype( type[ "quote"   ;; type[P:ProcPat ]  ;; _:InitialType  ] ) => type[ @ P ] [anywhere]
+  rule untype[ "quote"   ;; type[P:Proc    ] ;; type[#truncate ] ] => untype[ @ P ] [anywhere]
+  rule untype[ "quote"   ;; type[P:ProcPat ] ;; type[#truncate ] ] => untype[ @ P ] [anywhere]
 
-  rule #untype( type[ "reify"   ;; type[N:Name    ]  ;; type[ #truncate ] ] ) => type[ * N ] [anywhere]
-  rule #untype( type[ "reify"   ;; type[N:NamePat ]  ;; type[ #truncate ] ] ) => type[ * N ] [anywhere]
+  rule untype[ "reify"   ;; type[N:Name    ] ;; type[#truncate ] ] => type[ * N ] [anywhere]
+  rule untype[ "reify"   ;; type[N:NamePat ] ;; type[#truncate ] ] => type[ * N ] [anywhere]
 
-  rule #untype( type[ "send"    ;; type[N:Name    ] ;; type[P:Proc    ] ] ) => type[ N ! ( P ) ] [anywhere]
-  rule #untype( type[ "send"    ;; type[N:Name    ] ;; type[P:ProcPat ] ] ) => type[ N ! ( P ) ] [anywhere]
-  rule #untype( type[ "send"    ;; type[N:NamePat ] ;; type[  Nil     ] ] ) => type[ N ! (Nil) ] [anywhere]  // shouldn't be needed
-  rule #untype( type[ "send"    ;; type[N:NamePat ] ;; type[P:Proc    ] ] ) => type[ N ! ( P ) ] [anywhere]
-  rule #untype( type[ "send"    ;; type[N:NamePat ] ;; type[P:ProcPat ] ] ) => type[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; type[N:Name    ] ;; type[P:Proc    ] ] => type[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; type[N:Name    ] ;; type[P:ProcPat ] ] => type[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; type[N:NamePat ] ;; type[P:Proc    ] ] => type[ N ! ( P ) ] [anywhere]
+  rule untype[ "send"    ;; type[N:NamePat ] ;; type[P:ProcPat ] ] => type[ N ! ( P ) ] [anywhere]
 
-  rule #untype( type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:Name    ] ] ) => type[ B <- N ] [anywhere]
-  rule #untype( type[ "bind"    ;; type[B:BindNamePat ] ;; type[N:NamePat ] ] ) => type[ B <- N ] [anywhere]
+  rule type[ "bind"    ;; untype[B:NamePat ] ;; untype[N:Name    ] ] => untype[ B <- N ] [anywhere]
+  rule type[ "bind"    ;; untype[B:NamePat ] ;; untype[N:NamePat ] ] => untype[ B <- N ] [anywhere]
 
-  rule #untype( type[ "receive" ;; type[B:Bind    ] ;; type[P:Proc    ] ] ) => type[ for( B ){ P } ] [anywhere]
-  rule #untype( type[ "receive" ;; type[B:Bind    ] ;; type[P:ProcPat ] ] ) => type[ for( B ){ P } ] [anywhere]
-  rule #untype( type[ "receive" ;; type[B:BindPat ] ;; type[P:ProcPat ] ] ) => type[ for( B ){ P } ] [anywhere]
+  rule type[ "receive" ;; untype[B:Bind    ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule type[ "receive" ;; untype[B:Bind    ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule type[ "receive" ;; untype[B:BindPat ] ;; untype[P:Proc    ] ] => untype[ for( B ){ P } ] [anywhere]
+  rule type[ "receive" ;; untype[B:BindPat ] ;; untype[P:ProcPat ] ] => untype[ for( B ){ P } ] [anywhere]
 
-  rule #untype( type[ "par"     ;; type[P:Proc    ] ;; type[Q:Proc    ] ] ) => type[ P | Q ] [anywhere]
-  rule #untype( type[ "par"     ;; type[P:Proc    ] ;; type[Q:ProcPat ] ] ) => type[ P | Q ] [anywhere]
-  rule #untype( type[ "par"     ;; type[P:ProcPat ] ;; type[Q:Proc    ] ] ) => type[ P | Q ] [anywhere]
-  rule #untype( type[ "par"     ;; type[P:ProcPat ] ;; type[Q:ProcPat ] ] ) => type[ P | Q ] [anywhere]
+  rule type[ "par"     ;; type[P:Proc    ] ;; type[Q:Proc    ] ] => type[ P | Q ] [anywhere]
+  rule type[ "par"     ;; type[P:Proc    ] ;; type[Q:ProcPat ] ] => type[ P | Q ] [anywhere]
+  rule type[ "par"     ;; type[P:ProcPat ] ;; type[Q:Proc    ] ] => type[ P | Q ] [anywhere]
+  rule type[ "par"     ;; type[P:ProcPat ] ;; type[Q:ProcPat ] ] => type[ P | Q ] [anywhere]
 
 endmodule
