@@ -7,8 +7,6 @@ require "substitution.k"
 
 module STYPE-SYNTAX
   import DOMAINS
-  import KAST
-  import KSEQ-SYMBOLIC
   import SUBSTITUTION
 
 //************************************
@@ -24,7 +22,7 @@ module STYPE-SYNTAX
                             | "@" Proc                                     [strict]  // @: Proc -----> Name
 
 // Name Variables
-  syntax          NameVar ::= #LowerId                                    [namevar]  // only lowerCamelCase NameVar (solves type parsing ambiguity with ProcVar)
+  syntax          NameVar ::= Id                                          [namevar]  // only lowerCamelCase NameVar (solves type parsing ambiguity with ProcVar)
                                                                                      // #LowerId < NameVar
 // Name Patterns
   syntax          NamePat ::= "{" NamePat "}"                             [bracket]  //   {_}: NamePat ---> NamePat
@@ -40,7 +38,7 @@ module STYPE-SYNTAX
 //-----------------
 
 // Process Variables
-  syntax          ProcVar ::= Id                                          [procvar]  // Var < ProcVar
+//syntax          ProcVar ::= Id                                          [procvar]  // Var < ProcVar
 
 // Processes
   syntax             Proc ::= "{" Proc "}"                                [bracket]  // {_}: Proc -> Proc
@@ -48,24 +46,24 @@ module STYPE-SYNTAX
                             | Ground                                                 //     Ground < Proc
                             | Receive                                                //    Receive < Proc
                             | Send                                                   //       Send < Proc
-                            | Reify                                                  //      Reify < Proc
+                            | Eval                                                   //       Eval < Proc
                             > Par                                                    //        Par < Proc
 
 // Par
   syntax              Par ::= Proc "|" Proc                              [left,par]  // _|_: Proc x Proc ----------------> Par
 
 // Receive
-  syntax          Receive ::= "for" "(" Bind ")" "{" Proc    "}"   [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
-                                                                                                                              // requires ProcPat[N / BindNamePat] to be concrete when N:Name
+  syntax          Receive ::= "for" "(" Bind ")" "{" Proc "}"      [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
+                                                                                                                                // requires ProcPat[N / BindNamePat] to be concrete when N:Name
   syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name -----------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
-                                                                                                                              // BindNamePat = y and ProcPat = y!("hi") thus
+                                                                                                                                // BindNamePat = y and ProcPat = y!("hi") thus
   syntax      BindNamePat ::= NamePat                                                // NamePat < BindNamePat                   // {y!("hi")}[N / y] = N!("hi") is a concrete process
 
 // Send
   syntax             Send ::= Name "!" "(" Proc ")"                [strict(2),send]  // _!(_): Name x Proc -------------> Send
 
-// Reify
-  syntax            Reify ::= "*" Name                                      [reify]  // *: Name -----------------------> Reify
+// Eval
+  syntax             Eval ::= "*" Name                                      [reify]  // *: Name -----------------------> Eval
 
 // Ground terms
   syntax           Ground ::= Bool                                                   //   Bool < Ground
@@ -105,19 +103,18 @@ module STYPE-SYNTAX
   syntax        SendOrPat ::= Send                                                   //    Send < SendOrPat
                             | SendPat                                                // SendPat < SendOrPat
 
-// Reify Pattern
-  syntax         ReifyPat ::= "*" NamePat                                            // *: NamePat -------------------> ReifyPat
+// Eval Pattern
+  syntax          EvalPat ::= "*" NamePat                                            // *: NamePat --------------------> EvalPat
 
-  syntax       ReifyOrPat ::= Reify                                                  //    Reify < ReifyOrPat
-                            | ReifyPat                                               // ReifyPat < ReifyOrPat
+  syntax        EvalOrPat ::= Eval                                                   //    Eval < EvalOrPat
+                            | EvalPat                                                // EvalPat < EvalOrPat
 
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat ------------------> ProcPat
                             | SimpleType                                             //  SimplType < ProcPat
-                            | ProcVar                                                //    ProcVar < ProcPat
                             | ReceivePat                                             // ReceivePat < ProcPat
                             | SendPat                                                //    SendPat < ProcPat
-                            | ReifyPat                                               //   ReifyPat < ProcPat
+                            | EvalPat                                                //    EvalPat < ProcPat
                             > ParPat                                                 //     ParPat < ProcPat
 
   syntax        ProcOrPat ::= "{" ProcOrPat "}"                                      //       {_}: ProcOrPat --------> ProcOrPat
@@ -169,7 +166,6 @@ module STYPE-SYNTAX
 
   syntax             Leaf ::= Ground
                             | NameVar
-                            | ProcVar
                             | "#truncate"
 
 endmodule
@@ -191,14 +187,10 @@ module STYPE
   rule #type( T:Type ) => T    [strict]
 
 //*** Leaves ***
-
 // Ground
   rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ]  // Bool ======> Leaf
   rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ]  // Int =======> Leaf
   rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ]  // String ====> Leaf
-
-// ProcVar
-  rule type[ PV:ProcVar                  ] => type[ "leaf"    ;; "procvar"  ;; PV    ]  // ProcVar ===> Leaf
 
 // NameVar
   rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV    ] // NameVar ===> Leaf
@@ -207,9 +199,9 @@ module STYPE
   rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] // Nil =======> Leaf
 
 //*** Nodes ***
-// ReifyOrPat
-  rule type[ * N:Name                    ] => type[ "reify"   ;; type[N]    ;; type[#truncate] ]  // Reify
-  rule type[ * P:NamePat                 ] => type[ "reify"   ;; type[P]    ;; type[#truncate] ]  // Reify pattern
+// EvalOrPat
+  rule type[ * N:Name                    ] => type[ "eval"    ;; type[N]    ;; type[#truncate] ]  // Eval
+  rule type[ * P:NamePat                 ] => type[ "eval"    ;; type[P]    ;; type[#truncate] ]  // Eval pattern
 
 // SendOrPat
   rule type[ N:Name    ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send
@@ -231,7 +223,7 @@ module STYPE
   rule type[ P:Proc     | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
   rule type[ P:Proc     | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
   rule type[ P:ProcPat  | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
-  rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ] // Par pattern
+  rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
 
 // SimpleType
   rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]
