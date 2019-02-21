@@ -111,16 +111,28 @@ module STYPE-SYNTAX
 
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat ------------------> ProcPat
+                            | "_"
                             | SimpleType                                             //  SimplType < ProcPat
                             | ReceivePat                                             // ReceivePat < ProcPat
                             | SendPat                                                //    SendPat < ProcPat
                             | EvalPat                                                //    EvalPat < ProcPat
                             > ParPat                                                 //     ParPat < ProcPat
 
-  syntax        ProcOrPat ::= "{" ProcOrPat "}"                                      //       {_}: ProcOrPat --------> ProcOrPat
-                            | Proc                                                   //     Proc < ProcOrPat
-                            | ProcPat                                                //  ProcPat < ProcOrPat
+// Logical connectives
+  syntax          ProcPat ::= "~" ProcPat                                            //   ~_: ProcPat -----------------> ProcPat
+                            > Proc    "\\/" ProcPat                                  // _\/_: Proc x ProcPat ----------> ProcPat
+                            | ProcPat "\\/" Proc                                     // _\/_: ProcPat x Proc ----------> ProcPat
+                            | ProcPat "\\/" ProcPat                                  // _\/_: ProcPat x ProcPat -------> ProcPat
+                            > Proc    "/\\" ProcPat                                  // _/\_: Proc x ProcPat ----------> ProcPat
+                            | ProcPat "/\\" Proc                                     // _/\_: ProcPat x Proc ----------> ProcPat
+                            | ProcPat "/\\" ProcPat                                  // _/\_: ProcPat x ProcPat -------> ProcPat
 
+// Proc or ProcPat
+  syntax        ProcOrPat ::= "{" ProcOrPat "}"                                      //      {_}: ProcOrPat -----------> ProcOrPat
+                            | Proc                                                   //    Proc < ProcOrPat
+                            | ProcPat                                                // ProcPat < ProcOrPat
+
+// Name, NamePat, Proc, or ProcPat
   syntax            OrPat ::= NameOrPat
                             | ProcOrPat
                             | "{" OrPat "}"
@@ -128,8 +140,7 @@ module STYPE-SYNTAX
 //******************************
 //*** STRUCTURAL TYPE SYNTAX ***
 //******************************
-  syntax             Type ::= "#type(" Type ")"                          [function]  // #type( t:Type ) => t
-                            | InitialType                                            //      InitialType < Type
+  syntax             Type ::= InitialType                                            //      InitialType < Type
                             | IntermediateType                                       // IntermediateType < Type
                             | TerminalType                                           //     TerminalType < Type
                             | String                                                 //           String < Type (for String input/output)
@@ -184,24 +195,30 @@ module STYPE
 //---------------------
 //--- Type function ---
 //---------------------
-  rule #type( T:Type ) => T    [strict]
+//rule #type( T:Type ) => T    [strict]
 
 //*** Leaves ***
+// Wildcard
+  rule type[ _ ] => type[ "leaf" ;; "wildcard" ;; "_" ]
+
 // Ground
   rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ]  // Bool ======> Leaf
   rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ]  // Int =======> Leaf
   rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ]  // String ====> Leaf
 
 // NameVar
-  rule type[ NV:NameVar                  ] => type[ "leaf"    ;; "namevar"  ;; NV    ] // NameVar ===> Leaf
+  rule type[ N:NameVar                   ] => type[ "leaf"    ;; "namevar"  ;; N     ] // NameVar ===> Leaf
 
 // Nil
   rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] // Nil =======> Leaf
 
+// #truncate
+  rule type[ #truncate                   ] => type[ "leaf"    ;; "truncate" ;;      #truncate  ]  // 
+
 //*** Nodes ***
 // EvalOrPat
   rule type[ * N:Name                    ] => type[ "eval"    ;; type[N]    ;; type[#truncate] ]  // Eval
-  rule type[ * P:NamePat                 ] => type[ "eval"    ;; type[P]    ;; type[#truncate] ]  // Eval pattern
+  rule type[ * N:NamePat                 ] => type[ "eval"    ;; type[N]    ;; type[#truncate] ]  // Eval pattern
 
 // SendOrPat
   rule type[ N:Name    ! (P:Proc   )     ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send
@@ -220,20 +237,30 @@ module STYPE
   rule type[ B:BindNamePat <- N:NamePat  ] => type[ "bind"    ;; type[B]    ;; type[N] ]  // Bind
 
 // ParOrPat
-  rule type[ P:Proc     | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
   rule type[ P:Proc     | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
+  rule type[ P:Proc     | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
   rule type[ P:ProcPat  | Q:Proc         ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
   rule type[ P:ProcPat  | Q:ProcPat      ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
 
+//Patterns
+  rule type[ P:Proc    /\ Q:ProcPat      ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
+  rule type[ P:ProcPat /\ Q:Proc         ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
+  rule type[ P:ProcPat /\ Q:ProcPat      ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
+
+  rule type[ P:Proc    \/ Q:ProcPat      ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
+  rule type[ P:ProcPat \/ Q:Proc         ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
+  rule type[ P:ProcPat \/ Q:ProcPat      ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
+
+  rule type[ ~ P:ProcPat                 ] => type[ "not"     ;; type[P]    ;; type[#truncate] ]  // logical negation
+
 // SimpleType
-  rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]
+  rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
 
-// Channels
-  rule type[ @ P:Proc         ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]
-  rule type[ @ P:ProcPat      ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]
+// Channel
+  rule type[ @ P:Proc         ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process
 
-// #truncate
-  rule type[ #truncate        ] => type[ "leaf"       ;; "truncate"         ;;      #truncate  ]
+// Name Pattern
+  rule type[ @ P:ProcPat      ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process pattern
 
 // Resolving brackets
   rule type[ { P:ProcOrPat }  ] => type[P]  // bracketed ProcOrPat type resolution

@@ -1,10 +1,12 @@
-// Type - par pattern
+// Type - pattern
 
- type[ x | x!(Nil) ]
+  type[ *x /\ x!(Nil) \/ _ ]
 
-// Output:
-// <T>
-//   <k>
-//     type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
-//   </k>
-// </T>
+/*
+  Output:
+  (with usual precedence of connectives: /\ > \/ means /\ binds tighter than \/ so \/ is the top-level constructor)
+  type[ "or" ;; type[ "and" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "_" ] ]
+
+  (with unusual precedence of connectives: \/ > /\ means \/ binds tighter than /\, here /\ is the top-level constructor)
+  type[ "and" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "or" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "leaf" ;; "wildcard" ;; "_" ] ] ]
+*/
