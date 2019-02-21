@@ -1,7 +1,8 @@
-// Untype - send send
+// Untype - type[ x ! ( x ! ( * x ) ) ]
 
-  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "string" ;; "false" ] ] ]
+  type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ]
 
 /*
-untype[ { @ 0 } ! ( { @ 1 } ! ( "false" ) ) ]
+  Output:
+  untype[ x ! ( x ! ( * x ) ) ]
 */

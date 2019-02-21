@@ -1,8 +1,8 @@
-// Untype - receive
+// Untype - type[ for ( y <- @ ( { @ Nil } ! ( "nil" ) ) ) { 0 } ]
 
-    type[ "receive" ;; type[ "bind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "int" ;; 0 ] ]
+   type[ "receive" ;; type[ "bind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "quote" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "string" ;; "nil" ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "int" ;; 0 ] ]
 
 /*
-Output:
-
+  Output:
+  untype[ for ( y <- @ ( { @ Nil } ! ( "nil" ) ) ) { 0 } ]
 */

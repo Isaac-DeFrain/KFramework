@@ -1,3 +1,8 @@
-// Untype - send simpletype
+// Untype - type[ @ Nil ! ( Bool ) ]
 
   type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
+
+/*
+  Output:
+  untype[ @ Nil ! ( Bool ) ]
+*/
