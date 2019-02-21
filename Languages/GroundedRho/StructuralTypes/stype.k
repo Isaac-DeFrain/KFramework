@@ -122,7 +122,7 @@ module STYPE-SYNTAX
 
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat ------------------> ProcPat
-                            | "_"
+                            | "WildCard"                                             //   WildCard < ProcPat
                             | SimpleType                                             //  SimplType < ProcPat
                             | ReceivePat                                             // ReceivePat < ProcPat
                             | SendPat                                                //    SendPat < ProcPat
@@ -131,12 +131,12 @@ module STYPE-SYNTAX
 
 // Logical connectives
   syntax          ProcPat ::= "~" ProcPat                                            //   ~_: ProcPat -----------------> ProcPat
-                            > Proc    "\\/" ProcPat                                  // _\/_: Proc x ProcPat ----------> ProcPat
-                            | ProcPat "\\/" Proc                                     // _\/_: ProcPat x Proc ----------> ProcPat
-                            | ProcPat "\\/" ProcPat                                  // _\/_: ProcPat x ProcPat -------> ProcPat
                             > Proc    "/\\" ProcPat                                  // _/\_: Proc x ProcPat ----------> ProcPat
                             | ProcPat "/\\" Proc                                     // _/\_: ProcPat x Proc ----------> ProcPat
                             | ProcPat "/\\" ProcPat                                  // _/\_: ProcPat x ProcPat -------> ProcPat
+                            > Proc    "\\/" ProcPat                                  // _\/_: Proc x ProcPat ----------> ProcPat
+                            | ProcPat "\\/" Proc                                     // _\/_: ProcPat x Proc ----------> ProcPat
+                            | ProcPat "\\/" ProcPat                                  // _\/_: ProcPat x ProcPat -------> ProcPat
 
 // Proc or ProcPat
   syntax        ProcOrPat ::= "{" ProcOrPat "}"                                      //      {_}: ProcOrPat -----------> ProcOrPat
@@ -209,22 +209,22 @@ module STYPE
 //rule #type( T:Type ) => T    [strict]
 
 //*** Leaves ***
-// Wildcard
-  rule type[ _ ] => type[ "leaf" ;; "wildcard" ;; "_" ]
-
 // Ground
-  rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ]  // Bool ======> Leaf
-  rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ]  // Int =======> Leaf
-  rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ]  // String ====> Leaf
+  rule type[ B:Bool                      ] => type[ "leaf"    ;; "bool"     ;; B     ]  // Bool ==================> Leaf
+  rule type[ I:Int                       ] => type[ "leaf"    ;; "int"      ;; I     ]  // Int ===================> Leaf
+  rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S     ]  // String ================> Leaf
 
 // NameVar
-  rule type[ N:NameVar                   ] => type[ "leaf"    ;; "namevar"  ;; N     ] // NameVar ===> Leaf
+  rule type[ N:NameVar                   ] => type[ "leaf"    ;; "namevar"  ;; N     ] // NameVar ================> Leaf
 
 // Nil
-  rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] // Nil =======> Leaf
+  rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil" ] // Nil ====================> Leaf
+
+// Wildcard
+  rule type[ WildCard                    ] => type[ "leaf"    ;; "wildcard" ;; "pattern" ]  // WildCard ==========> Leaf
 
 // #truncate
-  rule type[ #truncate                   ] => type[ "leaf"    ;; "truncate" ;;      #truncate  ]  // 
+  rule type[ #truncate                   ] => type[ "leaf"    ;; "truncate" ;;      #truncate  ]  // #truncate ===> Leaf
 
 //*** Nodes ***
 // EvalOrPat
