@@ -47,28 +47,39 @@ module STYPE-SYNTAX
                             | Receive                                                //    Receive < Proc
                             | Send                                                   //       Send < Proc
                             | Eval                                                   //       Eval < Proc
+                            | Bundle                                                 //     Bundle < Proc
                             > Par                                                    //        Par < Proc
 
 // Par
   syntax              Par ::= Proc "|" Proc                              [left,par]  // _|_: Proc x Proc ----------------> Par
 
 // Receive
-  syntax          Receive ::= "for" "(" Bind ")" "{" Proc "}"      [binder,receive]  // for(_){_}: Bind x Proc ------> Receive
-                                                                                                                                // requires ProcPat[N / BindNamePat] to be concrete when N:Name
-  syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name -----------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
-                                                                                                                                // BindNamePat = y and ProcPat = y!("hi") thus
-  syntax      BindNamePat ::= NamePat                                                // NamePat < BindNamePat                   // {y!("hi")}[N / y] = N!("hi") is a concrete process
+  syntax          Receive ::= "for" "(" Bind ")" "{" Proc "}"      [binder,receive]  // for(_){_}: Bind x Proc ----------> Receive
+                                                                                                                                 // requires ProcPat[N / BindNamePat] to be concrete when N:Name
+  syntax             Bind ::= BindNamePat "<-" Name                          [bind]  // _<-_: NamePat x Name ------------> Bind  // e.g. for( y <- @Nil ){ y!("hi") } is a Proc because
+                                                                                                                                 // BindNamePat = y and ProcPat = y!("hi") thus
+  syntax      BindNamePat ::= NamePat                                                // NamePat < BindNamePat                    // {y!("hi")}[N / y] = N!("hi") is a concrete process
 
 // Send
-  syntax             Send ::= Name "!" "(" Proc ")"                [strict(2),send]  // _!(_): Name x Proc -------------> Send
+  syntax             Send ::= Name "!" "(" Proc ")"                [strict(2),send]  // _!(_): Name x Proc --------------> Send
 
 // Eval
-  syntax             Eval ::= "*" Name                                      [reify]  // *: Name -----------------------> Eval
+  syntax             Eval ::= "*" Name                                      [reify]  // *: Name -------------------------> Eval
 
 // Ground terms
   syntax           Ground ::= Bool                                                   //   Bool < Ground
                             | Int                                                    //    Int < Ground
                             | String                                                 // String < Ground
+                            | Uri                                                    //    Uri < Ground
+                            | "unforgeable(" Int ")"                                 // unforgeable(_): Int -------------> Ground
+
+  syntax              Uri ::= "uri(" String      ")"                                 // 
+
+// Bundles
+  syntax           Bundle ::= "bundle+" "{" Proc "}"                                 // write bundle
+                            | "bundle-" "{" Proc "}"                                 // read-only bundle
+                            | "bundle0" "{" Proc "}"                                 // 
+                            | "bundle"  "{" Proc "}"                                 // 
 
 //------------------------
 //--- Process Patterns ---
@@ -253,6 +264,19 @@ module STYPE
 
   rule type[ ~ P:ProcPat                 ] => type[ "not"     ;; type[P]    ;; type[#truncate] ]  // logical negation
 
+// Bundles
+  rule
+      type[ bundle+{ P:Proc } ] => type[ "bundle+"    ;; type[P]            ;; type[#truncate] ]  // bundle+
+  rule
+      type[ bundle-{ P:Proc } ] => type[ "bundle-"    ;; type[P]            ;; type[#truncate] ]  // bundle-
+  rule
+      type[ bundle0{ P:Proc } ] => type[ "bundle0"    ;; type[P]            ;; type[#truncate] ]  // bundle0
+  rule
+      type[ bundle { P:Proc } ] => type[ "bundle"     ;; type[P]            ;; type[#truncate] ]  // bundle
+
+// Uri
+  rule type[ uri( S:String )  ] => type[ "uri"        ;; type[S]            ;; type[#truncate] ]  // uri
+
 // SimpleType
   rule type[ ST:SimpleType    ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
 
@@ -265,5 +289,8 @@ module STYPE
 // Resolving brackets
   rule type[ { P:ProcOrPat }  ] => type[P]  // bracketed ProcOrPat type resolution
   rule type[ { N:NameOrPat }  ] => type[N]  // bracketed NameOrPat type resolution
+
+// Unforgeable Integers
+  rule type[ unforgeable( I:Int ) ] => type[ "unforgeable" ;; type[I]       ;; type[#truncate] ]  // unforgeable integer
 
 endmodule
