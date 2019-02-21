@@ -41,7 +41,8 @@ module GRHO-SYNTAX
                      | Eval                                          //    Eval < Proc
                      | Receive                                       // Receive < Proc
                      | Send                                          //    Send < Proc
-                     | Par                                           //     Par < Proc
+                     | Bundle                                        //  Bundle < Proc
+                     > Par                                           //     Par < Proc
 
 // Parallel
   syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
@@ -127,6 +128,12 @@ module GRHO-SYNTAX
                      | "not" BExp                           [strict] // not_: BExp ----------> BExp
                      > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
                      > BExp  "or" BExp                      [strict] //   or: BExp ----------> BExp
+
+// Bundles
+  syntax    Bundle ::= "bundle+" "{" Proc "}"
+                     | "bundle-" "{" Proc "}"
+                     | "bundle0" "{" Proc "}"
+                     | "bundle"  "{" Proc "}"
 
 // Structural & Name Equivalences - not finished yet
   syntax      Bool ::= Proc "equiv"  Proc
