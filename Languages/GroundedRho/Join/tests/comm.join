@@ -1,3 +1,0 @@
-// Join test - comm
-
-  for( a <- x ; b <- y ; c <- z){ (*a,*b,*c) } | x!("x") | y!("y") | z!("z")

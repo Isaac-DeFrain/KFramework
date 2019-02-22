@@ -40,6 +40,7 @@ module JOIN
   </sends>
   (.Bag => <thread> <k> P[ @Q / A ][ @R / B ] </k> </thread>)
 
+// Hard-coded join of 3 binds, each listening for a 1-tuple
   rule
   <receives>
     ...
@@ -75,9 +76,9 @@ module JOIN
     ...
   </sends>
   <reaction>
-    <who>   P           </who>
-    <what>  Q , R , S  </what>
-    <where> A , B , C </where>
+    <who>   .K => P           </who>
+    <what>  .K => Q , R , S  </what>
+    <where> .K => A , B , C </where>
   </reaction>
 
 endmodule
