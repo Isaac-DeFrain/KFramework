@@ -19,6 +19,7 @@ module AUXFUN-SYNTAX
                  | "#bvar"  "(" Bind  ")"    [function]  //   #bvar (_): Bind ----> Name
 
   syntax Names ::= "#chans" "(" Binds ")"    [function]  //  #chans (_): Binds ---> Names
+                 | "#bvar"  "(" Bind  ")"    [function]  //   #bvar (_): Bind ----> Names
                  | "#bvars" "(" Binds ")"    [function]  //  #bvars (_): Binds ---> Names
 
 endmodule
@@ -78,10 +79,13 @@ module AUXFUN
 //--- #bvar ---
 //-------------
 // Bind
-  rule #bvar ( N:Name  <- _:Name ) => { N }
-  rule #bvar ( N:Names <- _:Name ) => { N }
-  rule #bvar ( N:Name  <= _:Name ) => { N }
-  rule #bvar ( N:Names <= _:Name ) => { N }
+  rule #bvar ( M:Name           <- _:Name ) => M
+  rule #bvar ( M:Name , N:Name  <- _:Name ) => M , N
+  rule #bvar ( M:Name , N:Names <- L:Name ) => M , #bvar ( N <- L )  [strict]
+
+  rule #bvar ( N:Name           <= _:Name ) => N
+  rule #bvar ( M:Name , N:Name  <= _:Name ) => M , N
+  rule #bvar ( M:Name , N:Names <= L:Name ) => M , #bvar ( N <= L )  [strict]
 
 //--------------
 //--- #bvars ---

@@ -1,0 +1,7 @@
+// Binding Variables of bind
+
+  #bvar ( a,b,c,d,e,f,g <- x )
+
+/*
+  Output: a , b , c , d , e , f , g 
+*/
