@@ -148,7 +148,7 @@ module GRHO-SYNTAX
 
   syntax KVariable ::= Name | Names
 
-  syntax     KItem ::= Name | Names | Proc | Procs | Name "," Int
+  syntax     KItem ::= Name | Names | Proc | Procs
 
 endmodule
 
@@ -176,10 +176,8 @@ module GRHO
             <msg>   .K   </msg>                                      // sent message
             <tuple> .K </tuple>                                      // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
             <sper>  .K  </sper>                                      // 1 for persistent send (not dissolved), 0 for single send (dissolved)
-            <id>     0    </id>                                      // 
           </send>                                                    //
         </sends>                                                     //
-        <slog>    .List   </slog>
         <receives>                                                   //
           <rec color="yellow" multiplicity="*">                      //
             // guard for allowed type(s)?                            //
@@ -231,9 +229,7 @@ module GRHO
                   <msg>        P        </msg>                       //sending message P
                   <tuple>      1      </tuple>                       //1-tuple = ( Proc )
                   <sper>       0       </sper>                       //single send => consumed in comm
-                  <id>       !I:Int      </id>                       //
                 </send>)                                             //
-       <slog>... .List => ListItem(X,!I) </slog>
 
 // N-tuple messages, N > 1
   rule <k> X:Name ! ( P:Procs ) => . ...</k>                         //dissolve send in <threadpool/> and spawn <send/>
@@ -242,9 +238,7 @@ module GRHO
                   <msg>        P        </msg>                       //sending messages P, two or more
                   <tuple> #length (P) </tuple>                       //length of tuple - how many messages
                   <sper>       0       </sper>                       //single send => consumed in comm
-                  <id>       !I:Int      </id>                       //
                 </send>)                                             //
-       <slog>... .List => ListItem(X,!I) </slog>
 
 //--- Persistent Sends ---
 // Process message <=> 1-tuple
@@ -254,9 +248,7 @@ module GRHO
                   <msg>        P       </msg>                        //sending message P
                   <tuple>      1     </tuple>                        //1-tuple
                   <sper>       1      </sper>                        //repeated send => NOT consumed in comm
-                  <id>       !I:Int      </id>                       //
                 </send>)                                             //
-       <slog>... .List => ListItem(X,!I) </slog>
 
 // N-tuple messages, N > 1
   rule <k> X:Name !! ( P:Procs ) => . ...</k>                        //dissolve send in <threadpool/> and spawn <send/>
@@ -265,9 +257,7 @@ module GRHO
                   <msg>        P       </msg>                        //sending messages P, two or more
                   <tuple> #length(P) </tuple>                        //length of tuple
                   <sper>       1      </sper>                        //repeated send
-                  <id>       !I:Int      </id>                       //
                 </send>)                                             //
-       <slog>... .List => ListItem(X,!I) </slog>
 
 //----------------------------------
 //--- Receive Operator Semantics ---
@@ -382,7 +372,6 @@ module GRHO
      <msg>   Q:Proc   </msg>                                           // message Q
      <tuple> 1      </tuple>                                           // 1-tuple
      <sper>  0       </sper>                                           // single send
-     <id>    I:Int     </id>                                           // 
    </send> => .Bag)                                                    //
   (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                     //spawn single <thread/> holding sub P[@Q / Y]
                                                                 [comm] //tagged "comm" for tracking nondeterminism
@@ -401,7 +390,6 @@ module GRHO
      <msg>   Q:Proc , R:Proc  </msg>                                   // message(s) Q, R
      <tuple> 2              </tuple>                                   // 2-tuple
      <sper>  0               </sper>                                   // single send
-     <id>    _                 </id>                                   // 
    </send> => .Bag)                                                    //
   (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)            //spawn single <thread/> holding substituted continuation
                                                                 [comm]
@@ -420,7 +408,6 @@ module GRHO
      <msg>   Q:Proc , R:Procs   </msg>                                 // message
      <tuple> N                </tuple>                                 // N-tuple
      <sper>  0                 </sper>                                 // single send
-     <id>    _                   </id>                                 // 
    </send> => .Bag)
    <reaction>
      <who>   .K => P       </who>
@@ -442,7 +429,6 @@ module GRHO
      <msg>   Q:Proc   </msg>                                           // message
      <tuple> 1      </tuple>                                           // 1-tuple
      <sper>  0       </sper>                                           // single send
-     <id>    _         </id>                                           // 
    </send> => .Bag)                                                    //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -464,7 +450,6 @@ module GRHO
      <msg>   Q:Proc , R:Proc  </msg>                                   // message(s)
      <tuple> 2              </tuple>                                   // 2-tuple
      <sper>  0               </sper>                                   // single send
-     <id>    _                 </id>                                   // 
    </send> => .Bag)                                                    //
    <reaction>
      <who>   .K => P       </who>
@@ -486,7 +471,6 @@ module GRHO
      <msg>   Q:Proc , R:Procs   </msg>                                 // message(s)
      <tuple> N                </tuple>                                 // N-tuple
      <sper>  0                 </sper>                                 // single send
-     <id>    _                   </id>                                 // 
    </send> => .Bag)
    <reaction>
      <who>   .K => P       </who>
@@ -508,7 +492,6 @@ module GRHO
      <msg>   Q:Proc   </msg>                                           // message Q
      <tuple> 1      </tuple>                                           // 1-tuple
      <sper>  1       </sper>                                           // single send
-     <id>    _         </id>                                           // 
    </send>                                                             //
    <reaction>
      <who>   .K => P   </who>
@@ -530,7 +513,6 @@ module GRHO
      <msg>   Q:Proc , R:Proc  </msg>                                   // messages
      <tuple> 2              </tuple>                                   // 2-tuple
      <sper>  1               </sper>                                   // single send
-     <id>    _                 </id>                                   // 
    </send>                                                             //
    <reaction>
      <who>   .K => P       </who>
@@ -552,7 +534,6 @@ module GRHO
      <msg>   Q:Proc , R:Procs   </msg>                                 // messages
      <tuple> N                </tuple>                                 // N-tuple
      <sper>  1                 </sper>                                 // persistent send
-     <id>    _                   </id>                                 // 
    </send>                                                             //
    <reaction>
      <who>   .K => P       </who>
