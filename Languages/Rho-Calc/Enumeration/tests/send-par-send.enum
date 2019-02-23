@@ -1,0 +1,7 @@
+// Enumerate
+
+  @Nil!(Nil) | @Nil(@Nil){Nil}
+
+/*
+  Output: 2025
+*/

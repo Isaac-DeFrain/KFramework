@@ -1,0 +1,1625 @@
+module ARRAY$SYNTAX [org.kframework.attributes.Location(Location(86,1,90,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports ARRAY-SYMBOLIC$SYNTAX
+endmodule
+
+
+module ARRAY-IN-K$SYNTAX [org.kframework.attributes.Location(Location(58,1,84,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports LIST$SYNTAX
+  imports K-EQUAL$SYNTAX
+  imports INT$SYNTAX
+  imports ARRAY-SYNTAX$SYNTAX
+  syntax List ::= "ensureOffsetList" "(" List "," Int "," KItem ")"
+  syntax Array ::= "makeArray" "(" Int "," KItem ")"
+  syntax Array ::= "arr" "(" List "," Int "," KItem ")"
+endmodule
+
+
+module ARRAY-SYMBOLIC$SYNTAX [org.kframework.attributes.Location(Location(50,1,52,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports ARRAY-IN-K$SYNTAX
+endmodule
+
+
+module ARRAY-SYNTAX [org.kframework.attributes.Location(Location(24,1,38,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports LIST
+  imports ARRAY-SYNTAX$SYNTAX
+  ModuleComment( Sets a range of indices (given by an index into the array and the number
+   of indices to set) to the same value. ,[UNIQUE_ID(d09d8dcc541f374c38d01d9bf4c2bbe3f6ec155faddd42b02a397f824a53e722) org.kframework.attributes.Location(Location(33,3,34,43)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module ARRAY-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(24,1,38,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports LIST$SYNTAX
+  syntax KItem ::= Array "[" Int "]"
+  syntax KItem ::= Array
+  syntax K
+  syntax Bool ::= Int "in_keys" "(" Array ")"
+  syntax Bool ::= "isArray" "(" K ")"
+  syntax Array [UNIQUE_ID(d18b68dbdc9794d1f86db4d7fa651c38599693841e59b36d1d925fa6de69cbdb) element(_[_<-_]) hook(ARRAY.Array) org.kframework.attributes.Location(Location(27,3,27,69)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) unit(arrayCtor)]
+  syntax Array ::= Array "[" Int "<-" KItem "]"
+  syntax Array ::= Array "[" Int "<-" "undef" "]"
+  syntax Array ::= "updateArray" "(" Array "," Int "," List ")"
+  syntax Array ::= "fillArray" "(" Array "," Int "," Int "," KItem ")"
+endmodule
+
+
+module AUTO-CASTS [org.kframework.attributes.Location(Location(158,1,166,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports AUTO-CASTS$SYNTAX
+  ModuleComment( this is part of the mechanism that allows concrete user syntax in K,[UNIQUE_ID(023aeeb79635548d7474bbd04c5e850ae3f16c70e3c9f1a5b2217feabeba32f0) org.kframework.attributes.Location(Location(165,3,165,73)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( if this module is imported, the parser automatically,[UNIQUE_ID(37a5063cfb27ab7172edee6d6737c34f24319839d9435de04f5eebf6a40ab984) org.kframework.attributes.Location(Location(159,3,159,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( generates, for all sorts, productions of the form:,[UNIQUE_ID(4260a658f47bcbebe92856b670631049bbd9879de4734bb52a9b3e9b0c53692a) org.kframework.attributes.Location(Location(160,3,160,56)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Sort  ::= Sort ":Sort",[UNIQUE_ID(e68b6e0930ea9dd34670c94f3aeff0b3bdb361a948b57a610ccf1f6b514fc147) org.kframework.attributes.Location(Location(162,3,162,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Sort  ::= Sort "::Sort",[UNIQUE_ID(f51f9714c372f3541d311c4ba1f3a29f61f2d692ca128f33303da7acebee7618) org.kframework.attributes.Location(Location(161,3,161,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Sort  ::= K    ":>Sort",[UNIQUE_ID(20c548e67dc00340856c0427b3e3253dad309ad354a4076636275fec61712e72) org.kframework.attributes.Location(Location(164,3,164,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( KBott ::= Sort "<:Sort",[UNIQUE_ID(0f86b13e07978c57ebbc3051a177ff66a466265493aa36d468182b5c91994fd6) org.kframework.attributes.Location(Location(163,3,163,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module AUTO-CASTS$SYNTAX [org.kframework.attributes.Location(Location(158,1,166,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+endmodule
+
+
+module AUTO-FOLLOW [org.kframework.attributes.Location(Location(168,1,179,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports AUTO-FOLLOW$SYNTAX
+  ModuleComment( syntax K ::= K K,[UNIQUE_ID(056eb07b1d3e2c78ad1861493acd77dd4a77fb46cdc99b8b9b30acb3777c8832) org.kframework.attributes.Location(Location(175,3,175,22)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( syntax K ::= "b",[UNIQUE_ID(66f334b73d055d75534fec8a9b059d6cf2ebb000410217323d6d313b0e987ef0) org.kframework.attributes.Location(Location(173,3,173,22)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( syntax K ::= "ab",[UNIQUE_ID(90f9444fe45632c75346f843365661cfde3788a2a0deeea488af90cd42c41129) org.kframework.attributes.Location(Location(174,3,174,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( syntax K ::= "a",[UNIQUE_ID(2d106440fa1362c9a73014579fa78477f848623a0995ea94f4f6f8518a63dad8) org.kframework.attributes.Location(Location(172,3,172,22)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( of another terminal. This is useful to prevent ambiguities such as:,[UNIQUE_ID(abf03559ac9db882cec3e2dab4a2406bf228b3945319ab8b599bece36dbf8380) org.kframework.attributes.Location(Location(171,3,171,73)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( if this module is imported, the parser automatically,[UNIQUE_ID(37a5063cfb27ab7172edee6d6737c34f24319839d9435de04f5eebf6a40ab984) org.kframework.attributes.Location(Location(169,3,169,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( generates a follow restriction for every terminal which is a prefix,[UNIQUE_ID(a67d20ceb57fa6e765c511029c965e7abb83a25eaaab9b6ad3e8c60e97f640d2) org.kframework.attributes.Location(Location(170,3,170,73)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( because it would turn the terminal into the terminal "ab".,[UNIQUE_ID(3735483fc4ab334bec3b994ed3c39cd1466d07db4020202ecc8e6e81df653a61) org.kframework.attributes.Location(Location(178,3,178,64)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( In the above example, the terminal "a" is not allowed to be followed by a "b",[UNIQUE_ID(3e48d4c457e144d9e89ad33e8f0590e6ed03c4e1a0a353d1104c229602d4bf8e) org.kframework.attributes.Location(Location(177,3,177,83)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( #parse("ab", "K"),[UNIQUE_ID(bdc3aa6310191419e52b1fdf24659a9f040592ef6aa7822bed6867f028e9f323) org.kframework.attributes.Location(Location(176,3,176,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module AUTO-FOLLOW$SYNTAX [org.kframework.attributes.Location(Location(168,1,179,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+endmodule
+
+
+module BASIC-K [org.kframework.attributes.Location(Location(8,1,13,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K
+  imports BASIC-K$SYNTAX
+endmodule
+
+
+module BASIC-K$SYNTAX [org.kframework.attributes.Location(Location(8,1,13,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K$SYNTAX
+  syntax KItem [UNIQUE_ID(c2b4b3afd46aa18b1a5fc4b4c16295927d09ad8f647d9d9c099e10a624c3d9a0) hook(K.KItem) org.kframework.attributes.Location(Location(10,3,10,30)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax KConfigVar [UNIQUE_ID(2bc6dd1633cdbaf4b8e11f2b2b154ad88f4aa0bbd04b77ca9fa11631f2bf90bb) org.kframework.attributes.Location(Location(12,3,12,27)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k)) token()]
+  syntax K ::= KItem
+  syntax K
+  syntax Bool ::= "isKItem" "(" K ")"
+  syntax Bool ::= "isKConfigVar" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module BOOL [org.kframework.attributes.Location(Location(285,1,334,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports BOOL-SYNTAX
+  imports BOOL$SYNTAX
+  imports BASIC-K
+  rule `notBool_`(#token("true","Bool"))=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(de18dba5cb1b6e56941a63279edb1d16da29d7a997a3e82cbc2b81b066eadf47) contentStartColumn(8) contentStartLine(299) org.kframework.attributes.Location(Location(299,8,299,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `notBool_`(#token("false","Bool"))=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(dbe4d83961158619e994f90623f08be11020d80c56685ef1ec2dd2b15760c474) contentStartColumn(8) contentStartLine(300) org.kframework.attributes.Location(Location(300,8,300,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_xorBool__BOOL`(B1,B2)=>`notBool_`(`_==Bool__BOOL`(B1,B2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(1c34683a46438798498c925345e696fc017c0665504d0877c44e540d820b1ec7) contentStartColumn(8) contentStartLine(315) org.kframework.attributes.Location(Location(315,8,315,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_xorBool__BOOL`(B,B)=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(70684b52edf7d3194cd01f6e5714b364631e8d96267df666bb689e5380e13cc4) contentStartColumn(8) contentStartLine(314) org.kframework.attributes.Location(Location(314,8,314,38)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_xorBool__BOOL`(B,#token("false","Bool"))=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(2eae84ae7b21312fecde18860149de73365b819e65aada5f952fc5b9101ae014) contentStartColumn(8) contentStartLine(313) org.kframework.attributes.Location(Location(313,8,313,38)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_xorBool__BOOL`(#token("false","Bool"),B)=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(0b888132027262073a3306d90f4a55b0a4ea27984cd77fccd8bf29cd48efb665) contentStartColumn(8) contentStartLine(312) org.kframework.attributes.Location(Location(312,8,312,38)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orElseBool__BOOL`(_0,#token("true","Bool"))=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(2882f8b0a388fe37313c6b828cb9039a9838984f56e50b5095476c319b3dfbd8) contentStartColumn(8) contentStartLine(323) org.kframework.attributes.Location(Location(323,8,323,33)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orElseBool__BOOL`(K,#token("false","Bool"))=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(8c7774b237a73a62ffd53be8d97ac73eb2f040dcf41983ea18840919b416d291) contentStartColumn(8) contentStartLine(325) org.kframework.attributes.Location(Location(325,8,325,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orElseBool__BOOL`(#token("true","Bool"),_4)=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(6ea998be2fb9b60b7964c4b4939293b6fecb47f52a53031c6227218949cf22f0) contentStartColumn(8) contentStartLine(322) org.kframework.attributes.Location(Location(322,8,322,33)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orElseBool__BOOL`(#token("false","Bool"),K)=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(efdd958595a7fecb549f4368ba6097862b61abc903a6d33684803a3a0043bda8) contentStartColumn(8) contentStartLine(324) org.kframework.attributes.Location(Location(324,8,324,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orBool__BOOL`(_8,#token("true","Bool"))=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(497077a299480dbc06eccb33cd98338014bd125c4c601cb88a765dbcb334b14b) contentStartColumn(8) contentStartLine(318) org.kframework.attributes.Location(Location(318,8,318,34)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orBool__BOOL`(B,#token("false","Bool"))=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(630487d34ae5fc313a9b8cae2ad45b7b80671058bca3c97a7864774c5a431711) contentStartColumn(8) contentStartLine(320) org.kframework.attributes.Location(Location(320,8,320,32)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orBool__BOOL`(#token("true","Bool"),_1)=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(166d732e9fd6609a71feb6d62f8a420d291ac81be018b646ee1177935b008f01) contentStartColumn(8) contentStartLine(317) org.kframework.attributes.Location(Location(317,8,317,34)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_orBool__BOOL`(#token("false","Bool"),B)=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(ababa6e5e3735076933657815e24f99518fe532715ea97eae22ead8e30097b53) contentStartColumn(8) contentStartLine(319) org.kframework.attributes.Location(Location(319,8,319,32)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_impliesBool__BOOL`(_9,#token("true","Bool"))=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(7fdeea13463fa86d05e4d5bfb9e9c627b90ab57930f712fef1bfc08543a87d74) contentStartColumn(8) contentStartLine(329) org.kframework.attributes.Location(Location(329,8,329,39)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_impliesBool__BOOL`(B,#token("false","Bool"))=>`notBool_`(B) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(0129e06009c7500aefab482e1bc8e348010c6bd01acd15725172192c05a70831) contentStartColumn(8) contentStartLine(330) org.kframework.attributes.Location(Location(330,8,330,45)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_impliesBool__BOOL`(#token("true","Bool"),B)=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(278435b95efb1a1ce04f6d701b12e6438c3cf3aee8019b41ea93b05755d379d7) contentStartColumn(8) contentStartLine(327) org.kframework.attributes.Location(Location(327,8,327,36)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_impliesBool__BOOL`(#token("false","Bool"),_5)=>#token("true","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(3497d026ef9468fdac7e6b5de6841fad0118b17ca073ba25af4c5d8573a167b2) contentStartColumn(8) contentStartLine(328) org.kframework.attributes.Location(Location(328,8,328,40)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andThenBool__BOOL`(_3,#token("false","Bool"))=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d0a6502b90e84545c10a45f7199b2a6d77f52d0841c63dcc792b60073f300e07) contentStartColumn(8) contentStartLine(310) org.kframework.attributes.Location(Location(310,8,310,36)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andThenBool__BOOL`(K,#token("true","Bool"))=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(1aad8125a2ba7fcbd3c40ac487b7dc776993e9d167ac20f0210e14213abec45f) contentStartColumn(8) contentStartLine(308) org.kframework.attributes.Location(Location(308,8,308,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andThenBool__BOOL`(#token("true","Bool"),K)=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(b058439c1adf0de5fb7afd07d638d2cda247a4344cbdc14812da46c5db5499df) contentStartColumn(8) contentStartLine(307) org.kframework.attributes.Location(Location(307,8,307,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andThenBool__BOOL`(#token("false","Bool"),_2)=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(34b51d1bff350ce2cd8b17b3af8effdfcf390962b57189087f3cc3b6bbe59cbc) contentStartColumn(8) contentStartLine(309) org.kframework.attributes.Location(Location(309,8,309,36)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andBool_`(_7,#token("false","Bool"))=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(1a7512841ede635d09556466797d23f3f3cec57fe0fb6a68ce0c3a1cccb0b68f) contentStartColumn(8) contentStartLine(305) org.kframework.attributes.Location(Location(305,8,305,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andBool_`(B,#token("true","Bool"))=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(b598bf51d1c959b7112e06b7f85a391ee5a18108acd52bb65ea27ef0381ed0e0) contentStartColumn(8) contentStartLine(303) org.kframework.attributes.Location(Location(303,8,303,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andBool_`(#token("true","Bool"),B)=>B requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cd0a9b340fae24c9a05126d8df860cb7145fc64875711e36efaa694085559dc0) contentStartColumn(8) contentStartLine(302) org.kframework.attributes.Location(Location(302,8,302,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_andBool_`(#token("false","Bool"),_6)=>#token("false","Bool") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(e6ebe927ba416a1602679eb0166f22d394adf70452e0505c00f11c036a896253) contentStartColumn(8) contentStartLine(304) org.kframework.attributes.Location(Location(304,8,304,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_=/=Bool__BOOL`(B1,B2)=>`notBool_`(`_==Bool__BOOL`(B1,B2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(229c060a3ad56352e70dadb0089a132434aa77f4aaf4ef46e44d820031a08b83) contentStartColumn(8) contentStartLine(332) org.kframework.attributes.Location(Location(332,8,332,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+endmodule
+
+
+module BOOL$SYNTAX [org.kframework.attributes.Location(Location(285,1,334,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports BOOL-SYNTAX$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax priority notBool_ > _andThenBool__BOOL _impliesBool__BOOL _andBool_ _orElseBool__BOOL _orBool__BOOL _xorBool__BOOL > _==Bool__BOOL _=/=Bool__BOOL
+  syntax associativity left _xorBool__BOOL [UNIQUE_ID(4f21940eb19feb1195a7ea407cb198cad34297935d007df997d3dbdfcbe144db)]
+  syntax associativity left _orElseBool__BOOL [UNIQUE_ID(23fe89973a7ff98b78f70b42f556e686d22e91ebeb7f1f433daab82ba152f658)]
+  syntax associativity left _orBool__BOOL [UNIQUE_ID(715274858f38b4a96e83a8d1cb248d4d7462a57627421d77ba270c5358518ab9)]
+  syntax associativity left _impliesBool__BOOL [UNIQUE_ID(d1f23e8c942766de0525c9f6a41d60a7a3d3d216056198935099298885d2d440)]
+  syntax associativity left _andThenBool__BOOL [UNIQUE_ID(ca1ee09f675591016f633854d3d22e7ec9bea9c939526d65daa1e6d2c40a9de3)]
+  syntax associativity left _andBool_ [UNIQUE_ID(8b75b991f10eba166cd374acadc60a1576dbf16834075a8ad9d8418e10b138a4)]
+  syntax associativity left _==Bool__BOOL _=/=Bool__BOOL [UNIQUE_ID(806e3fe0a799f26cfb203156424d637a5565409d26abcfb2b6f476f5a6754e5a)]
+  syntax associativity left _==Bool__BOOL [UNIQUE_ID(e9f46916479acfd8aa4d370bce1a08331c246a59b25e36d36de16f8b3252367b)]
+  syntax associativity left _=/=Bool__BOOL [UNIQUE_ID(39a1be4843a2b6af59584d225a07e3aae2e667ea8c94f6eed7ecf70be5222ee4)]
+  syntax Bool ::= Bool "xorBool" Bool
+  syntax Bool ::= Bool "orElseBool" Bool
+  syntax Bool ::= Bool "orBool" Bool
+  syntax Bool ::= Bool "impliesBool" Bool
+  syntax Bool ::= Bool "andThenBool" Bool
+  syntax Bool ::= Bool "andBool" Bool
+  syntax Bool ::= Bool "==Bool" Bool
+  syntax Bool ::= Bool "=/=Bool" Bool
+  syntax Bool ::= "notBool" Bool
+endmodule
+
+
+module BOOL-SYNTAX [org.kframework.attributes.Location(Location(279,1,283,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports BOOL-SYNTAX$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+endmodule
+
+
+module BOOL-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(279,1,283,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax KItem ::= Bool
+  syntax K
+  syntax Bool [UNIQUE_ID(d6aa7ae8e49f64e3e2a60b6d69c6f3eba8ea52761cd506e5568f5aef5520aabc) hook(BOOL.Bool) org.kframework.attributes.Location(Location(280,3,280,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax Bool ::= "true"
+  syntax Bool ::= "isBool" "(" K ")"
+  syntax Bool ::= "false"
+endmodule
+
+
+module BUILTIN-ID-TOKENS [org.kframework.attributes.Location(Location(20,1,23,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports BUILTIN-ID-TOKENS$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module BUILTIN-ID-TOKENS$SYNTAX [org.kframework.attributes.Location(Location(20,1,23,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax KItem ::= Bool
+  syntax K
+  syntax Bool ::= "is#UpperId" "(" K ")"
+  syntax Bool ::= "is#LowerId" "(" K ")"
+  syntax #UpperId ::= r"[A-Z][a-zA-Z0-9]*"
+  syntax #LowerId ::= r"[a-z][a-zA-Z0-9]*"
+endmodule
+
+
+module BYTES$SYNTAX [org.kframework.attributes.Location(Location(707,1,720,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports INT$SYNTAX
+  imports BYTES-IN-K$SYNTAX
+endmodule
+
+
+module BYTES-IN-K$SYNTAX [org.kframework.attributes.Location(Location(633,1,705,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports STRING-BUFFER$SYNTAX
+  imports STRING$SYNTAX
+  imports K-EQUAL$SYNTAX
+  imports INT$SYNTAX
+  syntax associativity right _+Bytes__BYTES-IN-K [UNIQUE_ID(bb3bb64441fc4641492f9fe3c8c1d3bd83dd86f3da096f6ffd31070556e0548c)]
+  syntax String ::= "Bytes2String" "(" Bytes "," StringBuffer ")"
+  syntax String ::= "Bytes2String" "(" Bytes ")"
+  syntax Signedness ::= "Unsigned"
+  syntax Signedness ::= "Signed"
+  syntax KItem ::= Signedness
+  syntax KItem ::= Endianness
+  syntax KItem ::= Bytes
+  syntax K
+  syntax Int ::= "lengthBytes" "(" Bytes "," Int ")"
+  syntax Int ::= "lengthBytes" "(" Bytes ")"
+  syntax Int ::= "Bytes2Int" "(" Bytes "," Endianness "," Signedness ")"
+  syntax Endianness ::= "LE"
+  syntax Endianness ::= "BE"
+  syntax Bytes ::= Int ":" Bytes
+  syntax Bytes ::= Bytes "+Bytes" Bytes
+  syntax Bytes ::= "substrBytes" "(" Bytes "," Int "," Int ")"
+  syntax Bytes ::= "reverseBytes" "(" Bytes "," Bytes ")"
+  syntax Bytes ::= "reverseBytes" "(" Bytes ")"
+  syntax Bytes ::= "replaceAtBytes" "(" Bytes "," Int "," Bytes ")"
+  syntax Bytes ::= "padRightBytes" "(" Bytes "," Int "," Int ")"
+  syntax Bytes ::= "padLeftBytes" "(" Bytes "," Int "," Int ")"
+  syntax Bytes ::= "nilBytes"
+  syntax Bytes ::= "String2Bytes" "(" String ")"
+  syntax Bytes ::= "Int2Bytes" "(" Int "," Int "," Endianness ")"
+  syntax Bytes ::= "Int2Bytes" "(" Int "," Endianness "," Signedness ")"
+  syntax Bytes ::= "Int2Bytes" "(" Int "," Bytes ")"
+  syntax Bytes ::= ".Bytes"
+  syntax Bool ::= "isSignedness" "(" K ")"
+  syntax Bool ::= "isEndianness" "(" K ")"
+  syntax Bool ::= "isBytes" "(" K ")"
+endmodule
+
+
+module COLLECTIONS [org.kframework.attributes.Location(Location(269,1,277,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports SET
+  imports MAP
+  imports LIST
+  imports COLLECTIONS$SYNTAX
+endmodule
+
+
+module COLLECTIONS$SYNTAX [org.kframework.attributes.Location(Location(269,1,277,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports SET$SYNTAX
+  imports MAP$SYNTAX
+  imports LIST$SYNTAX
+  syntax Set ::= "List2Set" "(" List ")"
+  syntax List ::= "Set2List" "(" Set ")"
+endmodule
+
+
+module CONFIG-CELLS [org.kframework.attributes.Location(Location(115,1,129,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RULE-LISTS
+  imports KCELLS
+  imports CONFIG-CELLS$SYNTAX
+endmodule
+
+
+module CONFIG-CELLS$SYNTAX [org.kframework.attributes.Location(Location(115,1,129,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RULE-LISTS$SYNTAX
+  imports KCELLS$SYNTAX
+  syntax K
+  syntax Cell ::= "<" #CellName #CellProperties ">" K "</" #CellName ">"
+  syntax Cell ::= "<" #CellName "/>"
+  syntax Bool ::= "is#CellProperty" "(" K ")"
+  syntax Bool ::= "is#CellProperties" "(" K ")"
+  syntax Bool ::= "is#CellName" "(" K ")"
+  syntax #CellProperty ::= #CellName "=" KString
+  syntax #CellProperties ::= #CellProperty #CellProperties
+  syntax #CellProperties ::= ""
+  syntax #CellName ::= r"[a-zA-Z][a-zA-Z0-9\\-]*"
+  syntax #CellName ::= #UpperId
+  syntax #CellName ::= #LowerId
+endmodule
+
+
+module CONFIGURATION-PRIMITIVES [org.kframework.attributes.Location(Location(1290,1,1292,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports CONFIGURATION-PRIMITIVES$SYNTAX
+  syntax K
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module CONFIGURATION-PRIMITIVES$SYNTAX [org.kframework.attributes.Location(Location(1290,1,1292,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax KItem ::= Bool
+  syntax K ::= "#RESTORE_CONFIGURATION" "(" K ")"
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+endmodule
+
+
+module DEFAULT-LAYOUT [org.kframework.attributes.Location(Location(202,1,206,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports DEFAULT-LAYOUT$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module DEFAULT-LAYOUT$SYNTAX [org.kframework.attributes.Location(Location(202,1,206,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax KItem ::= Bool
+  syntax K
+  syntax Bool ::= "is#Layout" "(" K ")"
+  syntax #Layout ::= r"(\\/\\/[^\\n\\r]*)"
+  syntax #Layout ::= r"(\\/\\*([^\\*]|(\\*+([^\\*\\/])))*\\*+\\/)"
+  syntax #Layout ::= r"([\\ \\n\\r\\t])"
+endmodule
+
+
+module DOMAINS [org.kframework.attributes.Location(Location(11,1,22,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING
+  imports SET
+  imports MAP
+  imports LIST
+  imports K-REFLECTION
+  imports K-IO
+  imports INT
+  imports DOMAINS-SYNTAX
+  imports DOMAINS$SYNTAX
+  imports BOOL
+  imports BASIC-K
+endmodule
+
+
+module DOMAINS$SYNTAX [org.kframework.attributes.Location(Location(11,1,22,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING$SYNTAX
+  imports SET$SYNTAX
+  imports MAP$SYNTAX
+  imports LIST$SYNTAX
+  imports K-REFLECTION$SYNTAX
+  imports K-IO$SYNTAX
+  imports INT$SYNTAX
+  imports DOMAINS-SYNTAX$SYNTAX
+  imports BOOL$SYNTAX
+  imports BASIC-K$SYNTAX
+endmodule
+
+
+module DOMAINS-SYNTAX [org.kframework.attributes.Location(Location(4,1,9,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports UNSIGNED-INT-SYNTAX
+  imports STRING-SYNTAX
+  imports ID
+  imports DOMAINS-SYNTAX$SYNTAX
+  imports BOOL-SYNTAX
+endmodule
+
+
+module DOMAINS-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(4,1,9,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports UNSIGNED-INT-SYNTAX$SYNTAX
+  imports STRING-SYNTAX$SYNTAX
+  imports ID$SYNTAX
+  imports BOOL-SYNTAX$SYNTAX
+endmodule
+
+
+module ENUM [org.kframework.attributes.Location(Location(13,1,28,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k))]
+  imports MAP
+  imports ENUM-SYNTAX
+  imports ENUM$SYNTAX
+  syntax KItem ::= Cell
+  syntax K
+  syntax Cell ::= KCell
+  syntax Bool ::= "isCell" "(" K ")"
+  rule initKCell(Init)=>`<k>`(`N(_)_ENUM-SYNTAX`(`project:Proc`(`Map:lookup`(Init,#token("$PGM","KConfigVar"))))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(878c5541cb2cb45d5198e36c023f12f3f02e17699eea537b77d0861ba8e3311d) initializer()]
+  rule `project:Proc`(K)=>K requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cb126cf017df4e6349622538a0090ca4f49fe00ccf73259bbd5ec5a3e59e3beb) projection()]
+  rule `N(_)_ENUM-SYNTAX`(`_|__RHO-SYNTAX`(P,Q))=>`_*Int__INT`(`N(_)_ENUM-SYNTAX`(P),`N(_)_ENUM-SYNTAX`(Q)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(60c6209eeb7d1cd906826015035062102768fecc334c59b50175b9c39c2c9cdd) contentStartColumn(8) contentStartLine(25) org.kframework.attributes.Location(Location(25,8,25,46)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `N(_)_ENUM-SYNTAX`(`_(_){_}_RHO-SYNTAX`(X,Y,P))=>`_^Int__INT`(`_^Int__INT`(`_^Int__INT`(#token("3","Int"),`N(_)_ENUM-SYNTAX`(X)),`N(_)_ENUM-SYNTAX`(Y)),`N(_)_ENUM-SYNTAX`(P)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(802064ffb6fd3f327c65539a916eff04bbe4d39eafb113e8ae9d62e8fe0cc3f8) contentStartColumn(8) contentStartLine(23) org.kframework.attributes.Location(Location(23,8,23,75)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `N(_)_ENUM-SYNTAX`(`_!(_)_RHO-SYNTAX`(X,P))=>`_^Int__INT`(`_^Int__INT`(#token("5","Int"),`N(_)_ENUM-SYNTAX`(X)),`N(_)_ENUM-SYNTAX`(P)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cdcca65b368e8fa94b2656a9e7062e71c2db47ebe63c997a414590f0ebb27870) contentStartColumn(8) contentStartLine(24) org.kframework.attributes.Location(Location(24,8,24,57)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `N(_)_ENUM-SYNTAX`(`Nil_RHO-SYNTAX`(.KList))=>#token("1","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(36d9afdf2168c570774ed39ff8320ab6963cfaa493f58e9d594f4e63c3075199) contentStartColumn(8) contentStartLine(21) org.kframework.attributes.Location(Location(21,8,21,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `N(_)_ENUM-SYNTAX`(`@__RHO-SYNTAX`(P))=>`_^Int__INT`(#token("2","Int"),`N(_)_ENUM-SYNTAX`(P)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(0a83d2ab352752e1232bef16669ed799244b59d38d72f287cc8b36c0017ee530) contentStartColumn(8) contentStartLine(22) org.kframework.attributes.Location(Location(22,8,22,36)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `N(_)_ENUM-SYNTAX`(`*__RHO-SYNTAX`(`@__RHO-SYNTAX`(P)))=>`N(_)_ENUM-SYNTAX`(P) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(de6208e9ddccfb4541c5808798666c941ed3c44a0b8553c556154a0f05a760ae) contentStartColumn(8) contentStartLine(26) org.kframework.attributes.Location(Location(26,8,26,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+endmodule
+
+
+module ENUM$SYNTAX [org.kframework.attributes.Location(Location(13,1,28,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k))]
+  imports MAP$SYNTAX
+  imports ENUM-SYNTAX$SYNTAX
+  syntax Proc ::= "project:Proc" "(" K ")"
+  syntax KResult ::= Int
+  syntax KItem ::= KResult
+  syntax KItem ::= KCell
+  syntax KCell ::= "initKCell" "(" Map ")"
+  syntax KCell ::= "<k>" K "</k>"
+  syntax K
+  syntax Bool ::= "isKResult" "(" K ")"
+  syntax Bool ::= "isKCell" "(" K ")"
+  Bubble(config,<k> N( $PGM:Proc ) </k>,[UNIQUE_ID(804875f79e88c6d7c23fdf35ba4094ac7cf7929efcc475f8b7d471a140aa7f99) contentStartColumn(3) contentStartLine(17) org.kframework.attributes.Location(Location(16,3,17,25)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k))])
+endmodule
+
+
+module ENUM-SYNTAX [org.kframework.attributes.Location(Location(5,1,11,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k))]
+  imports RHO-SYNTAX
+  imports ENUM-SYNTAX$SYNTAX
+endmodule
+
+
+module ENUM-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(5,1,11,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/Enumeration/./enum.k))]
+  imports RHO-SYNTAX$SYNTAX
+  syntax Int ::= "N(" Proc ")"
+  syntax Int ::= "N(" Name ")"
+endmodule
+
+
+module FLOAT$SYNTAX [org.kframework.attributes.Location(Location(425,1,486,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports INT-SYNTAX$SYNTAX
+  imports FLOAT-SYNTAX$SYNTAX
+  imports BOOL$SYNTAX
+  syntax priority --Float__FLOAT > _^Float__FLOAT > _*Float__FLOAT _/Float__FLOAT _%Float__FLOAT > _+Float__FLOAT _-Float__FLOAT
+  syntax associativity left _^Float__FLOAT [UNIQUE_ID(b30579341f5e849da18e7263074d4e84b563c412f369ddc0f429a1608ff6ce4b)]
+  syntax associativity left _>Float__FLOAT [UNIQUE_ID(b7fd3cf3139b2ffa43cb357f8f5588af23cb4bf821e5aaafccbaa24bb5cb8286)]
+  syntax associativity left _>=Float__FLOAT [UNIQUE_ID(f7dff9e87fe0d9c788aaf060cc992bccb5fb2a1a8e025033ea6a4e450c58756d)]
+  syntax associativity left _==Float_ [UNIQUE_ID(54b716bc451a7837101c6981db08786165c0c3aef5956daa9d48e90d03c39ac6)]
+  syntax associativity left _=/=Float__FLOAT [UNIQUE_ID(b73ca6624474b9ba009d6d7bdbf7c9bf97897b71a2f3d8edeb7301fb209ac85e)]
+  syntax associativity left _<Float__FLOAT [UNIQUE_ID(a37c950444eba6455224e928182972a3a736e18c554bdaa6465d21656f1854b3)]
+  syntax associativity left _<=Float__FLOAT [UNIQUE_ID(efaabe812ceac4b7372499710b762eeeeee04a60118aa433e289b6d941109d3c)]
+  syntax associativity left _/Float__FLOAT [UNIQUE_ID(9d427755d97a0d838f954c8759bfa66e205ed72bbe150c7bbca6d7613f5fcd04)]
+  syntax associativity left _-Float__FLOAT [UNIQUE_ID(7f0d17aa2fa62e93afc8d546af8a353d68b59f69311609abf01a13e9ba340823)]
+  syntax associativity left _+Float__FLOAT _-Float__FLOAT [UNIQUE_ID(4c141a16df7cda20b4a872342c19d88b0964adff7e704e3e4260b02e92400261)]
+  syntax associativity left _+Float__FLOAT [UNIQUE_ID(b5c1578521e1481d972656803cfa647583368d6de421089a9f1212027d2390d6)]
+  syntax associativity left _*Float__FLOAT _/Float__FLOAT _%Float__FLOAT [UNIQUE_ID(3302efc057baf0d9d4ed99fde1d0fa87b540e14d4edac75ebfb8b70deafcffad)]
+  syntax associativity left _*Float__FLOAT [UNIQUE_ID(50addb1ffbd7561691ae6dd878e50b6715169778c2b6a0d598ddc32076f498d9)]
+  syntax associativity left _%Float__FLOAT [UNIQUE_ID(955fcb92e4a0cd81cf0d3a1115165e2a926265e251922d9ec7a347adaea9d674)]
+  syntax MInt ::= "significandFloat" "(" Float ")"
+  syntax KItem ::= MInt
+  syntax K
+  syntax Int ::= "precisionFloat" "(" Float ")"
+  syntax Int ::= "exponentFloat" "(" Float ")"
+  syntax Int ::= "exponentBitsFloat" "(" Float ")"
+  syntax Int ::= "Float2Int" "(" Float ")"
+  syntax Float ::= Float "^Float" Float
+  syntax Float ::= Float "/Float" Float
+  syntax Float ::= Float "-Float" Float
+  syntax Float ::= Float "+Float" Float
+  syntax Float ::= Float "*Float" Float
+  syntax Float ::= Float "%Float" Float
+  syntax Float ::= "tanFloat" "(" Float ")"
+  syntax Float ::= "sqrtFloat" "(" Float ")"
+  syntax Float ::= "sinFloat" "(" Float ")"
+  syntax Float ::= "roundFloat" "(" Float "," Int "," Int ")"
+  syntax Float ::= "rootFloat" "(" Float "," Int ")"
+  syntax Float ::= "minValueFloat" "(" Int "," Int ")"
+  syntax Float ::= "minFloat" "(" Float "," Float ")"
+  syntax Float ::= "maxValueFloat" "(" Int "," Int ")"
+  syntax Float ::= "maxFloat" "(" Float "," Float ")"
+  syntax Float ::= "logFloat" "(" Float ")"
+  syntax Float ::= "floorFloat" "(" Float ")"
+  syntax Float ::= "expFloat" "(" Float ")"
+  syntax Float ::= "cosFloat" "(" Float ")"
+  syntax Float ::= "ceilFloat" "(" Float ")"
+  syntax Float ::= "atanFloat" "(" Float ")"
+  syntax Float ::= "atan2Float" "(" Float "," Float ")"
+  syntax Float ::= "asinFloat" "(" Float ")"
+  syntax Float ::= "acosFloat" "(" Float ")"
+  syntax Float ::= "absFloat" "(" Float ")"
+  syntax Float ::= "Int2Float" "(" Int "," Int "," Int ")"
+  syntax Float ::= "--Float" Float
+  syntax Bool ::= Float ">Float" Float
+  syntax Bool ::= Float ">=Float" Float
+  syntax Bool ::= Float "==Float" Float
+  syntax Bool ::= Float "=/=Float" Float
+  syntax Bool ::= Float "<Float" Float
+  syntax Bool ::= Float "<=Float" Float
+  syntax Bool ::= "signFloat" "(" Float ")"
+  syntax Bool ::= "isNaN" "(" Float ")"
+  syntax Bool ::= "isMInt" "(" K ")"
+  syntax Bool ::= "isInfinite" "(" Float ")"
+endmodule
+
+
+module FLOAT-SYNTAX [org.kframework.attributes.Location(Location(418,1,423,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports FLOAT-SYNTAX$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module FLOAT-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(418,1,423,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax KItem ::= Float
+  syntax KItem ::= Bool
+  syntax K
+  syntax Float [UNIQUE_ID(2cbd64f162bbf0cedf1c218d509db62311010450e1d3271e1ba33aa12249012c) hook(FLOAT.Float) org.kframework.attributes.Location(Location(419,3,419,34)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax Float ::= r"[\\+-]?Infinity([fFdD]|([pP][0-9]+[xX][0-9]+))?"
+  syntax Float ::= r"NaN([fFdD]|([pP][0-9]+[xX][0-9]+))?"
+  syntax Float ::= r"([\\+-]?[0-9]+(\\.[0-9]*)?|\\.[0-9]+)([eE][\\+-]?([0-9]+(\\.[0-9]*)?|\\.[0-9]d+))?([fFdD]|([pP][0-9]+[xX][0-9]+))?"
+  syntax Bool ::= "isFloat" "(" K ")"
+endmodule
+
+
+module ID [org.kframework.attributes.Location(Location(740,1,746,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING
+  imports ID-SYNTAX
+  imports ID-SYMBOLIC
+  imports ID$SYNTAX
+  rule freshId(I)=>`String2Id`(`_+String__STRING`(#token("\"_\"","String"),`Int2String`(I))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(cb89ef33f1b27d7db53de8a3c240cc3b944a9a0a9559c32b1b97c7bfec87bfa2) contentStartColumn(8) contentStartLine(745) org.kframework.attributes.Location(Location(745,8,745,62)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+endmodule
+
+
+module ID$SYNTAX [org.kframework.attributes.Location(Location(740,1,746,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING$SYNTAX
+  imports ID-SYNTAX$SYNTAX
+  imports ID-SYMBOLIC$SYNTAX
+endmodule
+
+
+module ID-PROGRAM-PARSING [org.kframework.attributes.Location(Location(722,1,727,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports ID-PROGRAM-PARSING$SYNTAX
+  imports BUILTIN-ID-TOKENS
+endmodule
+
+
+module ID-PROGRAM-PARSING$SYNTAX [org.kframework.attributes.Location(Location(722,1,727,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports BUILTIN-ID-TOKENS$SYNTAX
+  syntax KItem ::= Id
+  syntax K
+  syntax Id ::= r"(?<![A-Za-z0-9\\_])[A-Za-z\\_][A-Za-z0-9\\_]*"
+  syntax Id ::= #UpperId
+  syntax Id ::= #LowerId
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isId" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module ID-SYMBOLIC [kast() org.kframework.attributes.Location(Location(748,1,752,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports ID-SYNTAX
+  imports ID-SYMBOLIC$SYNTAX
+  rule `String2Id`(S)=>`#parseToken(_,_)_ID-SYMBOLIC`(#token("\"Id\"","String"),S) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(a45247dab93dd37fe0008a570f2b1cc41c7fbdd0510c58870c70d87a8755f825) contentStartColumn(8) contentStartLine(751) org.kframework.attributes.Location(Location(751,8,751,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+endmodule
+
+
+module ID-SYMBOLIC$SYNTAX [kast() org.kframework.attributes.Location(Location(748,1,752,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports ID-SYNTAX$SYNTAX
+  syntax KItem ::= "#parseToken" "(" String "," String ")"
+  syntax K
+  syntax Bool ::= "isKItem" "(" K ")"
+endmodule
+
+
+module ID-SYNTAX [org.kframework.attributes.Location(Location(729,1,738,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-SYNTAX
+  imports INT-SYNTAX
+  imports ID-SYNTAX$SYNTAX
+endmodule
+
+
+module ID-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(729,1,738,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-SYNTAX$SYNTAX
+  imports INT-SYNTAX$SYNTAX
+  syntax String ::= "Id2String" "(" Id ")"
+  syntax KItem ::= Id
+  syntax K
+  syntax Id [UNIQUE_ID(f78bce53fe73a3790c06ddcf266f766a7f172886a7c88da394566828ddb128a4) org.kframework.attributes.Location(Location(733,3,733,19)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) token()]
+  syntax Id ::= "freshId" "(" Int ")"
+  syntax Id ::= "String2Id" "(" String ")"
+  syntax Bool ::= "isId" "(" K ")"
+endmodule
+
+
+module INT [org.kframework.attributes.Location(Location(346,1,416,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports K-EQUAL
+  imports INT-SYNTAX
+  imports INT$SYNTAX
+  imports BOOL
+  rule signExtendBitRangeInt(I,IDX,LEN)=>`_-Int__INT`(`_modInt__INT`(`_+Int_`(bitRangeInt(I,IDX,LEN),`_<<Int__INT`(#token("1","Int"),`_-Int__INT`(LEN,#token("1","Int")))),`_<<Int__INT`(#token("1","Int"),LEN)),`_<<Int__INT`(#token("1","Int"),`_-Int__INT`(LEN,#token("1","Int")))) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(b413c3f4500443aec69bee9b10feb030330d60bd136c698a9947546393728a00) contentStartColumn(8) contentStartLine(386) org.kframework.attributes.Location(Location(386,8,386,149)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule freshInt(I)=>I requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d7221da1fa6b633137e79279efd265a289ea7e8496612615f43546422d446bc4) contentStartColumn(8) contentStartLine(412) org.kframework.attributes.Location(Location(412,8,412,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule bitRangeInt(I,IDX,LEN)=>`_modInt__INT`(`_>>Int__INT`(I,IDX),`_<<Int__INT`(#token("1","Int"),LEN)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(08ec18eb216a86553c22eacaaf8b628b19097a5f4dbbbbb68a5daa77c9337449) contentStartColumn(8) contentStartLine(384) org.kframework.attributes.Location(Location(384,8,384,70)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `minInt(_,_)_INT`(I1,I2)=>I2 requires `_>=Int__INT`(I1,I2) ensures #token("true","Bool") [UNIQUE_ID(f93c59dd0bdb46ab467898db4ad231d94d30e5b88427054becac14f3969eff8e) contentStartColumn(8) contentStartLine(397) org.kframework.attributes.Location(Location(397,8,397,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `minInt(_,_)_INT`(I1,I2)=>I1 requires `_<=Int__INT`(I1,I2) ensures #token("true","Bool") [UNIQUE_ID(c3daf36ef673ae6ce68430bc5170ec91b3d397f5f3e34aee375a841739bcfc9b) contentStartColumn(8) contentStartLine(396) org.kframework.attributes.Location(Location(396,8,396,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `_modInt__INT`(I1,I2)=>`_%Int__INT`(`_+Int_`(`_%Int__INT`(I1,absInt(I2)),absInt(I2)),absInt(I2)) requires `_=/=Int__INT`(I2,#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(fb4bf5b2f12862af75611e525d51d7e1966bcc322ee8456d2ed1cdaadf02f6f5) concrete() contentStartColumn(5) contentStartLine(391) org.kframework.attributes.Location(Location(391,5,394,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `_dividesInt__INT`(I1,I2)=>`_==Int_`(`_%Int__INT`(I2,I1),#token("0","Int")) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(81f77f3fbad78d0c735f87bfe9eff8339b46a8ead5ca820f8d69aafef7cb551d) contentStartColumn(8) contentStartLine(409) org.kframework.attributes.Location(Location(409,8,409,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_divInt__INT`(I1,I2)=>`_/Int__INT`(`_-Int__INT`(I1,`_modInt__INT`(I1,I2)),I2) requires `_=/=Int__INT`(I2,#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(b7fc8e019ea9840ee8c5e9232d39d7944e010f117308f672e92891325002610e) contentStartColumn(8) contentStartLine(388) org.kframework.attributes.Location(Location(388,8,389,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `_==Int_`(I1,I2)=>`_==K_`(I1,I2) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(e92e4aa4a18bee70f2627cdafb8687e2dfcc0dd6a7f8cbb8d1bd17d751c2da2a) contentStartColumn(8) contentStartLine(407) org.kframework.attributes.Location(Location(407,8,407,40)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_=/=Int__INT`(I1,I2)=>`notBool_`(`_==Int_`(I1,I2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(59ca895589d5fc7fa573380dac68ddd6602f6fa8b2761530a861aa894455f27e) contentStartColumn(8) contentStartLine(408) org.kframework.attributes.Location(Location(408,8,408,53)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  ModuleComment( divInt and modInt implement e-division ,[UNIQUE_ID(f068b13885abe3e6366c2e35e86247b3099ec51ba834f6e698dc2d8d31d0bc74) org.kframework.attributes.Location(Location(361,16,361,59)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( FIXME: translate /Int and %Int into smtlib ,[UNIQUE_ID(f301f531745ad3631d53467ec2805c7355735b9f9579ba43b51c794460d1255d) org.kframework.attributes.Location(Location(357,16,357,63)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( /Int and %Int implement t-division ,[UNIQUE_ID(ec2a34baf438e545d94d1b4f2a73c80472973d2acdf8e9382ebac39ebe461acc) org.kframework.attributes.Location(Location(358,16,358,55)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module INT$SYNTAX [org.kframework.attributes.Location(Location(346,1,416,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports K-EQUAL$SYNTAX
+  imports INT-SYNTAX$SYNTAX
+  imports BOOL$SYNTAX
+  syntax priority ~Int__INT > _^%Int___INT _^Int__INT > _*Int__INT _modInt__INT _%Int__INT _/Int__INT _divInt__INT > _-Int__INT _+Int_ > _>>Int__INT _<<Int__INT > _&Int__INT > _xorInt__INT > _|Int__INT
+  syntax associativity left _|Int__INT [UNIQUE_ID(600575db26cfb3fa6103f3cfd56821c925e05634c8e067ec73a2dfb8862a1f9f)]
+  syntax associativity left _xorInt__INT [UNIQUE_ID(1398590b4f0124967a2af6ce8e6af241ec2681d2ef7bf076ca8dc3b79b7b748e)]
+  syntax associativity left _modInt__INT [UNIQUE_ID(97f542f0e2f3a88de4617dd6cb08f66a82c1571e9a0c48d833ad553a2ceb5eb7)]
+  syntax associativity left _divInt__INT [UNIQUE_ID(9c0e36eac789c9cd21cb26d56934d1db50f9b26f96d7f41b59b09c6545e1cc98)]
+  syntax associativity left _^Int__INT [UNIQUE_ID(4ef36d35994f984fe8efd388709d7e6ab3145676b9344ccca195b9d324b491dd)]
+  syntax associativity left _^%Int___INT _^Int__INT [UNIQUE_ID(4717a7f82624a3b9834982e0e02bbbfc860e997a1f38fd914fd9278c229add4a)]
+  syntax associativity left _^%Int___INT [UNIQUE_ID(7c2c3cfc7be1abc1c091bf1a8845afa3498a43f9611122bb5295d79eb96638ae)]
+  syntax associativity left _>Int__INT [UNIQUE_ID(5ba71855a87820b77ac214c6b65e4402e22b79106cd383b248b4ee037511942e)]
+  syntax associativity left _>>Int__INT _<<Int__INT [UNIQUE_ID(1826511c031ecbc04fa209692382b0445123d907e740df0681fd0ee06c7504f9)]
+  syntax associativity left _>>Int__INT [UNIQUE_ID(16c00c089cfde982287eca26ce66ee3fa60f31b86d408ce0db2db5230b182b73)]
+  syntax associativity left _>=Int__INT [UNIQUE_ID(9247904853c880b393bc430474cc07561d62c08e531b257d69e3c68b0f6094cc)]
+  syntax associativity left _==Int_ [UNIQUE_ID(d471698e52e217dc0551c0ecc00fbdc9c6e9c082392bbb945bbbbd2f91a19d3e)]
+  syntax associativity left _=/=Int__INT [UNIQUE_ID(69d8f70192917a21e1845b813c447e5c95708873445527f755106e7c9858766d)]
+  syntax associativity left _<Int__INT [UNIQUE_ID(a88470b34731205e39e5bdd7a6ba3b2cf036a7993e74247caae5c1c79533403a)]
+  syntax associativity left _<=Int__INT [UNIQUE_ID(cd16e4d868de358f5e22edefff8b43a28d7c5678f4144d76e54259b33a867aef)]
+  syntax associativity left _<<Int__INT [UNIQUE_ID(d5302f237adb85206f63f0c2595f3cc9e094851d8f7724e5b86154e6658c59a7)]
+  syntax associativity left _/Int__INT [UNIQUE_ID(15b677fd17a5a4395158ec11f0cbd52cf640464fb1a2bfbda5e2249d43d407d2)]
+  syntax associativity left _-Int__INT _+Int_ [UNIQUE_ID(f4439da746e50118c5dfb668d0e060952e35d49e742f7b630ec4257fb23c27f9)]
+  syntax associativity left _-Int__INT [UNIQUE_ID(e231a7bc1adf4926f3c11af7035b0f4c42b3bd1136a761785401eb7742b603aa)]
+  syntax associativity left _+Int_ [UNIQUE_ID(79cc8ab5d8c271a5f5eefb9ae01f17832c022f5213781415d3f327155a0ef6f1)]
+  syntax associativity left _*Int__INT _modInt__INT _%Int__INT _/Int__INT _divInt__INT [UNIQUE_ID(b1e0ffd5caf71c368bf2543c8df456b7d24e8e7e0a90f001e8589d3375c50ae9)]
+  syntax associativity left _*Int__INT [UNIQUE_ID(b355b8106b6e7503035080ccc6dc625f0113bd29a4300f0e0e3aec950123769e)]
+  syntax associativity left _&Int__INT [UNIQUE_ID(79ce1197c07269911d7c2577ea0ab9b62827905a975adb4a9a5b3278ce3d76a7)]
+  syntax associativity left _%Int__INT [UNIQUE_ID(60b278a8c0d94b7fe247b2c7709f0abf953fbd5f347d47fe6db2d2f3e1d243bf)]
+  syntax K ::= "srandInt" "(" Int ")"
+  syntax Int ::= Int "|Int" Int
+  syntax Int ::= Int "xorInt" Int
+  syntax Int ::= Int "modInt" Int
+  syntax Int ::= Int "divInt" Int
+  syntax Int ::= Int "^Int" Int
+  syntax Int ::= Int "^%Int" Int Int
+  syntax Int ::= Int ">>Int" Int
+  syntax Int ::= Int "<<Int" Int
+  syntax Int ::= Int "/Int" Int
+  syntax Int ::= Int "-Int" Int
+  syntax Int ::= Int "+Int" Int
+  syntax Int ::= Int "*Int" Int
+  syntax Int ::= Int "&Int" Int
+  syntax Int ::= Int "%Int" Int
+  syntax Int ::= "~Int" Int
+  syntax Int ::= "signExtendBitRangeInt" "(" Int "," Int "," Int ")"
+  syntax Int ::= "randInt" "(" Int ")"
+  syntax Int ::= "minInt" "(" Int "," Int ")"
+  syntax Int ::= "maxInt" "(" Int "," Int ")"
+  syntax Int ::= "log2Int" "(" Int ")"
+  syntax Int ::= "freshInt" "(" Int ")"
+  syntax Int ::= "bitRangeInt" "(" Int "," Int "," Int ")"
+  syntax Int ::= "absInt" "(" Int ")"
+  syntax Bool ::= Int "dividesInt" Int
+  syntax Bool ::= Int ">Int" Int
+  syntax Bool ::= Int ">=Int" Int
+  syntax Bool ::= Int "==Int" Int
+  syntax Bool ::= Int "=/=Int" Int
+  syntax Bool ::= Int "<Int" Int
+  syntax Bool ::= Int "<=Int" Int
+endmodule
+
+
+module INT-SYNTAX [org.kframework.attributes.Location(Location(341,1,344,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports UNSIGNED-INT-SYNTAX
+  imports INT-SYNTAX$SYNTAX
+endmodule
+
+
+module INT-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(341,1,344,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports UNSIGNED-INT-SYNTAX$SYNTAX
+  syntax K
+  syntax Int ::= r"[\\+-]?[0-9]+"
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module K [org.kframework.attributes.Location(Location(222,1,238,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports REQUIRES-ENSURES
+  imports RECORD-PRODUCTIONS
+  imports KSEQ-SYMBOLIC
+  imports K-SORT-LATTICE
+  imports K$SYNTAX
+  imports AUTO-FOLLOW
+  imports AUTO-CASTS
+  ModuleComment( functions that preserve sorts and can therefore have inner rewrites,[UNIQUE_ID(e71a2ca798127207026940b62b3e06cdeaeded3a3678cd42645c5f9d3f643ecc) org.kframework.attributes.Location(Location(234,3,234,73)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( functions that do not preserve sort and therefore cannot have inner rewrites,[UNIQUE_ID(4346fe51b68b8ce2b321d5ae8ba8801ba8f1e30dcb98e40ced1cbd1108217584) org.kframework.attributes.Location(Location(236,3,236,82)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module K$SYNTAX [org.kframework.attributes.Location(Location(222,1,238,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports REQUIRES-ENSURES$SYNTAX
+  imports RECORD-PRODUCTIONS$SYNTAX
+  imports KSEQ-SYMBOLIC$SYNTAX
+  imports K-SORT-LATTICE$SYNTAX
+  imports AUTO-FOLLOW$SYNTAX
+  imports AUTO-CASTS$SYNTAX
+  syntax associativity non-assoc #KRewrite [UNIQUE_ID(3919863732608f8ce227144824376191011660ae70681c03693b14fa0cc88a66)]
+  syntax K ::= K "=>" K
+  syntax K ::= K "#as" K
+  syntax K ::= "#fun" "(" K "=>" K ")" "(" K ")"
+  syntax K ::= "#fun" "(" K ")" "(" K ")"
+endmodule
+
+
+module K-BOTTOM-SORT [org.kframework.attributes.Location(Location(148,1,151,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT
+  imports K-BOTTOM-SORT$SYNTAX
+endmodule
+
+
+module K-BOTTOM-SORT$SYNTAX [org.kframework.attributes.Location(Location(148,1,151,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT$SYNTAX
+  syntax KItem ::= KBott
+  syntax K
+  syntax Bool ::= "isKItem" "(" K ")"
+endmodule
+
+
+module K-EQUAL [org.kframework.attributes.Location(Location(754,1,772,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports K-EQUAL$SYNTAX
+  imports BOOL
+  imports BASIC-K
+  rule `_==Bool__BOOL`(K1,K2)=>`_==K_`(K1,K2) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(a17699668426366833f88851c95d611be854ecef7a676d2061669bf689f05fd1) contentStartColumn(8) contentStartLine(765) org.kframework.attributes.Location(Location(765,8,765,43)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_=/=K_`(K1,K2)=>`notBool_`(`_==K_`(K1,K2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(0221882a8af3c088550dce160a5b2e48351ef2431aad518a72f3d65258a4066d) contentStartColumn(8) contentStartLine(763) org.kframework.attributes.Location(Location(763,8,763,45)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#if_#then_#else_#fi_K-EQUAL`(C,_10,B2)=>B2 requires `notBool_`(C) ensures #token("true","Bool") [UNIQUE_ID(d46b5ae094d17de19ef9725da497c32e21813c6e4b5a0d6a2c4b03bd55bb312c) contentStartColumn(8) contentStartLine(770) org.kframework.attributes.Location(Location(770,8,770,64)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `#if_#then_#else_#fi_K-EQUAL`(C,B1,_11)=>B1 requires C ensures #token("true","Bool") [UNIQUE_ID(0883a4d4051090478d6b8a7ac8d4e0e15e7708308fa24e63137b9ac7e87383aa) contentStartColumn(8) contentStartLine(769) org.kframework.attributes.Location(Location(769,8,769,56)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+endmodule
+
+
+module K-EQUAL$SYNTAX [org.kframework.attributes.Location(Location(754,1,772,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports BOOL$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax priority _=/=K_ _==K_ > #And _andThenBool__BOOL #Implies _impliesBool__BOOL #Exists #Ceil _andBool_ _orElseBool__BOOL #Forall #Not #Or notBool_ _orBool__BOOL #Equals _xorBool__BOOL
+  syntax associativity left _=/=K_ _==K_ [UNIQUE_ID(a596ef199b26097897ecaef98616dab43fa93f345d33a3d16b258dd0811e2311)]
+  syntax K ::= "#if" Bool "#then" K "#else" K "#fi"
+  syntax Bool ::= K "==K" K
+  syntax Bool ::= K "=/=K" K
+endmodule
+
+
+module K-IO [org.kframework.attributes.Location(Location(804,1,922,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING
+  imports LIST
+  imports K-IO$SYNTAX
+  rule `#stdout_K-IO`(.KList)=>#token("1","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(fd57288699ac44a10b4d3e3c65ee3ad16f98646109e64ed7a5ac726279e39ae9) contentStartColumn(8) contentStartLine(909) org.kframework.attributes.Location(Location(909,8,909,20)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#stdin_K-IO`(.KList)=>#token("0","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(595a161d3d44d3c588fcd417f7279ef70547c573e159ef5bfc70692b22149da9) contentStartColumn(8) contentStartLine(908) org.kframework.attributes.Location(Location(908,8,908,19)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#stderr_K-IO`(.KList)=>#token("2","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(11ef087f50cc8e9fe0fe6a8b028370816f2f2a3573af358ab6ca98318723d0e5) contentStartColumn(8) contentStartLine(910) org.kframework.attributes.Location(Location(910,8,910,20)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#open(_)_K-IO`(S)=>`#open(_,_)_K-IO`(S,#token("\"r+\"","String")) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(ed7ee74167faa7f8e3a152e9e495d112a67407097a0bb306ac17e2ce4bebf100) contentStartColumn(8) contentStartLine(902) org.kframework.attributes.Location(Location(902,8,902,48)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  ModuleComment( stdout ,[UNIQUE_ID(f077ac89413ab2282d9db1531f063075168b4d66eebc405c7ba95764d07e80c5) org.kframework.attributes.Location(Location(918,71,918,82)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( stderr ,[UNIQUE_ID(94f83d24a078be72f6a7c96ed71bd7ad74736b6ccfb6f9c92dfcdb78dfc683a3) org.kframework.attributes.Location(Location(918,95,918,106)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( start symbol,[UNIQUE_ID(e9704ba3824f6a55239364bfbd9ad797ab3e843cd60810c82c25ba5da3c7d9bc) org.kframework.attributes.Location(Location(898,43,898,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( module name,[UNIQUE_ID(4c2ebc73c35c6650622ab18404c1e7f84649b5b4a6946de4d348c1b7fca0ef30) org.kframework.attributes.Location(Location(899,43,899,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( input,[UNIQUE_ID(de5847a6bf7edcdb36308a57f2c49d7958d345e0ad5d09762bafb3ebcb979bfb) org.kframework.attributes.Location(Location(897,43,897,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( exit code ,[UNIQUE_ID(ec62306b39cfa0ec5eebef7a0dc3d55cc3216aaec73d4b86ccabea6676bba9e7) org.kframework.attributes.Location(Location(918,44,918,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( System,[UNIQUE_ID(986544dbc23865c49c99bda2517a95d2d27d9c49437163f6cad81e5ea95e6dd0) org.kframework.attributes.Location(Location(915,1,915,10)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( ------------------------------,[UNIQUE_ID(8fe6aa76ff126029c407f10af7b56cea75334650a2101468b3877890b5e7dd63) org.kframework.attributes.Location(Location(914,1,914,34)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module K-IO$SYNTAX [org.kframework.attributes.Location(Location(804,1,922,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING$SYNTAX
+  imports LIST$SYNTAX
+  syntax String ::= "#read" "(" Int "," Int ")"
+  syntax Stream ::= "#buffer" "(" K ")"
+  syntax KItem ::= Stream
+  syntax KItem ::= IOError
+  syntax KItem ::= "#systemResult" "(" Int "," String "," String ")"
+  syntax KItem ::= "#system" "(" String ")"
+  syntax KItem ::= "#stat" "(" String ")"
+  syntax KItem ::= "#parseInModule" "(" String "," String "," String ")"
+  syntax KItem ::= "#parse" "(" String "," String ")"
+  syntax KItem ::= "#opendir" "(" String ")"
+  syntax KItem ::= "#lstat" "(" String ")"
+  syntax K ::= "#write" "(" Int "," String ")"
+  syntax K ::= "#unlock" "(" Int "," Int ")"
+  syntax K ::= "#seekEnd" "(" Int "," Int ")"
+  syntax K ::= "#seek" "(" Int "," Int ")"
+  syntax K ::= "#putc" "(" Int "," Int ")"
+  syntax K ::= "#logToFile" "(" String "," String ")"
+  syntax K ::= "#lock" "(" Int "," Int ")"
+  syntax K ::= "#close" "(" Int ")"
+  syntax K
+  syntax Int ::= "#tell" "(" Int ")"
+  syntax Int ::= "#stdout"
+  syntax Int ::= "#stdin"
+  syntax Int ::= "#stderr"
+  syntax Int ::= "#open" "(" String "," String ")"
+  syntax Int ::= "#open" "(" String ")"
+  syntax Int ::= "#getc" "(" Int ")"
+  syntax IOError ::= "#unknownIOError" "(" Int ")"
+  syntax IOError ::= "#noparse"
+  syntax IOError ::= "#EXDEV"
+  syntax IOError ::= "#EWOULDBLOCK"
+  syntax IOError ::= "#ETOOMANYREFS"
+  syntax IOError ::= "#ETIMEDOUT"
+  syntax IOError ::= "#ESRCH"
+  syntax IOError ::= "#ESPIPE"
+  syntax IOError ::= "#ESOCKTNOSUPPORT"
+  syntax IOError ::= "#ESHUTDOWN"
+  syntax IOError ::= "#EROFS"
+  syntax IOError ::= "#ERANGE"
+  syntax IOError ::= "#EPROTOTYPE"
+  syntax IOError ::= "#EPROTONOSUPPORT"
+  syntax IOError ::= "#EPIPE"
+  syntax IOError ::= "#EPFNOSUPPORT"
+  syntax IOError ::= "#EPERM"
+  syntax IOError ::= "#EOVERFLOW"
+  syntax IOError ::= "#EOPNOTSUPP"
+  syntax IOError ::= "#EOF"
+  syntax IOError ::= "#ENXIO"
+  syntax IOError ::= "#ENOTTY"
+  syntax IOError ::= "#ENOTSOCK"
+  syntax IOError ::= "#ENOTEMPTY"
+  syntax IOError ::= "#ENOTDIR"
+  syntax IOError ::= "#ENOTCONN"
+  syntax IOError ::= "#ENOSYS"
+  syntax IOError ::= "#ENOSPC"
+  syntax IOError ::= "#ENOPROTOOPT"
+  syntax IOError ::= "#ENOMEM"
+  syntax IOError ::= "#ENOLCK"
+  syntax IOError ::= "#ENOEXEC"
+  syntax IOError ::= "#ENOENT"
+  syntax IOError ::= "#ENODEV"
+  syntax IOError ::= "#ENOBUFS"
+  syntax IOError ::= "#ENFILE"
+  syntax IOError ::= "#ENETUNREACH"
+  syntax IOError ::= "#ENETRESET"
+  syntax IOError ::= "#ENETDOWN"
+  syntax IOError ::= "#ENAMETOOLONG"
+  syntax IOError ::= "#EMSGSIZE"
+  syntax IOError ::= "#EMLINK"
+  syntax IOError ::= "#EMFILE"
+  syntax IOError ::= "#ELOOP"
+  syntax IOError ::= "#EISDIR"
+  syntax IOError ::= "#EISCONN"
+  syntax IOError ::= "#EIO"
+  syntax IOError ::= "#EINVAL"
+  syntax IOError ::= "#EINTR"
+  syntax IOError ::= "#EINPROGRESS"
+  syntax IOError ::= "#EHOSTUNREACH"
+  syntax IOError ::= "#EHOSTDOWN"
+  syntax IOError ::= "#EFBIG"
+  syntax IOError ::= "#EFAULT"
+  syntax IOError ::= "#EEXIST"
+  syntax IOError ::= "#EDOM"
+  syntax IOError ::= "#EDESTADDRREQ"
+  syntax IOError ::= "#EDEADLK"
+  syntax IOError ::= "#ECONNRESET"
+  syntax IOError ::= "#ECONNREFUSED"
+  syntax IOError ::= "#ECONNABORTED"
+  syntax IOError ::= "#ECHILD"
+  syntax IOError ::= "#EBUSY"
+  syntax IOError ::= "#EBADF"
+  syntax IOError ::= "#EALREADY"
+  syntax IOError ::= "#EAGAIN"
+  syntax IOError ::= "#EAFNOSUPPORT"
+  syntax IOError ::= "#EADDRNOTAVAIL"
+  syntax IOError ::= "#EADDRINUSE"
+  syntax IOError ::= "#EACCES"
+  syntax IOError ::= "#E2BIG"
+  syntax Bool ::= "isStream" "(" K ")"
+  syntax Bool ::= "isIOError" "(" K ")"
+endmodule
+
+
+module K-REFLECTION [org.kframework.attributes.Location(Location(774,1,790,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING
+  imports K-REFLECTION-SYMBOLIC
+  imports K-REFLECTION$SYNTAX
+  imports BASIC-K
+  ModuleComment( undefined,[UNIQUE_ID(f57623418bd4b26e52830da2f4514e7fe0c3c5a93e541e58b26bd3a9c6609769) org.kframework.attributes.Location(Location(787,3,787,15)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( meaningful only for the purposes of compilation to a binary, otherwise,[UNIQUE_ID(acf880ee420a14cbf433701c07c598764a93349a865ef708700de86585b15324) org.kframework.attributes.Location(Location(786,3,786,76)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module K-REFLECTION$SYNTAX [org.kframework.attributes.Location(Location(774,1,790,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING$SYNTAX
+  imports K-REFLECTION-SYMBOLIC$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax String ::= "#sort" "(" K ")"
+  syntax String ::= "#getenv" "(" String ")"
+  syntax List ::= "#argv" "(" ")"
+  syntax KItem ::= List
+  syntax KItem ::= "getKLabel" "(" K ")"
+  syntax KItem ::= "#fresh" "(" String ")"
+  syntax K ::= "#configuration"
+  syntax K
+  syntax Bool ::= "isList" "(" K ")"
+endmodule
+
+
+module K-REFLECTION-SYMBOLIC [org.kframework.attributes.Location(Location(792,1,802,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports STRING
+  imports K-REFLECTION-SYMBOLIC$SYNTAX
+  imports BASIC-K
+  ModuleComment( return true if no variable nor unresolved function appears in any subterm,[UNIQUE_ID(948a76a6bd60288c8b4f256339aa44595f098b689ef91555e109545256b27ffc) org.kframework.attributes.Location(Location(799,3,799,79)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( return empty string if the term has no klabel,[UNIQUE_ID(ffa09b0887b2563fdcab9db142e5f4a2873fe61824ae54f90f15b12aea954a00) org.kframework.attributes.Location(Location(796,3,796,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module K-REFLECTION-SYMBOLIC$SYNTAX [org.kframework.attributes.Location(Location(792,1,802,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports STRING$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax String ::= "#getKLabelString" "(" K ")"
+  syntax Bool ::= "#isVariable" "(" K ")"
+  syntax Bool ::= "#isConcrete" "(" K ")"
+endmodule
+
+
+module K-SORT-LATTICE [org.kframework.attributes.Location(Location(153,1,156,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports K-TOP-SORT
+  imports K-SORT-LATTICE$SYNTAX
+  imports K-BOTTOM-SORT
+endmodule
+
+
+module K-SORT-LATTICE$SYNTAX [org.kframework.attributes.Location(Location(153,1,156,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports K-TOP-SORT$SYNTAX
+  imports K-BOTTOM-SORT$SYNTAX
+endmodule
+
+
+module K-TERM [org.kframework.attributes.Location(Location(241,1,247,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RECORD-PRODUCTIONS
+  imports KSEQ-SYMBOLIC
+  imports K-TERM$SYNTAX
+  imports K-SORT-LATTICE
+  imports AUTO-FOLLOW
+  imports AUTO-CASTS
+endmodule
+
+
+module K-TERM$SYNTAX [org.kframework.attributes.Location(Location(241,1,247,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RECORD-PRODUCTIONS$SYNTAX
+  imports KSEQ-SYMBOLIC$SYNTAX
+  imports K-SORT-LATTICE$SYNTAX
+  imports AUTO-FOLLOW$SYNTAX
+  imports AUTO-CASTS$SYNTAX
+endmodule
+
+
+module K-TOP-SORT [org.kframework.attributes.Location(Location(143,1,146,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT
+  imports K-TOP-SORT$SYNTAX
+endmodule
+
+
+module K-TOP-SORT$SYNTAX [org.kframework.attributes.Location(Location(143,1,146,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT$SYNTAX
+  syntax KItem ::= KBott
+  syntax K
+  syntax Bool ::= "isKItem" "(" K ")"
+endmodule
+
+
+module KAST [org.kframework.attributes.Location(Location(30,1,50,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT
+  imports KSTRING
+  imports KAST$SYNTAX
+  imports BUILTIN-ID-TOKENS
+  imports BASIC-K
+  ModuleComment( something that doesn't collide with meta-variables,[UNIQUE_ID(23486c7496d679cddd814aa54160bded6496b130dff7f7d7f986a58696aaa733) org.kframework.attributes.Location(Location(44,24,44,77)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module KAST$SYNTAX [org.kframework.attributes.Location(Location(30,1,50,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT$SYNTAX
+  imports KSTRING$SYNTAX
+  imports BUILTIN-ID-TOKENS$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax associativity left #KList [UNIQUE_ID(a1dc0a525936c645d01ebaf88713681c3b5d3199adb019d89c833ea50cca3b11)]
+  syntax KList ::= KList "," KList
+  syntax KList ::= K
+  syntax KList ::= ".KList"
+  syntax KList ::= ".::KList"
+  syntax KLabel ::= r"`(\\\\`|\\\\\\\\|[^`\\\\\\n\\r])+`"
+  syntax KLabel ::= r"(?<![a-zA-Z0-9])[#a-z][a-zA-Z0-9]*"
+  syntax KLabel ::= #LowerId
+  syntax KItem ::= KBott
+  syntax KBott ::= KLabel "(" KList ")"
+  syntax KBott ::= "#token" "(" KString "," KString ")"
+  syntax KBott ::= "#klabel" "(" KLabel ")"
+  syntax K
+  syntax Bool ::= "isKList" "(" K ")"
+  syntax Bool ::= "isKLabel" "(" K ")"
+endmodule
+
+
+module KCELLS [org.kframework.attributes.Location(Location(90,1,101,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KCELLS$SYNTAX
+  imports KAST
+endmodule
+
+
+module KCELLS$SYNTAX [org.kframework.attributes.Location(Location(90,1,101,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KAST$SYNTAX
+  syntax associativity left #cells [UNIQUE_ID(3d46702d559c9fc2e3777a55557bf12071699534cd9b17b9f56dece736a807f4)]
+  syntax KItem ::= Cell
+  syntax KItem ::= Bag
+  syntax K ::= Bag
+  syntax K
+  syntax Cell [UNIQUE_ID(c042e2fec7d0551e0efd33342210507cc13e5c28584a83197afa14fc568b7488) org.kframework.attributes.Location(Location(93,3,93,13)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax Bool ::= "isCell" "(" K ")"
+  syntax Bool ::= "isBag" "(" K ")"
+  syntax Bag ::= KBott
+  syntax Bag ::= Cell
+  syntax Bag ::= Bag Bag
+  syntax Bag ::= ".Bag"
+  syntax Bag ::= ".::Bag"
+  syntax Bag ::= "(" Bag ")"
+endmodule
+
+
+module KSEQ [org.kframework.attributes.Location(Location(54,1,63,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KSEQ$SYNTAX
+  imports KAST
+  imports K-TOP-SORT
+endmodule
+
+
+module KSEQ$SYNTAX [org.kframework.attributes.Location(Location(54,1,63,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KAST$SYNTAX
+  imports K-TOP-SORT$SYNTAX
+  syntax associativity left #KSequence [UNIQUE_ID(850e5034785c7f5c805631eb867e1169ac357900dc21cabb2531ad02cb834468)]
+  syntax KBott ::= ".K"
+  syntax KBott ::= ".::K"
+  syntax KBott ::= "."
+  syntax K ::= K "~>" K
+  syntax K ::= "(" K ")"
+endmodule
+
+
+module KSEQ-SYMBOLIC [org.kframework.attributes.Location(Location(67,1,88,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KSEQ-SYMBOLIC$SYNTAX
+  imports KSEQ
+endmodule
+
+
+module KSEQ-SYMBOLIC$SYNTAX [org.kframework.attributes.Location(Location(67,1,88,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KSEQ$SYNTAX
+  syntax priority #Not #Ceil > #Equals > #And > #Or > #Implies > #Exists #Forall
+  syntax KLabel ::= #KVariable
+  syntax KConfigVar ::= r"(?<![A-Za-z0-9_\\$!\\?])(\\$)([A-Z][A-Za-z0-9'_]*)"
+  syntax KBott ::= KConfigVar
+  syntax KBott ::= #KVariable
+  syntax K
+  syntax Bool ::= "is#Pattern" "(" K ")"
+  syntax Bool ::= "is#KVariable" "(" K ")"
+  syntax #Pattern ::= K
+  syntax #Pattern ::= #Pattern "#Or" #Pattern
+  syntax #Pattern ::= #Pattern "#Implies" #Pattern
+  syntax #Pattern ::= #Pattern "#Equals" #Pattern
+  syntax #Pattern ::= #Pattern "#And" #Pattern
+  syntax #Pattern ::= "(" #Pattern ")"
+  syntax #Pattern ::= "#True"
+  syntax #Pattern ::= "#Not" "(" #Pattern ")"
+  syntax #Pattern ::= "#Forall" #KVariable "." #Pattern
+  syntax #Pattern ::= "#False"
+  syntax #Pattern ::= "#Exists" #KVariable "." #Pattern
+  syntax #Pattern ::= "#Ceil" "(" #Pattern ")"
+  syntax #KVariable ::= r"(?<![A-Za-z0-9_\\$!\\?])(\\!|\\?)?([A-Z][A-Za-z0-9'_]*|_)"
+  syntax #KVariable ::= #UpperId
+endmodule
+
+
+module KSTRING [org.kframework.attributes.Location(Location(15,1,18,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports KSTRING$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+  ModuleComment( optionally qualified strings, like in Scala "abc", i"abc", r"a*bc", etc.,[UNIQUE_ID(11fad5056fbf4bb3cfd0bd4b42ad8841e528b327a93201aba3010e3c562b16da) org.kframework.attributes.Location(Location(17,3,17,78)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module KSTRING$SYNTAX [org.kframework.attributes.Location(Location(15,1,18,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax KString ::= r"[\\\"](([^\\\"\\n\\r\\\\])|([\\\\][nrtf\\\"\\\\])|([\\\\][x][0-9a-fA-F]{2})|([\\\\][u][0-9a-fA-F]{4})|([\\\\][U][0-9a-fA-F]{8}))*[\\\"]"
+  syntax KItem ::= Bool
+  syntax K
+  syntax Bool ::= "isKString" "(" K ")"
+endmodule
+
+
+module LANGUAGE-PARSING
+  imports K-TERM
+  imports ID-PROGRAM-PARSING
+  imports ENUM-SYNTAX
+  imports ENUM
+endmodule
+
+
+module LIST [org.kframework.attributes.Location(Location(202,1,267,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports LIST$SYNTAX
+  imports INT-SYNTAX
+  imports BASIC-K
+  ModuleComment(| ".",[UNIQUE_ID(0ce1a427591770a8b6a58775e29e4d67a3c036389798109855bea6332dbfd77a) org.kframework.attributes.Location(Location(242,17,242,24)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(TODO(AndreiS): move the paragraph below,[UNIQUE_ID(d948b9104b3c9c3fe54b012ddcf9808a54f84bea3ce8d52338bb77deb806d7bd) org.kframework.attributes.Location(Location(218,3,218,44)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( \section{User-Defined Lists} It is very common in \K to define a shorthand
+   for lists of user-defined sorts. \K 's builtin way of doing this is to use
+   List\{KItem,"Separator"\}, where "Separator" is any valid character or
+   sequence of characters used to separate distinct elements.
+   For example, after defining \\
+   syntax KItem ::= Elt\\
+   a user could then define
+   syntax Elts ::= List\{Elt,","\} \\
+   which would be a comma-separated list whose elements are all of sort Elt. A
+   user could just as well define \\
+   syntax Elts ::= List\{Elt,"and"\} \\
+   which would be a list containing elements of sort Elt that are separated with
+   the word "and". If only one argument is given, the separator is asumed to be
+   commas. So, \\
+   syntax Elts = List\{Elt\} \\
+   would define a comma-separated list containing elements of sort Elt.
+  ,[UNIQUE_ID(a2062c4827a4896f45d92f547367109710ed3635f3f60b49c23460811897cc29) org.kframework.attributes.Location(Location(219,3,235,4)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( \section{Description} \K lists are ordered collections that may contain
+   duplicate elements. These behave more like lists in functional programming
+   languages than arrays in imperative programming languages; there's no
+   numerical indexing, but instead specific elements are refered to using the
+   Mylist,Mylist construct in combination with the MyListItem construct. It's
+   worth noting that \K lists aren't exactly like lists in functional languages;
+   they're associative, which means that it's easy to access elements at both
+   ends of the lists and concatenate them. For example, L:Mylist,E accesses
+   element E at the end of a list. ,[UNIQUE_ID(8e2817619363882be8e8a58585b09b99206a0973ff9b9308e6a486a54e8d337b) org.kframework.attributes.Location(Location(208,3,216,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Remove elements from the beginning and the end of the List. ,[UNIQUE_ID(f89f78ba3ec58f26c689220bb10c7ee5250b7b5cc17accf06daac8ad7c71825d) org.kframework.attributes.Location(Location(259,3,259,68)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the list length ,[UNIQUE_ID(58db5b50725449cc811584ae3abffe94c775fc45543940f17048328d9e763740) org.kframework.attributes.Location(Location(265,3,265,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get an element form the List by index. Positive indices mean from the
+   beginning (0 is the first element), and negative indices mean from the end
+   (-1 is the last element). ,[UNIQUE_ID(ec260ce20bedb05745ca2a1550e6065a1abd82a1d1a55a4e6a2bc3337e7df14b) org.kframework.attributes.Location(Location(246,3,248,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct an empty List: ,[UNIQUE_ID(334d2b34c7faed45553573d6047961172c05d726629c84e6c62b98a969116a8e) org.kframework.attributes.Location(Location(240,3,240,33)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a singleton List (a list with only  one element) ,[UNIQUE_ID(09bc0e15a950fab16dcbac995859df9b8f8a11669f171a37f89a5e14c09d861c) org.kframework.attributes.Location(Location(243,3,243,67)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a new List as the concatenation of two Lists. This is similar to
+   the append "@" operation in many functional programming languages. ,[UNIQUE_ID(0868794ada4415e11b50b57ab44b84cd174450f8bd777d3cfd50bfc64228ff5e) org.kframework.attributes.Location(Location(237,3,238,72)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Check element membership in the given list ,[UNIQUE_ID(80afc34059a6ff1ecde449d29376cf7b618a30ab4f50a0be60d4b1e2458fb5a8) org.kframework.attributes.Location(Location(262,3,262,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module LIST$SYNTAX [org.kframework.attributes.Location(Location(202,1,267,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports INT-SYNTAX$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax associativity left _List_ [UNIQUE_ID(1c52ff5ce2de4e8c13bff6c5b21d381059a7d93c9c2e864a20bbee41735d21ab)]
+  syntax List [UNIQUE_ID(c8733e89405e95b8ede6c1766b5a9072730f56e6af363e90d36aebbdb263ae37) hook(LIST.List) org.kframework.attributes.Location(Location(206,3,206,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax List ::= List List
+  syntax List ::= List "[" Int "<-" KItem "]"
+  syntax List ::= "updateList" "(" List "," Int "," List ")"
+  syntax List ::= "range" "(" List "," Int "," Int ")"
+  syntax List ::= "makeList" "(" Int "," KItem ")"
+  syntax List ::= "fillList" "(" List "," Int "," Int "," KItem ")"
+  syntax List ::= "ListItem" "(" KItem ")"
+  syntax List ::= ".List"
+  syntax KItem ::= List "[" Int "]"
+  syntax KItem ::= List
+  syntax K
+  syntax Int ::= "size" "(" List ")"
+  syntax Bool ::= KItem "in" List
+  syntax Bool ::= "isList" "(" K ")"
+endmodule
+
+
+module MAP [org.kframework.attributes.Location(Location(92,1,156,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports SET
+  imports MAP$SYNTAX
+  imports LIST
+  ModuleComment(| "."                            [function, hook(MAP.unit)],[UNIQUE_ID(ef0e3ccf3172f1de425c87977fe036811a088ad02e154ed3955763093ac224fa) org.kframework.attributes.Location(Location(108,16,108,77)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(\section{Description} The Map represents a generalized associative array.
+   Each key can be paired with an arbitrary value, and can be used to reference
+   its associated value. Multiple bindings for the same key are not allowed. ,[UNIQUE_ID(bf0797ac2019a1d4f1405bf9e0c4abf0b88744787e8bc5fbbadcf28b590b3477) org.kframework.attributes.Location(Location(98,3,100,79)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( breaks klabel uniqueness,[UNIQUE_ID(bc9ee6568e21aa8d9a37fff08bf07be5223c3560c023fb86978284841205a8d0) org.kframework.attributes.Location(Location(107,16,107,43)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Update the first map by adding all key/value pairs in the second map. If a
+   key in the first map exists also in the second map, its associated value will
+   be overwritten by the value from the second map. ,[UNIQUE_ID(3c3223659cdcfd10e86c63748c00ef57eb0b934c2f58794535c83dcae51cedc8) org.kframework.attributes.Location(Location(131,3,133,54)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Update the Map by removing all key/value pairs with the key in the Set. ,[UNIQUE_ID(df3cb82c31cea7c68d2a9f72ce200a82df1c84bdb91e619286b1006fc921fe35) org.kframework.attributes.Location(Location(136,3,136,80)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Update a Map in form of  of keys and values: ,[UNIQUE_ID(583fc6fecd1f93265140389a01787b86b68ae6de8a51cf52057dbcd7f296da72) org.kframework.attributes.Location(Location(121,3,121,53)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Retrieve the value associated with the given key ,[UNIQUE_ID(291c0ef2116e09f6fd1726148207013c4cdecff7c99b2f985f9a8b17aeffe04d) org.kframework.attributes.Location(Location(116,3,116,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Remove key/value pair associated with the key from map? ,[UNIQUE_ID(c2475fa490fafae1e12f7751ea0bbe9f0a2f094ae433515bd9d502fbfd70ea42) org.kframework.attributes.Location(Location(124,3,124,64)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the difference of two maps interpreted as sets of entries
+   ($M_1 \setminus M2$) ,[UNIQUE_ID(7d15b659e1ad1790b7440f0c7118e560990a12dc8d0fed7a70816504132636fa) org.kframework.attributes.Location(Location(127,3,128,26)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the Map size (number of key/value pairs) ,[UNIQUE_ID(878a30263ff5109ac899a396d860b892efb05d58a55f59df1e074f7415bccf97) org.kframework.attributes.Location(Location(148,3,148,53)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get an arbitrarily chosen key of the Map  ,[UNIQUE_ID(1ad741c99c253195d05ff912a8078afe82eeeac2a04206588825c622f3f58f8c) org.kframework.attributes.Location(Location(154,3,154,50)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get a Set consisting of all keys in the Map:,[UNIQUE_ID(ddaa063d131d69327d4170533b030f61810a79b8767776f959c59405157d806e) org.kframework.attributes.Location(Location(139,3,139,52)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get a List consisting of all values in the Map: ,[UNIQUE_ID(f1d9c86e26cf008b49b14b632f54e712e65e64e29128fecbba7352698dd72ad0) org.kframework.attributes.Location(Location(145,3,145,56)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a singleton Map (a Map with only one key/value pair). The key
+   is on the left and the value is on the right ,[UNIQUE_ID(bdef1dd785c16c73cd7c0a3a9d684fff9f92a20b61bdd7cf0239b0d9c936526a) org.kframework.attributes.Location(Location(109,3,110,50)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a new Map consisting of key/value pairs of two Maps (the keys of
+   the two Maps are assumed disjoint) ,[UNIQUE_ID(6679eb27ec4cf10bc2383e668e61ff6f90ba8f9af2bfd3d873b5545ebed3abec) org.kframework.attributes.Location(Location(102,3,103,40)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Check map inclusion ,[UNIQUE_ID(4deb55e5cc4a139c01be2d73340f6c66f0be24877f139e44d80bbaf5431de3ff) org.kframework.attributes.Location(Location(151,3,151,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(  Construct an empty Map ,[UNIQUE_ID(f7b05a2d7b5da09ebe8709ba554805b5e23d0bf4eaf9b873d01239256eafd80d) org.kframework.attributes.Location(Location(105,3,105,32)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module MAP$SYNTAX [org.kframework.attributes.Location(Location(92,1,156,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports SET$SYNTAX
+  imports LIST$SYNTAX
+  syntax priority _|->_ > .Map _Map_
+  syntax associativity non-assoc _|->_ [UNIQUE_ID(261d8302a532d8ac7c2547b8f45c1ca75162e60df65bcf911a031181899c6234)]
+  syntax associativity left _Map_ [UNIQUE_ID(83f25219f82d35639f22a3c8558822fb1554a5e2ad0d560dcd182edad97d02b3)]
+  syntax Set ::= "keys" "(" Map ")"
+  syntax Map [UNIQUE_ID(cf306b2b63be14026d445f3b62879a8796f1a9e863862c0f139f75edb08e750e) hook(MAP.Map) org.kframework.attributes.Location(Location(96,3,96,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax Map ::= Map Map
+  syntax Map ::= Map "[" KItem "<-" KItem "]"
+  syntax Map ::= Map "[" KItem "<-" "undef" "]"
+  syntax Map ::= Map "-Map" Map
+  syntax Map ::= KItem "|->" KItem
+  syntax Map ::= "updateMap" "(" Map "," Map ")"
+  syntax Map ::= "removeAll" "(" Map "," Set ")"
+  syntax Map ::= ".Map"
+  syntax List ::= "values" "(" Map ")"
+  syntax List ::= "keys_list" "(" Map ")"
+  syntax KItem ::= Map "[" KItem "]" "orDefault" KItem
+  syntax KItem ::= Map "[" KItem "]"
+  syntax KItem ::= Map
+  syntax KItem ::= "choice" "(" Map ")"
+  syntax K
+  syntax Int ::= "size" "(" Map ")"
+  syntax Bool ::= Map "<=Map" Map
+  syntax Bool ::= KItem "in_keys" "(" Map ")"
+  syntax Bool ::= "isMap" "(" K ")"
+endmodule
+
+
+module MINT$SYNTAX [org.kframework.attributes.Location(Location(1096,1,1288,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports LIST$SYNTAX
+  imports K-EQUAL$SYNTAX
+  imports INT$SYNTAX
+  syntax MInt [UNIQUE_ID(780920b60f43e1a79e52d7e0ba0d0f41fa74eec73c54d44932d0679143007519) hook(MINT.MInt) org.kframework.attributes.Location(Location(1101,3,1101,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax MInt ::= "xorMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "uremMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "udivMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "subMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "shlMInt" "(" MInt "," Int ")"
+  syntax MInt ::= "sMinMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "sMaxMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "orMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "negMInt" "(" MInt ")"
+  syntax MInt ::= "mulMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "miMInt" "(" List ")"
+  syntax MInt ::= "mi" "(" Int "," Int ")"
+  syntax MInt ::= "mIntOfDigits" "(" List ")"
+  syntax MInt ::= "lshrMInt" "(" MInt "," Int ")"
+  syntax MInt ::= "extractMInt" "(" MInt "," Int "," Int ")"
+  syntax MInt ::= "concatenateMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "ashrMInt" "(" MInt "," Int ")"
+  syntax MInt ::= "andMInt" "(" MInt "," MInt ")"
+  syntax MInt ::= "addMInt" "(" MInt "," MInt ")"
+  syntax List ::= "usubMInt" "(" MInt "," MInt ")"
+  syntax List ::= "umulMInt" "(" MInt "," MInt ")"
+  syntax List ::= "uaddMInt" "(" MInt "," MInt ")"
+  syntax List ::= "ssubMInt" "(" MInt "," MInt ")"
+  syntax List ::= "sremMInt" "(" MInt "," MInt ")"
+  syntax List ::= "smulMInt" "(" MInt "," MInt ")"
+  syntax List ::= "sdivMInt" "(" MInt "," MInt ")"
+  syntax List ::= "saddMInt" "(" MInt "," MInt ")"
+  syntax List ::= "digitsOfMInt" "(" MInt "," Int "," Int ")"
+  syntax KItem ::= MInt
+  syntax K
+  syntax Int ::= "uvalueMInt" "(" MInt ")"
+  syntax Int ::= "uminMInt" "(" Int ")"
+  syntax Int ::= "umaxMInt" "(" Int ")"
+  syntax Int ::= "svalueMInt" "(" MInt ")"
+  syntax Int ::= "sminMInt" "(" Int ")"
+  syntax Int ::= "smaxMInt" "(" Int ")"
+  syntax Int ::= "bitwidthMInt" "(" MInt ")"
+  syntax Bool ::= "zeroMInt" "(" MInt ")"
+  syntax Bool ::= "uoverflowMInt" "(" Int "," Int ")"
+  syntax Bool ::= "ultMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "uleMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "ugtMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "ugeMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "soverflowMInt" "(" Int "," Int ")"
+  syntax Bool ::= "sltMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "sleMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "sgtMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "sgeMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "overflowMInt" "(" List ")"
+  syntax Bool ::= "neMInt" "(" MInt "," MInt ")"
+  syntax Bool ::= "isMInt" "(" K ")"
+  syntax Bool ::= "eqMInt" "(" MInt "," MInt ")"
+endmodule
+
+
+module PROGRAM-LISTS [org.kframework.attributes.Location(Location(181,1,193,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K
+  imports PROGRAM-LISTS$SYNTAX
+  ModuleComment( replaces the default productions for lists:,[UNIQUE_ID(8bbc42edfef7e927fcecf3ce09ac56c7e8e0b605b150642fef65b6b514a5c874) org.kframework.attributes.Location(Location(184,3,184,49)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( into a series of productions more suitable for programs:,[UNIQUE_ID(0fafd5175173a42576d2d456d66e8c57ad718f14944a4446d62f0968d4f252ef) org.kframework.attributes.Location(Location(187,3,187,62)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( if this module is imported, the parser automatically,[UNIQUE_ID(37a5063cfb27ab7172edee6d6737c34f24319839d9435de04f5eebf6a40ab984) org.kframework.attributes.Location(Location(183,3,183,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Ne#Es ::= E "," Ne#Es     [klabel('_,_)],[UNIQUE_ID(7710475041fa92d2b73822014400150a661d7766cd22cd7aca6a29840ff21aea) org.kframework.attributes.Location(Location(189,3,189,46)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Es#Terminator ::= ""      [klabel('.Es)],[UNIQUE_ID(49faff1ce0ef4f0c31055aaa137351addc0f7675ef163f97371cdb2949810dc5) org.kframework.attributes.Location(Location(188,3,188,46)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Es ::= Ne#Es,[UNIQUE_ID(caddf76bad974aead339b97d2c12a7fc698b33c92e4e11a3b03f0e22310902b3) org.kframework.attributes.Location(Location(191,3,191,18)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Es ::= E "," Es [userList("*"), klabel('_,_)],[UNIQUE_ID(fcbf6c88208eb064b5edb7c1b981a7b7d4d96f854710cf84801131aa9d940f31) org.kframework.attributes.Location(Location(185,3,185,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment(      | Es#Terminator      // if the list is *,[UNIQUE_ID(28381e33f7b0fc25ed0bdba94e17be216853d116631083c32cd3c20a97c74042) org.kframework.attributes.Location(Location(192,3,192,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment(      | ".Es"    [userList("*"), klabel('.Es)],[UNIQUE_ID(5433ffd24051547bdf7e1e9d080afd3fbed5482f1f6179bed75ae3a919846444) org.kframework.attributes.Location(Location(186,3,186,51)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment(         | E Es#Terminator [klabel('_,_)],[UNIQUE_ID(c52198ba0a3e41b340e8da61c93e802c53710d463ac7d0a5e5e95b27d9a77094) org.kframework.attributes.Location(Location(190,3,190,46)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module PROGRAM-LISTS$SYNTAX [org.kframework.attributes.Location(Location(181,1,193,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K$SYNTAX
+  syntax K
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module RECORD-PRODUCTIONS [org.kframework.attributes.Location(Location(214,1,219,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RECORD-PRODUCTIONS$SYNTAX
+  ModuleComment( will be able to be parsed with don't-care variables according,[UNIQUE_ID(cb061491e36fe86adade3a41e2844c61a90a72fda1ce4465f7649a4c79ea2c54) org.kframework.attributes.Location(Location(217,3,217,67)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( to their nonterminal's names,[UNIQUE_ID(b6d0ac5fad52142a60175c24a60f6bcdc7b97a5b15d19da924ed2a6effb1e51b) org.kframework.attributes.Location(Location(218,3,218,34)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( syntax Sort ::= name(Args),[UNIQUE_ID(5291159509836efc97728e2450894c4d2e6efd91fafa1d9153c43c8d7aa9a64c) org.kframework.attributes.Location(Location(216,3,216,32)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( if this module is imported, prefix productions of the form,[UNIQUE_ID(48d0edaa3a1a4096ed9c4b73faeb8720e82cdb7d8452c475582076bb6e2146c8) org.kframework.attributes.Location(Location(215,3,215,64)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module RECORD-PRODUCTIONS$SYNTAX [org.kframework.attributes.Location(Location(214,1,219,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+endmodule
+
+
+module REQUIRES-ENSURES [org.kframework.attributes.Location(Location(132,1,141,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports REQUIRES-ENSURES$SYNTAX
+  imports BASIC-K
+endmodule
+
+
+module REQUIRES-ENSURES$SYNTAX [org.kframework.attributes.Location(Location(132,1,141,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports BASIC-K$SYNTAX
+  syntax RuleContent ::= K "when" K "ensures" K
+  syntax RuleContent ::= K "when" K
+  syntax RuleContent ::= K "requires" K "ensures" K
+  syntax RuleContent ::= K "requires" K
+  syntax RuleContent ::= K "ensures" K
+  syntax RuleContent ::= K
+  syntax K
+  syntax Bool ::= "isRuleContent" "(" K ")"
+endmodule
+
+
+module RHO-SYNTAX [org.kframework.attributes.Location(Location(5,1,29,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))]
+  imports SUBSTITUTION
+  imports RHO-SYNTAX$SYNTAX
+  imports ID
+  imports DOMAINS
+  ModuleComment( Variables,[UNIQUE_ID(20f86aed6912d50d5196396798f1da60b90b3a3f843e4d52f6cc2853b661c593) org.kframework.attributes.Location(Location(10,1,10,13)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Stop: ---------------> Proc,[UNIQUE_ID(20b8e573a8b89686102167ca53209b4e8f4e3d7e230168b957afd9228ef06675) org.kframework.attributes.Location(Location(23,65,23,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Send: Name*Proc -----> Proc,[UNIQUE_ID(3a19439d899b5b6227e90f194274d7b1e0b7bdf09b9aea1f555e9d3a2f40b900) org.kframework.attributes.Location(Location(25,65,25,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Reify: Name ---------> Proc,[UNIQUE_ID(db47614ad5193764f2a6b76c51bb589ee4465c50b12b49afc96540ca6a5d00bd) org.kframework.attributes.Location(Location(26,65,26,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Rec: Name*Name*Proc -> Proc,[UNIQUE_ID(451d3896c180a58784cc3fbd9701a92ab1f257988b79d6501be63654c3a3e067) org.kframework.attributes.Location(Location(24,65,24,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Par: Proc*Proc ------> Proc,[UNIQUE_ID(5c3527196ec89679e47fea94f26ce8db78b05b117ee9750c4bf4eed65328106b) org.kframework.attributes.Location(Location(27,65,27,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( PROCESSES,[UNIQUE_ID(2e0df32513b517ccc4d7baf2f9a7bae4ee2e13b7aeeb5319ad98ed7bbd7dc845) org.kframework.attributes.Location(Location(21,1,21,13)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( NAMES,[UNIQUE_ID(cf245eb6320501a4450f7d4374255ecd534951ec7c5b7b6a8e137b96fc41748f) org.kframework.attributes.Location(Location(16,1,16,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Channels,[UNIQUE_ID(195dfbe80f18324667904580ba7fffa6bae2ff0014861afbe63b9a8c14668ec3) org.kframework.attributes.Location(Location(13,1,13,12)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment( Chan: Proc ----------> Name,[UNIQUE_ID(6654a31e331e257f6d5674b66715b8e1d3c2006a4654bd1db20122b3b27cc722) org.kframework.attributes.Location(Location(17,65,17,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+  ModuleComment(              | Var                                           // Var: ----------------> Name,[UNIQUE_ID(19775db3f6f931d50188ff6fbb3ccdf8212e1a2cbfe08cff4f8ddfb54ba76e2b) org.kframework.attributes.Location(Location(18,1,18,95)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))])
+endmodule
+
+
+module RHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(5,1,29,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/Rho-Calc/rho.k))]
+  imports SUBSTITUTION$SYNTAX
+  imports ID$SYNTAX
+  imports DOMAINS$SYNTAX
+  syntax priority  > _!(_)_RHO-SYNTAX Nil_RHO-SYNTAX *__RHO-SYNTAX _(_){_}_RHO-SYNTAX > _|__RHO-SYNTAX
+  syntax associativity left _|__RHO-SYNTAX [UNIQUE_ID(9f791224daed708795886b9849ae82fda2f22e9b044cc8d91a545e09637946f1)]
+  syntax Var ::= Id
+  syntax Proc ::= Proc "|" Proc
+  syntax Proc ::= Name "(" Name ")" "{" Proc "}"
+  syntax Proc ::= Name "!" "(" Proc ")"
+  syntax Proc ::= "{" Proc "}"
+  syntax Proc ::= "Nil"
+  syntax Proc ::= "*" Name
+  syntax Name ::= Chan
+  syntax Name ::= "{" Name "}"
+  syntax KItem ::= Var
+  syntax KItem ::= Proc
+  syntax KItem ::= Name
+  syntax KItem ::= Chan
+  syntax K
+  syntax Chan ::= "@" Proc
+  syntax Bool ::= "isVar" "(" K ")"
+  syntax Bool ::= "isProc" "(" K ")"
+  syntax Bool ::= "isName" "(" K ")"
+  syntax Bool ::= "isChan" "(" K ")"
+endmodule
+
+
+module RULE-CELLS [org.kframework.attributes.Location(Location(103,1,113,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RULE-LISTS
+  imports RULE-CELLS$SYNTAX
+  imports KCELLS
+  ModuleComment(syntax Cell ::= "<top>" #OptionalDots K #OptionalDots "</top>" [klabel(<top>)],[UNIQUE_ID(05041ed8b70f2d2f6062d1605f181c13cc71f5b122fc87669d9229aac018cac9) org.kframework.attributes.Location(Location(109,3,109,83)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( if this module is imported, the parser automatically,[UNIQUE_ID(37a5063cfb27ab7172edee6d6737c34f24319839d9435de04f5eebf6a40ab984) org.kframework.attributes.Location(Location(106,3,106,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( generates, for all productions that have the attribute 'cell' or 'maincell',,[UNIQUE_ID(6a33975a5c89438e9abc0e80cbe97d7aa4c22a5cb4106b211ea26c957945505b) org.kframework.attributes.Location(Location(107,3,107,82)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( a production like below:,[UNIQUE_ID(8caa62ba30032c65b5535f3fb9303f9dbdb138b316c76f1a3130296dafcdcc3e) org.kframework.attributes.Location(Location(108,3,108,30)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module RULE-CELLS$SYNTAX [org.kframework.attributes.Location(Location(103,1,113,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RULE-LISTS$SYNTAX
+  imports KCELLS$SYNTAX
+  syntax K
+  syntax Bool ::= "is#OptionalDots" "(" K ")"
+  syntax #OptionalDots ::= "..."
+  syntax #OptionalDots ::= ""
+endmodule
+
+
+module RULE-LISTS [org.kframework.attributes.Location(Location(195,1,200,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports RULE-LISTS$SYNTAX
+  ModuleComment( if this module is imported, the parser automatically,[UNIQUE_ID(37a5063cfb27ab7172edee6d6737c34f24319839d9435de04f5eebf6a40ab984) org.kframework.attributes.Location(Location(196,3,196,58)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( adds the subsort production to the parsing module only:,[UNIQUE_ID(5c5b453bdc27b9b3b7e69516f970ed7362e133ef6e7a9bf433ec3287a2a6d6d2) org.kframework.attributes.Location(Location(197,3,197,61)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+  ModuleComment( Es ::= E        [userList("*")],[UNIQUE_ID(83e9f538af7456b00af5adc7fb46030b44ef3227dd0e64e0231b0265fd34baac) org.kframework.attributes.Location(Location(198,3,198,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))])
+endmodule
+
+
+module RULE-LISTS$SYNTAX [org.kframework.attributes.Location(Location(195,1,200,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+endmodule
+
+
+module SET [org.kframework.attributes.Location(Location(158,1,200,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports SET$SYNTAX
+  imports INT-SYNTAX
+  imports BASIC-K
+  ModuleComment(| ".",[UNIQUE_ID(0ce1a427591770a8b6a58775e29e4d67a3c036389798109855bea6332dbfd77a) org.kframework.attributes.Location(Location(171,16,171,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(rule S:Set -Set .Set => S,[UNIQUE_ID(f3f25a4693ba562eaff94438f311dd5bfd451739f5f83c313acea6d15cfae413) org.kframework.attributes.Location(Location(199,3,199,30)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(rule S1:Set -Set (SetItem(K:K) S2:Set) => S1 -Set S2,[UNIQUE_ID(154dd7ba1b3251d49ed9bc0be54c4d4fb8e1223a4aadd47d5c2a98d1ffa5dc8a) org.kframework.attributes.Location(Location(197,3,197,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(requires notBool(K in S1),[UNIQUE_ID(f904feb1616809fae9cc188576cfab88b804bab61e368f1ae842d90a9a12fd1b) org.kframework.attributes.Location(Location(198,3,198,30)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( set difference axioms ,[UNIQUE_ID(9a312f61a86dbff59fe48761fc6beae4029a55ea8c216123216ee6db74074e68) org.kframework.attributes.Location(Location(195,3,195,29)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( \section{Description} The Set represents a mathematical set (a collection
+   of unique items). ,[UNIQUE_ID(4aed6131939a9408a8a152fdd4188adc0fdfe52bb49aa71d70b8fbb6dd3f1c02) org.kframework.attributes.Location(Location(164,3,165,23)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( TODO(AndreiS): remove this if not used,[UNIQUE_ID(983bd3f5ef561076fff21c51f27a479329d7ad6de7107fa1c319c16f488c1d79) org.kframework.attributes.Location(Location(196,3,196,44)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the intersection of two sets ($A \cap B$) ,[UNIQUE_ID(a801397ec6e369a486f21c8bdf31337cb845a3b65c574b624e1e908f865910da) org.kframework.attributes.Location(Location(177,3,177,54)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the difference of two sets ($A \setminus B$),[UNIQUE_ID(49369ff1015b447d9adf47ddf996d0976e75b3f929b4df9fe28ece9c04003e01) org.kframework.attributes.Location(Location(180,3,180,56)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get the cardinality of a set ($|A|$) ,[UNIQUE_ID(48a13565a04c33355077a910d50c4cd659306884432719fdf6ed8ae89dfcfea3) org.kframework.attributes.Location(Location(189,3,189,45)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Get an arbitrarily chosen element of the Set ,[UNIQUE_ID(26559e19fa7f9f68a495b520fbfcbabd386f10c4c30ef2345ca052089207653c) org.kframework.attributes.Location(Location(192,3,192,53)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct an empty Set ,[UNIQUE_ID(a3aa289b3120300e33ac744584ecc378b4aaa4c03164d3484a7351bd3ce5a247) org.kframework.attributes.Location(Location(169,3,169,31)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a singleton Set (a Set with only one element $\{ a \}$). To add
+   an element $a$ to a set $A$, construct the union of the singleton set
+   $\{ a \}$ and $A$ ($\{ a \} \cup A$). ,[UNIQUE_ID(f8c65cde5f9f702db89c8242e29a067e4ce98df3686c9589d435a64eacdf6b4a) org.kframework.attributes.Location(Location(172,3,174,43)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Construct a new Set as the union of two different sets ($A \cup B$) ,[UNIQUE_ID(0d71c001a331338e1b354231fae32faa6e0b5db7cf8f31c41febe0b41731e8cb) org.kframework.attributes.Location(Location(167,3,167,76)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Check set inclusion ($A \subseteq B$) ,[UNIQUE_ID(19c9154470dea30050c482e88fbd28a612075105ab1f810378d0b9fe4de8c17a) org.kframework.attributes.Location(Location(186,3,186,46)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Check element membership in a set ($a \in A$) ,[UNIQUE_ID(c8f74fc980183df59f6302a240145e4e0c3e95f9292fbb28f0acbdfe2d8e6a43) org.kframework.attributes.Location(Location(183,3,183,54)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module SET$SYNTAX [org.kframework.attributes.Location(Location(158,1,200,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports INT-SYNTAX$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax associativity left _Set_ [UNIQUE_ID(97f06b737c6a43ad2f152eb5cc10d6e558ff902b0e189a58665f424d7656f067)]
+  syntax Set [UNIQUE_ID(9e59a29f91d2e893c0ca7029b4f6c32ad22406e1c41578b93f27dcf36189096d) hook(SET.Set) org.kframework.attributes.Location(Location(162,3,162,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax Set ::= Set Set
+  syntax Set ::= Set "-Set" Set
+  syntax Set ::= "intersectSet" "(" Set "," Set ")"
+  syntax Set ::= "SetItem" "(" KItem ")"
+  syntax Set ::= ".Set"
+  syntax KItem ::= Set
+  syntax KItem ::= "choice" "(" Set ")"
+  syntax K
+  syntax Int ::= "size" "(" Set ")"
+  syntax Bool ::= Set "<=Set" Set
+  syntax Bool ::= KItem "in" Set
+  syntax Bool ::= "isSet" "(" K ")"
+endmodule
+
+
+module SORT-K [org.kframework.attributes.Location(Location(4,1,6,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K$SYNTAX
+  syntax K
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module SORT-K$SYNTAX [org.kframework.attributes.Location(Location(4,1,6,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax KItem ::= Bool
+  syntax K [UNIQUE_ID(f7a205ef04a17e51fd9078332b60869d711f917a7bb891b12409e26ca40b7c5d) hook(K.K) org.kframework.attributes.Location(Location(5,3,5,22)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+endmodule
+
+
+module SORT-KBOTT [org.kframework.attributes.Location(Location(25,1,28,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-KBOTT$SYNTAX
+  imports SORT-K
+endmodule
+
+
+module SORT-KBOTT$SYNTAX [org.kframework.attributes.Location(Location(25,1,28,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  imports SORT-K$SYNTAX
+  syntax KBott [UNIQUE_ID(e5e87040e0171d89bcdd1a34865c40169aee43a0f23afcd39db6a5e2d5161bcb) org.kframework.attributes.Location(Location(27,3,27,14)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/kast.k))]
+  syntax K
+  syntax Bool ::= "isKBott" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module STDIN-STREAM [org.kframework.attributes.Location(Location(930,1,1024,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+endmodule
+
+
+module STDOUT-STREAM [org.kframework.attributes.Location(Location(1026,1,1094,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+endmodule
+
+
+module STRING [org.kframework.attributes.Location(Location(501,1,577,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-SYNTAX
+  imports STRING$SYNTAX
+  imports K-EQUAL
+  imports INT
+  imports FLOAT-SYNTAX
+  rule rfindChar(_14,#token("\"\"","String"),_15)=>#token("-1","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(04cb290eea9d7c93a48f761cab20217a689222a306098df1120917b013944330) contentStartColumn(8) contentStartLine(556) org.kframework.attributes.Location(Location(556,8,556,33)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule rfindChar(S1,S2,I)=>`maxInt(_,_)_INT`(rfindString(S1,substrString(S2,#token("0","Int"),#token("1","Int")),I),rfindChar(S1,substrString(S2,#token("1","Int"),lengthString(S2)),I)) requires `_=/=String__STRING`(S2,#token("\"\"","String")) ensures #token("true","Bool") [UNIQUE_ID(dea96adb63c0d77626a51f08fb7a6daf76e3a7b8d0205f5285542c1160f2ddeb) contentStartColumn(8) contentStartLine(555) org.kframework.attributes.Location(Location(555,8,555,182)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule findChar(_12,#token("\"\"","String"),_13)=>#token("-1","Int") requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(3c92cdc7bbe8b210d199a92b38a24538ca780f801572b653c3cb72d6d89a2adf) contentStartColumn(8) contentStartLine(554) org.kframework.attributes.Location(Location(554,8,554,32)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule findChar(S1,S2,I)=>`#if_#then_#else_#fi_K-EQUAL`(`_==Int_`(findString(S1,substrString(S2,#token("0","Int"),#token("1","Int")),I),#token("-1","Int")),findChar(S1,substrString(S2,#token("1","Int"),lengthString(S2)),I),`#if_#then_#else_#fi_K-EQUAL`(`_==Int_`(findChar(S1,substrString(S2,#token("1","Int"),lengthString(S2)),I),#token("-1","Int")),findString(S1,substrString(S2,#token("0","Int"),#token("1","Int")),I),`minInt(_,_)_INT`(findString(S1,substrString(S2,#token("0","Int"),#token("1","Int")),I),findChar(S1,substrString(S2,#token("1","Int"),lengthString(S2)),I)))) requires `_=/=String__STRING`(S2,#token("\"\"","String")) ensures #token("true","Bool") [UNIQUE_ID(5a89a8f3b78438530e84da3913f33203b224f3c348d32f09785edd80c9cfe137) contentStartColumn(8) contentStartLine(553) org.kframework.attributes.Location(Location(553,8,553,431)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `replaceFirst(_,_,_)_STRING`(Source,ToReplace,_18)=>Source requires `_<Int__INT`(findString(Source,ToReplace,#token("0","Int")),#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(4320c56cb2a4f4c70e2500eb8f33dab497a5bb09aa847e4e0c0ae496ab671040) contentStartColumn(8) contentStartLine(566) org.kframework.attributes.Location(Location(566,8,567,57)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `replaceFirst(_,_,_)_STRING`(Source,ToReplace,Replacement)=>`_+String__STRING`(`_+String__STRING`(substrString(Source,#token("0","Int"),findString(Source,ToReplace,#token("0","Int"))),Replacement),substrString(Source,`_+Int_`(findString(Source,ToReplace,#token("0","Int")),lengthString(ToReplace)),lengthString(Source))) requires `_>=Int__INT`(findString(Source,ToReplace,#token("0","Int")),#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(4941a93fc06d65bd530ddbfcaabb498d40e247effd559cda2d85e65d73692b70) contentStartColumn(8) contentStartLine(563) org.kframework.attributes.Location(Location(563,8,565,66)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `replaceAll(_,_,_)_STRING`(Source,ToReplace,Replacement)=>`replace(_,_,_,_)_STRING`(Source,ToReplace,Replacement,`countAllOccurrences(_,_)_STRING`(Source,ToReplace)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(3358d86b83068ab68fc4f0ed02513db149426f011866db38ff0a5015e8fee30d) contentStartColumn(8) contentStartLine(575) org.kframework.attributes.Location(Location(575,8,575,154)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `replace(_,_,_,_)_STRING`(Source,_16,_17,#token("0","Int"))=>Source requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(ba5c0b944155cbe05f7bf6c179a2ed1e9baea983ec5099e8449b31926e9b3069) contentStartColumn(8) contentStartLine(574) org.kframework.attributes.Location(Location(574,8,574,49)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `replace(_,_,_,_)_STRING`(Source,ToReplace,Replacement,Count)=>`_+String__STRING`(`_+String__STRING`(substrString(Source,#token("0","Int"),findString(Source,ToReplace,#token("0","Int"))),Replacement),`replace(_,_,_,_)_STRING`(substrString(Source,`_+Int_`(findString(Source,ToReplace,#token("0","Int")),lengthString(ToReplace)),lengthString(Source)),ToReplace,Replacement,`_-Int__INT`(Count,#token("1","Int")))) requires `_>Int__INT`(Count,#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(00a2618b5ebbb57a911b7f2ad35458f6b3e1d5cb14ef1e49468e9833e93e48c0) contentStartColumn(8) contentStartLine(570) org.kframework.attributes.Location(Location(570,8,573,30)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `countAllOccurrences(_,_)_STRING`(Source,ToCount)=>`_+Int_`(#token("1","Int"),`countAllOccurrences(_,_)_STRING`(substrString(Source,`_+Int_`(findString(Source,ToCount,#token("0","Int")),lengthString(ToCount)),lengthString(Source)),ToCount)) requires `_>=Int__INT`(findString(Source,ToCount,#token("0","Int")),#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(9834f2e2641cb2ecf28969acaab73619cb181f1a69c9cfef5102f907edaeb71e) contentStartColumn(8) contentStartLine(560) org.kframework.attributes.Location(Location(560,8,561,60)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `countAllOccurrences(_,_)_STRING`(Source,ToCount)=>#token("0","Int") requires `_<Int__INT`(findString(Source,ToCount,#token("0","Int")),#token("0","Int")) ensures #token("true","Bool") [UNIQUE_ID(cb338e251d0b5234f4abbf9c60008d68dc9dd3a8b1a5a410ed51f56d43a7b5af) contentStartColumn(8) contentStartLine(558) org.kframework.attributes.Location(Location(558,8,559,59)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K "requires" K)]
+  rule `_>String__STRING`(S1,S2)=>`_<String__STRING`(S2,S1) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(85f6517ce0e2b7074d495585267afa5b0502e09d5bf63c57fb6c6d77174aa16a) contentStartColumn(8) contentStartLine(550) org.kframework.attributes.Location(Location(550,8,550,52)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_>=String__STRING`(S1,S2)=>`notBool_`(`_<String__STRING`(S1,S2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(2e24bd4be2ac7aa21b58ac7fe4e1e4e70e5e69437dff6c98e3ff986df28f5b21) contentStartColumn(8) contentStartLine(551) org.kframework.attributes.Location(Location(551,8,551,63)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_==String__STRING`(S1,S2)=>`_==K_`(S1,S2) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(daddd877c886e178648c9a2a7a5b307a0f59225ac211c099829b467bb5ebf98d) contentStartColumn(8) contentStartLine(537) org.kframework.attributes.Location(Location(537,8,537,49)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_=/=String__STRING`(S1,S2)=>`notBool_`(`_==String__STRING`(S1,S2)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(2a5c8974455ca9cde473273aeca1a4fa8072aa68d104bc94daa71ee7bf52c8a4) contentStartColumn(8) contentStartLine(536) org.kframework.attributes.Location(Location(536,8,536,65)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `_<=String__STRING`(S1,S2)=>`notBool_`(`_<String__STRING`(S2,S1)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(2c1110a97c0d904a19992e4eac695692515cb703f5d689aaa6945290a696d662) contentStartColumn(8) contentStartLine(549) org.kframework.attributes.Location(Location(549,8,549,63)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+endmodule
+
+
+module STRING$SYNTAX [org.kframework.attributes.Location(Location(501,1,577,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-SYNTAX$SYNTAX
+  imports K-EQUAL$SYNTAX
+  imports INT$SYNTAX
+  imports FLOAT-SYNTAX$SYNTAX
+  syntax associativity left _==String__STRING [UNIQUE_ID(3b038415fd67c128bf96f26691e009ced8e072ea77add2ec3cd4d684e523b004)]
+  syntax associativity left _=/=String__STRING [UNIQUE_ID(6b2b659c7536361fdac85003f15ac3d2f695ca1f66a2b654c0ac0c52f3e9c639)]
+  syntax associativity left _+String__STRING [UNIQUE_ID(38935c19a0971c2183f1905f3a88d36509fc64a1f46e28b728c3eca738e86cc3)]
+  syntax String ::= String "+String" String
+  syntax String ::= "substrString" "(" String "," Int "," Int ")"
+  syntax String ::= "replaceFirst" "(" String "," String "," String ")"
+  syntax String ::= "replaceAll" "(" String "," String "," String ")"
+  syntax String ::= "replace" "(" String "," String "," String "," Int ")"
+  syntax String ::= "newUUID"
+  syntax String ::= "directionalityChar" "(" String ")"
+  syntax String ::= "chrChar" "(" Int ")"
+  syntax String ::= "categoryChar" "(" String ")"
+  syntax String ::= "Int2String" "(" Int ")"
+  syntax String ::= "Float2String" "(" Float "," String ")"
+  syntax String ::= "Float2String" "(" Float ")"
+  syntax String ::= "Base2String" "(" Int "," Int ")"
+  syntax Int ::= "rfindString" "(" String "," String "," Int ")"
+  syntax Int ::= "rfindChar" "(" String "," String "," Int ")"
+  syntax Int ::= "ordChar" "(" String ")"
+  syntax Int ::= "lengthString" "(" String ")"
+  syntax Int ::= "findString" "(" String "," String "," Int ")"
+  syntax Int ::= "findChar" "(" String "," String "," Int ")"
+  syntax Int ::= "countAllOccurrences" "(" String "," String ")"
+  syntax Int ::= "String2Int" "(" String ")"
+  syntax Int ::= "String2Base" "(" String "," Int ")"
+  syntax Float ::= "String2Float" "(" String ")"
+  syntax Bool ::= String ">String" String
+  syntax Bool ::= String ">=String" String
+  syntax Bool ::= String "==String" String
+  syntax Bool ::= String "=/=String" String
+  syntax Bool ::= String "<String" String
+  syntax Bool ::= String "<=String" String
+endmodule
+
+
+module STRING-BUFFER$SYNTAX [org.kframework.attributes.Location(Location(603,1,606,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-BUFFER-IN-K$SYNTAX
+endmodule
+
+
+module STRING-BUFFER-IN-K$SYNTAX [org.kframework.attributes.Location(Location(579,1,591,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) symbolic()]
+  imports STRING$SYNTAX
+  imports BASIC-K$SYNTAX
+  syntax associativity left _+String__STRING-BUFFER-IN-K [UNIQUE_ID(da48a1c93bda1ce5d18c94c24f02d36881974f6701f1154305bcfff63a97f012)]
+  syntax StringBuffer ::= StringBuffer "+String" String
+  syntax StringBuffer ::= String
+  syntax StringBuffer ::= ".StringBuffer"
+  syntax String ::= "StringBuffer2String" "(" StringBuffer ")"
+  syntax KItem ::= StringBuffer
+  syntax K
+  syntax Bool ::= "isStringBuffer" "(" K ")"
+endmodule
+
+
+module STRING-SYNTAX [org.kframework.attributes.Location(Location(488,1,499,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports STRING-SYNTAX$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+  ModuleComment( StringChar ::= ~[\"\n\r\\] // anything except for Newline, DoubleQuote and Backslash,[UNIQUE_ID(2eac8d155fa4ff9df3219e5b90b3c899ebea439872834907397cdcbc75adc67f) org.kframework.attributes.Location(Location(491,3,491,90)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( DoubleQuote StringChar* DoubleQuote,[UNIQUE_ID(86f66d89ad4dbf7d97e0305ba46606410e43e83ccd0dd7273ba3628722e91c8d) org.kframework.attributes.Location(Location(490,3,490,41)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Double Quoted Strings are of the form:,[UNIQUE_ID(00e49bd596c38a2607280e40aca88d6424069e99136676ddf610f5fc17671747) org.kframework.attributes.Location(Location(489,3,489,44)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(              | [\\][x] 2*Hex // "\xFF"       Backslash 'x' followed by two   hexadecimal characters,[UNIQUE_ID(03d01489ab5c15e13ad8fef628ae8903f1bb39b0ffd1be3bef592fe9081f3319) org.kframework.attributes.Location(Location(493,3,493,105)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(              | [\\][u] 4*Hex // "\uFFFF"     Backslash 'u' followed by four  hexadecimal characters,[UNIQUE_ID(5314c78885173d16558baa27f6f8863281ba0caff18ca23f2c56703e99e51557) org.kframework.attributes.Location(Location(494,3,494,105)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(              | [\\][nrtf\"\\] // Backslash followed by either 'nrtf', DoubleQuote or Backslash,[UNIQUE_ID(8371d8778eaecd586a73dadbe77efff5c6b46a7751465aa5b00857af56926927) org.kframework.attributes.Location(Location(492,3,492,100)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(              | [\\][U] 8*Hex // "\UFFffFFff" Backslash 'U' followed by eight hexadecimal characters,[UNIQUE_ID(50bbd9c9d3327d0c66943ad4f50c7636e09dc19cd5d33bc62921f254b019a166) org.kframework.attributes.Location(Location(495,3,495,105)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment(                              // the code must not be in the range [0xdfff, 0xd800] or exceed 0x10ffff,[UNIQUE_ID(721440155a3ec828ed803f50fe5bd5e22015c015ca435b261250b7195231cbbb) org.kframework.attributes.Location(Location(496,3,496,107)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+endmodule
+
+
+module STRING-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(488,1,499,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax String [UNIQUE_ID(40bd8b5e95d27420e5d6b19eb13d695a4b10f94f9e86f470783ed4b576ddb705) hook(STRING.String) org.kframework.attributes.Location(Location(497,3,497,37)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax String ::= r"[\\\"](([^\\\"\\n\\r\\\\])|([\\\\][nrtf\\\"\\\\])|([\\\\][x][0-9a-fA-F]{2})|([\\\\][u][0-9a-fA-F]{4})|([\\\\][U][0-9a-fA-F]{8}))*[\\\"]"
+  syntax KItem ::= String
+  syntax KItem ::= Bool
+  syntax K
+  syntax Bool ::= "isString" "(" K ")"
+endmodule
+
+
+module SUBSTITUTION [org.kframework.attributes.Location(Location(3,1,11,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/substitution.k))]
+  imports SUBSTITUTION$SYNTAX
+  imports MAP
+  ModuleComment( used for user-defined substitution only,[UNIQUE_ID(1d1d9545f04a36bbd13a62dbe5c05de949d167f57eb30e4e1bdf4f0cd3bb01ca) org.kframework.attributes.Location(Location(6,3,6,45)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/substitution.k))])
+endmodule
+
+
+module SUBSTITUTION$SYNTAX [org.kframework.attributes.Location(Location(3,1,11,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/substitution.k))]
+  imports MAP$SYNTAX
+  syntax KVariable [UNIQUE_ID(9f73f65de81e0db712c6bdfaa6600af2b622fce59478f9c98a7bb8752601c0ae) org.kframework.attributes.Location(Location(7,3,7,18)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/substitution.k))]
+  syntax KItem ::= KVariable
+  syntax K ::= K "[" Map "]"
+  syntax K ::= K "[" K "/" K "]"
+  syntax K
+  syntax Bool ::= "isKVariable" "(" K ")"
+endmodule
+
+
+module UNSIGNED-INT-SYNTAX [org.kframework.attributes.Location(Location(336,1,339,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  imports UNSIGNED-INT-SYNTAX$SYNTAX
+  syntax K
+  syntax Bool ::= "isK" "(" K ")"
+  syntax Bool ::= "isBool" "(" K ")"
+endmodule
+
+
+module UNSIGNED-INT-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(336,1,339,9)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax KItem ::= Int
+  syntax KItem ::= Bool
+  syntax K
+  syntax Int [UNIQUE_ID(89928c4f59de123d1529bb711b2010a73df2f592cb04918abe01d2a7c92a9a0a) hook(INT.Int) org.kframework.attributes.Location(Location(337,3,337,28)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))]
+  syntax Int ::= r"[0-9]+"
+  syntax Bool ::= "isInt" "(" K ")"
+endmodule
