@@ -15,20 +15,16 @@ syntax   Chan ::= "@" Proc
 
 // NAMES
   syntax Name ::= Chan                                          // Chan: Proc ----------> Name
-                | Var                                           // Var: ----------------> Name
+//              | Var                                           // Var: ----------------> Name
                 | "{" Name "}"                     [bracket]
-                | "(" Name ")"                     [bracket]
 
 // PROCESSES
-  syntax Proc ::= "Nil"                                         // Stop: ---------------> Proc
-                | Name "(" Name ")"  "{" Proc "}"  [binder(2)]  // Rec: Name*Name*Proc -> Proc
-                | Proc "|" Proc                    [left]       // Par: Proc*Proc ------> Proc
+  syntax Proc ::= "{" Proc "}"                     [bracket]
+                > "Nil"                                         // Stop: ---------------> Proc
+                | Name "(" Name ")" "{" Proc "}"   [binder(2)]  // Rec: Name*Name*Proc -> Proc
                 | Name "!" "(" Proc ")"                         // Send: Name*Proc -----> Proc
                 | "*" Name                                      // Reify: Name ---------> Proc
-                | "{" Proc "}"                     [bracket]
-                | "(" Proc ")"                     [bracket]
-
-  syntax KVariable ::= Name
+                > Proc "|" Proc                    [left]       // Par: Proc*Proc ------> Proc
 
 endmodule
 
@@ -59,6 +55,8 @@ module RHO
         </receives>
       </tuplespace>
     </T>
+
+  syntax KVariable ::= Name
 
 // PAR OPERATOR SEMANTICS
   rule <thread> <k> P1:Proc | P2:Proc => . ...</k> </thread>
