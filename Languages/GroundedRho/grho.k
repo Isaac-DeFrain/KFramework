@@ -223,7 +223,7 @@ module GRHO
 
 //--- Single Sends ---
 // Process message <=> 1-tuple
-  rule <k> X:Name ! ( P:Proc ) => . ...</k>                          //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name ! ( P:Proc ) => . ...</k>                          //dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
                   <schan>      X      </schan>                       //sending channel X
                   <msg>        P        </msg>                       //sending message P
@@ -232,7 +232,7 @@ module GRHO
                 </send>)                                             //
 
 // N-tuple messages, N > 1
-  rule <k> X:Name ! ( P:Procs ) => . ...</k>                         //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name ! ( P:Procs ) => . ...</k>                         //dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
                   <schan>      X      </schan>                       //sending channel X
                   <msg>        P        </msg>                       //sending messages P, two or more
@@ -242,7 +242,7 @@ module GRHO
 
 //--- Persistent Sends ---
 // Process message <=> 1-tuple
-  rule <k> X:Name !! ( P:Proc ) => . ...</k>                         //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name !! ( P:Proc ) => . ...</k>                         //dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
                   <schan>      X     </schan>                        //sending channel X
                   <msg>        P       </msg>                        //sending message P
@@ -251,7 +251,7 @@ module GRHO
                 </send>)                                             //
 
 // N-tuple messages, N > 1
-  rule <k> X:Name !! ( P:Procs ) => . ...</k>                        //dissolve send in <threadpool/> and spawn <send/>
+  rule <k> X:Name !! ( P:Procs ) => . ...</k>                        //dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
                   <schan>      X     </schan>                        //sending channel X
                   <msg>        P       </msg>                        //sending messages P, two or more
