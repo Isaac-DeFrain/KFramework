@@ -9,9 +9,9 @@ module STYPE-SYNTAX
   import DOMAINS
   import SUBSTITUTION
 
-//************************************
-//*** Grounded Rho-Calculus Syntax ***
-//************************************
+//**********************************************************
+//*** Grounded Rho-Calculus Syntax with Process Patterns ***
+//**********************************************************
 
 //-------------
 //--- NAMES ---
@@ -151,7 +151,11 @@ module STYPE-SYNTAX
 //******************************
 //*** STRUCTURAL TYPE SYNTAX ***
 //******************************
-  syntax             Type ::= InitialType                                            //      InitialType < Type
+  syntax             Type ::= "#type(" Proc    ")"
+                            | "#type(" ProcPat ")"
+                            | "#type(" Name    ")"
+                            | "#type(" NamePat ")"
+                            | InitialType                                            //      InitialType < Type
                             | IntermediateType                                       // IntermediateType < Type
                             | TerminalType                                           //     TerminalType < Type
                             | String                                                 //           String < Type (for String input/output)
@@ -206,7 +210,10 @@ module STYPE
 //---------------------
 //--- Type function ---
 //---------------------
-//rule #type( T:Type ) => T    [strict]
+  rule #type( P:Proc    ) => type[P]
+  rule #type( P:ProcPat ) => type[P]
+  rule #type( N:Name    ) => type[N]
+  rule #type( N:NamePat ) => type[N]
 
 //*** Leaves ***
 // Ground

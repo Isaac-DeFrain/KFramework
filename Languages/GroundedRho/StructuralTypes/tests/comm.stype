@@ -1,3 +1,8 @@
 // Type - complex
 
- type[ x!(Nil) | for( y <- @Nil ){ Nil } ]
+  type[ x!(Nil) | for( y <- @Nil ){ Nil } ]
+
+/*
+  Output:
+  type[ "par" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "receive" ;; type[ "bind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
+*/
