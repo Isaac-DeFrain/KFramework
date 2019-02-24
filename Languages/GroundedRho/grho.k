@@ -201,6 +201,10 @@ module GRHO
         <where> .K </where>                                          // binding variable(s)
       </reaction>                                                    // all comms are processed here
     </T>                                                             //
+/*
+  Add quarantine cell containing mainreact cell and reaction* cells for testing joins in comms
+  SendCellBag <=> send "environment"
+*/
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
