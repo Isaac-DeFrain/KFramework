@@ -1,0 +1,81 @@
+// New
+
+  new x , y , z in { x!(3 + 5) | y!("a") | z!(*x,8) | for( a <- x ){*a} | for( y,z <! z){*y} } | for( a <- x ){(*a,"not in new")}
+
+/*
+  Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        8
+      </k>
+    </thread> <thread>
+      <k>
+        * unforgeable( 4 )
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          unforgeable( 5 )
+        </schan>
+        <msg>
+          "a"
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <sper>
+          0
+        </sper>
+      </send> <send>
+        <schan>
+          unforgeable( 6 )
+        </schan>
+        <msg>
+          * unforgeable( 4 ) , 8
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <sper>
+          0
+        </sper>
+      </send>
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          x
+        </rchan>
+        <bvars>
+          a
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rper>
+          0
+        </rper>
+        <cont>
+          ( * a , "not in new" )
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+</T>
+*/

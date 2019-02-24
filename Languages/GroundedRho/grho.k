@@ -14,26 +14,26 @@ module GRHO-SYNTAX
 //-------------
 //--- NAMES ---
 //-------------
-  syntax       Var ::= Id                                            //    Id < Var
+  syntax       Var ::= Id                                            //  Id < Var
 
-  syntax   NameVar ::= Var                                           //   Var < NameVar
+  syntax   NameVar ::= Var                                           // Var < NameVar
 
-  syntax      Name ::= Quote                                         // Quote < Name
-                     | "{" Name "}"                        [bracket] //    {_}: Name -----> Name
-                     | NameVar
-
-  syntax     Quote ::= "@" Proc                                      //      @: Proc ----> Quote
+  syntax      Name ::= "{" Name "}"                        [bracket] // {_}: Name -------------> Name
+                     | "@" Proc                                      //   @: Proc -------------> Name
+                     | NameVar                                       //                NameVar < Name
+                     | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
   syntax     Names ::= "{" Names "}"
-                     | Name  "," Name                                // _,_: Name  x Name ----> Names
-                     | Name  "," Names                               // _,_: Name  x Names ---> Names
+                     | Name  "," Name                                // _,_: Name x Name ------> Names
+                     | Name  "," Names                               // _,_: Name x Names -----> Names
                      | "@" Procs                                     // for tuple comms
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
   syntax      Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --------> Proc
-                     | "Nil"                                         // Nil: -------------> Proc
+	                   > New                                           // 
+                     > "Nil"                                         // Nil: -------------> Proc
                      | Collection                                    // Collection of processes
                      | Ground                                        // Bool, Int, String < Proc
                      | AExp                                          // Arithmetic expressions: AExp < Proc
@@ -48,8 +48,8 @@ module GRHO-SYNTAX
   syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
 
 // Receives - no mixed linear/peek/repeated
-  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"  [binder(2)] // _(_){_}: Bind  x Proc ---> Receive, single pattern
-                     | "for" "(" Binds ")" "{" Proc "}"  [binder(2)] // _(_){_}: Binds x Proc ---> Receive, several patterns
+  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"              // _(_){_}: Bind  x Proc ---> Receive, single pattern
+                     | "for" "(" Binds ")" "{" Proc "}"              // _(_){_}: Binds x Proc ---> Receive, several patterns
 
   syntax      Bind ::= Lbind                                         // single linear bind --- for( y <- x ){ P }
                      | Pbind                                         // single peek bind ----- for( y <! x ){ P }
@@ -88,6 +88,10 @@ module GRHO-SYNTAX
   syntax     Procs ::= Proc  "," Proc                       [strict] // _,_: Proc x Proc ----> Procs
                      | Proc  "," Procs                      [strict] // _,_: Proc x Procs ---> Procs
 
+// New
+  syntax       New ::= "new" Name  "in" "{" Proc "}"        [binder] //
+                     | "new" Names "in" "{" Proc "}"        [binder] //
+
 // Collections
   syntax
         Collection ::= RhoList
@@ -115,7 +119,12 @@ module GRHO-SYNTAX
                      | "(" Procs ")"                                 // N-tuple, N > 1
 
 // Ground terms
-  syntax    Ground ::= Int | Bool | String                           //Int, Bool, String < Ground
+  syntax    Ground ::= Bool                                          //   Bool < Ground
+                     | Int                                           //    Int < Ground
+                     | String                                        // String < Ground
+                     | Uri                                           //    Uri < Ground
+
+  syntax       Uri ::= "uri(" String      ")"                        // 
 
 // AExp & BExp resolve to ground terms
 // Arithmetic
@@ -142,10 +151,6 @@ module GRHO-SYNTAX
                      | "bundle-" "{" Proc "}"
                      | "bundle0" "{" Proc "}"
                      | "bundle"  "{" Proc "}"
-
-// Structural & Name Equivalences - not finished yet
-  syntax      Bool ::= Proc "equiv"  Proc
-                     | Name "equivN" Name
 
   syntax KVariable ::= Name | Names
 
@@ -213,7 +218,14 @@ module GRHO
 // String
   rule S1:String + S2:String => S1 +String S2             [anywhere] //
 
-// PAR OPERATOR SEMANTICS
+// New Operator Semantics
+  rule new N:Name in { P:Proc } => P[unforgeable(!I:Int) / N]        //
+
+  rule new M:Name , N:Name  in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  // 
+
+  rule new M:Name , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  //
+
+// Par Operator Semantics
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           //
        (.Bag => <thread> <k> P </k> </thread>)                       //
        (.Bag => <thread> <k> Q </k> </thread>)                       //
