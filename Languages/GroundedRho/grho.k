@@ -19,14 +19,14 @@ module GRHO-SYNTAX
   syntax   NameVar ::= Var                                           // Var < NameVar
 
   syntax      Name ::= "{" Name "}"                        [bracket] // {_}: Name -------------> Name
-                     | "@" Proc                                      //   @: Proc -------------> Name
+                     > "@" Proc                                      //   @: Proc -------------> Name
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
   syntax     Names ::= "{" Names "}"
-                     | Name  "," Name                                // _,_: Name x Name ------> Names
+                     > Name  "," Name                                // _,_: Name x Name ------> Names
                      | Name  "," Names                               // _,_: Name x Names -----> Names
-                     | "@" Procs                                     // for tuple comms
+                     | "@" Procs                                     //
 
 //-----------------
 //--- PROCESSES ---
