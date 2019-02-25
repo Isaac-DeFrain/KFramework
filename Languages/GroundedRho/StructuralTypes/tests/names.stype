@@ -1,0 +1,6 @@
+// Type - send pattern
+
+ type[ @ 0 , @ 1 , @ true , @ "a" ]
+
+// Output:
+   type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "string" ;; "a" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ] ]
