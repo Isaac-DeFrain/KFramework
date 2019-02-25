@@ -1,0 +1,8 @@
+// Type - tuple
+
+ type[ for( WildN <- x ){1} ]
+
+/*
+  Output:
+  
+*/

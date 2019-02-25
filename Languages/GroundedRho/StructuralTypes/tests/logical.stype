@@ -1,0 +1,8 @@
+// Type - logical pattern
+
+  type[ ~ {*WildN | WildP /\ {WildN!(WildP) \/ WildP} } ]
+
+/*
+  Output:
+  type[ "not" ;; type[ "and" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "wildcard" ;; "namepat" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "wildcard" ;; "procpat" ] ] ;; type[ "or" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "namepat" ] ;; type[ "leaf" ;; "wildcard" ;; "procpat" ] ] ;; type[ "leaf" ;; "wildcard" ;; "procpat" ] ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+*/

@@ -1,0 +1,8 @@
+// Type - map
+
+ type[ { x!(*y) : for( y <- z ){ y!(Nil)} , *x : *y , @Nil!(*a) : *z } ]
+
+/*
+  Output:
+  type[ "map" ;; type[ "kvpair" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "namevar" ;; z ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ] ] ;; type[ "kvpairs" ;; type[ "kvpair" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "kvpair" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; a ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; z ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ] ]
+*/
