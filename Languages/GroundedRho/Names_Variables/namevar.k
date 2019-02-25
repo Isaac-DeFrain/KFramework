@@ -1,18 +1,16 @@
 // RHO CALCULUS with additional Ground terms
 
 require "domains.k"
-require "kast.k"
 require "../StructuralTypes/stype.k"
 
 module NAMEVAR-SYNTAX
-import DOMAINS
-import KAST
-import KSEQ-SYMBOLIC
-import SET
-import STYPE-SYNTAX
+  import DOMAINS
+  import SET
+  import STYPE-SYNTAX
 
 // Sets
-syntax       Set ::= "FN(" OrPat ")"                    [function]  // free names
+syntax       Set ::=   "(" Set   ")"                     [bracket]
+                   > "FN(" OrPat ")"                    [function]  // free names
                    | "FV(" OrPat ")"                    [function]  // free variables
                    | "BN(" OrPat ")"                    [function]  // bound names
                    | "BV(" OrPat ")"                    [function]  // bound variables
@@ -25,20 +23,14 @@ syntax       Set ::= "FN(" OrPat ")"                    [function]  // free name
                    |  "N(" OrPat ")"                    [function]  // names
                    |  "V(" OrPat ")"                    [function]  // variables
                    | "NV(" OrPat ")"                    [function]  // name variables
-                   | "PV(" OrPat ")"                    [function]  // process variables
-                   |   "(" Set   ")"                     [bracket]
-
 // For sets...
 syntax     KItem ::= OrPat
-                   | ProcVar "," "procvar"
-                   | NameVar "," "namevar"
 
 endmodule
 
 
 module NAMEVAR
-import NAMEVAR-SYNTAX
-import SUBSTITUTION
+  import NAMEVAR-SYNTAX
 
   configuration
     <T>
@@ -56,9 +48,9 @@ rule N( _:String    ) => .Set
 rule N( N:Name      ) => SetItem(N)
 rule N( N:NamePat   ) => SetItem(N)
 
-rule N( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) N(P)  [strict(2)]
-rule N( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) N(P)  [strict(2)]
-rule N( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) N(P)  [strict(2)]
+rule N( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) SetItem(Y) N(P)
+rule N( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) SetItem(Y) N(P)
+rule N( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) SetItem(Y) N(P)
 
 rule N( X:Name    ! ( P:Proc    ) ) => SetItem(X) N(P)  [strict(1)]
 rule N( X:NamePat ! ( P:Proc    ) ) => SetItem(X) N(P)  [strict(1)]
@@ -72,14 +64,7 @@ rule N( P:ProcPat | Q:ProcPat ) => N(P) N(Q)  [strict]
 
 rule N( * X:Name    ) => SetItem(X)
 rule N( * X:NamePat ) => SetItem(X)
-/*
-rule N( A1:AExp  + A2:AExp ) => N(A1) N(A2)  [strict]
-rule N( A1:AExp  - A2:AExp ) => N(A1) N(A2)  [strict]
-rule N( A1:AExp  * A2:AExp ) => N(A1) N(A2)  [strict]
 
-rule N( not B:BExp )         => N(B)         [strict]
-rule N( B1:BExp && B2:BExp ) => N(B1) N(B2)  [strict]
-*/
 // Free Name set
 rule FN( { P:OrPat } ) => FN(P)  [strict]
 rule FN(   Nil    ) => .Set  [anywhere]
@@ -116,8 +101,7 @@ rule BN( P:ProcPat   ) => N(P) -Set FN(P)         [strict]
 rule V( { P:OrPat } ) => V(P)                     [strict]
 rule V(   _:Proc    ) => .Set
 rule V(   _:Name    ) => .Set
-rule V(   X:NameVar ) => SetItem(X , namevar)
-rule V(   P:ProcVar ) => SetItem(P , procvar)
+rule V(   X:NameVar ) => SetItem(X)
 rule V( @ P:ProcPat ) => V(P)                     [strict]
 
 rule V( for( _:NamePat <- X:NamePat ) { _:Proc    } ) => V(X)                     [strict]
@@ -135,6 +119,7 @@ rule V( P:ProcPat | Q:ProcPat ) => V(P) V(Q)      [strict]
 rule V( * X:NamePat ) => V(X)  [strict]
 
 // Name variables
+/*
 rule NV( { P:OrPat } ) => NV(P)      [strict]
 rule NV(   _:Proc    ) => .Set
 rule NV(   _:Name    ) => .Set
@@ -155,9 +140,7 @@ rule NV( _:Proc    | Q:ProcPat ) => NV(Q)            [strict]
 rule NV( P:ProcPat | Q:ProcPat ) => NV(P) NV(Q)      [strict]
 
 rule NV( * X:NamePat ) => NV(X)  [strict]
-
-// Process variables
-
+*/
 // Bound Variable set
 rule BV( { P:OrPat } ) => BV(P)  [strict]
 rule BV( _:Proc      ) => .Set

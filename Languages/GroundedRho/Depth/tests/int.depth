@@ -1,6 +1,6 @@
 // Depth - int
 
-  type[ "leaf" ;; "int" ;; 12 ]
+  #depth( type[ "leaf" ;; "int" ;; 12 ] )
 
 /*
 Output: 1
