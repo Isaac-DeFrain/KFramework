@@ -7,9 +7,10 @@ module IS-IN-SYNTAX
   import DOMAINS
   import STYPE-SYNTAX
 
-// The function isIn is the inclusion predicate
+// The type inclusion predicate
   syntax    Bool ::= Type "#isIn" Type          [function]
 
+// Process, Pattern, Name classes
   syntax    Type ::= "Process"
                    | "Pattern"
                    | "Name"
@@ -26,7 +27,8 @@ module IS-IN
 // Reflexivity
   rule T:Type #isIn T => true
 
-  rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true requires S =/=String "leaf" andBool A =/=K "namevar" andBool B =/=K #truncate
+  rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true 
+       requires S =/=String "leaf" andBool S =/=String "quote" andBool A =/=K "namevar" andBool B =/=K #truncate
 
 // Transitivity
 //rule #if A:Type #isIn B:Type andBool B #isIn C:Type #then (A #isIn C => true) #else (A #isIn C => false) #fi
@@ -45,24 +47,31 @@ module IS-IN
   rule type[#truncate] #isIn type[ "quote"      ;; _:TerminalType ;; _:TerminalType ] => true
   rule type[#truncate] #isIn type[ "simpletype" ;; _:TerminalType ;; _:TerminalType ] => true
 
-// NameVar matches any quoted ProcOrPat
-  rule type[ "quote" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "namevar" ;; _:NameVar] => true
+//--- WildCards ---
+// WildN matches any quoted ProcOrPat
+  rule type[ "quote" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "namepat"] => true
+
+// WildN matches any NameVar
+  rule type[ "leaf" ;; "namevar" ;; _:NameVar ] #isIn type[ "leaf" ;; "wildcard" ;; "namepat" ] => true
+
+// WildN matches any unforgeable name
+  rule type[ "unforgeable" ;; _:String  ;; _:Leaf    ] #isIn type[ "leaf" ;; "wildcard" ;; "namepat" ] => true
+
+// WildP matches leaves except NameVar & #truncate
+  rule type[ "leaf" ;; S:String         ;; _:Leaf    ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
+       requires S =/=String "namevar" andBool S =/=String "truncate"
+
+// WildP matches any Send, Receive, Eval, and Par
+  rule type[ "send"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
+  rule type[ "receive" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
+  rule type[ "eval"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
+  rule type[ "par"     ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
+
+  rule type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "procpat" ] => true
 
 // NameVar matches any NameVar
-  rule type[ "leaf" ;; "namevar"        ;; _:NameVar ] #isIn type[ "leaf" ;; "namevar"  ;; _:NameVar ] => true
+  rule type[ "leaf" ;; "namevar" ;; _:NameVar ] #isIn type[ "leaf" ;; "namevar"  ;; _:NameVar ] => true
 
-// Wildcard
-/*rule type[ "leaf" ;; S:String         ;; _:Leaf    ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true requires S =/=String "namevar" andBool S =/=String "truncate"
-
-  rule type[ "unforgeable" ;; _:String  ;; _:Leaf    ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-
-  rule type[ "simpletype"  ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-
-  rule type[ "send"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-  rule type[ "receive" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-  rule type[ "eval"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-  rule type[ "par"     ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "pattern" ] => true
-*/
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //------------------------------
