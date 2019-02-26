@@ -24,15 +24,8 @@ module STYPE-SYNTAX
 //-------------
 
 // Names
-  syntax             Name ::= Chan                                                   //        Chan < Name
-                            | NameVar                                                //     NameVar < Name
+  syntax             Name ::= "@" Proc                                     [strict]  // @: Proc -----> Name
                             | Unforgeable                                            // Unforgeable < Name
-
-// Channel
-  syntax             Chan ::= "@" Proc                                     [strict]  // @: Proc -----> Name
-
-// Name Variables
-  syntax          NameVar ::= Id                                                     // Id < NameVar
 
 // Unforgeable name
   syntax      Unforgeable ::= "unforgeable(" Int ")"                                 // unforgeable(_): Int ---> Name
@@ -61,7 +54,8 @@ module STYPE-SYNTAX
 //--- PROCESSES ---
 //-----------------
 
-// "ProcVar = * NameVar"
+// Process Variable
+  syntax          ProcVar ::= Id                                                     // Id < ProcVar
 
 // Processes
   syntax             Proc ::= "{" Proc "}"                                [bracket]  // {_}: Proc -> Proc
@@ -69,8 +63,9 @@ module STYPE-SYNTAX
                             > "Nil"                                                  //        Nil < Proc
                             | Ground                                                 //     Ground < Proc
                             | Collection                                             // Collection < Proc
+                            | ProcVar                                                //    ProcVar < Proc
                             | Match                                                  //      Match < Proc
-                            | Proc "." Method "(" MethodArgs ")"
+                            | Proc "." Method "(" MethodArgs ")"                     // _._(_): Proc x Method x MethodArgs ---> Proc
                             | Receive                                                //    Receive < Proc
                             | Send                                                   //       Send < Proc
                             | Eval                                                   //       Eval < Proc
@@ -167,8 +162,8 @@ module STYPE-SYNTAX
   syntax              New ::= "new" NameDeclaration  "in" "{" Proc "}"     [binder]  // 1 name declaration
                             | "new" NameDeclarations "in" "{" Proc "}"     [binder]  // N > 1 name declarations
 
-  syntax  NameDeclaration ::= NameVar
-                            | NameVar "(" Uri ")"
+  syntax  NameDeclaration ::= "@" ProcVar
+                            | "@" ProcVar "(" Uri ")"
 
   syntax NameDeclarations ::= NameDeclaration "," NameDeclaration
                             | NameDeclaration "," NameDeclarations
@@ -247,12 +242,13 @@ module STYPE-SYNTAX
 
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat --------------> ProcPat
-                            > "WildProc"                                             //   WildProc < ProcPat
-                            | SimpleType                                             //  SimplType < ProcPat
-                            | ReceivePat                                             // ReceivePat < ProcPat
-                            | SendPat                                                //    SendPat < ProcPat
-                            | EvalPat                                                //    EvalPat < ProcPat
-                            > ParPat                                                 //     ParPat < ProcPat
+                            > "WildProc"                                             //      WildProc < ProcPat
+                            | SimpleType                                             //     SimplType < ProcPat
+                            | CollectionPat                                          // CollectionPat < ProcPat
+                            | ReceivePat                                             //    ReceivePat < ProcPat
+                            | SendPat                                                //       SendPat < ProcPat
+                            | EvalPat                                                //       EvalPat < ProcPat
+                            > ParPat                                                 //        ParPat < ProcPat
                             // Logical connectives
                             > "~" ProcPat                                            //   ~_: ProcPat -------------> ProcPat
                             > Proc    "/\\" ProcPat                                  // _/\_: Proc x ProcPat ------> ProcPat
@@ -262,9 +258,18 @@ module STYPE-SYNTAX
                             | ProcPat "\\/" Proc                                     // _\/_: ProcPat x Proc ------> ProcPat
                             | ProcPat "\\/" ProcPat                                  // _\/_: ProcPat x ProcPat ---> ProcPat
 
+// Collection Pattern
+  syntax    CollectionPat ::= RhoListPat
+                            | RhoSetPat
+
+// List Pattern
+  syntax       RhoListPat ::= "[" ProcPat "," "..." ProcVar "]"
+
+// Set Pattern
+  syntax        RhoSetPat ::= "Set" "(" ProcPat "," "..." ProcVar ")"
+
 // Several Process Patterns
-  syntax         ProcPats ::= "{" ProcPats "}"                            [bracket]  // {_}: ProcPats -------------> ProcPats
-                            > ProcPat "," ProcPat                                    // _,_: ProcPat  x ProcPat ---> ProcPats
+  syntax         ProcPats ::= ProcPat "," ProcPat                                    // _,_: ProcPat  x ProcPat ---> ProcPats
                             | ProcPat "," ProcPats                                   // _,_: ProcPats x ProcPat ---> ProcPats
 
 // Proc or ProcPat
@@ -272,8 +277,7 @@ module STYPE-SYNTAX
                             > Proc                                                   //    Proc < ProcOrPat
                             | ProcPat                                                // ProcPat < ProcOrPat
 
-  syntax       ProcOrPats ::= "{" ProcOrPats "}"                                     // {_}: ProcOrPats ---> ProcOrPats
-                            > Procs                                                  //              Procs < ProcOrPats
+  syntax       ProcOrPats ::= Procs                                                  //              Procs < ProcOrPats
                             | ProcPats                                               //           ProcPats < ProcOrPats
 
 // Name, NamePat, Proc, or ProcPat
@@ -282,8 +286,7 @@ module STYPE-SYNTAX
                             | NameOrPat                                              //     NameOrPat < OrPat
 
 // Names, NamePats, Procs, or ProcPats
-  syntax           OrPats ::= "{" OrPats "}"                                         // {_}: OrPats ---> OrPats
-                            > ProcOrPats                                             //     ProcOrPats < OrPat
+  syntax           OrPats ::= ProcOrPats                                             //     ProcOrPats < OrPat
                             | NameOrPats                                             //     NameOrPats < OrPat
 
 //******************************
@@ -339,7 +342,7 @@ module STYPE-SYNTAX
 
 // Leaves
   syntax             Leaf ::= Ground                                                 //    Ground < Leaf
-                            | NameVar                                                //   NameVar < Leaf
+                            | ProcVar                                                //   ProcVar < Leaf
                             | "#truncate"                                            // #truncate < Leaf
 
 endmodule
@@ -370,7 +373,7 @@ module STYPE
   rule type[ S:String                    ] => type[ "leaf"    ;; "string"   ;; S      ]  // String ===============> Leaf
 
 // NameVar
-  rule type[ N:NameVar                   ] => type[ "leaf"    ;; "namevar"  ;; N      ] // NameVar ===============> Leaf
+  rule type[ X:ProcVar                   ] => type[ "leaf"    ;; "procvar"  ;; X      ] // ProcVar ===============> Leaf
 
 // Nil
   rule type[ Nil                         ] => type[ "leaf"    ;; "nil"      ;; "Nil"  ] // Nil ===================> Leaf
@@ -473,6 +476,8 @@ module STYPE
   rule type[ tuple1( P:Proc           ) ] => type[ "tuple"    ;; type[P]     ;; type[#truncate] ]  // single process set
   rule type[ tuplen( P:Proc , Q:Proc  ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // 2 process set
   rule type[ tuplen( P:Proc , Q:Procs ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // N process set, N > 2
+
+// Collection Pattern
 
 // Unforgeable Integers
   rule type[ unforgeable( I:Int ) ] => type[ "unforgeable" ;; type[I]        ;; type[#truncate] ]  // unforgeable integer
