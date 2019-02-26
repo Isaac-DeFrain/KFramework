@@ -18,8 +18,7 @@ module GRHO-SYNTAX
 
   syntax   NameVar ::= Var                                           // Var < NameVar
 
-  syntax      Name ::= "{" Name "}"                        [bracket] // {_}: Name -------------> Name
-                     > "@" Proc                                      //   @: Proc -------------> Name
+  syntax      Name ::= "@" Proc                                      //   @: Proc -------------> Name
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
