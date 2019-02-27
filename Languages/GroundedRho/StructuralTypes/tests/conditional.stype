@@ -1,0 +1,8 @@
+// Type - conditional
+
+ type[ if true then Nil ]
+
+/*
+  Output:
+  
+*/
