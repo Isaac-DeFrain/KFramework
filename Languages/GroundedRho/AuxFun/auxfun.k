@@ -9,9 +9,9 @@ module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
   syntax   Int ::= "#length" RhoTuple        [function]  // #length: RhoTuple ----> Int
-                 | "#length" Name            [function]  // #length: Name --------> Int
-                 | "#length" Names           [function]  // #length: Names -------> Int
-                 | "#length"  "(" Bind  ")"  [function]  // #length (_): Bind ----> Int
+                 | "#length" "(" Name  ")"   [function]  // #length: Name --------> Int
+                 | "#length" "(" Names ")"   [function]  // #length: Names -------> Int
+                 | "#length" "(" Bind  ")"   [function]  // #length (_): Bind ----> Int
 
   syntax Procs ::= "#lengths" "(" Binds ")"  [function]  // #length (_): Binds ---> Procs
 
@@ -33,20 +33,22 @@ module AUXFUN
 //--- #length ---
 //---------------
 // RhoTuple
-  rule #length ( _:Proc ) => 1
+  rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
-  rule #length ( _:Proc , P:Procs ) => 1 +Int #length ( P )         [strict]
+  rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)           [strict]
 
 // Name(s)
-  rule #length _:Name => 1
-  rule #length _:Name , _:Name  => 2
-  rule #length _:Name , N:Names => 1 +Int #length N                 [strict]
+  rule #length ( _:Name           ) => 1
+  rule #length ( _:Name , _:Name  ) => 2
+  rule #length ( _:Name , N:Names ) => 1 +Int #length (N)           [strict]
 
 // Bind
   rule #length ( _:Name  <- _:Name ) => 1
-  rule #length ( N:Names <- _:Name ) => #length N                   [strict]
+  rule #length ( N:Names <- _:Name ) => #length (N)                 [strict]
   rule #length ( _:Name  <= _:Name ) => 1
-  rule #length ( N:Names <= _:Name ) => #length N                   [strict]
+  rule #length ( N:Names <= _:Name ) => #length (N)                 [strict]
+  rule #length ( _:Name  <! _:Name ) => 1
+  rule #length ( N:Names <! _:Name ) => #length (N)                 [strict]
 
 //----------------
 //--- #lengths ---
