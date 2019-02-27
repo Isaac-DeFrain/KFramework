@@ -22,10 +22,8 @@ module GRHO-SYNTAX
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
-  syntax     Names ::= "{" Names "}"
-                     > Name  "," Name                                // _,_: Name x Name ------> Names
+  syntax     Names ::= Name  "," Name                                // _,_: Name x Name ------> Names
                      | Name  "," Names                               // _,_: Name x Names -----> Names
-                     | "@" Procs                                     //
 
 //-----------------
 //--- PROCESSES ---
@@ -35,8 +33,8 @@ module GRHO-SYNTAX
                      > "Nil"                                         // Nil: -------------> Proc
                      | Collection                                    // Collection of processes
                      | Ground                                        // Bool, Int, String < Proc
-                     | AExp                                          // Arithmetic expressions: AExp < Proc
-                     | BExp                                          //    Boolean expressions: BExp < Proc
+                     > AExp                                          //    AExp < Proc
+                     > BExp                                          //    BExp < Proc
                      | Eval                                          //    Eval < Proc
                      | Receive                                       // Receive < Proc
                      | Send                                          //    Send < Proc
@@ -88,34 +86,34 @@ module GRHO-SYNTAX
                      | Proc  "," Procs                      [strict] // _,_: Proc x Procs ---> Procs
 
 // New
-  syntax       New ::= "new" Name  "in" "{" Proc "}"        [binder] //
-                     | "new" Names "in" "{" Proc "}"        [binder] //
+  syntax       New ::= "new" Name  "in" "{" Proc "}"        [binder] // create unforgeable name
+                     | "new" Names "in" "{" Proc "}"        [binder] // create unforgeable names
 
 // Collections
   syntax
-        Collection ::= RhoList
-                     | RhoMap
-                     | RhoSet
-                     | RhoTuple
+        Collection ::= RhoList                                       //  RhoList < Collection
+                     | RhoMap                                        //   RhoMap < Collection
+                     | RhoSet                                        //   RhoMap < Collection
+                     | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax   RhoList ::= "[" Proc  "]"                                 // singleton list
-                     | "[" Procs "]"                                 // length > 1
+  syntax   RhoList ::= "[" Proc  "]"                                 // [_]: Proc ----> RhoList, singleton list
+                     | "[" Procs "]"                                 // [_]: Procs ---> RhoList, length > 1
 
 // Process maps
-  syntax    RhoMap ::= "{" RhoKVPairs "}"                            //
+  syntax    RhoMap ::= "{" RhoKVPairs "}"                            // {_}: RhoKVPairs ---> RhoMap
 
   syntax
-        RhoKVPairs ::= Proc ":" Proc                                 // single key-value
-                     | Proc ":" Proc "," RhoKVPairs                  // size > 1
+        RhoKVPairs ::= Proc ":" Proc                                 //   _:_: Proc x Proc ----------------> RhoKVPairs, single key-value pair
+                     | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
 
 // Process sets
-  syntax    RhoSet ::= "Set" "(" Proc  ")"                           // singleton
-                     | "Set" "(" Procs ")"                           // size > 1
+  syntax    RhoSet ::= "Set" "(" Proc  ")"                           // Set(_): Proc ----> RhoSet, singleton set
+                     | "Set" "(" Procs ")"                           // Set(_): Procs ---> RhoSet, set size > 1
 
 // Process tuples
-  syntax  RhoTuple ::= "(" Proc  ")"                                 // 1-tuple
-                     | "(" Procs ")"                                 // N-tuple, N > 1
+  syntax  RhoTuple ::= "(" Proc  ")"                [klabel(tuple1)] // (_): Proc ----> RhoTuple, 1-tuple
+                     | "(" Procs ")"                [klabel(tuplen)] // (_): Procs ---> RhoTuple, N-tuple, N > 1
 
 // Ground terms
   syntax    Ground ::= Bool                                          //   Bool < Ground
@@ -123,12 +121,12 @@ module GRHO-SYNTAX
                      | String                                        // String < Ground
                      | Uri                                           //    Uri < Ground
 
-  syntax       Uri ::= "uri(" String      ")"                        // 
+  syntax       Uri ::= "uri(" String ")"                             // uri(_): String -----> Uri
 
 // AExp & BExp resolve to ground terms
 // Arithmetic
   syntax      AExp ::= "{" AExp "}"                                  //     (_): AExp ------> AExp
-                     | Int                                           //    Int < AExp
+                     > Int                                           //    Int < AExp
                      | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
                      | String                                        // String < AExp (S1 + S2 => S1 +String S2)
                      > AExp "*" AExp                        [strict] // _*_: AExp x AExp ---> AExp
@@ -136,8 +134,8 @@ module GRHO-SYNTAX
                      | AExp "-" AExp                        [strict] // _-_: AExp x AExp ---> AExp
 
 // Boolean
-  syntax      BExp ::= Bool                                          //   Bool < BExp
-                     | "{" BExp "}"                                  //  (_): BExp ----------> BExp
+  syntax      BExp ::= "{" BExp "}"                                  //  (_): BExp ----------> BExp
+                     > Bool                                          //   Bool < BExp
                      | Eval                                          //   Eval < BExp
                      | String                                        // String < BExp
                      | AExp  "<=" AExp                   [seqstrict] // _<=_: AExp x AExp ---> BExp
@@ -146,10 +144,10 @@ module GRHO-SYNTAX
                      > BExp  "or" BExp                      [strict] //   or: BExp ----------> BExp
 
 // Bundles
-  syntax    Bundle ::= "bundle+" "{" Proc "}"
-                     | "bundle-" "{" Proc "}"
-                     | "bundle0" "{" Proc "}"
-                     | "bundle"  "{" Proc "}"
+  syntax    Bundle ::= "bundle+" "{" Proc "}"                        // write-only
+                     | "bundle-" "{" Proc "}"                        // read-only
+                     | "bundle0" "{" Proc "}"                        // neither read/write
+                     | "bundle"  "{" Proc "}"                        // both read/write
 
   syntax KVariable ::= Name | Names
 
