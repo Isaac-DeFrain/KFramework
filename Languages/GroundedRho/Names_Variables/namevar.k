@@ -8,23 +8,31 @@ module NAMEVAR-SYNTAX
   import SET
   import STYPE-SYNTAX
 
+  syntax     Arg ::= OrPat
+                   | OrPats
+                   | Bind
+                   | Binds
+                   | BindNamePat
+                   | BindNamePats
+                   | RhoKVPairs
+
 // Sets
-syntax       Set ::=   "(" Set   ")"                     [bracket]
-                   > "FN(" OrPat ")"                    [function]  // free names
-                   | "FV(" OrPat ")"                    [function]  // free variables
-                   | "BN(" OrPat ")"                    [function]  // bound names
-                   | "BV(" OrPat ")"                    [function]  // bound variables
-                   | "RN(" OrPat ")"                    [function]  // receive names
-                   | "RC(" OrPat ")"                    [function]  // receive channels
-                   | "RV(" OrPat ")"                    [function]  // receive variables
-                   | "SN(" OrPat ")"                    [function]  // send names
-                   | "SC(" OrPat ")"                    [function]  // send channels
-                   | "SV(" OrPat ")"                    [function]  // send variables
-                   |  "N(" OrPat ")"                    [function]  // names
-                   |  "V(" OrPat ")"                    [function]  // variables
-                   | "NV(" OrPat ")"                    [function]  // name variables
+  syntax     Set ::=   "(" Set ")"                     [bracket]
+                   > "FN(" Arg ")"                    [function]  // free names
+                   | "FV(" Arg ")"                    [function]  // free variables
+                   | "BN(" Arg ")"                    [function]  // bound names
+                   | "BV(" Arg ")"                    [function]  // bound variables
+                   | "RN(" Arg ")"                    [function]  // receive names
+                   | "RC(" Arg ")"                    [function]  // receive channels
+                   | "RV(" Arg ")"                    [function]  // receive variables
+                   | "SN(" Arg ")"                    [function]  // send names
+                   | "SC(" Arg ")"                    [function]  // send channels
+                   | "SV(" Arg ")"                    [function]  // send variables
+                   |  "N(" Arg ")"                    [function]  // names
+                   |  "V(" Arg ")"                    [function]  // variables
+                   | "NV(" Arg ")"                    [function]  // name variables
 // For sets...
-syntax     KItem ::= OrPat
+syntax     KItem ::= Arg
 
 endmodule
 
@@ -37,35 +45,99 @@ module NAMEVAR
       <k> $PGM:Set </k>
     </T>
 
-syntax KResult ::= Ground | Reify | Set
+syntax KResult ::= Ground | Eval | Set
 
-// NameOrPats in an OrPat
-rule N( { P:OrPat } ) => N(P)  [strict]
+//-------------
+//--- Names ---
+//-------------
+rule N( { P:OrPat } ) => N(P)
 rule N(   Nil       ) => .Set
 rule N( _:Bool      ) => .Set
 rule N( _:Int       ) => .Set
 rule N( _:String    ) => .Set
-rule N( N:Name      ) => SetItem(N)
-rule N( N:NamePat   ) => SetItem(N)
+rule N( _:Uri       ) => .Set
+rule N( WildName    ) => .Set
+rule N( P:ProcVar   ) => .Set
+rule N( WildProc    ) => .Set
 
-rule N( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) SetItem(Y) N(P)
-rule N( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) SetItem(Y) N(P)
-rule N( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) SetItem(Y) N(P)
+// Name/NamePat
+rule N( X:Name      ) => SetItem(X)
+rule N( @ P:ProcPat ) => N(P)
+rule N( A:Name , B:Name  ) => SetItem(A) SetItem(B)
+rule N( A:Name , B:Names ) => SetItem(A) N(B)
 
-rule N( X:Name    ! ( P:Proc    ) ) => SetItem(X) N(P)  [strict(1)]
-rule N( X:NamePat ! ( P:Proc    ) ) => SetItem(X) N(P)  [strict(1)]
-rule N( X:Name    ! ( P:ProcPat ) ) => SetItem(X) N(P)  [strict(1)]
-rule N( X:NamePat ! ( P:ProcPat ) ) => SetItem(X) N(P)  [strict(1)]
+// Receives
+rule N( for( B:Bind  ) { P:Proc    } ) => N(B) N(P)
+rule N( for( B:Bind  ) { P:ProcPat } ) => N(B) N(P)
+rule N( for( B:Binds ) { P:Proc    } ) => N(B) N(P)
+rule N( for( B:Binds ) { P:ProcPat } ) => N(B) N(P)
+rule N( _:BindNamePat  <- X:Name ) => SetItem(X)
+rule N( _:BindNamePats <- X:Name ) => SetItem(X)
+rule N( _:BindNamePat  <! X:Name ) => SetItem(X)
+rule N( _:BindNamePats <! X:Name ) => SetItem(X)
+rule N( _:BindNamePat  <= X:Name ) => SetItem(X)
+rule N( _:BindNamePats <= X:Name ) => SetItem(X)
+rule N( A:Lbind ; B:Lbind  ) => N(A) N(B)
+rule N( A:Lbind ; B:Lbinds ) => N(A) N(B)
+rule N( A:Pbind ; B:Pbind  ) => N(A) N(B)
+rule N( A:Pbind ; B:Pbinds ) => N(A) N(B)
+rule N( A:Rbind ; B:Rbind  ) => N(A) N(B)
+rule N( A:Rbind ; B:Rbinds ) => N(A) N(B)
 
-rule N( P:Proc    | Q:Proc    ) => N(P) N(Q)  [strict]
-rule N( P:ProcPat | Q:Proc    ) => N(P) N(Q)  [strict]
-rule N( P:Proc    | Q:ProcPat ) => N(P) N(Q)  [strict]
-rule N( P:ProcPat | Q:ProcPat ) => N(P) N(Q)  [strict]
+// Sends
+rule N( X:Name    !  ( P:Proc    ) ) => SetItem(X) N(P)
+rule N( X:NamePat !  ( P:Proc    ) ) => N(X) N(P)
+rule N( X:Name    !  ( P:ProcPat ) ) => SetItem(X) N(P)
+rule N( X:NamePat !  ( P:ProcPat ) ) => N(X) N(P)
+rule N( X:Name    !! ( P:Proc    ) ) => SetItem(X) N(P)
+rule N( X:NamePat !! ( P:Proc    ) ) => N(X) N(P)
+rule N( X:Name    !! ( P:ProcPat ) ) => SetItem(X) N(P)
+rule N( X:NamePat !! ( P:ProcPat ) ) => N(X) N(P)
 
+// Par
+rule N( P:Proc    | Q:Proc    ) => N(P) N(Q)
+rule N( P:ProcPat | Q:Proc    ) => N(P) N(Q)
+rule N( P:Proc    | Q:ProcPat ) => N(P) N(Q)
+rule N( P:ProcPat | Q:ProcPat ) => N(P) N(Q)
+
+// Eval
 rule N( * X:Name    ) => SetItem(X)
-rule N( * X:NamePat ) => SetItem(X)
+rule N( * X:NamePat ) => N(X)
 
-// Free Name set
+// Procs
+rule N( P:Proc , Q:Proc  ) => N(P) N(Q)
+rule N( P:Proc , Q:Procs ) => N(P) N(Q)
+
+// RhoTuple
+rule N( tuple1( P:Proc  ) ) => N(P)
+rule N( tuplen( P:Procs ) ) => N(P)
+
+// RhoList
+rule N( [ P:Proc  ] ) => N(P)
+rule N( [ P:Procs ] ) => N(P)
+
+// RhoSet
+rule N( Set( P:Proc  ) ) => N(P)
+rule N( Set( P:Procs ) ) => N(P)
+
+// RhoMap - keep all names present?
+rule N( { R:RhoKVPairs } ) => N(R)
+rule N( P:Proc : Q:Proc  ) => N(P) N(Q)
+rule N( P:Proc : Q:Proc , R:RhoKVPairs ) => N(P) N(Q) N(R)
+
+// Bundles - only keep names from write bundles?
+rule N( bundle+{ P:Proc } ) => N(P)
+rule N( bundle-{ P:Proc } ) => .Set  // read-only
+rule N( bundle0{ P:Proc } ) => N(P)
+rule N( bundle { P:Proc } ) => .Set  // no read/write
+
+// New
+rule N( new X:NameDeclaration  in { P:Proc } ) => SetItem(X) N(P)
+rule N( new X:NameDeclarations in { P:Proc } ) => N(X) N(P)
+
+//-----------------
+//--- Free Name ---
+//-----------------
 rule FN( { P:OrPat } ) => FN(P)  [strict]
 rule FN(   Nil    ) => .Set  [anywhere]
 rule FN( _:Bool   ) => .Set  [anywhere]
@@ -75,9 +147,8 @@ rule FN( _:String ) => .Set  [anywhere]
 rule FN( _:Name    ) => .Set        [strict]
 rule FN( N:NamePat ) => SetItem(N)  [strict]
 
-rule FN( for( Y:NamePat <- X:Name    ) { P:Proc    } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [strict(2)]
-rule FN( for( Y:NamePat <- X:Name    ) { P:ProcPat } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [strict(2)]
-rule FN( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [strict(2)]
+rule FN( for( Y:BindNamePat <- X:Name    ) { P:Proc    } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [strict(2)]
+rule FN( for( Y:BindNamePat <- X:Name    ) { P:ProcPat } ) => SetItem(X) ( FN(P) -Set SetItem(Y) )  [strict(2)]
 
 rule FN( X:Name    ! ( P:Proc    ) ) => SetItem(X) FN(P)  [strict(2)]
 rule FN( X:NamePat ! ( P:Proc    ) ) => SetItem(X) FN(P)  [strict(2)]
@@ -101,12 +172,11 @@ rule BN( P:ProcPat   ) => N(P) -Set FN(P)         [strict]
 rule V( { P:OrPat } ) => V(P)                     [strict]
 rule V(   _:Proc    ) => .Set
 rule V(   _:Name    ) => .Set
-rule V(   X:NameVar ) => SetItem(X)
+rule V( @ P:ProcVar ) => SetItem(@P)
 rule V( @ P:ProcPat ) => V(P)                     [strict]
 
-rule V( for( _:NamePat <- X:NamePat ) { _:Proc    } ) => V(X)                     [strict]
-rule V( for( Y:NamePat <- _:Name    ) { P:ProcPat } ) => V(P) -Set V(Y)           [strict]
-rule V( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => V(X) ( V(P) -Set V(Y) )  [strict(2,3)]
+rule V( for( _:BindNamePat <- X:Name ) { _:Proc    } ) => V(X)                     [strict]
+rule V( for( Y:BindNamePat <- X:Name ) { P:ProcPat } ) => V(X) ( V(P) -Set V(Y) )  [strict(2,3)]
 
 rule V( N:NamePat ! ( _:Proc    ) ) => V(N)       [strict]
 rule V( _:Name    ! ( P:ProcPat ) ) => V(P)       [strict]
@@ -143,7 +213,6 @@ rule NV( * X:NamePat ) => NV(X)  [strict]
 */
 // Bound Variable set
 rule BV( { P:OrPat } ) => BV(P)  [strict]
-rule BV( _:Proc      ) => .Set
 rule BV( P:ProcPat   ) => intersectSet( BN(P) , V(P) )  [strict(1,2)]
 
 // Receive Name set
@@ -153,9 +222,8 @@ rule RN( _:Bool   ) => .Set
 rule RN( _:Int    ) => .Set
 rule RN( _:String ) => .Set
 
-rule RN( for( Y:NamePat <- X:Name    ) { P:Proc    } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [strict(2)]
-rule RN( for( Y:NamePat <- X:Name    ) { P:ProcPat } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [strict(2)]
-rule RN( for( Y:NamePat <- X:NamePat ) { P:ProcPat } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [strict(2)]
+rule RN( for( Y:BindNamePat <- X:Name ) { P:Proc    } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [strict(2)]
+rule RN( for( Y:BindNamePat <- X:Name ) { P:ProcPat } )  => SetItem(X) ( RN(P) -Set SetItem(Y) )  [strict(2)]
 
 rule RN( _:Name    ! ( P:Proc    ) ) => RN(P)  [strict]
 rule RN( _:NamePat ! ( P:Proc    ) ) => RN(P)  [strict]
@@ -172,10 +240,8 @@ rule RN( * _:NamePat ) => .Set
 
 // Receive Variable set
 rule RV( { P:OrPat } ) => RV(P)  [strict]
-rule RV( _:Proc ) => .Set
 
-rule RV( for( Y:NamePat <- _:Name    ) { P:ProcPat } ) => RV(P) -Set SetItem( Y )              [strict(1)]
-rule RV( for( Y:NamePat <- X:NamePat ) { P:ProcPat } ) => SetItem(X) ( RV(P)-Set SetItem(Y) )  [strict(2)]
+rule RV( for( Y:BindNamePat <- X:Name ) { P:ProcPat } ) => RV(X) ( RV(P)-Set SetItem(Y) )  [strict(2)]
 
 rule RV( _:NamePat ! ( _:Proc    ) ) => .Set
 rule RV( _:Name    ! ( P:ProcPat ) ) => RV(P)  [strict]
@@ -194,9 +260,8 @@ rule SN( _:Bool   ) => .Set
 rule SN( _:Int    ) => .Set
 rule SN( _:String ) => .Set
 
-rule SN( for( Y:NamePat <- _:Name    ) { P:Proc    }  ) => SN(P) -Set SetItem(Y)  [strict(1)]
-rule SN( for( Y:NamePat <- _:Name    ) { P:ProcPat }  ) => SN(P) -Set SetItem(Y)  [strict(1)]
-rule SN( for( Y:NamePat <- _:NamePat ) { P:ProcPat }  ) => SN(P) -Set SetItem(Y)  [strict(1)]
+rule SN( for( Y:BindNamePat <- _:Name ) { P:Proc    }  ) => SN(P) -Set SetItem(Y)  [strict(1)]
+rule SN( for( Y:BindNamePat <- _:Name ) { P:ProcPat }  ) => SN(P) -Set SetItem(Y)  [strict(1)]
 
 rule SN( X:Name    ! ( P:Proc    ) ) => SetItem(X) SN(P)  [strict(2)]
 rule SN( X:NamePat ! ( P:Proc    ) ) => SetItem(X) SN(P)  [strict(2)]
@@ -213,10 +278,8 @@ rule SN( * _:NamePat ) => .Set
 
 // Send Variable set
 rule SV( { P:OrPat } ) => SV(P)  [strict]
-rule SV( _:Proc ) => .Set
 
-rule SV( for( _:NamePat <- _:Name    ) { P:ProcPat } )  => SV(P)  [strict]
-rule SV( for( _:NamePat <- _:NamePat ) { P:ProcPat } )  => SV(P)  [strict]
+rule SV( for( _:BindNamePat <- _:Name    ) { P:ProcPat } )  => SV(P)  [strict]
 
 rule SV( X:NamePat ! ( _:Proc    ) ) => SetItem(X)
 rule SV( _:Name    ! ( P:ProcPat ) ) => SV(P)             [strict]
