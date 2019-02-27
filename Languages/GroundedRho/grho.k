@@ -388,11 +388,10 @@ module GRHO
 
   rule
     <reaction>
-      <who>   P:Proc          => .K   </who>
-      <what>  Q:Proc , R:Proc => .K  </what>
-      <where> Y:Name , Z:Name => .K </where>
+      <who>   P:Proc => P[@ Q / Y]   </who>
+      <what>  Q:Proc , R:Proc => R  </what>
+      <where> Y:Name , Z:Name => Z </where>
     </reaction>
-   (.Bag => <thread> <k> P[@ Q / Y][@ R / Z] </k> </thread>)
 
   rule
     <reaction>
