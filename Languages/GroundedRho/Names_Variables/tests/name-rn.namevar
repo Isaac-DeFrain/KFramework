@@ -1,0 +1,11 @@
+// Names - receive names
+
+  RN( @{WildName!(@x!(Nil))}!(z) | for( @z <! @"a"){ (unforgeable(2)!(*@a1),for( @a <- @chan ){@Nil!(Nil) } ) } | for( @y1,@y2,@y3 <= @bundle+{@var!(Nil)} ){ ([1,*@x1],{@b!(Nil) : @c!(Nil) , @b1!(Nil) : @c1!(Nil) , @b2!(Nil) : @2!(Nil)},bundle{for( WildName <- @1 ){Nil} | @1!("1")}) } )
+
+/*
+  Output:
+    SetItem ( @ 1 )
+    SetItem ( @ "a" )
+    SetItem ( @ bundle+ { ( @ var ) ! ( Nil ) } )
+    SetItem ( @ chan )
+*/
