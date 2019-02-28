@@ -1,5 +1,5 @@
-// Structural type inclusion for pattern-matching - subtypes: *x | false matches *y | Bool
+// Structural type inclusion for pattern-matching - @true matches WildName
 
-   type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "bool" ;; true ] ]
+   type[ "quote" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
    #isIn
-   type[ "leaf" ;; "wildcard" ;; "pattern" ]
+   type[ "leaf" ;; "wildcard" ;; "name" ]

@@ -495,10 +495,8 @@ module STYPE
 // SimpleType
   rule type[ ST:SimpleType               ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
 
-// Channel
+// Quote
   rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process
-
-// Name Pattern
   rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process pattern
 
 // Collections

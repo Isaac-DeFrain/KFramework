@@ -1,4 +1,4 @@
-// Structural type inclusion for pattern-matching - subtypes: *x | false matches *y | Bool
+// Structural type inclusion for pattern-matching - par: x | false matches y | Bool
 
    type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "bool" ;; true ] ]
    #isIn

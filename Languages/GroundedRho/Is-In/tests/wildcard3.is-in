@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - WildName!(WildProc) matches WildProc
+
+   type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ]
+   #isIn
+   type[ "leaf" ;; "wildcard" ;; "proc" ]
+
+//Output: true
