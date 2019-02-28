@@ -1,0 +1,3 @@
+// Structural type inclusion for pattern-matching - type[#truncate] #isIn type[@Nil]
+
+   type[ #truncate ] #isIn type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
