@@ -229,7 +229,7 @@ module STYPE-SYNTAX
                             | "contract" Name "(" BindNamePats ")" "=" "{" Proc "}"  // syntactic sugar => for( BindNamePats <= Name ){ Proc }
 
 // Variable Refernces - Makes it so we _don't_ shadow the variable referenced
-syntax             VarRef ::= "="     ProcVar                                        //   =_: ProcVar -------> VarRef
+  syntax           VarRef ::= "="     ProcVar                                        //   =_: ProcVar -------> VarRef
                             | "=" "*" "@" ProcVar                                    // =*@_: ProcVar -------> VarRef
 
 // Several Processes
@@ -477,11 +477,11 @@ module STYPE
   rule type[ ~ P:ProcPat                 ] => type[ "not"     ;; type[P]    ;; type[#truncate] ]  // logical negation
 
 // Conditionals
-  rule type[ if true  then P:Proc             ] => type[ "true"  ;; type[P] ;; type[#truncate] ]  // if true  then P
-  rule type[ if false then P:Proc             ] => type[ "false" ;; type[P] ;; type[#truncate] ]  // if false then P
+  rule type[ if (true)  then P:Proc             ] => type[ "true"  ;; type[P] ;; type[#truncate] ]  // if true  then P
+  rule type[ if (false) then P:Proc             ] => type[ "false" ;; type[P] ;; type[#truncate] ]  // if false then P
 
-  rule type[ if true  then P:Proc else Q:Proc ] => type[ "true"  ;; type[P] ;; type[Q]         ]  // if true  then P else Q
-  rule type[ if false then P:Proc else Q:Proc ] => type[ "false" ;; type[P] ;; type[Q]         ]  // if false then P else Q
+  rule type[ if (true)  then P:Proc else Q:Proc ] => type[ "true"  ;; type[P] ;; type[Q]         ]  // if true  then P else Q
+  rule type[ if (false) then P:Proc else Q:Proc ] => type[ "false" ;; type[P] ;; type[Q]         ]  // if false then P else Q
 
 // Bundles
   rule type[ bundle+{ P:Proc }           ] => type[ "bundle+" ;; type[P]    ;; type[#truncate] ]  // bundle+
