@@ -33,21 +33,31 @@ module IS-IN
        requires S =/=String "leaf" andBool S =/=String "quote" andBool B =/=K #truncate
 
 // Matching top-level constructors -> subtype inclusion
-  rule type[S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[S ;; C:TerminalType ;; D:TerminalType ] 
+  rule type[S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[S ;; C:IntermediateType ;; D:IntermediateType ] 
        => A #isIn C andBool B #isIn D requires S =/=String "par" [strict]
 
 // Par is unordered - TODO
-  rule type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ "par" ;; C:TerminalType ;; D:TerminalType ]
-       => (A #isIn C andBool B #isIn D) orBool (A #isIn D andBool B #isIn C) orBool (type[ "par" ;; A ;; B ] #isIn C) orBool (type[ "par" ;; A ;; B ] #isIn D)
+  rule type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ S:String ;; C:IntermediateType ;; D:IntermediateType ]
+       => type[ S ;; C ;; D ] ==K type[ "leaf" ;; "wildcard" ;; "procpat" ] orBool
+         (S ==String "par" andBool (((A #isIn C andBool B #isIn D) orBool (A #isIn D andBool B #isIn C)) orBool 
+          type[ "par" ;; A ;; B ] #isIn C orBool type[ "par" ;; A ;; B ] #isIn D))
+
+// Nil in par is structurally vacuous: P | Nil <=> Nil | P <=> P
+  rule type[ "par" ;; A:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] #isIn A => true
+  rule type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; A:IntermediateType ] #isIn A => true
 
 //--- Leaves ---
 // SimpleTypes
-  rule type[ "leaf" ;; "bool"   ;; _:Bool   ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool )   ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] => true
-  rule type[ "leaf" ;; "int"    ;; _:Int    ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int )    ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] => true
-  rule type[ "leaf" ;; "string" ;; _:String ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( String ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] => true
+  rule type[ "leaf" ;; S:String ;; _:Leaf ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool )   ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+       => S ==String "bool"
+  rule type[ "leaf" ;; S:String ;; _:Leaf ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int )    ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+       => S ==String "int"
+  rule type[ "leaf" ;; S:String ;; _:Leaf ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( String ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+       => S ==String "string"
 
 // #truncate
   rule T:Type #isIn type[ "leaf" ;; "truncate" ;; #truncate ] => T ==K type[#truncate] orBool T ==K type[ "leaf" ;; "truncate" ;; #truncate ]
+  rule T:Type #isIn type[ #truncate ] => T ==K type[#truncate] orBool T ==K type[ "leaf" ;; "truncate" ;; #truncate ]
   rule type[#truncate] #isIn type[ "eval"       ;; _:TerminalType ;; _:TerminalType ] => true
   rule type[#truncate] #isIn type[ "quote"      ;; _:TerminalType ;; _:TerminalType ] => true
   rule type[#truncate] #isIn type[ "simpletype" ;; _:TerminalType ;; _:TerminalType ] => true
@@ -70,7 +80,7 @@ module IS-IN
   rule type[ "send"       ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
   rule type[ "receive"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
   rule type[ "eval"       ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
-  rule type[ "par"        ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
+//  rule type[ "par"        ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
   rule type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => true
 
 // Variables
@@ -106,7 +116,13 @@ module IS-IN
        => A #isIn Pattern andBool B #isIn type[ "leaf" ;; "truncate" ;; #truncate ] 
 
 // SimpleTypes are Pattern
-  rule type[ "simpletype" ;; type[toString(Bool)  ] ;; type[ #truncate ] ] #isIn Pattern => true
-  rule type[ "simpletype" ;; type[toString(Bool)  ] ;; type[ #truncate ] ] #isIn Process => false
+//  rule type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(Bool)  ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] #isIn T:Type
+//       => T ==K Pattern orBool T ==K type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(Bool)  ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+
+  rule type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(Int)   ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] #isIn Pattern => true
+  rule type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(Int)   ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] #isIn Process => false
+
+  rule type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(String)] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] #isIn Pattern => true
+  rule type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString(String)] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] #isIn Process => false
 
 endmodule
