@@ -1,3 +1,7 @@
-// Structural type inclusion for pattern-matching - SimpleType
+// Structural type inclusion for pattern-matching - SimpleType: 42 matches Int
 
-   type[ "leaf" ;; "bool" ;; false ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+  type[ "leaf" ;; "int" ;; 42 ]
+  #isIn 
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+
+// Output: true

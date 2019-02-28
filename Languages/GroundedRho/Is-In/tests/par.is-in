@@ -1,5 +1,10 @@
-// Structural type inclusion for pattern-matching - par: x | false matches y | Bool
+// Structural type inclusion for pattern-matching - par: x | false | 1 matches Int | x | Bool
 
-   type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "bool" ;; true ] ]
+   type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ]
    #isIn
-   type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
+   type[ "par" ;; type[ "par" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
+
+/*
+  Output:
+  ( ( type[ "leaf" ;; "bool" ;; false ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] orBool type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ) andBool type[ "leaf" ;; "int" ;; 1 ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ) orBool ( type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] andBool type[ "leaf" ;; "int" ;; 1 ] #isIn type[ "par" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ) orBool type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] orBool type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+*/
