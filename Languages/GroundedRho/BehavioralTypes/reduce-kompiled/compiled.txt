@@ -1795,9 +1795,9 @@ module REDUCE [org.kframework.attributes.Location(Location(23,1,292,9)) org.kfra
       <where> . </where>                                               //
       <how>   _   </how>                                               //
     </Reaction>                                                        //
-    <Repar> P:Proc => . </Repar>
-    (.Bag => <Thread> <k> P </k> </Thread>)
-,[UNIQUE_ID(98fcfa3d971614699f7558740c4b9c14022e023bc8d37f2882d0c1c121aad367) org.kframework.attributes.Location(Location(271,1,280,2)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/BehavioralTypes/./reduce.k))])
+    <Repar> P:Proc => . </Repar>                                       //
+    (.Bag => <Thread> <k> P </k> </Thread>)                            //
+,[UNIQUE_ID(333b5a45ade1f945bb3c421f67246cf3300e58868156668991bec216dbca32c7) org.kframework.attributes.Location(Location(271,1,280,2)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/BehavioralTypes/./reduce.k))])
   ModuleComment(receiving channel X,[UNIQUE_ID(39cf38cb9dcfd16adce6dda91acf6cee4b8f4f3dc53b803d9fc93ae8079d6247) org.kframework.attributes.Location(Location(91,72,91,93)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/BehavioralTypes/./reduce.k))])
   ModuleComment(receiving channel X,[UNIQUE_ID(39cf38cb9dcfd16adce6dda91acf6cee4b8f4f3dc53b803d9fc93ae8079d6247) org.kframework.attributes.Location(Location(101,72,101,93)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/BehavioralTypes/./reduce.k))])
   ModuleComment(length of tuple - how many messages,[UNIQUE_ID(24fdde21bdd3e1c0899e97a47ee298f0d84360f54e9416fcbc9e1f3bbe4b3b69) org.kframework.attributes.Location(Location(84,74,84,111)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/BehavioralTypes/./reduce.k))])

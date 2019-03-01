@@ -1,6 +1,6 @@
 // Type - complex
 
-  type[ x!(Nil) | for( y <- @Nil ){ Nil } ]
+  type[ @x!(Nil) | for( @y <- @x ){ Nil } ]
 
 /*
   Output:
