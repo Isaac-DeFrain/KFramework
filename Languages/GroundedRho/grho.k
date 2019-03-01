@@ -384,7 +384,7 @@ module GRHO
       <who>   P:Proc => P[@ Q / Y]    </who>
       <what>  Q:Proc , R:Procs => R  </what>
       <where> Y:Name , Z:Names => Z </where>
-    </reaction>                                               [strict]
+    </reaction>
 
   rule
     <reaction>
