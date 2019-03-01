@@ -1,4 +1,4 @@
-// Alpha equivalence - send - x!(Nil) #alpha y!(Nil)
+// Alpha equivalence - send - @Nil #alpha @Nil
 
   type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
   #alpha

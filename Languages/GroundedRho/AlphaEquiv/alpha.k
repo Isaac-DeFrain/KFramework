@@ -29,6 +29,6 @@ module ALPHA
   rule type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] #alpha type[ "par" ;; C:IntermediateType ;; D:IntermediateType ]
        => (A #alpha C andBool B #alpha D) orBool (A #alpha D andBool B #alpha C)
 
-  rule type[ "leaf" ;; "namevar" ;; _:NameVar ] #alpha type[ "leaf" ;; "namevar" ;; _:NameVar ] => true
+  rule type[ "leaf" ;; "procvar" ;; _:ProcVar ] #alpha type[ "leaf" ;; "procvar" ;; _:ProcVar ] => true
 
 endmodule
