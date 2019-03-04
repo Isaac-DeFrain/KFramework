@@ -5,19 +5,10 @@ require "../AuxFun/auxfun.k"
 
 module REDUCE-SYNTAX
   import GRHO-SYNTAX
-  import KAST
 
   syntax        Bool ::= Proc "->"    Proc
                        | Proc "equiv" Proc
-/*
-  syntax         Set ::= "Red(" Proc ")"
 
-  syntax         Bag ::= Cell
-
-  syntax        Proc ::= "#repar(" Bag ")"
-
-  syntax        Proc ::= Set
-*/
 endmodule
 
 module REDUCE
@@ -183,7 +174,7 @@ module REDUCE
       <who>   .   </who>                                               // The continuation from the comm event will
       <what>  .  </what>                                               // always be present in a Thread cell so we
       <where> . </where>                                               // use that as the reaction catalyst.
-      <how>   1   </how>                                               // The fact that this is 1 means a comm event occured!
+      <how>   1   </how>                                               // The fact that this is N means N comm events occured!
     </Reaction>                                                        //
    (<Thread> <k> A:Proc </k> </Thread> => .Bag)                        //
    (<Repar> .K => A </Repar>)                                          // Now there is a Proc in the Repar cell
@@ -215,7 +206,7 @@ module REDUCE
       <rper>  0       </rper>                                          //
       <cont>  Q:Proc  </cont>                                          //
     </Rec> => .Bag)                                                    //
-   (<Repar> P:Proc => P | for( Y <- X ){ Q } </Repar>)                 // Par contents of Repar cell with the contents of all the Receive cells
+   (<Repar> P:Proc => P | for( Y <- X ){ Q } </Repar>)                 // Par contents of Repar cell with the contents of all the Receive cells                                              // 
 
 // Listen on N names, N > 1
   rule
@@ -232,7 +223,7 @@ module REDUCE
       <rper>  0        </rper>                                         //
       <cont>  Q:Proc   </cont>                                         //
     </Rec> => .Bag)                                                    //
-   (<Repar> P:Proc => P | for( Y <- X ){ Q } </Repar>)                 // Par contents of Repar cell with the contents of all the Receive cells
+   (<Repar> P:Proc => P | for( Y <- X ){ Q } </Repar>)                 // Par contents of Repar cell with the contents of all the Receive cells                                              // 
 
 // Reparring remaining Sends
 // 1-tuple
@@ -265,19 +256,8 @@ module REDUCE
       <tuple> _:Int  </tuple>                                          //
       <sper>  0       </sper>                                          //
     </Send> => .Bag)                                                   //
-   (<Repar> P:Proc => P | X!(Q) </Repar>)                              // Par contents of Repar cell with the contents of all the Send cells
+   (<Repar> P:Proc => P | X!(Q) </Repar>)                              // Par contents of Repar cell with the contents of all the Send cells                                                // 
 
-// Further reduction
-/*rule
-    <Reaction>                                                         //
-      <who>   .   </who>                                               //
-      <what>  .  </what>                                               //
-      <where> . </where>                                               //
-      <how>   _   </how>                                               //
-    </Reaction>                                                        //
-    <Repar> P:Proc => . </Repar>                                       //
-    (.Bag => <Thread> <k> P </k> </Thread>)                            //
-*/
 // Inverses
   rule   @ * N:Name => N                                    [anywhere] 
   rule   * @ P:Proc => P                                    [anywhere] 
