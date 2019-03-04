@@ -1,8 +1,8 @@
 // Type - tuple
 
- type[ ( x!(*y) , y!(Nil) , *x , *z ) ]
+ #type( ( @x!(y) , @y!(Nil) , x , z ) )
 
 /*
   Output:
-  type[ "map" ;; type[ "kvpair" ;; type[ "key" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "value" ;; type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "namevar" ;; z ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+  
 */

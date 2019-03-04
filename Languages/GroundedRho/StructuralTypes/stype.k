@@ -27,7 +27,7 @@ module STYPE-SYNTAX
   syntax      Unforgeable ::= "unforgeable(" Int ")"                                 // unforgeable(_): Int ---> Name
 
 // Name Patterns
-  syntax          NamePat ::= "@" ProcPat                                            // @: ProcPat ---> NamePat
+  syntax          NamePat ::= "@" ProcPat                         [klabel(namepat)]  // @: ProcPat ---> NamePat
                             | "WildName"                                             //      WildName < NamePat
 
 // Name or Name Pattern
@@ -39,8 +39,8 @@ module STYPE-SYNTAX
                             | Name "," Names                        [klabel(names)]  // _,_: Names x Name ---> Names
 
 // Several Name Patterns
-  syntax         NamePats ::= NamePat "," NamePat                                    // _,_: NamePat  x NamePat ---> NamePats
-                            | NamePat "," NamePats                                   // _,_: NamePats x NamePat ---> NamePats
+  syntax         NamePats ::= NamePat "," NamePat                [klabel(namepats)]  // _,_: NamePat  x NamePat ---> NamePats
+                            | NamePat "," NamePats               [klabel(namepats)]  // _,_: NamePats x NamePat ---> NamePats
 
 // Name or Name Pattern
   syntax       NameOrPats ::= Names                                                  //    Names < NameOrPats
@@ -79,6 +79,8 @@ module STYPE-SYNTAX
 // Receive
   syntax          Receive ::= "for" "(" Bind  ")" "{" Proc "}"                       // for(_){_}: Bind  x Proc ---> Receive
                             | "for" "(" Binds ")" "{" Proc "}"                       // for(_){_}: Binds x Proc ---> Receive
+                            | "for" "(" Bind  ")" "{" ProcPat "}"                    // for(_){_}: Bind  x ProcPat ---> ProcPat  // requires ProcPat[Name / BindNamePat] to be a process pattern?
+                            | "for" "(" Binds ")" "{" ProcPat "}"                    // for(_){_}: Binds x ProcPat ---> ProcPat 
 
   syntax             Bind ::= Lbind                                                  // Lbind < Bind, linear
                             | Pbind                                                  // Pbind < Bind, peek
@@ -115,8 +117,8 @@ module STYPE-SYNTAX
                             | Rbind ";" Rbinds                                       // N repeated binds, N > 2
 
 // Send
-  syntax             Send ::= Name "!"  "(" Proc ")"                                 //  _!(_): Name x Proc ----------> Send
-                            | Name "!!" "(" Proc ")"                                 // _!!(_): Name x Proc ----------> Send
+  syntax             Send ::= Name "!"  RhoTuple                                     //  _!(_): Name x RhoTuple ------> Send
+                            | Name "!!" RhoTuple                                     // _!!(_): Name x RhoTuple ------> Send
 
 // Eval
   syntax             Eval ::= "*" Name                                               // *: Name ----------------------> Eval
@@ -250,19 +252,19 @@ module STYPE-SYNTAX
                             | ParPat                                                 //  ParPat < ParOrPat
 
 // Receive Pattern
-  syntax       ReceivePat ::= "for" "(" Bind  ")" "{" ProcPat "}"                    // for(_){_}: Bind  x ProcPat ---> ProcPat  // requires ProcPat[Name / BindNamePat] to be a process pattern?
+/*syntax       ReceivePat ::= "for" "(" Bind  ")" "{" ProcPat "}"                    // for(_){_}: Bind  x ProcPat ---> ProcPat  // requires ProcPat[Name / BindNamePat] to be a process pattern?
                             | "for" "(" Binds ")" "{" ProcPat "}"                    // for(_){_}: Binds x ProcPat ---> ProcPat 
 
   syntax     ReceiveOrPat ::= Receive                                                //    Receive < ReciveOrPat
                             | ReceivePat                                             // ReceivePat < ReciveOrPat
-
+*/
 // Send Pattern
   syntax          SendPat ::= Name    "!"  "(" ProcPat ")"                           //    _!(_): Name x ProcPat --> SendPat
                             | NamePat "!"  "(" ProcPat ")"                           // _!(_): NamePat x ProcPat --> SendPat
-                            | NamePat "!"  "(" Proc    ")"                           // _!(_): NamePat x Proc -----> SendPat
+                            | NamePat "!"      RhoTuple                              // _!(_): NamePat x Proc -----> SendPat
                             | Name    "!!" "(" ProcPat ")"                           //    _!(_): Name x ProcPat --> SendPat
                             | NamePat "!!" "(" ProcPat ")"                           // _!(_): NamePat x ProcPat --> SendPat
-                            | NamePat "!!" "(" Proc    ")"                           // _!(_): NamePat x Proc -----> SendPat
+                            | NamePat "!!"     RhoTuple                              // _!(_): NamePat x Proc -----> SendPat
 
   syntax        SendOrPat ::= Send                                                   //    Send < SendOrPat
                             | SendPat                                                // SendPat < SendOrPat
@@ -278,10 +280,11 @@ module STYPE-SYNTAX
                             > "WildProc"                                             //      WildProc < ProcPat
                             | SimpleType                                             //     SimplType < ProcPat
                             | CollectionPat                                          // CollectionPat < ProcPat
-                            | ReceivePat                                             //    ReceivePat < ProcPat
+                            | Receive                                             //    ReceivePat < ProcPat
                             | SendPat                                                //       SendPat < ProcPat
                             | EvalPat                                                //       EvalPat < ProcPat
                             > ParPat                                                 //        ParPat < ProcPat
+                            > Proc
                             // Logical connectives
                             > "~" ProcPat                                            //   ~_: ProcPat -------------> ProcPat
                             > Proc    "/\\" ProcPat                                  // _/\_: Proc x ProcPat ------> ProcPat
@@ -369,6 +372,7 @@ module STYPE-SYNTAX
 
 // corresponds to the leaves in the structural binary tree - type[_;;_;;_]: String x Leaf x Leaf ---> LeafType
   syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"
+	                          | "type[" Truncate  "]"                                  // truncate
 
 //--- toString function ---
   syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
@@ -377,7 +381,8 @@ module STYPE-SYNTAX
 // Leaves
   syntax             Leaf ::= Ground                                                 //    Ground < Leaf
                             | ProcVar                                                //   ProcVar < Leaf
-                            | "#truncate"                                            // #truncate < Leaf
+
+  syntax         Truncate ::= "#truncate"
 
 endmodule
 
@@ -416,24 +421,21 @@ module STYPE
   rule type[ WildProc                    ] => type[ "leaf"    ;; "wildcard" ;; "proc" ]  // WildProc =============> Leaf
   rule type[ WildName                    ] => type[ "leaf"    ;; "wildcard" ;; "name" ]  // WildName =============> Leaf
 
-// #truncate
-  rule type[ #truncate                   ] => type[ "leaf"    ;; "truncate" ;;      #truncate  ]  // #truncate ===> Leaf
-
 //*** Nodes ***
 // EvalOrPat
   rule type[ * N:Name                    ] => type[ "eval"    ;; type[N]    ;; type[#truncate] ]  // Eval
   rule type[ * N:NamePat                 ] => type[ "eval"    ;; type[N]    ;; type[#truncate] ]  // Eval pattern
 
 // SendOrPat
-  rule type[ N:Name    !  (P:Proc    )   ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send
-  rule type[ N:Name    !  (P:ProcPat )   ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
-  rule type[ N:NamePat !  (P:Proc    )   ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
-  rule type[ N:NamePat !  (P:ProcPat )   ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
+  rule type[ N:Name    !    R:RhoTuple   ] => type[ "send"    ;; type[N]    ;; type[R] ]  // Send
+  rule type[ N:NamePat !    R:RhoTuple   ] => type[ "send"    ;; type[N]    ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !  ( P:ProcPat )  ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
+  rule type[ N:NamePat !  ( P:ProcPat )  ] => type[ "send"    ;; type[N]    ;; type[P] ]  // Send pattern
 
-  rule type[ N:Name    !! (P:Proc    )   ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send
-  rule type[ N:Name    !! (P:ProcPat )   ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send pattern
-  rule type[ N:NamePat !! (P:Proc    )   ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send pattern
-  rule type[ N:NamePat !! (P:ProcPat )   ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send pattern
+  rule type[ N:Name    !!   R:RhoTuple   ] => type[ "psend"   ;; type[N]    ;; type[R] ]  // Send
+  rule type[ N:NamePat !!   R:RhoTuple   ] => type[ "psend"   ;; type[N]    ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !! ( P:ProcPat )  ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send pattern
+  rule type[ N:NamePat !! ( P:ProcPat )  ] => type[ "psend"   ;; type[N]    ;; type[P] ]  // Send pattern
 
 // ReceiveOrPat/Bind(s)
   rule type[ B:BindNamePat  <- N:Name    ] => type[ "lbind"   ;; type[B]    ;; type[N] ]  // Linear bind
@@ -496,7 +498,6 @@ module STYPE
   rule type[ ST:SimpleType               ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
 
 // Quote
-  rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process
   rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process pattern
 
 // Collections
