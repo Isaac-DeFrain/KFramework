@@ -35,29 +35,29 @@ module AUXFUN
 // RhoTuple
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
-  rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)           [strict]
+  rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
 
 // Name(s)
   rule #length ( _:Name           ) => 1
   rule #length ( _:Name , _:Name  ) => 2
-  rule #length ( _:Name , N:Names ) => 1 +Int #length (N)           [strict]
+  rule #length ( _:Name , N:Names ) => 1 +Int #length (N)
 
 // Bind
   rule #length ( _:Name  <- _:Name ) => 1
-  rule #length ( N:Names <- _:Name ) => #length (N)                 [strict]
+  rule #length ( N:Names <- _:Name ) => #length (N)
   rule #length ( _:Name  <= _:Name ) => 1
-  rule #length ( N:Names <= _:Name ) => #length (N)                 [strict]
+  rule #length ( N:Names <= _:Name ) => #length (N)
   rule #length ( _:Name  <! _:Name ) => 1
-  rule #length ( N:Names <! _:Name ) => #length (N)                 [strict]
+  rule #length ( N:Names <! _:Name ) => #length (N)
 
 //----------------
 //--- #lengths ---
 //----------------
 // Binds
-  rule #lengths ( B:Lbind ; C:Lbind  ) => #length(B) , #length(C)   [strict]
-  rule #lengths ( B:Lbind ; C:Lbinds ) => #length(B) , #lengths(C)  [strict]
-  rule #lengths ( B:Rbind ; C:Rbind  ) => #length(B) , #length(C)   [strict]
-  rule #lengths ( B:Rbind ; C:Rbinds ) => #length(B) , #lengths(C)  [strict]
+  rule #lengths ( B:Lbind ; C:Lbind  ) => #length(B) , #length (C)
+  rule #lengths ( B:Lbind ; C:Lbinds ) => #length(B) , #lengths(C)
+  rule #lengths ( B:Rbind ; C:Rbind  ) => #length(B) , #length (C)
+  rule #lengths ( B:Rbind ; C:Rbinds ) => #length(B) , #lengths(C)
 
 //-------------
 //--- #chan ---
@@ -72,10 +72,10 @@ module AUXFUN
 //--- #chans ---
 //--------------
 // Binds
-  rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)         [strict]
-  rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)        [strict]
-  rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)         [strict]
-  rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)        [strict]
+  rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan (C)
+  rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)
+  rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan (C)
+  rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)
 
 //-------------
 //--- #bvar ---
@@ -83,19 +83,19 @@ module AUXFUN
 // Bind
   rule #bvar ( M:Name           <- _:Name ) => M
   rule #bvar ( M:Name , N:Name  <- _:Name ) => M , N
-  rule #bvar ( M:Name , N:Names <- L:Name ) => M , #bvar ( N <- L )  [strict]
+  rule #bvar ( M:Name , N:Names <- L:Name ) => M , #bvar ( N <- L )
 
   rule #bvar ( N:Name           <= _:Name ) => N
   rule #bvar ( M:Name , N:Name  <= _:Name ) => M , N
-  rule #bvar ( M:Name , N:Names <= L:Name ) => M , #bvar ( N <= L )  [strict]
+  rule #bvar ( M:Name , N:Names <= L:Name ) => M , #bvar ( N <= L )
 
 //--------------
 //--- #bvars ---
 //--------------
 // Binds
-  rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)         [strict]
-  rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)        [strict]
-  rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)         [strict]
-  rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)        [strict]
+  rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar (C)
+  rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)
+  rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar (C)
+  rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)
 
 endmodule
