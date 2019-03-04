@@ -1,6 +1,6 @@
 // Reduce - one step reductions
 
-  x!(*y) | x!("x") | y!("y") | for( z <- x ){ z!(for( z <- x ){ "hi" }) } | for( z <- y ){ *z }
+  x!(*y) | x!("x") | y!("y") | for( z <- x ){ z!(for( z <- x ){ "hi" }) } | for( z <- y ){ *z } | for( z <- x ){ *z }
 
 /*
   Output:
@@ -31,7 +31,7 @@
       </how>
     </Reaction>
     <Repar>
-      "y" | for ( z <- x ) { z ! ( for ( z <- x ) { "hi" } ) } | x ! ( "x" ) | x ! ( * y )
+      "x" | x ! ( * y ) | y ! ( "y" ) | for ( z <- y ) { * z } | for ( z <- x ) { z ! ( for ( z <- x ) { "hi" } ) }
     </Repar>
     <Store>
       .
@@ -40,28 +40,215 @@
 #Or
   Result ==K <T>
     <Threads>
-      <Thread>
-        <k>
-          "hi"
-        </k>
-      </Thread>
+      .ThreadCellBag
     </Threads>
     <Tuplespace>
       <Sends>
-        <Send>
-          <schan>
-            y
-          </schan>
-          <msg>
-            "y"
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <sper>
-            0
-          </sper>
-        </Send>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        1
+      </how>
+    </Reaction>
+    <Repar>
+      "y" | x ! ( "x" ) | x ! ( * y ) | for ( z <- x ) { * z } | for ( z <- x ) { z ! ( for ( z <- x ) { "hi" } ) }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        1
+      </how>
+    </Reaction>
+    <Repar>
+      * y | y ! ( "y" ) | x ! ( "x" ) | for ( z <- y ) { * z } | for ( z <- x ) { z ! ( for ( z <- x ) { "hi" } ) }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        2
+      </how>
+    </Reaction>
+    <Repar>
+      "x" | y ! ( "y" ) | y ! ( for ( z <- x ) { "hi" } ) | for ( z <- y ) { * z }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        2
+      </how>
+    </Reaction>
+    <Repar>
+      "y" | ( @ "x" ) ! ( for ( z <- x ) { "hi" } ) | x ! ( * y ) | for ( z <- x ) { * z }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        2
+      </how>
+    </Reaction>
+    <Repar>
+      "y" | y ! ( for ( z <- x ) { "hi" } ) | x ! ( "x" ) | for ( z <- x ) { * z }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        2
+      </how>
+    </Reaction>
+    <Repar>
+      * y | ( @ "x" ) ! ( for ( z <- x ) { "hi" } ) | y ! ( "y" ) | for ( z <- y ) { * z }
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
       </Sends>
       <Receives>
         .RecCellBag
@@ -82,7 +269,7 @@
       </how>
     </Reaction>
     <Repar>
-      .
+      "hi" | y ! ( "y" ) | for ( z <- x ) { * z }
     </Repar>
     <Store>
       .
@@ -91,41 +278,11 @@
 #Or
   Result ==K <T>
     <Threads>
-      <Thread>
-        <k>
-          "y"
-        </k>
-      </Thread>
+      .ThreadCellBag
     </Threads>
     <Tuplespace>
       <Sends>
-        <Send>
-          <schan>
-            @ "x"
-          </schan>
-          <msg>
-            for ( z <- x ) { "hi" }
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <sper>
-            0
-          </sper>
-        </Send> <Send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            * y
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <sper>
-            0
-          </sper>
-        </Send>
+        .SendCellBag
       </Sends>
       <Receives>
         .RecCellBag
@@ -142,75 +299,11 @@
         .
       </where>
       <how>
-        2
+        3
       </how>
     </Reaction>
     <Repar>
-      .
-    </Repar>
-    <Store>
-      .
-    </Store>
-  </T>
-#Or
-  Result ==K <T>
-    <Threads>
-      <Thread>
-        <k>
-          "y"
-        </k>
-      </Thread>
-    </Threads>
-    <Tuplespace>
-      <Sends>
-        <Send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            "x"
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <sper>
-            0
-          </sper>
-        </Send> <Send>
-          <schan>
-            y
-          </schan>
-          <msg>
-            for ( z <- x ) { "hi" }
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <sper>
-            0
-          </sper>
-        </Send>
-      </Sends>
-      <Receives>
-        .RecCellBag
-      </Receives>
-    </Tuplespace>
-    <Reaction>
-      <who>
-        .
-      </who>
-      <what>
-        .
-      </what>
-      <where>
-        .
-      </where>
-      <how>
-        2
-      </how>
-    </Reaction>
-    <Repar>
-      .
+      "x" | y ! ( "y" ) | for ( z <- x ) { "hi" }
     </Repar>
     <Store>
       .
