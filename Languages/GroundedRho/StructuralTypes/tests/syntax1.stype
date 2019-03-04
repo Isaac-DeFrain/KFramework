@@ -1,8 +1,0 @@
-// Type - method syntax
-
-  type[ @ * x ]
-
-/*
-  Output:
-  type[ "quote" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
-*/

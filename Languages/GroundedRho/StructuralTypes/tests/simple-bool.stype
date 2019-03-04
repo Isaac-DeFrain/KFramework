@@ -1,3 +1,8 @@
-// Type - simple bool
+// Type - simpletype bool
 
   type[ Bool ]
+
+/*
+  Output:
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ #truncate ] ]
+*/

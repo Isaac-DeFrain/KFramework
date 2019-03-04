@@ -1,3 +1,7 @@
-// Type rewrite - String
+// Type rewrite - string
 
-type[ "abc" ]
+  type[ "abc" ]
+
+/*
+  Output: type[ "leaf" ;; "string" ;; "abc" ]
+*/

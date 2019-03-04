@@ -1,3 +1,8 @@
-// truncate
+// Structural Type - #truncate - unit of structural types
 
   type[ #truncate ]
+
+/*
+  Output:
+  type[ #truncate ]
+*/
