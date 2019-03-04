@@ -1,8 +1,8 @@
 // Type - pattern
 
-  type[ *x | WildP /\ {x!(Nil) \/ WildP} ]
+  type[ x | WildProc /\ {@x!(Nil \/ ~Nil) \/ WildProc} ]
 
 /*
   Output:
-  type[ "and" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "wildcard" ;; "procpat" ] ] ;; type[ "or" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "leaf" ;; "wildcard" ;; "procpat" ] ] ]
+  type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "and" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "or" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "or" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "not" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ] ]
 */

@@ -4,5 +4,5 @@
 
 /*
   Output:
-  type[ "contract" ;; type[ "pbind" ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; z ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+  type[ "contract" ;; type[ "pbind" ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; z ] ;; type[ #truncate ] ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
 */

@@ -1,3 +1,7 @@
 // Type - int
 
-  type[ 12 ]
+  type[ 5 + 7 ]
+
+/*
+  Output: type[ "leaf" ;; "int" ;; 12 ]
+*/

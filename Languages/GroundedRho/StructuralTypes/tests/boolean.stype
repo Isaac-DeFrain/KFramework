@@ -1,3 +1,7 @@
 // Type rewrite - boolean
 
-type[ false ]
+  type[ false ]
+
+/*
+  Output: type[ "leaf" ;; "bool" ;; false ]
+*/
