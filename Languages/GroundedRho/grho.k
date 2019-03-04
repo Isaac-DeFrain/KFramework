@@ -14,9 +14,7 @@ module GRHO-SYNTAX
 //-------------
 //--- NAMES ---
 //-------------
-  syntax       Var ::= Id                                            //  Id < Var
-
-  syntax   NameVar ::= Var                                           // Var < NameVar
+  syntax   NameVar ::= Id                                            //  Id < NameVar
 
   syntax      Name ::= "@" Proc                                      //   @: Proc -------------> Name
                      | NameVar                                       //                NameVar < Name
@@ -45,8 +43,8 @@ module GRHO-SYNTAX
   syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
 
 // Receives - no mixed linear/peek/repeated
-  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"              // _(_){_}: Bind  x Proc ---> Receive, single pattern
-                     | "for" "(" Binds ")" "{" Proc "}"              // _(_){_}: Binds x Proc ---> Receive, several patterns
+  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"     [binder] // _(_){_}: Bind  x Proc ---> Receive, single pattern
+                     | "for" "(" Binds ")" "{" Proc "}"     [binder] // _(_){_}: Binds x Proc ---> Receive, several patterns
 
   syntax      Bind ::= Lbind                                         // single linear bind --- for( y <- x ){ P }
                      | Pbind                                         // single peek bind ----- for( y <! x ){ P }
@@ -149,7 +147,7 @@ module GRHO-SYNTAX
                      | "bundle0" "{" Proc "}"                        // neither read/write
                      | "bundle"  "{" Proc "}"                        // both read/write
 
-  syntax KVariable ::= Name | Names
+  syntax KVariable ::= Names | Name
 
   syntax     KItem ::= Name | Names | Proc | Procs
 
