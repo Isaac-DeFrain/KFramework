@@ -550,12 +550,12 @@ module STYPE
   rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]  // Match against one case
   rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]  // Match against several cases
 
-  rule type[ M:ProcPat :=> P:Proc    ] => type[ "case"  ;; type[M] ;; type[P] ]  // 1 match case
-  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]  // 2 match cases
-  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]  // N match cases, N > 2
+  rule type[ M:ProcPat :=> P:Proc          ] => type[ "case"  ;; type[M] ;; type[P] ]  // 1 match case
+  rule type[ M:MatchCase N:MatchCase       ] => type[ "cases" ;; type[M] ;; type[N] ]  // 2 match cases
+  rule type[ M:MatchCase N:MatchCases      ] => type[ "cases" ;; type[M] ;; type[N] ]  // N match cases, N > 2
 
 // VarRef
-  rule type[ =: V:ProcVar ] => type[ "varref" ;; type[V] ;; type[#truncate] ]
+  rule type[ =: V:ProcVar ] => type[ "varref" ;; type[V] ;; type[#truncate]   ]  // variable reference
 
 // Logical Patterns
   rule type[ P:Proc    /\ Q:Proc         ] => type[ "andpat" ;; type[P]  ;; type[Q]         ]  // logical and
@@ -590,16 +590,20 @@ module STYPE
   rule type[ [ P:Proc , Q:Proc  ]               ] => type[ "list"    ;; type[P]   ;; type[Q]         ]  // 2 process list
   rule type[ [ P:Proc , Q:Procs ]               ] => type[ "list"    ;; type[P]   ;; type[Q]         ]  // N process list, N > 2
 
-  rule type[ [ P:ProcPat , ... V:ProcVar ]      ] => type[ "listpat" ;; type[P]   ;; type[V]         ]
+// RhoListPat
+  rule type[ [ P:ProcPat , ... V:ProcVar ]      ] => type[ "listpat" ;; type[P]   ;; type[V]         ]  // list pattern
 
 // RhoMap
   rule type[ P:Proc : Q:Proc                        ] => type[ "kvpair"     ;; type[P]   ;; type[Q]         ]  // single key-value pair
   rule type[ P:Proc : Q:Proc , R:RhoKVPairs         ] => type[ "kvpairs"    ;; type[P:Q] ;; type[R]         ]  // N key-value pairs, N > 2
+
+  rule type[ { P:Proc : Q:Proc                }     ] => type[ "map"        ;; type[P:Q] ;; type[#truncate] ]  // 1 key-value pair map
+  rule type[ { P:Proc : Q:Proc , S:RhoKVPairs }     ] => type[ "map"        ;; type[P:Q] ;; type[S]         ]  // N key-value pairs map
+
+// RhoMapPat
   rule type[ P:ProcPat : Q:ProcPat                  ] => type[ "kvpat"      ;; type[P]   ;; type[Q]         ]  // single key-value pair
   rule type[ P:ProcPat : Q:ProcPat , R:RhoKVPat     ] => type[ "kvpats"     ;; type[P:Q] ;; type[R]         ]  // N key-value pairs, N > 2
 
-  rule type[ { P:Proc : Q:Proc                }         ] => type[ "map"    ;; type[P:Q] ;; type[#truncate] ]  // 1 key-value pair map
-  rule type[ { P:Proc : Q:Proc , S:RhoKVPairs }         ] => type[ "map"    ;; type[P:Q] ;; type[S]         ]  // N key-value pairs map
   rule type[ { R:RhoKVPat , ... U:ProcVar : V:ProcVar } ] => type[ "mappat" ;; type[R]   ;; type[U:V]       ]  // map pattern
 
 // RhoSet
@@ -607,18 +611,21 @@ module STYPE
   rule type[ Set( P:Proc , Q:Proc  )            ] => type[ "set"      ;; type[P]   ;; type[Q]         ]  // 2 element set
   rule type[ Set( P:Proc , Q:Procs )            ] => type[ "set"      ;; type[P]   ;; type[Q]         ]  // N element set, N > 2
 
-  rule type[ Set ( P:ProcPat , ... V:ProcVar )  ] => type[ "setpat"   ;; type[P]   ;; type[V]         ]
+// RhoSetPat
+  rule type[ Set( P:ProcPat , ... V:ProcVar )   ] => type[ "setpat"   ;; type[P]   ;; type[V]         ]  // set pattern
 
 // RhoTuple
   rule type[ tuple1( P:Proc           )         ] => type[ "tuple"    ;; type[P]   ;; type[#truncate] ]  // single process set
   rule type[ tuple2( P:Proc , Q:Proc  )         ] => type[ "tuple"    ;; type[P]   ;; type[Q]         ]  // 2 process set
   rule type[ tuplen( P:Proc , Q:Procs )         ] => type[ "tuple"    ;; type[P]   ;; type[Q]         ]  // N process set, N > 2
 
-  rule type[ ( P:ProcPat , ... V:ProcVar  )     ] => type[ "tuplepat" ;; type[P]   ;; type[V]         ]
+// RhoTuplePat
+  rule type[ ( P:ProcPat , ... V:ProcVar  )     ] => type[ "tuplepat" ;; type[P]   ;; type[V]      ]  // tuple pattern
 
-  rule type[ pat1( P:ProcPat              )     ] => type[ "pattuple" ;; type[P]   ;; type[#truncate] ]  // single process set
-  rule type[ pat2( P:ProcPat , Q:ProcPat  )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // 2 process set
-  rule type[ patn( P:ProcPat , Q:ProcPats )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // N process set, N > 2
+// PatTuple
+  rule type[ pat1( P:ProcPat              )     ] => type[ "tuple" ;; type[P]   ;; type[#truncate] ]  // pattern 1-tuple
+  rule type[ pat2( P:ProcPat , Q:ProcPat  )     ] => type[ "tuple" ;; type[P]   ;; type[Q]         ]  // pattern 2-tuple
+  rule type[ patn( P:ProcPat , Q:ProcPats )     ] => type[ "tuple" ;; type[P]   ;; type[Q]         ]  // pattern N-tuple, N > 2
 
 // Method and Pattern
   rule type[ P:Proc    . M:MethodAndArgs  ] => type[ "method"         ;; type[P]   ;; type[M] ]  // Method
