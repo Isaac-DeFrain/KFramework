@@ -1,10 +1,5 @@
 // Structural type system for Grounded RHO-CALCULUS
 // Type is a structural binary tree
-/*
-  TO ADD:
-  Variable ref
-  CollectionPat - list, set
-*/
 
 require "domains.k"
 
@@ -35,22 +30,22 @@ module STYPE-SYNTAX
 
 // Name or Name Pattern
   syntax        NameOrPat ::= "{" NameOrPat "}"                           [bracket]
-                            | Name                                                   //    Name < NameOrPat
+                            > Name                                                   //    Name < NameOrPat
                             | NamePat                                                // NamePat < NameOrPat
 
 // Several Names
   syntax            Names ::= "{" Names "}"                               [bracket]
-                            | Name "," Name                                          // _,_: Name  x Name ---> Names
+                            > Name "," Name                                          // _,_: Name  x Name ---> Names
                             | Name "," Names                                         // _,_: Names x Name ---> Names
 
 // Several Name Patterns
   syntax         NamePats ::= "{" NamePats "}"                            [bracket]
-                            | NamePat "," NamePat                                    // _,_: NamePat  x NamePat ---> NamePats
+                            > NamePat "," NamePat                                    // _,_: NamePat  x NamePat ---> NamePats
                             | NamePat "," NamePats                                   // _,_: NamePats x NamePat ---> NamePats
 
 // Name or Name Pattern
   syntax       NameOrPats ::= "{" NameOrPats "}"                          [bracket]
-                            | Names                                                  //    Names < NameOrPats
+                            > Names                                                  //    Names < NameOrPats
                             | NamePats                                               // NamePats < NameOrPats
 
 //-----------------
@@ -72,8 +67,8 @@ module STYPE-SYNTAX
                             > MethodProc                                             // MethodProc < Proc
                             > AExp                                                   //       AExp < Proc
                             > BExp                                                   //       BExp < Proc
-                            > Send                                                   //       Send < Proc
                             > Match                                                  //      Match < Proc
+                            > Send                                                   //       Send < Proc
                             | Contract                                               //   Contract < Proc
                             | Receive                                                //    Receive < Proc
                             | Bundle                                                 //     Bundle < Proc
@@ -175,13 +170,15 @@ module STYPE-SYNTAX
   syntax            Match ::= "match" Proc "{" MatchCase  "}"                        // 
                             | "match" Proc "{" MatchCases "}"                        // 
 
-  syntax        MatchCase ::= ProcPat "=|" Proc                     [klabel(match)]  // _=>_: ProcPat x Proc ---> MatchCase
+  syntax        MatchCase ::= ProcPat ":=>" Proc                                     // _:=>_: ProcPat x Proc ----------> MatchCase
 
-  syntax       MatchCases ::= MatchCase MatchCase                 [klabel(matches)]  // _ _: MatchCase x MatchCase ----> MatchCase
-                            | MatchCase MatchCases                [klabel(matches)]  // _ _: MatchCase x MatchCases ---> MatchCases
+  syntax       MatchCases ::= MatchCase MatchCase                                    // _ _: MatchCase x MatchCase -----> MatchCase
+                            | MatchCase MatchCases                                   // _ _: MatchCase x MatchCases ----> MatchCases
 
 // Methods
-  syntax       MethodProc ::= Proc "." Method "(" MethodArgs ")"                     // _._(_): Proc x Method x MethodArgs ---> Proc
+  syntax       MethodProc ::= Proc "." MethodAndArgs                                 // _._(_): Proc x MethodAndArgs ---> MethodProc
+
+  syntax    MethodAndArgs ::= Method "(" MethodArgs ")"                              // _(_): Method x MethodArgs ------> MethodAndArgs
 
   syntax           Method ::= "nth"                                                  // nth element in list, tuple?, set
 	                          | "toByteArray"                                          // input? -> bytearray
@@ -223,8 +220,12 @@ module STYPE-SYNTAX
                             > BExp  "or" BExp                              [strict]  //   or: BExp ----------> BExp
 
 // Conditional
-  syntax      Conditional ::= "if" "(" BExp ")" "then" Proc             [strict(1)]  // if ... then ...
-                            | "if" "(" BExp ")" "then" Proc "else" Proc [strict(1)]  // if ... then ... else ...
+  syntax      Conditional ::= IfThen                                                 // if ... then ...
+                            | Else                                                   // if ... then ... else
+
+  syntax           IfThen ::= "if" "(" BExp ")" "then" Proc             [strict(1)]  // if ... then ...
+ 
+  syntax             Else ::= IfThen "else" Proc                                     // if ... then ... else ...
 
 // Contract
   syntax         Contract ::= "contract" Name "(" BindNamePat  ")" "=" "{" Proc "}"  // syntactic sugar => for( BindNamePat  <= Name ){ Proc }
@@ -276,12 +277,16 @@ module STYPE-SYNTAX
 
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat --------------> ProcPat
+                            > NewPat                                                 //        NewPat < ProcPat
                             > "WildProc"                                             //      WildProc < ProcPat
                             | SimpleType                                             //     SimplType < ProcPat
                             | CollectionPat                                          // CollectionPat < ProcPat
+                            > EvalPat                                                //       EvalPat < ProcPat
+                            > MethodPat                                              //     MethodPat < ProcPat
+                            > ContractPat                                            //   ContractPat < ProcPat
                             | ReceivePat                                             //    ReceivePat < ProcPat
                             | SendPat                                                //       SendPat < ProcPat
-                            | EvalPat                                                //       EvalPat < ProcPat
+                            > ConditionalPat                                         //ConditionalPat < ProcPat
                             > ParPat                                                 //        ParPat < ProcPat
                             // Logical connectives
                             > "~" Proc                                               //   ~_: Proc ----------------> ProcPat
@@ -295,21 +300,50 @@ module STYPE-SYNTAX
                             | ProcPat "\\/" Proc                                     // _\/_: ProcPat x Proc ------> ProcPat
                             | ProcPat "\\/" ProcPat                                  // _\/_: ProcPat x ProcPat ---> ProcPat
 
+// New Pattern
+  syntax           NewPat ::= "new" Name  "in" "{" ProcPat "}"             [binder]  // 1 name declaration
+                            | "new" Names "in" "{" ProcPat "}"             [binder]  // N > 1 name declarations
+
+// Conditional Pattern
+  syntax   ConditionalPat ::= IfThenPat                                              // if ... then ...
+                            | ElsePat                                                // if ... then ... else
+
+  syntax        IfThenPat ::= "if" "(" BExp ")" "then" ProcPat          [strict(1)]  // if ... then ...
+ 
+  syntax          ElsePat ::= IfThenPat "else" ProcPat                               // if ... then ... else ...
+
 // Collection Pattern
-  syntax    CollectionPat ::= RhoListPat                                             // RhoListPat < CollectionPat
-                            | RhoSetPat                                              //  RhoSetPat < CollectionPat
-                            | PatTuple
+  syntax    CollectionPat ::= RhoListPat                                             //  RhoListPat < CollectionPat
+                            | RhoMapPat                                              //   RhoMapPat < CollectionPat
+                            | RhoSetPat                                              //   RhoSetPat < CollectionPat
+                            | RhoTuplePat                                            // RhoTuplePat < CollectionPat
+                            | PatTuple                                               //    PatTuple < CollectionPat
 
 // List Pattern
   syntax       RhoListPat ::= "[" ProcPat "," "..." ProcVar "]"                      // [_,..._]: ProcPat x ProcVar ------> RhoListPat
 
+// Map Pattern
+  syntax         RhoKVPat ::= ProcPat ":" ProcPat                                    // _:_: ProcPat x ProcPat ----------------> RhoKVPat
+                            | ProcPat ":" ProcPat "," RhoKVPat                       // _:_,_: ProcPat x ProcPat x RhoKVPat ---> RhoKVPat
+
+  syntax        RhoMapPat ::= "{" RhoKVPat "," "..." ProcVar ":" ProcVar "}"         // {_,..._:_}: RhoKVPat x ProcVar x ProcVar ---> RhoMapPat
+
 // Set Pattern
   syntax        RhoSetPat ::= "Set" "(" ProcPat "," "..." ProcVar ")"                // Set(_,..._): ProcPat x ProcVar ---> RhoSetPat
 
+// TUple Pattern
+  syntax      RhoTuplePat ::= "(" ProcPat "," "..." ProcVar ")"                      // (_,..._): ProcPat x ProcVar ---> RhoTuplePat
+
 // Pattern Tuple
-  syntax         PatTuple ::= "(" ProcPat              ")"        [klabel(pattup1)]
-                            | "(" ProcPat "," ProcPat  ")"        [klabel(pattup2)]
-                            | "(" ProcPat "," ProcPats ")"        [klabel(pattupn)]
+  syntax         PatTuple ::= "(" ProcPat              ")"           [klabel(pat1)]  // 1-tuple pattern
+                            | "(" ProcPat "," ProcPat  ")"           [klabel(pat2)]  // 2-tuple pattern
+                            | "(" ProcPat "," ProcPats ")"           [klabel(patn)]  // N-tuple pattern, N > 2
+
+  syntax      ContractPat ::= "contract" Name "(" BindNamePat  ")" "=" "{" ProcPat "}"  // contract_(_)={_}: Name x BindNamePat  x ProcPat ---> ContractPat
+                            | "contract" Name "(" BindNamePats ")" "=" "{" ProcPat "}"  // contract_(_)={_}: Name x BindNamePats x ProcPat ---> ContractPat
+
+// Method Pattern
+  syntax        MethodPat ::= ProcPat "." MethodAndArgs                              // _._: ProcPat x MethodAndArgs ---> MethodPat
 
 // Several Process Patterns
   syntax         ProcPats ::= ProcPat "," ProcPat                                    // _,_: ProcPat  x ProcPat ---> ProcPats
@@ -342,7 +376,6 @@ module STYPE-SYNTAX
                             | InitialType                                            //          InitialType < Type
                             | IntermediateType                                       //     IntermediateType < Type
                             | TerminalType                                           //         TerminalType < Type
-                            | String                                                 //               String < Type (for String input/output)
 
 
 // Simple Types - types of ground terms
@@ -358,19 +391,26 @@ module STYPE-SYNTAX
                             | "Uri"                                                  //         "Uri" < SimpleType
 
 // Typical input for type rewrites
-  syntax  OrPatOrLeafType ::= "type[" OrPat        "]"                               // type[_]: OrPat --------> OrPatOrLeafType
-                            | "type[" OrPats       "]"                               // type[_]: OrPats -------> OrPatOrLeafType
-                            | "type[" Leaf         "]"                               // type[_]: Leaf ---------> OrPatOrLeafType
-                            | "type[" RhoKVPairs   "]"                               // type[_]: RhoKVPairs ---> OrPatOrLeafType
+  syntax  OrPatOrLeafType ::= "type[" OrPat        "]"                               // type[_]: OrPat -----------> OrPatOrLeafType
+                            | "type[" OrPats       "]"                               // type[_]: OrPats ----------> OrPatOrLeafType
+                            | "type[" Leaf         "]"                               // type[_]: Leaf ------------> OrPatOrLeafType
 
 //  Initial type
-  syntax      InitialType ::= OrPatOrLeafType                                        //         OrPatOrLeafType < InitialType
-                            | "type[" Bind         "]"                               // type[_]: Bind ----------> InitialType
-                            | "type[" Binds        "]"                               // type[_]: Binds ---------> InitialType
-                            | "type[" BindNamePat  "]"                               // type[_]: BindNamePat ---> InitialType
-                            | "type[" BindNamePats "]"                               // type[_]: BindNamePat ---> InitialType
-                            | "type[" MatchCase    "]"
-                            | "type[" MatchCases   "]"
+  syntax      InitialType ::= OrPatOrLeafType                                        //           OrPatOrLeafType < InitialType
+                            | "type[" Bind          "]"                              // type[_]: Bind ------------> InitialType
+                            | "type[" Binds         "]"                              // type[_]: Binds -----------> InitialType
+                            | "type[" BindNamePat   "]"                              // type[_]: BindNamePat -----> InitialType
+                            | "type[" BindNamePats  "]"                              // type[_]: BindNamePat -----> InitialType
+                            | "type[" IfThen        "]"                              // type[_]: IfThen ----------> InitialType
+                            | "type[" IfThenPat     "]"                              // type[_]: IfThenPat -------> InitialType
+                            | "type[" Else          "]"                              // type[_]: Else ------------> InitialType
+                            | "type[" ElsePat       "]"                              // type[_]: ElsePat ---------> InitialType
+                            | "type[" MatchCase     "]"                              // type[_]: MatchCase -------> InitialType
+                            | "type[" MatchCases    "]"                              // type[_]: MatchCases ------> InitialType
+                            | "type[" MethodArgs    "]"                              // type[_]: MethodArgs ------> InitialType
+                            | "type[" MethodAndArgs "]"                              // type[_]: MethodAndArgs ---> InitialType
+                            | "type[" RhoKVPairs    "]"                              // type[_]: RhoKVPairs ------> InitialType
+                            | "type[" RhoKVPat      "]"                              // type[_]: RhoKVPat --------> InitialType
 
 //  Intermediate type - type[_;;_;;_]: String x IntermediateType x IntermediateType ---> IntermediateType
   syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
@@ -390,8 +430,9 @@ module STYPE-SYNTAX
                             | "toString(" Type  ")"                                  // toString(_): Type ----> String
 
 // Leaves
-  syntax             Leaf ::= Ground                                                 //    Ground < Leaf
-                            | ProcVar                                                //   ProcVar < Leaf
+  syntax             Leaf ::= Ground                                                 //     Ground < Leaf
+                            | ProcVar                                                //    ProcVar < Leaf
+                            | Method                                                 //     Method < Leaf
 
   syntax         Truncate ::= "#truncate"
 
@@ -408,21 +449,6 @@ module STYPE
 
   syntax KResult ::= TerminalType
 
-// Methods
-// AExp
-// BExp
-
-// Arithmetic
-  rule A:Int + B:Int => A +Int B  [anywhere]
-  rule A:Int * B:Int => A *Int B  [anywhere]
-  rule A:Int - B:Int => A -Int B  [anywhere]
-
-// Boolean
-  rule A:Int <=   B:Int  => A <=Int   B  [anywhere]
-  rule A:Bool and B:Bool => A andBool B  [anywhere]
-  rule A:Bool or  B:Bool => A orBool  B  [anywhere]
-  rule not B:Bool        => notBool   B  [anywhere]
-
 //---------------------
 //--- Type function ---
 //---------------------
@@ -437,66 +463,79 @@ module STYPE
   rule type[ I:Int                       ] => type[ "leaf"  ;; "int"         ;; I       ]  // Int ==================> Leaf
   rule type[ S:String                    ] => type[ "leaf"  ;; "string"      ;; S       ]  // String ===============> Leaf
 
-// Process Variable
-  rule type[ V:ProcVar                   ] => type[ "leaf"  ;; "procvar"     ;; V       ]  // ProcVar ===============> Leaf
+// Method
+  rule type[ M:Method                    ] => type[ "leaf"  ;; "method"      ;; M       ]  // Method ===============> Leaf
+  rule type[                             ] => type[ "empty" ;; "method"      ;; "arg"   ]  //  =====================> Leaf
 
 // Nil
-  rule type[ Nil                         ] => type[ "leaf"  ;; "nil"         ;; "Nil"   ]  // Nil ===================> Leaf
+  rule type[ Nil                         ] => type[ "leaf"  ;; "nil"         ;; "Nil"   ]  // Nil ==================> Leaf
+
+// Process Variable
+  rule type[ V:ProcVar                   ] => type[ "leaf"  ;; "procvar"     ;; V       ]  // ProcVar ==============> Leaf
+
+// Unforgeable Integers
+  rule type[ unforgeable( I:Int )        ] => type[ "leaf"  ;; "unforgeable" ;; I       ]  // Unforgeable ==========> Leaf
+
+// Uri
+  rule type[ uri( S:String )             ] => type[ "leaf"  ;; "uri"         ;; S       ]  // Uri ==================> Leaf
 
 // Wildcards
   rule type[ WildProc                    ] => type[ "leaf"  ;; "wildcard"    ;; "proc"  ]  // WildProc =============> Leaf
   rule type[ WildName                    ] => type[ "leaf"  ;; "wildcard"    ;; "name"  ]  // WildName =============> Leaf
 
-// Unforgeable Integers
-  rule type[ unforgeable( I:Int )        ] => type[ "leaf"  ;; "unforgeable" ;; I       ]  // unforgeable integer
-
-// Uri
-  rule type[ uri( S:String )             ] => type[ "leaf"  ;; "uri"         ;; S       ]  // uri
-
 //*** Nodes ***
+// SimpleType
+  rule type[ ST:SimpleType               ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
+
+// Quote
+  rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]    ;; type[#truncate] ]  // quoted process
+  rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]    ;; type[#truncate] ]  // quoted process pattern
+
 // EvalOrPat
-  rule type[ * N:Name                    ] => type[ "eval"     ;; type[N]    ;; type[#truncate] ]  // Eval
-  rule type[ * N:NamePat                 ] => type[ "eval"     ;; type[N]    ;; type[#truncate] ]  // Eval pattern
+  rule type[ * N:Name                    ] => type[ "eval"       ;; type[N]    ;; type[#truncate] ]  // Eval
+  rule type[ * N:NamePat                 ] => type[ "eval"       ;; type[N]    ;; type[#truncate] ]  // Eval pattern
 
 // SendOrPat
-  rule type[ N:Name    !  R:RhoTuple     ] => type[ "send"     ;; type[N]    ;; type[R] ]  // Send
-  rule type[ N:Name    !  R:PatTuple     ] => type[ "send"     ;; type[N]    ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !  R:RhoTuple     ] => type[ "send"     ;; type[N]    ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !  R:PatTuple     ] => type[ "send"     ;; type[N]    ;; type[R] ]  // Send pattern
-  rule type[ N:Name    !! R:RhoTuple     ] => type[ "psend"    ;; type[N]    ;; type[R] ]  // Send
-  rule type[ N:Name    !! R:PatTuple     ] => type[ "psend"    ;; type[N]    ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !! R:RhoTuple     ] => type[ "psend"    ;; type[N]    ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !! R:PatTuple     ] => type[ "psend"    ;; type[N]    ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !  R:RhoTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send
+  rule type[ N:Name    !  R:PatTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !  R:RhoTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !  R:PatTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !! R:RhoTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send
+  rule type[ N:Name    !! R:PatTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !! R:RhoTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !! R:PatTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
 
 // ReceiveOrPat/Bind(s)
-  rule type[ B:BindNamePat  <- N:Name    ] => type[ "lbind"    ;; type[B]    ;; type[N] ]  // Linear bind
-  rule type[ B:BindNamePats <- N:Name    ] => type[ "lbind"    ;; type[B]    ;; type[N] ]  // Linear bind
-  rule type[ A:Lbind ; B:Lbind           ] => type[ "lbinds"   ;; type[A]    ;; type[B] ]  // 2 linear binds
-  rule type[ A:Lbind ; B:Lbinds          ] => type[ "lbinds"   ;; type[A]    ;; type[B] ]  // N linear binds, N > 2
+  rule type[ B:BindNamePat  <- N:Name    ] => type[ "lbind"      ;; type[B]            ;; type[N] ]  // Linear bind
+  rule type[ B:BindNamePats <- N:Name    ] => type[ "lbind"      ;; type[B]            ;; type[N] ]  // Linear bind
+  rule type[ A:Lbind ; B:Lbind           ] => type[ "lbinds"     ;; type[A]            ;; type[B] ]  // 2 linear binds
+  rule type[ A:Lbind ; B:Lbinds          ] => type[ "lbinds"     ;; type[A]            ;; type[B] ]  // N linear binds, N > 2
 
-  rule type[ B:BindNamePat  <! N:Name    ] => type[ "peek"     ;; type[B]    ;; type[N] ]  // Peek bind
-  rule type[ B:BindNamePats <! N:Name    ] => type[ "peek"     ;; type[B]    ;; type[N] ]  // Peek bind
-  rule type[ A:Pbind ; B:Pbind           ] => type[ "peeks"    ;; type[A]    ;; type[B] ]  // 2 peek binds
-  rule type[ A:Pbind ; B:Pbinds          ] => type[ "peeks"    ;; type[A]    ;; type[B] ]  // N peek binds, N > 2
+  rule type[ B:BindNamePat  <! N:Name    ] => type[ "peek"       ;; type[B]            ;; type[N] ]  // Peek bind
+  rule type[ B:BindNamePats <! N:Name    ] => type[ "peek"       ;; type[B]            ;; type[N] ]  // Peek bind
+  rule type[ A:Pbind ; B:Pbind           ] => type[ "peeks"      ;; type[A]            ;; type[B] ]  // 2 peek binds
+  rule type[ A:Pbind ; B:Pbinds          ] => type[ "peeks"      ;; type[A]            ;; type[B] ]  // N peek binds, N > 2
 
-  rule type[ B:BindNamePat  <= N:Name    ] => type[ "pbind"    ;; type[B]    ;; type[N] ]  // Persistent bind
-  rule type[ B:BindNamePats <= N:Name    ] => type[ "pbind"    ;; type[B]    ;; type[N] ]  // Persistent bind
-  rule type[ A:Rbind ; B:Rbind           ] => type[ "pbinds"   ;; type[A]    ;; type[B] ]  // 2 persistent binds
-  rule type[ A:Rbind ; B:Rbinds          ] => type[ "pbinds"   ;; type[A]    ;; type[B] ]  // N persistent binds, N > 2
+  rule type[ B:BindNamePat  <= N:Name    ] => type[ "pbind"      ;; type[B]            ;; type[N] ]  // Persistent bind
+  rule type[ B:BindNamePats <= N:Name    ] => type[ "pbind"      ;; type[B]            ;; type[N] ]  // Persistent bind
+  rule type[ A:Rbind ; B:Rbind           ] => type[ "pbinds"     ;; type[A]            ;; type[B] ]  // 2 persistent binds
+  rule type[ A:Rbind ; B:Rbinds          ] => type[ "pbinds"     ;; type[A]            ;; type[B] ]  // N persistent binds, N > 2
 
-  rule type[ for( B:Bind  ){ P:Proc    } ] => type[ "receive"  ;; type[B]    ;; type[P] ]  // Receive
-  rule type[ for( B:Bind  ){ P:ProcPat } ] => type[ "receive"  ;; type[B]    ;; type[P] ]  // Receive pattern
-  rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives" ;; type[B]    ;; type[P] ]  // Receive
-  rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives" ;; type[B]    ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Bind  ){ P:Proc    } ] => type[ "receive"    ;; type[B]            ;; type[P] ]  // Receive
+  rule type[ for( B:Bind  ){ P:ProcPat } ] => type[ "receive"    ;; type[B]            ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive
+  rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive pattern
 
-  rule type[ contract X:Name ( Y:BindNamePat  ) = { P:Proc } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]
-  rule type[ contract X:Name ( Y:BindNamePats ) = { P:Proc } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]
+  rule type[ contract X:Name ( Y:BindNamePat  ) = { P:Proc    } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract, 1 name declared
+  rule type[ contract X:Name ( Y:BindNamePats ) = { P:Proc    } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract, N names declared, N > 1
+  rule type[ contract X:Name ( Y:BindNamePat  ) = { P:ProcPat } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract pattern, 1 name declared
+  rule type[ contract X:Name ( Y:BindNamePats ) = { P:ProcPat } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract pattern, N names declared, N > 1
 
 // New
- rule type[ new N:Name  in { P:Proc } ] => type[ "new" ;; type[N] ;; type[P] ]
- rule type[ new N:Names in { P:Proc } ] => type[ "new" ;; type[N] ;; type[P] ]
+ rule type[ new N:Name  in { P:Proc }    ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new binding
+ rule type[ new N:Names in { P:Proc }    ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new bindings
 
- rule type[ @ V:ProcVar ( U:Uri ) ] => type[ "newuri"  ;; type[V] ;; type[U] ]
+ rule type[ @ V:ProcVar ( U:Uri )        ] => type[ "newuri"  ;; type[V]    ;; type[U] ]  // new uri name declaration
 
 // ParOrPat
   rule type[ P:Proc    | Q:Proc          ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
@@ -505,98 +544,108 @@ module STYPE
   rule type[ P:ProcPat | Q:ProcPat       ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
 
 // Match
-  rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]
-  rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]
+  rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]  // Match against one case
+  rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]  // Match against several cases
 
-  rule type[ M:ProcPat =| P:Proc     ] => type[ "case"  ;; type[M] ;; type[P] ]
-  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]
-  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]
+  rule type[ M:ProcPat :=> P:Proc    ] => type[ "case"  ;; type[M] ;; type[P] ]  // 1 match case
+  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]  // 2 match cases
+  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]  // N match cases, N > 2
 
 // VarRef
   rule type[ =: V:ProcVar ] => type[ "varref" ;; type[V] ;; type[#truncate] ]
 
 // Logical Patterns
-  rule type[ P:Proc    /\ Q:Proc         ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
-  rule type[ P:Proc    /\ Q:ProcPat      ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
-  rule type[ P:ProcPat /\ Q:Proc         ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
-  rule type[ P:ProcPat /\ Q:ProcPat      ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
+  rule type[ P:Proc    /\ Q:Proc         ] => type[ "andpat" ;; type[P]  ;; type[Q]         ]  // logical and
+  rule type[ P:Proc    /\ Q:ProcPat      ] => type[ "andpat" ;; type[P]  ;; type[Q]         ]  // logical and
+  rule type[ P:ProcPat /\ Q:Proc         ] => type[ "andpat" ;; type[P]  ;; type[Q]         ]  // logical and
+  rule type[ P:ProcPat /\ Q:ProcPat      ] => type[ "andpat" ;; type[P]  ;; type[Q]         ]  // logical and
 
-  rule type[ P:Proc    \/ Q:Proc         ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
-  rule type[ P:Proc    \/ Q:ProcPat      ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
-  rule type[ P:ProcPat \/ Q:Proc         ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
-  rule type[ P:ProcPat \/ Q:ProcPat      ] => type[ "or"      ;; type[P]    ;; type[Q] ]  // logical or
+  rule type[ P:Proc    \/ Q:Proc         ] => type[ "orpat"  ;; type[P]  ;; type[Q]         ]  // logical or
+  rule type[ P:Proc    \/ Q:ProcPat      ] => type[ "orpat"  ;; type[P]  ;; type[Q]         ]  // logical or
+  rule type[ P:ProcPat \/ Q:Proc         ] => type[ "orpat"  ;; type[P]  ;; type[Q]         ]  // logical or
+  rule type[ P:ProcPat \/ Q:ProcPat      ] => type[ "orpat"  ;; type[P]  ;; type[Q]         ]  // logical or
 
-  rule type[ ~ P:Proc                    ] => type[ "not"     ;; type[P]    ;; type[#truncate] ]  // logical negation
-  rule type[ ~ P:ProcPat                 ] => type[ "not"     ;; type[P]    ;; type[#truncate] ]  // logical negation
+  rule type[ ~ P:Proc                    ] => type[ "notpat" ;; type[P]  ;; type[#truncate] ]  // logical negation
+  rule type[ ~ P:ProcPat                 ] => type[ "notpat" ;; type[P]  ;; type[#truncate] ]  // logical negation
 
-// Conditionals
-  rule type[ if (true)  then P:Proc             ] => type[ "true"  ;; type[P] ;; type[#truncate] ]  // if true  then P
-  rule type[ if (false) then P:Proc             ] => type[ "false" ;; type[P] ;; type[#truncate] ]  // if false then P
+// Conditionals and Patterns
+  rule type[ if (B:BExp) then P:Proc     ] => type[ "ifthen" ;; type[B]  ;; type[P] ]  // if true/false then P
+  rule type[ if (B:BExp) then P:ProcPat  ] => type[ "ifthen" ;; type[B]  ;; type[P] ]  // if true/false then P
 
-  rule type[ if (true)  then P:Proc else Q:Proc ] => type[ "true"  ;; type[P] ;; type[Q]         ]  // if true  then P else Q
-  rule type[ if (false) then P:Proc else Q:Proc ] => type[ "false" ;; type[P] ;; type[Q]         ]  // if false then P else Q
+  rule type[ P:IfThen    else Q:Proc     ] => type[ "else"   ;; type[P] ;; type[Q] ]  // if true/false then P else Q
+  rule type[ P:IfThenPat else Q:ProcPat  ] => type[ "else"   ;; type[P] ;; type[Q] ]  // if true/false then P else Q
 
 // Bundles
-  rule type[ bundle+{ P:Proc }           ] => type[ "bundle+" ;; type[P]    ;; type[#truncate] ]  // bundle+
-  rule type[ bundle-{ P:Proc }           ] => type[ "bundle-" ;; type[P]    ;; type[#truncate] ]  // bundle-
-  rule type[ bundle0{ P:Proc }           ] => type[ "bundle0" ;; type[P]    ;; type[#truncate] ]  // bundle0
-  rule type[ bundle { P:Proc }           ] => type[ "bundle"  ;; type[P]    ;; type[#truncate] ]  // bundle
+  rule type[ bundle+{ P:Proc }  ] => type[ "bundle+" ;; type[P] ;; type[#truncate] ]  // bundle+
+  rule type[ bundle-{ P:Proc }  ] => type[ "bundle-" ;; type[P] ;; type[#truncate] ]  // bundle-
+  rule type[ bundle0{ P:Proc }  ] => type[ "bundle0" ;; type[P] ;; type[#truncate] ]  // bundle0
+  rule type[ bundle { P:Proc }  ] => type[ "bundle"  ;; type[P] ;; type[#truncate] ]  // bundle
 
-// SimpleType
-  rule type[ ST:SimpleType               ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
-
-// Quote
-  rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process pattern
-  rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]            ;; type[#truncate] ]  // quoted process pattern
-
-// Collections
+// Collections and Patterns
 // RhoList
-  rule type[ [ P:Proc           ] ] => type[ "list"   ;; type[P]              ;; type[#truncate] ]  // singleton list
-  rule type[ [ P:Proc , Q:Proc  ] ] => type[ "list"   ;; type[P]              ;; type[Q]         ]  // 2 process list
-  rule type[ [ P:Proc , Q:Procs ] ] => type[ "list"   ;; type[P]              ;; type[Q]         ]  // N process list, N > 2
+  rule type[ [ P:Proc           ]               ] => type[ "list"    ;; type[P]   ;; type[#truncate] ]  // singleton list
+  rule type[ [ P:Proc , Q:Proc  ]               ] => type[ "list"    ;; type[P]   ;; type[Q]         ]  // 2 process list
+  rule type[ [ P:Proc , Q:Procs ]               ] => type[ "list"    ;; type[P]   ;; type[Q]         ]  // N process list, N > 2
+
+  rule type[ [ P:ProcPat , ... V:ProcVar ]      ] => type[ "listpat" ;; type[P]   ;; type[V]         ]
 
 // RhoMap
-  rule type[ P:Proc : Q:Proc                ] => type[ "kvpair"  ;; type[P]   ;; type[Q]         ]  // single key-value pair
-  rule type[ P:Proc : Q:Proc , R:RhoKVPairs ] => type[ "kvpairs" ;; type[P:Q] ;; type[R]         ]  // N key-value pairs, N > 2
+  rule type[ P:Proc : Q:Proc                        ] => type[ "kvpair"     ;; type[P]   ;; type[Q]         ]  // single key-value pair
+  rule type[ P:Proc : Q:Proc , R:RhoKVPairs         ] => type[ "kvpairs"    ;; type[P:Q] ;; type[R]         ]  // N key-value pairs, N > 2
+  rule type[ P:ProcPat : Q:ProcPat                  ] => type[ "kvpat"      ;; type[P]   ;; type[Q]         ]  // single key-value pair
+  rule type[ P:ProcPat : Q:ProcPat , R:RhoKVPat     ] => type[ "kvpats"     ;; type[P:Q] ;; type[R]         ]  // N key-value pairs, N > 2
 
-  rule type[ { P:Proc : Q:Proc                } ] => type[ "map" ;; type[P:Q] ;; type[#truncate] ]  // 2 key-value pairs map
-  rule type[ { P:Proc : Q:Proc , S:RhoKVPairs } ] => type[ "map" ;; type[P:Q] ;; type[S]         ]  // 2 key-value pairs map
+  rule type[ { P:Proc : Q:Proc                }         ] => type[ "map"    ;; type[P:Q] ;; type[#truncate] ]  // 1 key-value pair map
+  rule type[ { P:Proc : Q:Proc , S:RhoKVPairs }         ] => type[ "map"    ;; type[P:Q] ;; type[S]         ]  // N key-value pairs map
+  rule type[ { R:RhoKVPat , ... U:ProcVar : V:ProcVar } ] => type[ "mappat" ;; type[R]   ;; type[U:V]       ]  // map pattern
 
 // RhoSet
-  rule type[ Set( P:Proc           ) ] => type[ "set"        ;; type[P]      ;; type[#truncate] ]  // singleton set
-  rule type[ Set( P:Proc , Q:Proc  ) ] => type[ "set"        ;; type[P]      ;; type[Q]         ]  // 2 element set
-  rule type[ Set( P:Proc , Q:Procs ) ] => type[ "set"        ;; type[P]      ;; type[Q]         ]  // N element set, N > 2
+  rule type[ Set( P:Proc           )            ] => type[ "set"      ;; type[P]   ;; type[#truncate] ]  // singleton set
+  rule type[ Set( P:Proc , Q:Proc  )            ] => type[ "set"      ;; type[P]   ;; type[Q]         ]  // 2 element set
+  rule type[ Set( P:Proc , Q:Procs )            ] => type[ "set"      ;; type[P]   ;; type[Q]         ]  // N element set, N > 2
+
+  rule type[ Set ( P:ProcPat , ... V:ProcVar )  ] => type[ "setpat"   ;; type[P]   ;; type[V]         ]
 
 // RhoTuple
-  rule type[ tuple1( P:Proc           ) ] => type[ "tuple"    ;; type[P]     ;; type[#truncate] ]  // single process set
-  rule type[ tuple2( P:Proc , Q:Proc  ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // 2 process set
-  rule type[ tuplen( P:Proc , Q:Procs ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // N process set, N > 2
+  rule type[ tuple1( P:Proc           )         ] => type[ "tuple"    ;; type[P]   ;; type[#truncate] ]  // single process set
+  rule type[ tuple2( P:Proc , Q:Proc  )         ] => type[ "tuple"    ;; type[P]   ;; type[Q]         ]  // 2 process set
+  rule type[ tuplen( P:Proc , Q:Procs )         ] => type[ "tuple"    ;; type[P]   ;; type[Q]         ]  // N process set, N > 2
 
-// Collection Pattern
-// RhoListPat
-  rule type[ [ P:ProcPat , ... V:ProcVar ]     ] => type[ "listpat" ;; type[P] ;; type[V] ]
+  rule type[ ( P:ProcPat , ... V:ProcVar  )     ] => type[ "tuplepat" ;; type[P]   ;; type[V]         ]
 
-// RhoSetPat
-  rule type[ Set ( P:ProcPat , ... V:ProcVar ) ] => type[ "setpat" ;; type[P] ;; type[V] ]
-
-// PatTuple
-  rule type[ pattup1( P:ProcPat              ) ] => type[ "tuple"    ;; type[P]     ;; type[#truncate] ]  // single process set
-  rule type[ pattup2( P:ProcPat , Q:ProcPat  ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // 2 process set
-  rule type[ pattupn( P:ProcPat , Q:ProcPats ) ] => type[ "tuple"    ;; type[P]     ;; type[Q]         ]  // N process set, N > 2
+  rule type[ pat1( P:ProcPat              )     ] => type[ "pattuple" ;; type[P]   ;; type[#truncate] ]  // single process set
+  rule type[ pat2( P:ProcPat , Q:ProcPat  )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // 2 process set
+  rule type[ patn( P:ProcPat , Q:ProcPats )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // N process set, N > 2
 
 // Several Names/Pats
-  rule type[ M:Name , N:Name        ] => type[ "names"     ;; type[M]        ;; type[N]         ]  // 2 names
-  rule type[ M:Name , N:Names       ] => type[ "names"     ;; type[M]        ;; type[N]         ]  // N names, N > 2
+  rule type[ M:Name , N:Name        ] => type[ "names"    ;; type[M] ;; type[N] ]  // 2 names
+  rule type[ M:Name , N:Names       ] => type[ "names"    ;; type[M] ;; type[N] ]  // N names, N > 2
 
-  rule type[ M:NamePat , N:NamePat  ] => type[ "namepats"  ;; type[M]        ;; type[N]         ]  // 2 name patterns
-  rule type[ M:NamePat , N:NamePats ] => type[ "namepats"  ;; type[M]        ;; type[N]         ]  // N name patterns, N > 2
+  rule type[ M:NamePat , N:NamePat  ] => type[ "namepats" ;; type[M] ;; type[N] ]  // 2 name patterns
+  rule type[ M:NamePat , N:NamePats ] => type[ "namepats" ;; type[M] ;; type[N] ]  // N name patterns, N > 2
 
 // Several Procs/Pats
-  rule type[ P:Proc , Q:Proc        ] => type[ "procs"     ;; type[P]        ;; type[Q]         ]  // 2 processes
-  rule type[ P:Proc , Q:Procs       ] => type[ "procs"     ;; type[P]        ;; type[Q]         ]  // N processes, N > 2
+  rule type[ P:Proc , Q:Proc        ] => type[ "procs"    ;; type[P] ;; type[Q] ]  // 2 processes
+  rule type[ P:Proc , Q:Procs       ] => type[ "procs"    ;; type[P] ;; type[Q] ]  // N processes, N > 2
 
-  rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // 2 process patterns
-  rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // N process patterns, N > 2
+  rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats" ;; type[P] ;; type[Q] ]  // 2 process patterns
+  rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats" ;; type[P] ;; type[Q] ]  // N process patterns, N > 2
+
+// Arithmetic
+  rule type[ A:AExp * B:AExp  ] => type[ "mult"   ;; type[A] ;; type[B]         ]  // multiplication
+  rule type[ A:AExp + B:AExp  ] => type[ "plus"   ;; type[A] ;; type[B]         ]  // addition
+  rule type[ A:AExp - B:AExp  ] => type[ "minus"  ;; type[A] ;; type[B]         ]  // subtraction
+
+// Boolean
+  rule type[ A:AExp <=  B:AExp ] => type[ "leq"   ;; type[A] ;; type[B]         ]  // leq
+  rule type[ A:BExp and B:BExp ] => type[ "and"   ;; type[A] ;; type[B]         ]  // bool and
+  rule type[ A:BExp or  B:BExp ] => type[ "or"    ;; type[A] ;; type[B]         ]  // bool or
+  rule type[   not A:BExp      ] => type[ "not"   ;; type[A] ;; type[#truncate] ]  // bool not
+
+// Methods
+  rule type[ P:Proc    . M:MethodAndArgs ] => type[ "method"        ;; type[P] ;; type[M] ]  // Method
+  rule type[ P:ProcPat . M:MethodAndArgs ] => type[ "method"        ;; type[P] ;; type[M] ]  // Method pattern
+  rule type[ M:Method (  A:MethodArgs )  ] => type[ "methodandargs" ;; type[M] ;; type[A] ]  // Method and Args
 
 // Resolving brackets
   rule type[ { P:ProcOrPat } ] => type[P]  // bracketed ProcOrPat type resolution
