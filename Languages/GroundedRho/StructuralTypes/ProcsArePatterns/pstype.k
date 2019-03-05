@@ -1,10 +1,5 @@
 // Structural type system for Grounded RHO-CALCULUS
 // Type is a structural binary tree
-/*
-  TO ADD:
-  Variable ref
-  CollectionPat - list, set
-*/
 
 require "domains.k"
 
