@@ -1,0 +1,8 @@
+// Type - new
+
+ type[ new @x , @y , @z( uri("abc") ) in { { @x!(y) : for( @y <! @z ){ @y!(Nil) } , x : y , for( @z <= @Nil ){ Nil } : z } } ]
+
+/*
+  Output:
+  
+*/
