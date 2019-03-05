@@ -175,10 +175,10 @@ module STYPE-SYNTAX
   syntax            Match ::= "match" Proc "{" MatchCase  "}"                        // 
                             | "match" Proc "{" MatchCases "}"                        // 
 
-  syntax        MatchCase ::= ProcPat "=>" Proc                     [klabel(match)]  // _=>_: ProcPat x Proc ---> MatchCase
+  syntax        MatchCase ::= ProcPat "=|" Proc                     [klabel(match)]  // _=>_: ProcPat x Proc ---> MatchCase
 
-  syntax       MatchCases ::= MatchCase MatchCase                                    // _ _: MatchCase x MatchCase ----> MatchCase
-                            | MatchCase MatchCases                                   // _ _: MatchCase x MatchCases ---> MatchCases
+  syntax       MatchCases ::= MatchCase MatchCase                 [klabel(matches)]  // _ _: MatchCase x MatchCase ----> MatchCase
+                            | MatchCase MatchCases                [klabel(matches)]  // _ _: MatchCase x MatchCases ---> MatchCases
 
 // Methods
   syntax       MethodProc ::= Proc "." Method "(" MethodArgs ")"                     // _._(_): Proc x Method x MethodArgs ---> Proc
@@ -369,6 +369,8 @@ module STYPE-SYNTAX
                             | "type[" Binds        "]"                               // type[_]: Binds ---------> InitialType
                             | "type[" BindNamePat  "]"                               // type[_]: BindNamePat ---> InitialType
                             | "type[" BindNamePats "]"                               // type[_]: BindNamePat ---> InitialType
+                            | "type[" MatchCase    "]"
+                            | "type[" MatchCases   "]"
 
 //  Intermediate type - type[_;;_;;_]: String x IntermediateType x IntermediateType ---> IntermediateType
   syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
@@ -582,7 +584,13 @@ module STYPE
   rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // N process patterns, N > 2
 
 // Match
-// MathCase(s)
+  rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]
+  rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]
+
+  rule type[ M:ProcPat =| P:Proc     ] => type[ "case"  ;; type[M] ;; type[P] ]
+  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]
+  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]
+
 // VarRef
 // Methods
 // AExp

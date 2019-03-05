@@ -1,0 +1,8 @@
+// Type - match
+
+  type[ match x { WildProc =| @x1!(Nil) WildProc =| @x2!(Nil) WildProc =| @x3!(Nil) } ]
+
+/*
+  Output:
+  type[ "match" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "cases" ;; type[ "case" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x1 ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ] ;; type[ "cases" ;; type[ "case" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x2 ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ] ;; type[ "case" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x3 ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ] ] ] ]
+*/
