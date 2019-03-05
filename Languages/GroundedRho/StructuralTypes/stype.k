@@ -23,6 +23,7 @@ module STYPE-SYNTAX
   syntax             Name ::= "{" Name "}"                                [bracket]
                             > "@" Proc                               [klabel(name)]  // @: Proc -----> Name
                             | Unforgeable                                            //  Unforgeable < Name
+                            | "@" ProcVar "(" Uri ")"                                // @_(_): ProcVar x Uri ---> Name
 
 // Unforgeable name
   syntax      Unforgeable ::= "unforgeable(" Int ")"                                 // unforgeable(_): Int ---> Name
@@ -39,8 +40,8 @@ module STYPE-SYNTAX
 
 // Several Names
   syntax            Names ::= "{" Names "}"                               [bracket]
-                            | Name "," Name                         [klabel(names)]  // _,_: Name  x Name ---> Names
-                            | Name "," Names                        [klabel(names)]  // _,_: Names x Name ---> Names
+                            | Name "," Name                                          // _,_: Name  x Name ---> Names
+                            | Name "," Names                                         // _,_: Names x Name ---> Names
 
 // Several Name Patterns
   syntax         NamePats ::= "{" NamePats "}"                            [bracket]
@@ -167,14 +168,8 @@ module STYPE-SYNTAX
                             | "bundle"  "{" Proc "}"                                 // read/write bundle
 
 // New
-  syntax              New ::= "new" NameDeclaration  "in" "{" Proc "}"     [binder]  // 1 name declaration
-                            | "new" NameDeclarations "in" "{" Proc "}"     [binder]  // N > 1 name declarations
-
-  syntax  NameDeclaration ::= "@" ProcVar                            [klabel(ndec)]  //    @_: ProcVar ---------> NameDeclaration
-                            | "@" ProcVar "(" Uri ")"                                // @_(_): ProcVar x Uri ---> NameDeclaration
-
-  syntax NameDeclarations ::= NameDeclaration "," NameDeclaration   [klabel(ndecs)]  // _,_: NameDeclaration x NameDeclaration ----> NameDeclarations
-                            | NameDeclaration "," NameDeclarations  [klabel(ndecs)]  // _,_: NameDeclaration x NameDeclarations ---> NameDeclarations
+  syntax              New ::= "new" Name  "in" "{" Proc "}"                [binder]  // 1 name declaration
+                            | "new" Names "in" "{" Proc "}"                [binder]  // N > 1 name declarations
 
 // Match
   syntax            Match ::= "match" Proc "{" MatchCase  "}"                        // 
@@ -370,12 +365,10 @@ module STYPE-SYNTAX
 
 //  Initial type
   syntax      InitialType ::= OrPatOrLeafType                                        //         OrPatOrLeafType < InitialType
-                            | "type[" Bind             "]"                           // type[_]: Bind ----------> InitialType
-                            | "type[" Binds            "]"                           // type[_]: Binds ---------> InitialType
-                            | "type[" BindNamePat      "]"                           // type[_]: BindNamePat ---> InitialType
-                            | "type[" BindNamePats     "]"                           // type[_]: BindNamePat ---> InitialType
-                            | "type[" NameDeclaration  "]"                           // 
-                            | "type[" NameDeclarations "]"                           // 
+                            | "type[" Bind         "]"                               // type[_]: Bind ----------> InitialType
+                            | "type[" Binds        "]"                               // type[_]: Binds ---------> InitialType
+                            | "type[" BindNamePat  "]"                               // type[_]: BindNamePat ---> InitialType
+                            | "type[" BindNamePats "]"                               // type[_]: BindNamePat ---> InitialType
 
 //  Intermediate type - type[_;;_;;_]: String x IntermediateType x IntermediateType ---> IntermediateType
   syntax IntermediateType ::= "type[" String ";;" IntermediateType ";;" IntermediateType "]"  [strict(2,3)]
@@ -439,7 +432,7 @@ module STYPE
   rule type[ S:String                    ] => type[ "leaf"  ;; "string"      ;; S       ]  // String ===============> Leaf
 
 // Process Variable
-  rule type[ X:ProcVar                   ] => type[ "leaf"  ;; "procvar"     ;; X       ]  // ProcVar ===============> Leaf
+  rule type[ V:ProcVar                   ] => type[ "leaf"  ;; "procvar"     ;; V       ]  // ProcVar ===============> Leaf
 
 // Nil
   rule type[ Nil                         ] => type[ "leaf"  ;; "nil"         ;; "Nil"   ]  // Nil ===================> Leaf
@@ -485,13 +478,19 @@ module STYPE
   rule type[ A:Rbind ; B:Rbind           ] => type[ "pbinds"   ;; type[A]    ;; type[B] ]  // 2 persistent binds
   rule type[ A:Rbind ; B:Rbinds          ] => type[ "pbinds"   ;; type[A]    ;; type[B] ]  // N persistent binds, N > 2
 
-  rule type[ for( R:Bind  ){ P:Proc    } ] => type[ "receive"  ;; type[R]    ;; type[P] ]  // Receive
-  rule type[ for( R:Bind  ){ P:ProcPat } ] => type[ "receive"  ;; type[R]    ;; type[P] ]  // Receive pattern
-  rule type[ for( R:Binds ){ P:Proc    } ] => type[ "receives" ;; type[R]    ;; type[P] ]  // Receive
-  rule type[ for( R:Binds ){ P:ProcPat } ] => type[ "receives" ;; type[R]    ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Bind  ){ P:Proc    } ] => type[ "receive"  ;; type[B]    ;; type[P] ]  // Receive
+  rule type[ for( B:Bind  ){ P:ProcPat } ] => type[ "receive"  ;; type[B]    ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives" ;; type[B]    ;; type[P] ]  // Receive
+  rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives" ;; type[B]    ;; type[P] ]  // Receive pattern
 
   rule type[ contract X:Name ( Y:BindNamePat  ) = { P:Proc } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]
   rule type[ contract X:Name ( Y:BindNamePats ) = { P:Proc } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]
+
+// New
+ rule type[ new N:Name  in { P:Proc } ] => type[ "new" ;; type[N] ;; type[P] ]
+ rule type[ new N:Names in { P:Proc } ] => type[ "new" ;; type[N] ;; type[P] ]
+
+ rule type[ @ V:ProcVar ( U:Uri ) ] => type[ "newuri"  ;; type[V] ;; type[U] ]
 
 // ParOrPat
   rule type[ P:Proc    | Q:Proc          ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par
@@ -558,7 +557,10 @@ module STYPE
 
 // Collection Pattern
 // RhoListPat
+  rule type[ [ P:ProcPat , ... V:ProcVar ]     ] => type[ "listpat" ;; type[P] ;; type[V] ]
+
 // RhoSetPat
+  rule type[ Set ( P:ProcPat , ... V:ProcVar ) ] => type[ "setpat" ;; type[P] ;; type[V] ]
 
 // PatTuple
   rule type[ pattup1( P:ProcPat              ) ] => type[ "tuple"    ;; type[P]     ;; type[#truncate] ]  // single process set
@@ -578,6 +580,13 @@ module STYPE
 
   rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // 2 process patterns
   rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // N process patterns, N > 2
+
+// Match
+// MathCase(s)
+// VarRef
+// Methods
+// AExp
+// BExp
 
 // Resolving brackets
   rule type[ { P:ProcOrPat } ] => type[P]  // bracketed ProcOrPat type resolution
