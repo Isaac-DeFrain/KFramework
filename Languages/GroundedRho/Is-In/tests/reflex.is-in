@@ -1,5 +1,7 @@
-// Structural type inclusion for pattern-matching - type[#truncate] #isIn type[@Nil]
+// Structural type inclusion for pattern-matching - T #isIn T
 
    type[ "par" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; a ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; b ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; c ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
    #isIn
    type[ "par" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; a ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; b ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; c ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
+
+// Output: true

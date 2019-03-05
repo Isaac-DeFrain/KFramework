@@ -1,5 +1,5 @@
 // Structural type inclusion for pattern-matching - #truncate
 
-  type[ "leaf" ;; "truncate" ;; #truncate ] #isIn type[ #truncate ]
+  type[ #truncate ] #isIn type[ #truncate ]
 
 // Output: true

@@ -384,6 +384,7 @@ module STYPE-SYNTAX
                             | "Int"                                                  //         "Int" < SimpleType
                             | "List"                                                 //        "List" < SimpleType
                             | "Map"                                                  //         "Map" < SimpleType
+                            | "Method"                                               //     "Methgod" < SimpleType
                             | "Set"                                                  //         "Set" < SimpleType
                             | "String"                                               //      "String" < SimpleType
                             | "Tuple"                                                //       "Tuple" < SimpleType

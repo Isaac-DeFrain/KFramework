@@ -1,4 +1,5 @@
-// Structural type inclusion for pattern-matching - SimpleType: 42 matches Int
+// Structural type inclusion for pattern-matching
+// SimpleType: 42 matches Int
 
   type[ "leaf" ;; "int" ;; 42 ]
   #isIn 
