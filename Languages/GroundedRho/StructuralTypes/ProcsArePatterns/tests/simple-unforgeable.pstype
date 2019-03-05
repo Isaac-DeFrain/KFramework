@@ -1,0 +1,8 @@
+// Structural Type - simpletype unforgeable
+
+  type[ Unforgeable ]
+
+/*
+  Output:
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Unforgeable ) ] ;; type[ #truncate ] ]
+*/

@@ -1,0 +1,8 @@
+// Type - tuple
+
+ type[ ( @x!(y) , @y!(@z!(Nil)), *@z , x ) ]
+
+/*
+  Output:
+  type[ "tuple" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ] ;; type[ "procs" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; z ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ] ;; type[ "procs" ;; type[ "eval" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; z ] ;; type[ #truncate ] ] ;; type[ #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ] ]
+*/

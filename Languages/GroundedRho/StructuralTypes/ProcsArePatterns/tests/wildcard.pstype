@@ -1,0 +1,8 @@
+// Structural Type - pattern
+
+ type[ for( WildName <- x ){1} ]
+
+/*
+  Output:
+  
+*/
