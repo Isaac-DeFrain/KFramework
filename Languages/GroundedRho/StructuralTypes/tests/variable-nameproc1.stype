@@ -1,3 +1,8 @@
-// Type - process variable and name variable
+// STructural Type - variable channel
 
-  type[ @P!(Nil) ]
+  type[ @chan!(Nil) ]
+
+/*
+  Output:
+  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; chan ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ]
+*/
