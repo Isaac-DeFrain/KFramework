@@ -1,7 +1,7 @@
 // Structural type inclusion for pattern-matching - @Nil does not match @x
 
-  type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+  type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ]
   #isIn
-  type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+  type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ]
 
 // Output: false

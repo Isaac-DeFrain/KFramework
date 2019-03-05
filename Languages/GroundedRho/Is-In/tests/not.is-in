@@ -2,4 +2,4 @@
 
    type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ]
    #isIn
-   type[ "not" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+   type[ "not" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ]
