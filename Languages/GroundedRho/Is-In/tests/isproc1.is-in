@@ -1,0 +1,6 @@
+// Structural type inclusion for pattern-matching
+// Is @{unforgeable(12)!(uri("Nil"))}!(Nil) in Process?
+
+  #isProc type[ "send" ;; type[ "quote" ;; type[ "send" ;; type[ "leaf" ;; "unforgeable" ;; 12 ] ;; type[ "leaf" ;; "uri" ;; "Nil" ] ] ;; type[#truncate] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+
+// Output: true
