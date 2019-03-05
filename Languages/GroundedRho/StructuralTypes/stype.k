@@ -526,14 +526,17 @@ module STYPE
   rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive
   rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive pattern
 
+// Contract and Pattern
   rule type[ contract X:Name ( Y:BindNamePat  ) = { P:Proc    } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract, 1 name declared
   rule type[ contract X:Name ( Y:BindNamePats ) = { P:Proc    } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract, N names declared, N > 1
   rule type[ contract X:Name ( Y:BindNamePat  ) = { P:ProcPat } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract pattern, 1 name declared
   rule type[ contract X:Name ( Y:BindNamePats ) = { P:ProcPat } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract pattern, N names declared, N > 1
 
-// New
- rule type[ new N:Name  in { P:Proc }    ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new binding
- rule type[ new N:Names in { P:Proc }    ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new bindings
+// New and Pattern
+ rule type[ new N:Name  in { P:Proc    } ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new binding
+ rule type[ new N:Names in { P:Proc    } ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new bindings
+ rule type[ new N:Name  in { P:ProcPat } ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new binding pattern
+ rule type[ new N:Names in { P:ProcPat } ] => type[ "new"     ;; type[N]    ;; type[P] ]  // new bindings pattern
 
  rule type[ @ V:ProcVar ( U:Uri )        ] => type[ "newuri"  ;; type[V]    ;; type[U] ]  // new uri name declaration
 
@@ -617,35 +620,35 @@ module STYPE
   rule type[ pat2( P:ProcPat , Q:ProcPat  )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // 2 process set
   rule type[ patn( P:ProcPat , Q:ProcPats )     ] => type[ "pattuple" ;; type[P]   ;; type[Q]         ]  // N process set, N > 2
 
-// Several Names/Pats
-  rule type[ M:Name , N:Name        ] => type[ "names"    ;; type[M] ;; type[N] ]  // 2 names
-  rule type[ M:Name , N:Names       ] => type[ "names"    ;; type[M] ;; type[N] ]  // N names, N > 2
+// Method and Pattern
+  rule type[ P:Proc    . M:MethodAndArgs  ] => type[ "method"         ;; type[P]   ;; type[M] ]  // Method
+  rule type[ P:ProcPat . M:MethodAndArgs  ] => type[ "method"         ;; type[P]   ;; type[M] ]  // Method pattern
+  rule type[ M:Method (  A:MethodArgs )   ] => type[ "methodandargs"  ;; type[M]   ;; type[A] ]  // Method and Args
 
-  rule type[ M:NamePat , N:NamePat  ] => type[ "namepats" ;; type[M] ;; type[N] ]  // 2 name patterns
-  rule type[ M:NamePat , N:NamePats ] => type[ "namepats" ;; type[M] ;; type[N] ]  // N name patterns, N > 2
+// Several Names/Pats
+  rule type[ M:Name , N:Name        ] => type[ "names"     ;; type[M] ;; type[N] ]  // 2 names
+  rule type[ M:Name , N:Names       ] => type[ "names"     ;; type[M] ;; type[N] ]  // N names, N > 2
+
+  rule type[ M:NamePat , N:NamePat  ] => type[ "namepats"  ;; type[M] ;; type[N] ]  // 2 name patterns
+  rule type[ M:NamePat , N:NamePats ] => type[ "namepats"  ;; type[M] ;; type[N] ]  // N name patterns, N > 2
 
 // Several Procs/Pats
-  rule type[ P:Proc , Q:Proc        ] => type[ "procs"    ;; type[P] ;; type[Q] ]  // 2 processes
-  rule type[ P:Proc , Q:Procs       ] => type[ "procs"    ;; type[P] ;; type[Q] ]  // N processes, N > 2
+  rule type[ P:Proc , Q:Proc        ] => type[ "procs"     ;; type[P] ;; type[Q] ]  // 2 processes
+  rule type[ P:Proc , Q:Procs       ] => type[ "procs"     ;; type[P] ;; type[Q] ]  // N processes, N > 2
 
-  rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats" ;; type[P] ;; type[Q] ]  // 2 process patterns
-  rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats" ;; type[P] ;; type[Q] ]  // N process patterns, N > 2
+  rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats"  ;; type[P] ;; type[Q] ]  // 2 process patterns
+  rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats"  ;; type[P] ;; type[Q] ]  // N process patterns, N > 2
 
 // Arithmetic
-  rule type[ A:AExp * B:AExp  ] => type[ "mult"   ;; type[A] ;; type[B]         ]  // multiplication
-  rule type[ A:AExp + B:AExp  ] => type[ "plus"   ;; type[A] ;; type[B]         ]  // addition
-  rule type[ A:AExp - B:AExp  ] => type[ "minus"  ;; type[A] ;; type[B]         ]  // subtraction
+  rule type[ A:AExp * B:AExp        ] => type[ "mult"      ;; type[A] ;; type[B] ]  // multiplication
+  rule type[ A:AExp + B:AExp        ] => type[ "plus"      ;; type[A] ;; type[B] ]  // addition
+  rule type[ A:AExp - B:AExp        ] => type[ "minus"     ;; type[A] ;; type[B] ]  // subtraction
 
 // Boolean
-  rule type[ A:AExp <=  B:AExp ] => type[ "leq"   ;; type[A] ;; type[B]         ]  // leq
-  rule type[ A:BExp and B:BExp ] => type[ "and"   ;; type[A] ;; type[B]         ]  // bool and
-  rule type[ A:BExp or  B:BExp ] => type[ "or"    ;; type[A] ;; type[B]         ]  // bool or
-  rule type[   not A:BExp      ] => type[ "not"   ;; type[A] ;; type[#truncate] ]  // bool not
-
-// Methods
-  rule type[ P:Proc    . M:MethodAndArgs ] => type[ "method"        ;; type[P] ;; type[M] ]  // Method
-  rule type[ P:ProcPat . M:MethodAndArgs ] => type[ "method"        ;; type[P] ;; type[M] ]  // Method pattern
-  rule type[ M:Method (  A:MethodArgs )  ] => type[ "methodandargs" ;; type[M] ;; type[A] ]  // Method and Args
+  rule type[ A:AExp <=  B:AExp      ] => type[ "leq"       ;; type[A] ;; type[B] ]  // leq
+  rule type[ A:BExp and B:BExp      ] => type[ "and"       ;; type[A] ;; type[B] ]  // bool and
+  rule type[ A:BExp or  B:BExp      ] => type[ "or"        ;; type[A] ;; type[B] ]  // bool or
+  rule type[   not A:BExp           ] => type[ "not"       ;; type[A] ;; type[#truncate] ]  // bool not
 
 // Resolving brackets
   rule type[ { P:ProcOrPat } ] => type[P]  // bracketed ProcOrPat type resolution
