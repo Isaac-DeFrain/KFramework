@@ -2,5 +2,4 @@
 
   #isPat type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool )] ;; type[ #truncate ] ]
 
-
 // Output: true

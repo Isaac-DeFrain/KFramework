@@ -1,7 +1,0 @@
-// Structural type inclusion for pattern-matching - pattern
-
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool )] ;; type[ #truncate ] ]
-  #isIn
-  Pattern
-
-// Output: true

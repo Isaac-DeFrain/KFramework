@@ -2,4 +2,6 @@
 
    type[ "leaf" ;; "int" ;; 2 ]
    #isIn
-   type[ "and" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ;; type[ "leaf" ;; "int" ;; 2 ] ]
+   type[ "andpat" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ;; type[ "leaf" ;; "int" ;; 2 ] ]
+
+// Output: true

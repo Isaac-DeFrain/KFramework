@@ -3,6 +3,6 @@
 
   type[ "leaf" ;; "int" ;; 42 ]
   #isIn 
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ]
 
 // Output: true

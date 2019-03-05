@@ -4,4 +4,4 @@
    #isIn
    type[ "par" ;; type[ "par" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ #truncate ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ]
 
-/* Output: true */
+// Output: true
