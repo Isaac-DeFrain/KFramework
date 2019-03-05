@@ -167,8 +167,8 @@ module STYPE-SYNTAX
                             | "new" Names "in" "{" Proc "}"                [binder]  // N > 1 name declarations
 
 // Match
-  syntax            Match ::= "match" Proc "{" MatchCase  "}"                        // 
-                            | "match" Proc "{" MatchCases "}"                        // 
+  syntax            Match ::= "match" Proc "{" MatchCase  "}"                        // 1 match case
+                            | "match" Proc "{" MatchCases "}"                        // N match cases, N > 1
 
   syntax        MatchCase ::= ProcPat ":=>" Proc                                     // _:=>_: ProcPat x Proc ----------> MatchCase
 
@@ -197,9 +197,9 @@ module STYPE-SYNTAX
 	                          | "slice"                                                // slice of list, map, or set
 	                          | "confine"                                              // still not in interpreter? semantics?
 
-  syntax       MethodArgs ::= ""
-                            | Proc
-                            | Procs
+  syntax       MethodArgs ::= ""                                                     // 0 arguments
+                            | Proc                                                   // 1 argument
+                            | Procs                                                  // N arguments, N > 2
 
 // Expressions
   syntax             AExp ::= "(" AExp ")"                                [bracket]  //     (_): AExp ------> AExp
@@ -384,7 +384,6 @@ module STYPE-SYNTAX
                             | "Int"                                                  //         "Int" < SimpleType
                             | "List"                                                 //        "List" < SimpleType
                             | "Map"                                                  //         "Map" < SimpleType
-                            | "Method"                                               //     "Methgod" < SimpleType
                             | "Set"                                                  //         "Set" < SimpleType
                             | "String"                                               //      "String" < SimpleType
                             | "Tuple"                                                //       "Tuple" < SimpleType
