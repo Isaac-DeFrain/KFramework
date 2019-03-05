@@ -1,0 +1,8 @@
+// Type - method
+
+  type[ Set(1,x,y,4,z).confine(x,y,z) ]
+
+/*
+  Output:
+  
+*/
