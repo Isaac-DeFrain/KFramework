@@ -231,7 +231,7 @@ module STYPE-SYNTAX
                             | "contract" Name "(" BindNamePats ")" "=" "{" Proc "}"  // syntactic sugar => for( BindNamePats <= Name ){ Proc }
 
 // Variable Refernces - Makes it so we _don't_ shadow the variable referenced
-  syntax           VarRef ::= "="     ProcVar                                        //   =_: ProcVar -------> VarRef
+  syntax           VarRef ::= "=:" ProcVar                                           //  =:_: ProcVar -------> VarRef
 
 // Several Processes
   syntax            Procs ::= "{" Procs "}"                               [bracket]  // {_}: Procs ----------> Procs
@@ -408,6 +408,10 @@ module STYPE
 
   syntax KResult ::= TerminalType
 
+// Methods
+// AExp
+// BExp
+
 // Arithmetic
   rule A:Int + B:Int => A +Int B  [anywhere]
   rule A:Int * B:Int => A *Int B  [anywhere]
@@ -500,6 +504,17 @@ module STYPE
   rule type[ P:ProcPat | Q:Proc          ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
   rule type[ P:ProcPat | Q:ProcPat       ] => type[ "par"     ;; type[P]    ;; type[Q] ]  // Par pattern
 
+// Match
+  rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]
+  rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]
+
+  rule type[ M:ProcPat =| P:Proc     ] => type[ "case"  ;; type[M] ;; type[P] ]
+  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]
+  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]
+
+// VarRef
+  rule type[ =: V:ProcVar ] => type[ "varref" ;; type[V] ;; type[#truncate] ]
+
 // Logical Patterns
   rule type[ P:Proc    /\ Q:Proc         ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
   rule type[ P:Proc    /\ Q:ProcPat      ] => type[ "and"     ;; type[P]    ;; type[Q] ]  // logical and
@@ -582,19 +597,6 @@ module STYPE
 
   rule type[ P:ProcPat , Q:ProcPat  ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // 2 process patterns
   rule type[ P:ProcPat , Q:ProcPats ] => type[ "procpats"  ;; type[P]        ;; type[Q]         ]  // N process patterns, N > 2
-
-// Match
-  rule type[ match P:Proc { M:MatchCase  } ] => type[ "match" ;; type[P] ;; type[M] ]
-  rule type[ match P:Proc { M:MatchCases } ] => type[ "match" ;; type[P] ;; type[M] ]
-
-  rule type[ M:ProcPat =| P:Proc     ] => type[ "case"  ;; type[M] ;; type[P] ]
-  rule type[ M:MatchCase N:MatchCase ] => type[ "cases" ;; type[M] ;; type[N] ]
-  rule type[ M:MatchCase N:MatchCases] => type[ "cases" ;; type[M] ;; type[N] ]
-
-// VarRef
-// Methods
-// AExp
-// BExp
 
 // Resolving brackets
   rule type[ { P:ProcOrPat } ] => type[P]  // bracketed ProcOrPat type resolution
