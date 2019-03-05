@@ -1,5 +1,5 @@
-// The isIn predicate - checks for type inclusion
-// Need normalizer for par structural inclusion?
+// The #isIn predicate - checks for type inclusion
+// Normalizer needed for par structural inclusion?
 
 require "domains.k"
 require "../StructuralTypes/stype.k"
@@ -9,7 +9,10 @@ module IS-IN-SYNTAX
   import STYPE-SYNTAX
 
 // The type inclusion predicate
-  syntax    Bool ::= Type "#isIn" Type          [function]
+  syntax    Bool ::= Type "#isIn"   Type     [function]
+                   |      "#isName" Type     [function]
+                   |      "#isProc" Type     [function]
+								   |      "#isPat"  Type     [function]
 
 // Name, Process, Pattern types for #isName, #isProc, #isPat predicates
   syntax    Type ::= "Name"
@@ -63,13 +66,23 @@ module IS-IN
 //--- Leaves ---
 // SimpleTypes
 // Each bool, integer, string has only one inhabitant <=> concrete processes
-  rule T:Type #isIn type[ "leaf" ;; "bool"        ;; B:Bool    ] => T ==K type[ "leaf" ;; "bool"        ;;  B    ]
-  rule T:Type #isIn type[ "leaf" ;; "int"         ;; I:Int     ] => T ==K type[ "leaf" ;; "int"         ;;  I    ]
-  rule T:Type #isIn type[ "leaf" ;; "procvar"     ;; X:ProcVar ] => T ==K type[ "leaf" ;; "procvar"     ;;  X    ]
-  rule T:Type #isIn type[ "leaf" ;; "nil"         ;; "Nil"     ] => T ==K type[ "leaf" ;; "nil"         ;; "Nil" ]
-  rule T:Type #isIn type[ "leaf" ;; "string"      ;; S:String  ] => T ==K type[ "leaf" ;; "string"      ;;  S    ]
-  rule T:Type #isIn type[ "leaf" ;; "unforgeable" ;; I:Int     ] => T ==K type[ "leaf" ;; "unforgeable" ;;  I    ]
-  rule T:Type #isIn type[ "leaf" ;; "uri"         ;; S:String  ] => T ==K type[ "leaf" ;; "uri"         ;;  S    ]
+  rule T:Type #isIn type[ "leaf"  ;; "bool"        ;; B:Bool    ] => T ==K type[ "leaf" ;; "bool"        ;;  B    ]
+  rule T:Type #isIn type[ "leaf"  ;; "int"         ;; I:Int     ] => T ==K type[ "leaf" ;; "int"         ;;  I    ]
+  rule T:Type #isIn type[ "leaf"  ;; "procvar"     ;; X:ProcVar ] => T ==K type[ "leaf" ;; "procvar"     ;;  X    ]
+  rule T:Type #isIn type[ "leaf"  ;; "nil"         ;; "Nil"     ] => T ==K type[ "leaf" ;; "nil"         ;; "Nil" ]
+  rule T:Type #isIn type[ "leaf"  ;; "string"      ;; S:String  ] => T ==K type[ "leaf" ;; "string"      ;;  S    ]
+  rule T:Type #isIn type[ "leaf"  ;; "unforgeable" ;; I:Int     ] => T ==K type[ "leaf" ;; "unforgeable" ;;  I    ]
+  rule T:Type #isIn type[ "leaf"  ;; "uri"         ;; S:String  ] => T ==K type[ "leaf" ;; "uri"         ;;  S    ]
+  rule T:Type #isIn type[ "empty" ;; "method"      ;; "args"    ] => T ==K type[ "empty" ;; "method" ;; "args" ]
+
+  rule type[ "leaf"  ;; "bool"        ;; B:Bool    ] #isIn T:Type => T ==K type[ "leaf" ;; "bool"        ;;  B    ]
+  rule type[ "leaf"  ;; "int"         ;; I:Int     ] #isIn T:Type => T ==K type[ "leaf" ;; "int"         ;;  I    ]
+  rule type[ "leaf"  ;; "procvar"     ;; X:ProcVar ] #isIn T:Type => T ==K type[ "leaf" ;; "procvar"     ;;  X    ]
+  rule type[ "leaf"  ;; "nil"         ;; "Nil"     ] #isIn T:Type => T ==K type[ "leaf" ;; "nil"         ;; "Nil" ]
+  rule type[ "leaf"  ;; "string"      ;; S:String  ] #isIn T:Type => T ==K type[ "leaf" ;; "string"      ;;  S    ]
+  rule type[ "leaf"  ;; "unforgeable" ;; I:Int     ] #isIn T:Type => T ==K type[ "leaf" ;; "unforgeable" ;;  I    ]
+  rule type[ "leaf"  ;; "uri"         ;; S:String  ] #isIn T:Type => T ==K type[ "leaf" ;; "uri"         ;;  S    ]
+  rule type[ "empty" ;; "method"      ;; "args"    ] #isIn T:Type => T ==K type[ "empty" ;; "method" ;; "args" ]
 
 // Each bool is in Bool
   rule type[ "leaf" ;; S:String ;; _:Leaf ]
@@ -101,6 +114,12 @@ module IS-IN
        type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Map )         ] ;; type[ #truncate ] ]
        => S ==String "map"
 
+// Each method is in Method
+  rule type[ "leaf" ;; S:String ;; _:Leaf ]
+       #isIn
+       type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Method )      ] ;; type[ #truncate ] ]
+       => S ==String "method"
+
 // Each set is in Set
   rule type[ "leaf" ;; S:String ;; _:Leaf ]
        #isIn
@@ -131,19 +150,19 @@ module IS-IN
        type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Uri )         ] ;; type[ #truncate ] ]
        => S ==String "uri"
 
-// No constructed OrPats in SimplType
+// No constructed OrPats in SimpleType
   rule type[ "par"     ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
   rule type[ "quote"   ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
   rule type[ "send"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
   rule type[ "receive" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
   rule type[ "eval"    ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
-  rule type[ "not"     ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
-  rule type[ "and"     ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
-  rule type[ "or"      ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
+  rule type[ "patnot"  ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
+  rule type[ "patand"  ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
+  rule type[ "pator"   ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "simpletype" ;; _:IntermediateType ;; _:IntermediateType ] => false
 
 // #truncate
-// Only #truncate is in #truncate - collapsed or expanded
-  rule T:Type #isIn type[ #truncate ] => T ==K type[#truncate] orBool T ==K type[ #truncate ]
+// Only #truncate is in #truncate
+  rule T:Type #isIn type[ #truncate ] => T ==K type[#truncate]
 
 // #truncate is in Eval, Quote, SimpleType
   rule type[ #truncate ] #isIn type[ "eval"       ;; _:IntermediateType ;; _:IntermediateType ] => true
@@ -154,7 +173,7 @@ module IS-IN
 // WildCards
 // WildProc matches every ProcOrPat
   rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ]
-       => S =/=String "quote" requires S =/=String "leaf" andBool A ==K "truncate"
+       => S =/=String "quote" requires S =/=String "leaf"
 
 // WildProc matches all leaves except #truncate and WildName
   rule type[ "leaf" ;; S:String ;; L:Leaf ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => S =/=String "truncate" andBool L =/=K "name"
@@ -165,6 +184,9 @@ module IS-IN
 // WildName matches any unforgeable name
   rule type[ "unforgeable" ;; _:String ;; _:Leaf ] #isIn type[ "leaf" ;; "wildcard" ;; "name" ] => true
 
+// WildProc
+  rule type[ "eval" ;; _:IntermediateType ;; _:IntermediateType ] #isIn type[ "leaf" ;; "wildcard" ;; "proc" ] => 
+
 // Variables
   rule T:Type #isIn type[ "leaf" ;; "procvar" ;; C:ProcVar ] => T ==K type[ "leaf" ;; "procvar" ;; C ]
 
@@ -172,9 +194,9 @@ module IS-IN
   rule T:Type #isIn type[ "leaf" ;; "nil" ;; "Nil" ] => T ==K type[ "leaf" ;; "nil" ;; "Nil" ]
 
 //--- Connectives ---
-  rule T:Type #isIn type[ "and" ;; A:IntermediateType ;; B:IntermediateType ] => T #isIn A andBool T #isIn B
-  rule T:Type #isIn type[ "or"  ;; A:IntermediateType ;; B:IntermediateType ] => T #isIn A orBool  T #isIn B
-  rule T:Type #isIn type[ "not" ;; A:IntermediateType ;; _:IntermediateType ] => notBool T #isIn A
+  rule T:Type #isIn type[ "patand" ;; A:IntermediateType ;; B:IntermediateType ] => T #isIn A andBool T #isIn B
+  rule T:Type #isIn type[ "pator"  ;; A:IntermediateType ;; B:IntermediateType ] => T #isIn A orBool  T #isIn B
+  rule T:Type #isIn type[ "patnot" ;; A:IntermediateType ;; _:IntermediateType ] => notBool T #isIn A
 
 //------------------------------------
 //--- Name, Process, Pattern Types ---
@@ -211,5 +233,10 @@ module IS-IN
 
 // Par
   rule type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] #isIn Pattern => A #isIn Pattern orBool B #isIn Pattern
+
+// #isName, #isProc, #isPat
+  rule #isName T:Type => T #isIn Name
+  rule #isProc T:Type => T #isIn Process
+  rule #isPat  T:Type => T #isIn Pattern
 
 endmodule
