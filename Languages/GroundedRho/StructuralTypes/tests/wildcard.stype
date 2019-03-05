@@ -1,8 +1,8 @@
 // Type - tuple
 
- type[ for( WildN <- x ){1} ]
+ type[ for( WildName <- @x ){1} ]
 
 /*
   Output:
-  
+  type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ]
 */
