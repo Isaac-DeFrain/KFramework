@@ -8,19 +8,28 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax   Int ::= "#length" RhoTuple        [function]  // #length: RhoTuple ----> Int
-                 | "#length" "(" Name  ")"   [function]  // #length: Name --------> Int
-                 | "#length" "(" Names ")"   [function]  // #length: Names -------> Int
-                 | "#length" "(" Bind  ")"   [function]  // #length (_): Bind ----> Int
+  syntax    Int ::= "#length"      RhoTuple   [function]  // #length: RhoTuple --------> Int
+                  | "#length"      JoinList   [function]  // #length: JoinList --------> Int
+                  | "#length"  "(" Name  ")"  [function]  // #length(_): Name ---------> Int
+                  | "#length"  "(" Names ")"  [function]  // #length(_): Names --------> Int
+                  | "#length"  "(" Bind  ")"  [function]  // #length(_): Bind ---------> Int
+                  | "#length"  "(" Binds ")"  [function]  // #length(_): Binds --------> Int
 
-  syntax Procs ::= "#lengths" "(" Binds ")"  [function]  // #length (_): Binds ---> Procs
+  syntax  Procs ::= "#lengths" "(" Binds ")"  [function]  // #length(_): Binds --------> Procs
 
-  syntax  Name ::= "#chan"  "(" Bind  ")"    [function]  //   #chan (_): Bind ----> Name
-                 | "#bvar"  "(" Bind  ")"    [function]  //   #bvar (_): Bind ----> Name
+  syntax   Name ::= "#chan"    "(" Bind  ")"  [function]  //   #chan(_): Bind ---------> Name
+                  | "#bvar"    "(" Bind  ")"  [function]  //   #bvar(_): Bind ---------> Name
 
-  syntax Names ::= "#chans" "(" Binds ")"    [function]  //  #chans (_): Binds ---> Names
-                 | "#bvar"  "(" Bind  ")"    [function]  //   #bvar (_): Bind ----> Names
-                 | "#bvars" "(" Binds ")"    [function]  //  #bvars (_): Binds ---> Names
+  syntax  Names ::= "#chans"   "(" Binds ")"  [function]  //  #chans(_): Binds --------> Names
+                  | "#bvar"    "(" Bind  ")"  [function]  //   #bvar(_): Bind ---------> Names
+                  | "#bvars"   "(" Binds ")"  [function]  //  #bvars(_): Binds --------> Names
+
+  syntax   Bool ::= Int  "#in"     RhoTuple   [function]  // _#in_: Int  x RhoTuple ---> Bool
+                  | Name "#in" "(" Name  ")"  [function]  // _#in_: Name x Name  ------> Bool
+                  | Name "#in" "(" Names ")"  [function]  // _#in_: Name x Names ------> Bool
+
+  syntax String ::= "toString("    Proc  ")"
+                  | "toString("    Name  ")"
 
 endmodule
 
@@ -28,6 +37,19 @@ module AUXFUN
   import AUXFUN-SYNTAX
 
   syntax KResult ::= Int | Procs | Name
+
+//-----------
+//--- #in ---
+//-----------
+// Int #in RhoTuple
+  rule A:Int #in ( B:Int             ) => A ==Int B
+  rule A:Int #in ( B:Int , C:Int     ) => A ==Int B orBool A ==Int C
+  rule A:Int #in ( B:Int , C:Procs   ) => A ==Int B orBool A #in  (C)
+
+// Name #in NameTuple
+  rule A:Name #in ( B:Name           ) => toString(A) ==String toString(B)
+  rule A:Name #in ( B:Name , C:Name  ) => toString(A) ==String toString(B) orBool toString(A) ==String toString(C)
+  rule A:Name #in ( B:Name , C:Names ) => toString(A) ==String toString(B) orBool A #in (C)
 
 //---------------
 //--- #length ---
@@ -37,18 +59,39 @@ module AUXFUN
   rule #length ( _:Proc , _:Proc  ) => 2
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
 
+// Join send id list {[ Int ; ... ]}
+  rule #length {[ _:Int ;                  ]} => 0
+  rule #length {[ _:Int ; _:Proc           ]} => 1
+  rule #length {[ _:Int ; _:Proc , _:Proc  ]} => 2
+  rule #length {[ I:Int ; _:Proc , P:Procs ]} => 1 +Int #length {[ I ; P ]}
+
 // Name(s)
   rule #length ( _:Name           ) => 1
   rule #length ( _:Name , _:Name  ) => 2
   rule #length ( _:Name , N:Names ) => 1 +Int #length (N)
 
-// Bind
+//--- Binds ---
+// Linear
   rule #length ( _:Name  <- _:Name ) => 1
   rule #length ( N:Names <- _:Name ) => #length (N)
+
+// Repeated
   rule #length ( _:Name  <= _:Name ) => 1
   rule #length ( N:Names <= _:Name ) => #length (N)
+
+// Peek
   rule #length ( _:Name  <! _:Name ) => 1
   rule #length ( N:Names <! _:Name ) => #length (N)
+
+// Binds
+  rule #length ( B:Lbind ; C:Lbind  ) => 2
+  rule #length ( B:Lbind ; C:Lbinds ) => 1 +Int #length (C)
+
+  rule #length ( B:Rbind ; C:Rbind  ) => 2
+  rule #length ( B:Rbind ; C:Rbinds ) => 1 +Int #length (C)
+
+  rule #length ( B:Pbind ; C:Pbind  ) => 2
+  rule #length ( B:Pbind ; C:Pbinds ) => 1 +Int #length (C)
 
 //----------------
 //--- #lengths ---
@@ -56,8 +99,12 @@ module AUXFUN
 // Binds
   rule #lengths ( B:Lbind ; C:Lbind  ) => #length(B) , #length (C)
   rule #lengths ( B:Lbind ; C:Lbinds ) => #length(B) , #lengths(C)
+
   rule #lengths ( B:Rbind ; C:Rbind  ) => #length(B) , #length (C)
   rule #lengths ( B:Rbind ; C:Rbinds ) => #length(B) , #lengths(C)
+
+  rule #lengths ( B:Pbind ; C:Pbind  ) => #length(B) , #length (C)
+  rule #lengths ( B:Pbind ; C:Pbinds ) => #length(B) , #lengths(C)
 
 //-------------
 //--- #chan ---
@@ -65,8 +112,12 @@ module AUXFUN
 // Bind
   rule #chan ( _:Name  <- N:Name ) => N
   rule #chan ( _:Names <- N:Name ) => N
+
   rule #chan ( _:Name  <= N:Name ) => N
   rule #chan ( _:Names <= N:Name ) => N
+
+  rule #chan ( _:Name  <! N:Name ) => N
+  rule #chan ( _:Names <! N:Name ) => N
 
 //--------------
 //--- #chans ---
@@ -74,8 +125,12 @@ module AUXFUN
 // Binds
   rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan (C)
   rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)
+
   rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan (C)
   rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)
+
+  rule #chans ( B:Pbind ; C:Pbind  ) => #chan(B) , #chan (C)
+  rule #chans ( B:Pbind ; C:Pbinds ) => #chan(B) , #chans(C)
 
 //-------------
 //--- #bvar ---
@@ -89,13 +144,21 @@ module AUXFUN
   rule #bvar ( M:Name , N:Name  <= _:Name ) => M , N
   rule #bvar ( M:Name , N:Names <= L:Name ) => M , #bvar ( N <= L )
 
+  rule #bvar ( N:Name           <! _:Name ) => N
+  rule #bvar ( M:Name , N:Name  <! _:Name ) => M , N
+  rule #bvar ( M:Name , N:Names <! L:Name ) => M , #bvar ( N <! L )
+
 //--------------
 //--- #bvars ---
 //--------------
 // Binds
   rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar (C)
   rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)
+
   rule #bvars ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar (C)
   rule #bvars ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvars(C)
+
+  rule #bvars ( B:Pbind ; C:Pbind  ) => #bvar(B) , #bvar (C)
+  rule #bvars ( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvars(C)
 
 endmodule
