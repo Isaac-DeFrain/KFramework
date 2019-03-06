@@ -34,7 +34,8 @@ module KSYNTAX-SYNTAX
   import KAST
   import KSEQ-SYMBOLIC
 
-  syntax   Exp ::= AExp
+  syntax   Exp ::= Cell
+                 | AExp
                  | BExp
                  | OExp
                  | "(" Exp ")"                             [bracket]
