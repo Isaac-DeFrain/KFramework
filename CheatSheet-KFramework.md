@@ -2,11 +2,8 @@
 
 This is very much a work in progress!
 
-Just do yourself a favor and put the K binary files in your PATH, by
-1. Adding `export PATH=$PATH:pathto/nightly/k/bin`
-
 ## Compile K Definition
-In a terminal, either go to the directory containing the language definition or add a `pathTo/` (whatever the path to the definition or program happens to be) in front every appearance of `lang.k` or `pgm.lang`.
+In a terminal, either go to the directory containing the language definition or add a `pathTo/` (whatever the path to the definition or program happens to be) in front every appearance of a k definition `lang.k` or a program written in the "lang" language `pgm.lang`.
 
 ### Backend options
 * OCAML is default
@@ -30,8 +27,7 @@ In a terminal, either go to the directory containing the language definition or 
                  | Array "[" Int "<-" "undef" "]"      [function, hook(ARRAY.remove)]
                  | updateArray(Array, Int, List)       [function, hook(ARRAY.updateAll)]
 
-  // Sets a range of indices (given by an index into the array
-  // and the number of indices to set) to the same value
+  // Sets a range of indices (given by an index into the array and the number of indices to set) to the same value
   syntax Array ::= fillArray(Array, Int, Int, KItem)   [function, hook(ARRAY.fill)]
 
   syntax  Bool ::= Int "in_keys" "(" Array ")"         [function, functional, hook(ARRAY.in_keys)]
