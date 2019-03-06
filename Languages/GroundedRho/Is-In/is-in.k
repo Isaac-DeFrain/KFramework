@@ -39,7 +39,7 @@ module IS-IN
   rule T:Type #isIn T => true
 
 // Transitivity
-//  rule A:Type #isIn B:Type xorBool B #isIn C:Type => notBool A #isIn C 
+//  rule A:Type #isIn C:Type => #Forall ?B:Type . A #isIn B xorBool B #isIn C:Type
 
 // Matching top-level constructors -> subtype inclusion (excluding Par & Leaf)
   rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ S ;; C:IntermediateType ;; D:IntermediateType ] 
@@ -94,19 +94,11 @@ module IS-IN
           (C #isIn D andBool type[ "par" ;; A ;; B ] #isIn E) orBool
           (C #isIn E andBool type[ "par" ;; A ;; B ] #isIn D)
 
-  rule type[ "par" ;; A:IntermediateType ;; type[ "par" ;; B:IntermediateType ;; C:IntermediateType ] ]
-       #isIn
-       type[ "par" ;; D:IntermediateType ;; E:IntermediateType ]
-       => (A #isIn D andBool type[ "par" ;; B ;; C ] #isIn E) orBool
-          (A #isIn E andBool type[ "par" ;; B ;; C ] #isIn D) orBool
-          (B #isIn D andBool type[ "par" ;; A ;; C ] #isIn E) orBool
-          (B #isIn E andBool type[ "par" ;; A ;; C ] #isIn D) orBool
-          (C #isIn D andBool type[ "par" ;; A ;; B ] #isIn E) orBool
-          (C #isIn E andBool type[ "par" ;; A ;; B ] #isIn D)
-
 // Nil in par is structurally vacuous: P | Nil <=> Nil | P <=> P
-  rule type[ "par" ;; A:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] #isIn A => true
-  rule type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; A:IntermediateType ] #isIn A => true
+  rule type[ "par" ;; A:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] #isIn B => A #isIn B
+  rule type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; A:IntermediateType ] #isIn B => A #isIn B
+  rule A #isIn type[ "par" ;; B:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] => A #isIn B
+  rule A #isIn type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; B:IntermediateType ] => A #isIn B
 
 //--- Leaves ---
 // SimpleTypes
