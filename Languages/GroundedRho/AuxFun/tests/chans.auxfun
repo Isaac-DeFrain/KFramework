@@ -1,7 +1,7 @@
-// Chans of binds
+// Chans of linear binds
 
-  #chans ( a <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; s,t <- x )
+  #chans ( a <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; s,t <- x ; s2 <- x )
 
 /*
-  Output: 
+  Output: x , y , z , x1 , y , x , x
 */
