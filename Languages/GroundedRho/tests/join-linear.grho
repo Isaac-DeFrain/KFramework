@@ -1,6 +1,6 @@
 // Grounded rho - linear join
 
-  for( a,b <- x ; c <- y ; d,e,f <- z ){ (*a,*b,*c,*d,*e,*f) } | for( a <! b ; a <! b ){ *a } | y!("y") | x!("a","b") | y!!("y") | x!(true,true) | x!(1,Nil) | z!(*z1,*z2,*z3)
+  for( a,b <- x ; c <- y ; d,e,f <- z ){ (*a,*b,*c,*d,*e,*f) } | y!("y") | x!("a","b") | y!!("y") | x!(true,true)
 
 /*
 Output:
