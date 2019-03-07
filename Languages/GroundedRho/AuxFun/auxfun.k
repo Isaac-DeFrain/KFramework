@@ -8,20 +8,25 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length"      RhoTuple   [function]  // #length: RhoTuple --------> Int
-                  | "#length"      JoinList   [function]  // #length: JoinList --------> Int
-                  | "#length"  "(" Name  ")"  [function]  // #length(_): Name ---------> Int
-                  | "#length"  "(" Names ")"  [function]  // #length(_): Names --------> Int
-                  | "#length"  "(" Bind  ")"  [function]  // #length(_): Bind ---------> Int
-                  | "#length"  "(" Binds ")"  [function]  // #length(_): Binds --------> Int
+  syntax    Int ::= "#length"       RhoTuple   [function]  // #length: RhoTuple --------> Int
+                  | "#length"       JoinList   [function]  // #length: JoinList --------> Int
+                  | "#length"   "(" Name  ")"  [function]  // #length(_): Name ---------> Int
+                  | "#length"   "(" Names ")"  [function]  // #length(_): Names --------> Int
+                  | "#length"   "(" Bind  ")"  [function]  // #length(_): Bind ---------> Int
+                  | "#length"   "(" Binds ")"  [function]  // #length(_): Binds --------> Int
+                  | "#chanmany" "(" ChanLen ":" Bind  ")"  [function]  // 
+                  | "#chanmany" "(" ChanLen ":" Binds ")"  [function]  // 
+
+  syntax    Set ::= "#chanlen" "(" Bind  ")"  [function]  // #chanlen(_): Bind --------> Procs
+								  | "#chanlen" "(" Binds ")"  [function]  // #chanlen(_): Binds -------> Procs
 
   syntax  Procs ::= "#lengths" "(" Binds ")"  [function]  // #length(_): Binds --------> Procs
 
-  syntax   Name ::= "#chan"    "(" Bind  ")"  [function]  //   #chan(_): Bind ---------> Name
-                  | "#bvar"    "(" Bind  ")"  [function]  //   #bvar(_): Bind ---------> Name
+  syntax   Name ::= "#chan"    "(" Bind  ")"  [function]  // #chan(_): Bind -----------> Name
+                  | "#bvar"    "(" Bind  ")"  [function]  // #bvar(_): Bind -----------> Name
 
-  syntax  Names ::= "#chans"   "(" Binds ")"  [function]  //  #chans(_): Binds --------> Names
-                  | "#bvar"    "(" Bind  ")"  [function]  //   #bvar(_): Bind ---------> Names
+  syntax  Names ::= "#chan"   "(" Binds ")"  [function]  //  #chans(_): Binds --------> Names
+                  | "#bvar"    "(" Bind  ")"  [function]  //  #bvar(_): Bind ----------> Names
                   | "#bvars"   "(" Binds ")"  [function]  //  #bvars(_): Binds --------> Names
 
   syntax   Bool ::= Int  "#in"     RhoTuple   [function]  // _#in_: Int  x RhoTuple ---> Bool
@@ -30,6 +35,11 @@ module AUXFUN-SYNTAX
 
   syntax String ::= "toString("    Proc  ")"
                   | "toString("    Name  ")"
+
+  syntax
+        ChanLen ::= "(" Name "," Int ")"
+
+  syntax   Proc ::= ChanLen
 
 endmodule
 
@@ -123,14 +133,14 @@ module AUXFUN
 //--- #chans ---
 //--------------
 // Binds
-  rule #chans ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan (C)
-  rule #chans ( B:Lbind ; C:Lbinds ) => #chan(B) , #chans(C)
+  rule #chan ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)
+  rule #chan ( B:Lbind ; C:Lbinds ) => #chan(B) , #chan(C)
 
-  rule #chans ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan (C)
-  rule #chans ( B:Rbind ; C:Rbinds ) => #chan(B) , #chans(C)
+  rule #chan ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)
+  rule #chan ( B:Rbind ; C:Rbinds ) => #chan(B) , #chan(C)
 
-  rule #chans ( B:Pbind ; C:Pbind  ) => #chan(B) , #chan (C)
-  rule #chans ( B:Pbind ; C:Pbinds ) => #chan(B) , #chans(C)
+  rule #chan ( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
+  rule #chan ( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
 
 //-------------
 //--- #bvar ---
@@ -151,7 +161,6 @@ module AUXFUN
 //--------------
 //--- #bvars ---
 //--------------
-// Binds
   rule #bvars ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar (C)
   rule #bvars ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvars(C)
 
@@ -160,5 +169,33 @@ module AUXFUN
 
   rule #bvars ( B:Pbind ; C:Pbind  ) => #bvar(B) , #bvar (C)
   rule #bvars ( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvars(C)
+
+//-------------------
+//--- #chanlen ---
+//-------------------
+  rule #chanlen ( A:Name  <- B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Names <- B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Lbind ;  B:Lbind  ) => #chanlen(A) #chanlen(B)
+  rule #chanlen ( A:Lbind ;  B:Lbinds ) => #chanlen(A) #chanlen(B)
+
+  rule #chanlen ( A:Name  <= B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Names <= B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Rbind ;  B:Rbind  ) => #chanlen(A) #chanlen(B)
+  rule #chanlen ( A:Rbind ;  B:Rbinds ) => #chanlen(A) #chanlen(B)
+
+  rule #chanlen ( A:Name  <! B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Names <! B:Name   ) => SetItem((B, #length (A)))
+  rule #chanlen ( A:Pbind ;  B:Pbind  ) => #chanlen(A) #chanlen(B)
+  rule #chanlen ( A:Pbind ;  B:Pbinds ) => #chanlen(A) #chanlen(B)
+
+  rule #chanmany ( (A:Name , I:Int) : B:Bind             ) => #if (A,I) in #chanlen(B) #then 1                         #else 0                  #fi
+  rule #chanmany ( (A:Name , I:Int) : B:Lbind ; C:Lbind  ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
+  rule #chanmany ( (A:Name , I:Int) : B:Lbind ; C:Lbinds ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
+
+  rule #chanmany ( (A:Name , I:Int) : B:Rbind ; C:Rbind  ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
+  rule #chanmany ( (A:Name , I:Int) : B:Rbind ; C:Rbinds ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
+
+  rule #chanmany ( (A:Name , I:Int) : B:Pbind ; C:Pbind  ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
+  rule #chanmany ( (A:Name , I:Int) : B:Pbind ; C:Pbinds ) => #if (A,I) in #chanlen(B) #then 1 +Int #chanmany((A,I):C) #else #chanmany((A,I):C) #fi
 
 endmodule
