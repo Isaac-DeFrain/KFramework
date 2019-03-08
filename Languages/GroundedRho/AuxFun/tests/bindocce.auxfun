@@ -1,0 +1,15 @@
+// Explicit binding occurrences of binds
+
+  #bindocce ( a <- x ; a,b,c <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; t <- x ; t <- x ; s,t <- y  )
+
+/*
+  Output: 
+  SetItem ( x1 ; a1 , a2 ;; 1 )
+  SetItem ( x ; a , b , c ;; 1 )
+  SetItem ( x ; a ;; 3 )
+  SetItem ( x ; t ;; 2 )
+  SetItem ( y ; a ;; 1 )
+  SetItem ( y ; b , c ;; 2 )
+  SetItem ( y ; s , t ;; 1 )
+  SetItem ( z ; d , e , f , g ;; 1 )
+*/
