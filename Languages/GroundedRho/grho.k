@@ -589,6 +589,7 @@ module GRHO
    </reaction>                                                  [comm] //
 
 // Join
+// moved progress to join.k
 
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P                               [structural]
