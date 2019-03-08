@@ -148,12 +148,22 @@ module GRHO-SYNTAX
                      | "bundle"  "{" Proc "}"                        // both read/write
 
 // For handling joins in configuration
-  syntax  JoinList ::= "{[" Proc "," Int   "]}"                      // for uniform fresh int for each join (see join semantics)
-                     | "{[" Int  ";"       "]}"                      // initial join comm send id list - empty, {[ join id ; send id list ]}
-                     | "{[" Int  ";" Proc  "]}"                      // single element send id list
-                     | "{[" Int  ";" Procs "]}"                      // N element send id list, N > 1
+  syntax  JoinList ::= "{["       "]}"                      // initial join comm send id list - empty, {[ join id ; send id list ]}
+                     | "{[" Proc  "]}"                      // single element send id list
+                     | "{[" Procs "]}"                      // N element send id list, N > 1
 
-  syntax      Proc ::= JoinList
+  syntax   ChanLen ::= "(" Name ";" Int   ")"
+
+  syntax  ChanList ::= "(" Name ";" Name  ")"
+                     | "(" Name ";" Names ")"
+
+  syntax   BindOcc ::= Name ";" Int   ";;" Int
+                     | Name ";" Name  ";;" Int
+                     | Name ";" Names ";;" Int 
+
+  syntax      Proc ::= ChanLen
+                     | BindOcc
+                     | JoinList
 
   syntax KVariable ::= Names | Name
 
@@ -184,6 +194,7 @@ module GRHO
             <msg>   .K   </msg>                                      // sent message
             <tuple> .K </tuple>                                      // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
             <stype> .K </stype>                                      // 0 for single send (consumed), 1 for persistent send (not consumed)
+            <spot> .Set </spot>                                      // potential join ids to comm with
             <id>    .K    </id>                                      // send id
           </send>                                                    //
         </sends>                                                     //
@@ -195,8 +206,9 @@ module GRHO
             <rtype> .K </rtype>                                      // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
             <join>  .K  </join>                                      // fresh int for each join
             <jlen>  .K  </jlen>                                      // length of join
-            <match> .K </match>                                      // how many sends matched
-            <bind>  .K  </bind>                                      // bindings
+            <rpot> .Set </rpot>                                      // potential send ids to comm with
+            <bind> .Set </bind>                                      // binding occurrences
+            <blen> .Set </blen>                                      // channel lengths
             <cont>  .K  </cont>                                      // continuation
           </rec>                                                     // 
         </receives>                                                  // 
@@ -252,7 +264,8 @@ module GRHO
                   <msg>        P       </msg>                        //sending message P
                   <tuple>      1     </tuple>                        //1-tuple = ( Proc )
                   <stype>      0     </stype>                        //single send => consumed in comm
-                  <id>      !I:Int      </id>                        //
+                  <spot>     .Set     </spot>                        // initial potential join comm id list is empty
+                  <id>      !I:Int      </id>                        // send id
                 </send>)                                             //
 
 // N-tuple messages, N > 1
@@ -262,6 +275,7 @@ module GRHO
                   <msg>        P       </msg>                        //sending messages P, two or more
                   <tuple> #length(P) </tuple>                        //length of tuple - how many messages
                   <stype>      0     </stype>                        //single send => consumed in comm
+                  <spot>     .Set     </spot>                        // 
                   <id>      !I:Int      </id>                        //
                 </send>)                                             //
 
@@ -273,6 +287,7 @@ module GRHO
                   <msg>        P       </msg>                        //sending message P
                   <tuple>      1     </tuple>                        //1-tuple
                   <stype>      1     </stype>                        //repeated send => NOT consumed in comm
+                  <spot>     .Set     </spot>                        // 
                   <id>      !I:Int      </id>                        //
                 </send>)                                             //
 
@@ -283,6 +298,7 @@ module GRHO
                   <msg>        P       </msg>                        //sending messages P, two or more
                   <tuple> #length(P) </tuple>                        //length of tuple
                   <stype>      1     </stype>                        //repeated send
+                  <spot>     .Set     </spot>                        // 
                   <id>      !I:Int      </id>                        //
                 </send>)                                             //
 
@@ -300,7 +316,9 @@ module GRHO
                   <rtype>     0     </rtype>                         //consumable
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <- X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         // binding occurrences
+			            <blen>    .Set     </blen>                         // channel lengths
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
@@ -313,7 +331,9 @@ module GRHO
                   <rtype>     0     </rtype>                         //consumable
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <- X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         //
+			            <blen>    .Set     </blen>                         //
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
@@ -327,7 +347,9 @@ module GRHO
                   <rtype>     1     </rtype>                         //unconsumable
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <= X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         //
+			            <blen>    .Set     </blen>                         //
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
@@ -340,7 +362,9 @@ module GRHO
                   <rtype>     1     </rtype>                         //unconsumable
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <= X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         //
+			            <blen>    .Set     </blen>                         //
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
@@ -354,7 +378,9 @@ module GRHO
                   <rtype>     2     </rtype>                         //peek
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <! X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         // 
+			            <blen>    .Set     </blen>                         // 
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
@@ -367,51 +393,56 @@ module GRHO
                   <rtype>     2     </rtype>                         //peek
                   <join>      0      </join>                         // 
                   <jlen>      1      </jlen>                         // 
-                  <bind>    Y <! X   </bind>                         // 
+                  <rpot>    .Set     </rpot>                         // 
+                  <bind>    .Set     </bind>                         //
+			            <blen>    .Set     </blen>                         //
                   <cont>      P      </cont>                         //continuation P
                 </rec>)                                              //
 
 //-------------
 //--- Joins ---
 //-------------
-  rule for ( B:Binds ){ P:Proc } => {[ for(B){P} , !I:Int ]}         // generate fresh integer to identify join
-
-// Linear
-  rule <k> {[ for ( B:Lbinds ){ P:Proc } , I:Int ]} => {[ I ;  ]} </k>
+  rule <thread> <k> for ( B:Lbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
                   <rchan>   #chan (B) </rchan>                       //
-                  <bvars>  #bvars (B) </bvars>                       //
+                  <bvars>   #bvar (B) </bvars>                       //
                   <bnum> #lengths (B)  </bnum>                       //
                   <rtype>      0      </rtype>                       //
-                  <join>       I       </join>                       // 
+                  <join>    !I:Int     </join>                       // 
                   <jlen>  #length (B)  </jlen>                       // 
-                  <bind>       B       </bind>                       // 
+                  <rpot>     .Set      </rpot>                       // 
+                  <bind> #bindocc (B)  </bind>                       // binding occurrences
+			            <blen> #chanlen (B)  </blen>                       // channel lengths 
                   <cont>       P       </cont>                       //
                 </rec>)                                              //
 
 // Repeated
-  rule <k> {[ for ( B:Rbinds ){ P:Proc } , I:Int ]} => {[ I ;  ]} </k>
+  rule <thread> <k> for ( B:Rbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
                   <rchan>   #chan (B) </rchan>                       //
-                  <bvars>  #bvars (B) </bvars>                       //
+                  <bvars>   #bvar (B) </bvars>                       //
                   <bnum> #lengths (B)  </bnum>                       //
                   <rtype>      1      </rtype>                       //
-                  <join>       I       </join>                       // 
+                  <join>    !I:Int     </join>                       // 
                   <jlen>  #length (B)  </jlen>                       // 
-                  <bind>       B       </bind>                       // 
+                  <rpot>     .Set      </rpot>                       // 
+                  <bind> #bindocc (B)  </bind>                       // binding occurrences
+			            <blen> #chanlen (B)  </blen>                       // channel lengths 
                   <cont>       P       </cont>                       //
                 </rec>)                                              //
 
 // Peek
-  rule <k> {[ for ( B:Pbinds ){ P:Proc } , I:Int ]} => {[ I ;  ]} </k>
+  rule <thread> <k> for ( B:Pbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
                   <rchan>   #chan (B) </rchan>                       //
-                  <bvars>  #bvars (B) </bvars>                       //
+                  <bvars>   #bvar (B) </bvars>                       //
                   <bnum> #lengths (B)  </bnum>                       //
                   <rtype>      2      </rtype>                       //
-                  <join>       I       </join>                       // 
+                  <join>    !I:Int     </join>                       // 
                   <jlen>  #length (B)  </jlen>                       // 
-                  <bind>       B       </bind>                       // 
+                  <rpot>     .Set      </rpot>                       // 
+                  <bind> #bindocc (B)  </bind>                       // binding occurrences
+			            <blen> #chanlen (B)  </blen>                       // channel lengths 
                   <cont>       P       </cont>                       //
                 </rec>)                                              //
 
@@ -454,7 +485,9 @@ module GRHO
      <rtype> 0       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Lbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
   (<send>                                                              //consume single send
@@ -462,6 +495,7 @@ module GRHO
      <msg>   Q:Proc    </msg>                                          // message Q
      <tuple> 1       </tuple>                                          // 1-tuple
      <stype> 0       </stype>                                          // single send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send> => .Bag)                                                    //
    <reaction>                                                          //
@@ -480,7 +514,9 @@ module GRHO
      <rtype> 0       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Lbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
   (<send>                                                              //consume single send
@@ -488,6 +524,7 @@ module GRHO
      <msg>   Q:Procs   </msg>                                          // message
      <tuple> N       </tuple>                                          // N-tuple, N > 1
      <stype> 0       </stype>                                          // single send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send> => .Bag)                                                    //
    <reaction>                                                          //
@@ -506,7 +543,9 @@ module GRHO
      <rtype> 1       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Rbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec>                                                              //
   (<send>                                                              //consume single send
@@ -514,6 +553,7 @@ module GRHO
      <msg>   Q:Proc    </msg>                                          // message
      <tuple> 1       </tuple>                                          // 1-tuple
      <stype> 0       </stype>                                          // single send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send> => .Bag)                                                    //
    <reaction>                                                          //
@@ -531,7 +571,9 @@ module GRHO
      <rtype> 1       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Rbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec>                                                              //
   (<send>                                                              //consume single send
@@ -539,6 +581,7 @@ module GRHO
      <msg>   Q:Procs   </msg>                                          // message(s)
      <tuple> N       </tuple>                                          // N-tuple
      <stype> 0       </stype>                                          // single send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send> => .Bag)                                                    //
    <reaction>                                                          //
@@ -557,7 +600,9 @@ module GRHO
      <rtype> 0       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Lbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation
    </rec> => .Bag)                                                     //
    <send>                                                              //DON'T consume persistent send
@@ -565,6 +610,7 @@ module GRHO
      <msg>   Q:Proc    </msg>                                          // message Q
      <tuple> 1       </tuple>                                          // 1-tuple
      <stype> 1       </stype>                                          // single send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send>                                                             //
    <reaction>
@@ -582,7 +628,9 @@ module GRHO
      <rtype> 0       </rtype>                                          // single listen
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Lbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation
    </rec> => .Bag)                                                     //
    <send>                                                              //DON'T consume persistent send
@@ -590,6 +638,7 @@ module GRHO
      <msg>   Q:Procs   </msg>                                          // messages
      <tuple> N       </tuple>                                          // N-tuple
      <stype> 1       </stype>                                          // persistent send
+		 <spot>  _:Set    </spot>                                          // 
      <id>    _         </id>                                           //
    </send>                                                             //
    <reaction>                                                          //
@@ -608,7 +657,9 @@ module GRHO
      <rtype> 2      </rtype>                                           // peek
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Pbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc  </cont>                                           // continuation P
    </rec> => .Bag)                                                     //
    <send>                                                              //consume single send
@@ -616,6 +667,7 @@ module GRHO
      <msg>   Q:Proc   </msg>                                           // message Q
      <tuple> 1      </tuple>                                           // 1-tuple
      <stype> _      </stype>                                           // single or repeated send
+		 <spot>  _:Set   </spot>                                           // 
      <id>    _         </id>                                           //
    </send>                                                             //
    <reaction>                                                          //
@@ -633,7 +685,9 @@ module GRHO
      <rtype> 2       </rtype>                                          // peek
      <join>  0        </join>                                          // 
      <jlen>  1        </jlen>                                          // 
-		 <bind>  _:Pbind  </bind>                                          // 
+		 <rpot>  _:Set    </rpot>                                          // 
+		 <bind>  _:Set    </bind>                                          // binding occurrences
+		 <blen>  _:Set    </blen>                                          // channel lengths 
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
    <send>                                                              //consume single send
@@ -641,7 +695,8 @@ module GRHO
      <msg>   Q:Procs   </msg>                                          // message
      <tuple> N       </tuple>                                          // N-tuple
      <stype> _       </stype>                                          // single or repeated send
-     <id>    _         </id>                                           //
+		 <spot>  _:Set    </spot>                                          // 
+     <id>    _          </id>                                          //
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -652,67 +707,50 @@ module GRHO
 // Join
 // Linear
   rule
-    <thread> <k> {[ I:Int ;  ]} => {[ I ; T ]} </k> </thread>          //
     <rec>                                                              //
       <rchan> N:Names </rchan>                                         //
       <bvars> Y:Names </bvars>                                         //
       <bnum>  H:Procs  </bnum>                                         //
       <rtype> 0       </rtype>                                         //
-      <join>  I        </join>                                         // 
-      <jlen>  J:Int    </jlen>                                         // 
- 		 <bind>   B:Binds  </bind>                                         // 
+      <join>  I:Int    </join>                                         // 
+      <jlen>  _:Int    </jlen>                                         // 
+ 		  <rpot>  S1:Set => S1 SetItem((X,T)) </rpot>                      // 
+ 		  <bind>   _:Set   </bind>                                         // binding occurrences
+ 		  <blen>  S3:Set   </blen>                                         // channel lengths 
       <cont>  P:Proc   </cont>                                         //
     </rec>                                                             //
     <send>                                                             //
       <schan> X:Name  </schan>                                         //
       <msg>   Q:Proc    </msg>                                         //
-      <tuple> L:Int   </tuple>                                         //
+      <tuple> 1       </tuple>                                         //
       <stype> _       </stype>                                         //
+ 		  <spot>  S2:Set => S2 SetItem(I) </spot>                          // 
       <id>    T:Int      </id>                                         //
-    </send>                                                            //
-     when X #in (N) andBool (X,L) in #chanlen(B)
+    </send>                                                            // 
+      when ((X,1) in S3) andBool notBool (T in S1)
 
   rule
-    <thread> <k> {[ I:Int ; S:Int ]} => {[ I ; T , S ]} </k> </thread>          //
     <rec>                                                              //
       <rchan> N:Names </rchan>                                         //
       <bvars> Y:Names </bvars>                                         //
       <bnum>  H:Procs  </bnum>                                         //
       <rtype> 0       </rtype>                                         //
-      <join>  I        </join>                                         // 
+      <join>  I:Int    </join>                                         // 
       <jlen>  J:Int    </jlen>                                         // 
- 		 <bind>   B:Binds  </bind>                                         // 
+ 		  <rpot>  S1:Set => S1 SetItem(T) </rpot>                          // 
+ 		  <bind>   _:Set   </bind>                                         // binding occurrences
+ 		  <blen>  S3:Set   </blen>                                         // channel lengths 
       <cont>  P:Proc   </cont>                                         //
     </rec>                                                             //
     <send>                                                             //
       <schan> X:Name  </schan>                                         //
-      <msg>   Q:Proc    </msg>                                         //
+      <msg>   Q:Procs   </msg>                                         //
       <tuple> L:Int   </tuple>                                         //
       <stype> _       </stype>                                         //
+ 		  <spot>  S2:Set => S2 SetItem(I) </spot>                          // 
       <id>    T:Int      </id>                                         //
-    </send>                                                            //
-     when X #in (N) andBool (X,L) in #chanlen(B)
-
-  rule
-    <thread> <k> {[ I:Int ; S:Procs ]} => {[ I ; T , S ]} </k> </thread>
-    <rec>                                                              //
-      <rchan> N:Names </rchan>                                         //
-      <bvars> Y:Names </bvars>                                         //
-      <bnum>  H:Procs  </bnum>                                         //
-      <rtype> 0       </rtype>                                         //
-      <join>  I        </join>                                         // 
-      <jlen>  J:Int    </jlen>                                         // 
- 		  <bind>  B:Binds  </bind>                                         // 
-      <cont>  P:Proc   </cont>                                         //
-    </rec>                                                             //
-    <send>                                                             //
-      <schan> X:Name  </schan>                                         //
-      <msg>   Q:Proc    </msg>                                         //
-      <tuple> L:Int   </tuple>                                         //
-      <stype> _       </stype>                                         //
-      <id>    T:Int      </id>                                         //
-    </send>                                                            //
-     when X #in (N) andBool (X,L) in #chanlen(B)
+    </send>                                                            // 
+      when ((X,L) in S3) andBool notBool (T in S1)
 /*
 // Repeated
   rule <k> {[ for ( B:Rbinds ){ P:Proc } , I:Int ]} => {[ I ;  ]} </k>
