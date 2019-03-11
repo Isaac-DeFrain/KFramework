@@ -8,46 +8,44 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-// Define set of channel ; Name(s) ;; Int (explicit binding occurrences in Bind(s))
-  syntax    Int ::= "#length"        RhoTuple   [function]  // #length: RhoTuple --------> Int
-                  | "#length"        JoinList   [function]  // #length: JoinList --------> Int
-                  | "#length"    "(" Name  ")"  [function]  // #length(_): Name ---------> Int
-                  | "#length"    "(" Names ")"  [function]  // #length(_): Names --------> Int
-                  | "#length"    "(" Bind  ")"  [function]  // #length(_): Bind ---------> Int
-                  | "#length"    "(" Binds ")"  [function]  // #length(_): Binds --------> Int
-                  | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // 
-                  | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // 
-                  | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // 
-                  | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // 
-                  | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // 
+  syntax    Int ::= "#length"        RhoTuple                [function]  // #length: RhoTuple ------------------> Int
+                  | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
+                  | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
+                  | "#length"    "(" Bind  ")"               [function]  // #length(_): Bind -------------------> Int
+                  | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
+                  | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
+                  | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
+                  | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
+                  | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
 
-  syntax    Set ::= "#chanlen"   "(" Bind  ")"  [function]  //  #chanlen(_): Bind -------> Set
-								  | "#chanlen"   "(" Binds ")"  [function]  //  #chanlen(_): Binds ------> Set
-                  | "#chanlist"  "(" Bind  ")"  [function]  // #chanlist(_): Bind -------> Set
-								  | "#chanlist"  "(" Binds ")"  [function]  // #chanlist(_): Binds ------> Set
-                  | "#bindocc"   "(" Bind  ")"  [function]  //  #bindocc(_): Bind -------> Set
-                  | "#bindocc"   "(" Binds ")"  [function]  //  #bindocc(_): Binds ------> Set
-                  | "#bindocce"  "(" Bind  ")"  [function]  // #bindocce(_): Bind -------> Set
-                  | "#bindocce"  "(" Binds ")"  [function]  // #bindocce(_): Binds ------> Set
+  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
+                  | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
+                  | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
+                  | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
+                  | "#bindocc"   "(" Bind  ")"               [function]  //  #bindocc(_): Bind -------> Set
+                  | "#bindocc"   "(" Binds ")"               [function]  //  #bindocc(_): Binds ------> Set
+                  | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
+                  | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
 
-  syntax  Procs ::= "#lengths"   "(" Binds ")"  [function]  //   #length(_): Binds ------> Procs
+  syntax  Procs ::= "#lengths"   "(" Binds ")"               [function]  //   #length(_): Binds ------> Procs
 
-  syntax   Name ::= "#chan"      "(" Bind  ")"  [function]  //     #chan(_): Bind -------> Name
-                  | "#bvar"      "(" Bind  ")"  [function]  //     #bvar(_): Bind -------> Name
+  syntax   Name ::= "#chan"      "(" Bind  ")"               [function]  //     #chan(_): Bind -------> Name
+                  | "#bvar"      "(" Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
 
-  syntax  Names ::= "#chan"      "(" Binds ")"  [function]  //    #chans(_): Binds ------> Names
-                  | "#bvar"      "(" Bind  ")"  [function]  //     #bvar(_): Bind -------> Name
-                  | "#bvar"      "(" Binds ")"  [function]  //    #bvars(_): Binds ------> Names
+  syntax  Names ::= "#chan"      "(" Binds ")"               [function]  //    #chans(_): Binds ------> Names
+                  | "#bvar"      "(" Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
+                  | "#bvar"      "(" Binds ")"               [function]  //    #bvars(_): Binds ------> Names
 
-  syntax   Bool ::= Int   "#in"      RhoTuple   [function]  // _#in_: Int  x RhoTuple ---> Bool
-                  | Name  "#in"  "(" Name  ")"  [function]  // _#in_: Name x Name  ------> Bool
-                  | Name  "#in"  "(" Names ")"  [function]  // _#in_: Name x Names ------> Bool
-                  | Bind  "#in"  "(" Bind  ")"  [function]  // 
-                  | Bind  "#in"  "(" Binds ")"  [function]  // 
-                  | Binds "#in"  "(" Binds ")"  [function]  // 
-                  | Bind  "#ine" "(" Bind  ")"  [function]  // 
-                  | Bind  "#ine" "(" Binds ")"  [function]  // 
-                  | Binds "#ine" "(" Binds ")"  [function]  // 
+  syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ---> Bool
+                  | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  -----> Bool
+                  | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names -----> Bool
+                  | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind -----> Bool
+                  | Bind  "#in"  "(" Binds ")"               [function]  // _#in_: Bind  x Binds ----> Bool
+                  | Binds "#in"  "(" Binds ")"               [function]  // _#in_: Binds x Binds ----> Bool
+                  | Bind  "#ine" "(" Bind  ")"               [function]  // _#ine_: Bind x Bind -----> Bool
+                  | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds ----> Bool
+                  | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ---> Bool
 
   syntax String ::= "toString("      Proc  ")"
                   | "toString("      Name  ")"
@@ -92,12 +90,6 @@ module AUXFUN
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
-
-// Join send id list {[ Int ; ... ]}
-  rule #length {[                  ]} => 0
-  rule #length {[ _:Proc           ]} => 1
-  rule #length {[ _:Proc , _:Proc  ]} => 2
-  rule #length {[ _:Proc , P:Procs ]} => 1 +Int #length {[ P ]}
 
 // Name(s)
   rule #length ( _:Name           ) => 1
@@ -254,7 +246,7 @@ module AUXFUN
 //--- #bindocc ---
 //----------------
 
-// set of binding occurrences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
+// set of binding occurrences and number of appearences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
   rule #bindocc ( A:Bind ) => SetItem( #chan(A) ; #length(A) ;; 1 )
 
 // Linear join
@@ -294,10 +286,9 @@ module AUXFUN
           #fi
 
 //-----------------
-//--- #bindocce --- Explicit bind occurrences and quantities
+//--- #bindocce ---
 //-----------------
-
-// set of binding occurrences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
+// set of explicit binding occurrences and number of appearences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
   rule #bindocce ( A:Bind ) => SetItem( #chan(A) ; #bvar(A) ;; 1 )
 
 // Linear join
