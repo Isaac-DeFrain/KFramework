@@ -13,6 +13,8 @@ module AUXFUN-SYNTAX
                   | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
                   | "#length"    "(" Bind  ")"               [function]  // #length(_): Bind -------------------> Int
                   | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#listens"   "(" Bind  ")"               [function]  // #listens(_): Bind ------------------> Int
+                  | "#listens"   "(" Binds ")"               [function]  // #listens(_): Binds -----------------> Int
                   | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
                   | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
                   | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
@@ -118,6 +120,17 @@ module AUXFUN
 
   rule #length ( B:Pbind ; C:Pbind  ) => 2
   rule #length ( B:Pbind ; C:Pbinds ) => 1 +Int #length (C)
+
+//----------------
+//--- #listens ---
+//----------------
+  rule #listens( _:Bind             ) => 1
+  rule #listens( A:Lbind ; B:Lbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Lbind ; B:Lbinds ) => 1 +Int #listens(B)
+  rule #listens( A:Rbind ; B:Rbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Rbind ; B:Rbinds ) => 1 +Int #listens(B)
+  rule #listens( A:Pbind ; B:Pbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Pbind ; B:Pbinds ) => 1 +Int #listens(B)
 
 //----------------
 //--- #lengths ---
