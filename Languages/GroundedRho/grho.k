@@ -148,26 +148,26 @@ module GRHO-SYNTAX
                      | "bundle"  "{" Proc "}"                        // both read/write
 
 // For handling joins in configuration
-  syntax  JoinList ::= "{["       "]}"                      // initial join comm send id list - empty, {[ join id ; send id list ]}
-                     | "{[" Proc  "]}"                      // single element send id list
-                     | "{[" Procs "]}"                      // N element send id list, N > 1
+  syntax  JoinList ::= "{[" Proc ";" Int  "]}"                       // for uniform join id
 
-  syntax   ChanLen ::= "(" Name ";" Int   ")"
+  syntax   ChanLen ::= "("  Name ";" Int   ")"                       // (listening channel ; number of variables to bind)
 
-  syntax  ChanList ::= "(" Name ";" Name  ")"
-                     | "(" Name ";" Names ")"
+  syntax  ChanList ::= "("  Name ";" Name  ")"                       // (listening channel ; variable to bind)
+                     | "("  Name ";" Names ")"                       // (listening channel ; variables to bind)
 
-  syntax   BindOcc ::= Name ";" Int   ";;" Int
-                     | Name ";" Name  ";;" Int
-                     | Name ";" Names ";;" Int 
+  syntax   BindOcc ::= Name ";" Int   ";;" Int                       // listening channel; number of variables to bind; number of occurences
+                     | Name ";" Name  ";;" Int                       // listening channel; variable to bind; number of occurences
+                     | Name ";" Names ";;" Int                       // listening channel; variables to bind; number of occurences
 
-  syntax      Proc ::= ChanLen
-                     | BindOcc
-                     | JoinList
+  syntax      Proc ::= ChanLen                                       // for
+                     | BindOcc                                       // auxfun
+                     | JoinList                                      // definitions
+
+  syntax   Nothing ::= "Nothing"
 
   syntax KVariable ::= Names | Name
 
-  syntax     KItem ::= Name | Names | Proc | Procs
+  syntax     KItem ::= Name | Names | Proc | Procs | Set | Nothing
 
 endmodule
 
