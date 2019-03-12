@@ -51,6 +51,7 @@ module JOIN
                 <type> .K </type>                                    // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
               </listen>                                              // 
             </listens>                                               // 
+            <match>     .K    </match>                               // number of matches made
             <nono>     .Set    </nono>                               // list of send ids not to move to <sendstore/> because they are consumable
             <bindstore>                                              // storage for listens matching a Send; for restoring the listen to <listen/> if Send is ultimately consumed elsewhere
               <pair multiplicity="*">                                // pairs of binds with their matching send id
@@ -169,6 +170,7 @@ module JOIN
                       <type> 0 </type>                               // consumable
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -200,6 +202,7 @@ module JOIN
                       <type>    0     </type>                        // consumable
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -232,6 +235,7 @@ module JOIN
                       <type> 1 </type>                               // unconsumable
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -263,6 +267,7 @@ module JOIN
                       <type>    1     </type>                        // unconsumable
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -295,6 +300,7 @@ module JOIN
                       <type> 2 </type>                               // peek
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -326,6 +332,7 @@ module JOIN
                       <type>    2     </type>                        // peek
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -361,6 +368,7 @@ module JOIN
                       <type> Nothing </type>                         // 
                     </listen>                                        // 
                   </listens>                                         // 
+                  <match>  0 </match>                                // 
                   <nono> .Set </nono>                                // 
                   <bindstore>                                        // 
                     <pair>                                           // 
@@ -490,7 +498,7 @@ module JOIN
       ...</listens>                                                  // 
     ...</rec>                                                        //
 
-  rule <thread> <k> {[ for( Y:Names <= X:Name ){ P:Proc } ; I:Int ]} => . ...</k> </thread>
+  rule <k> {[ for( Y:Names <= X:Name ){ P:Proc } ; I:Int ]} => . ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -506,7 +514,7 @@ module JOIN
     ...</rec>                                                        //
 
 // 2 repeated listen joins
-  rule <thread> <k> {[ for( Y:Name <= X:Name ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Name <= X:Name ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -521,7 +529,7 @@ module JOIN
       ...</listens>                                                  // 
     ...</rec>                                                        // 
 
-  rule <thread> <k> {[ for( Y:Names <= X:Name ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Names <= X:Name ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -537,7 +545,7 @@ module JOIN
     ...</rec>                                                        // 
 
 // N repeated listen joins, N > 2
-  rule <thread> <k> {[ for( Y:Name <= X:Name ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Name <= X:Name ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -552,7 +560,7 @@ module JOIN
       ...</listens>                                                  // 
     ...</rec>                                                        // 
 
-  rule <thread> <k> {[ for( Y:Names <= X:Name ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Names <= X:Name ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -569,7 +577,7 @@ module JOIN
 
 // Peek
 // Terminating cases
-  rule <thread> <k> {[ for( Y:Name <! X:Name ){ P:Proc } ; I:Int ]} => . ...</k> </thread>
+  rule <k> {[ for( Y:Name <! X:Name ){ P:Proc } ; I:Int ]} => . ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -584,7 +592,7 @@ module JOIN
          </listens>                                                  // 
 	  ...</rec>                                                        // 
 
-  rule <thread> <k> {[ for( Y:Names <! X:Name ){ P:Proc } ; I:Int ]} => . ...</k> </thread>
+  rule <k> {[ for( Y:Names <! X:Name ){ P:Proc } ; I:Int ]} => . ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -600,7 +608,7 @@ module JOIN
 	  ...</rec>                                                        // 
 
 // 2 peek joins
-  rule <thread> <k> {[ for( Y:Name <! X:Name ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Name <! X:Name ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -615,7 +623,7 @@ module JOIN
          </listens>                                                  // 
 	  ...</rec>                                                        // 
 
-  rule <thread> <k> {[ for( Y:Names <! X:Name ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Names <! X:Name ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -631,7 +639,7 @@ module JOIN
     ...</rec>                                                        // 
 
 // N peek joins, N > 2
-  rule <thread> <k> {[ for( Y:Name <! X:Name ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Name <! X:Name ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -646,7 +654,7 @@ module JOIN
       ...</listens>                                                  // 
     ...</rec>                                                        // 
 
-  rule <thread> <k> {[ for( Y:Names <! X:Name ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> </thread>
+  rule <k> {[ for( Y:Names <! X:Name ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k>
        <rec>                                                         // 
          <id>     I         </id>                                    // 
 				 <length> _:Int </length>                                    // 
@@ -664,13 +672,14 @@ module JOIN
 //----------------
 //--- Matching ---
 //----------------
-// ***not working for single receives***
-// Joins with linear listens
+// ***not working for one listen receives***
+// Linear listens
+// 1-tuple messages
+// consumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
@@ -679,7 +688,48 @@ module JOIN
           <type> 0       </type>                                     // linear
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
+      <bindstore>...                                                 // 
+       (.Bag => <pair>                                               // add bind/id pair to <bindstore/>
+                  <bind> Y <- X </bind>                              // 
+                  <bid>  I       </bid>                              // 
+                </pair>)                                             // 
+      </bindstore>                                                   // 
+      <sendstore>...                                                 // 
+       (.Bag => <vsend>                                              // add virtual copy of Send to <sendstore/>
+                  <vchan> X </vchan>                                 // 
+                  <vmsg>  Q  </vmsg>                                 // 
+                  <vlen>  1  </vlen>                                 // 
+                  <vid>   I   </vid>                                 // 
+                </vsend>)                                            // 
+      </sendstore>                                                   // 
+    </rec>                                                           //
+    <send>                                                           // matching send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Proc    </msg>                                       // message Q
+      <tuple> 1       </tuple>                                       // 1-tuple
+      <stype> T:Int   </stype>                                       // any consumable send
+      <sid>   I:Int     </sid>                                       // 
+    </send>                                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
+
+// unconsumable sends
+  rule
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Name  </vars>                                     // variable Y binding in continuation P
+          <num>  1        </num>                                     // 1-tuple
+          <type> 0       </type>                                     // linear
+        </listen>                                                    // 
+      </listens>                                                     // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> _:Set </nono>                                           // do NOT add send id to nono set so it can match again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <- X </bind>                              // 
@@ -695,29 +745,30 @@ module JOIN
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // consume single send
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Proc    </msg>                                       // message Q
       <tuple> 1       </tuple>                                       // 1-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <stype> 1       </stype>                                       // unconsumable send
       <sid>   I:Int     </sid>                                       // 
-    </send>                                                          // 
-    requires notBool I in S                                          // 
+	    requires L >Int M                                      [match] // 
 
+// N-tuple messages, N > 2
+// consumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
           <vars> Y:Names </vars>                                     // variables Y binding in continuation P
-          <num>  M:Int    </num>                                     // M-tuple
+          <num>  N:Int    </num>                                     // N-tuple
           <type> 0       </type>                                     // linear
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <- X </bind>                              // 
@@ -728,26 +779,65 @@ module JOIN
        (.Bag => <vsend>                                              // 
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
-                  <vlen>  M  </vlen>                                 // 
+                  <vlen>  N  </vlen>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // 
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Procs   </msg>                                       // messages Q
-      <tuple> M       </tuple>                                       // M-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> T:Int   </stype>                                       // any consumable send
       <sid>   I:Int     </sid>                                       // 
     </send>                                                          // 
-    requires notBool I in S                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
 
-// Joins with repeated listens
+// unconsumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     // N-tuple
+          <type> 0       </type>                                     // linear
+        </listen>                                                    // 
+      </listens>                                                     // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> _:Set </nono>                                           // do NOT add send id to nono set so it can match again
+      <bindstore>...                                                 // 
+       (.Bag => <pair>                                               // 
+                  <bind> Y <- X </bind>                              // 
+                  <bid>  I       </bid>                              // 
+                </pair>)                                             // 
+      </bindstore>                                                   // 
+      <sendstore>...                                                 // 
+       (.Bag => <vsend>                                              // 
+                  <vchan> X </vchan>                                 // 
+                  <vmsg>  Q  </vmsg>                                 // 
+                  <vlen>  N  </vlen>                                 // 
+                  <vid>   I   </vid>                                 // 
+                </vsend>)                                            // 
+      </sendstore>                                                   // 
+    </rec>                                                           //
+    <send>                                                           // matching send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Procs   </msg>                                       // messages Q
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> 1   </stype>                                           // unconsumable send
+      <sid>   I:Int     </sid>                                       // 
+	    requires L >Int M                                      [match] // 
+
+// Repeated listens
+// 1-tuple messages
+  rule
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
@@ -756,7 +846,8 @@ module JOIN
           <type> 1       </type>                                     // repeated
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <= X </bind>                              // 
@@ -772,29 +863,34 @@ module JOIN
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // consume single send
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Proc    </msg>                                       // message Q
       <tuple> 1       </tuple>                                       // 1-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <stype> T:Int   </stype>                                       // any consumable send
       <sid>   I:Int     </sid>                                       // 
-    </send>                                                          //
-    requires notBool I in S                                          // 
+    </send>                                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
 
+// unconsumable sends cannot interact with repeated listens!
+
+// N-tuple messages, N > 2
+// consumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
           <vars> Y:Names </vars>                                     // variables Y binding in continuation P
-          <num>  M:Int    </num>                                     // M-tuple
+          <num>  N:Int    </num>                                     // N-tuple
           <type> 1       </type>                                     // repeated
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <= X </bind>                              // 
@@ -805,26 +901,30 @@ module JOIN
        (.Bag => <vsend>                                              // 
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
-                  <vlen>  M  </vlen>                                 // 
+                  <vlen>  N  </vlen>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // 
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Procs   </msg>                                       // messages Q
-      <tuple> M       </tuple>                                       // M-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> T:Int   </stype>                                       // any consumable send
       <sid>   I:Int     </sid>                                       // 
-    </send>                                                          //
-    requires notBool I in S                                          // 
+    </send>                                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
+
+// unconsumable sends cannot interact with repeated listens!
 
 // Peeking joins
+// 1-tuple messages
+// consumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
@@ -833,7 +933,8 @@ module JOIN
           <type> 2       </type>                                     // peek
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <! X </bind>                              // 
@@ -849,29 +950,31 @@ module JOIN
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // consume single send
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Proc    </msg>                                       // message Q
       <tuple> 1       </tuple>                                       // 1-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <stype> T:Int   </stype>                                       // any consumable send
       <sid>   I:Int     </sid>                                       // 
-    </send>                                                          //
-    requires notBool I in S                                          // 
+    </send>                                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
 
+// unconsumable sends
   rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> _:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // continuation P
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
-          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
-          <num>  M:Int    </num>                                     // M-tuple
+          <vars> Y:Name  </vars>                                     // variable Y binding in continuation P
+          <num>  1        </num>                                     // 1-tuple
           <type> 2       </type>                                     // peek
         </listen>                                                    // 
       </listens>                                                     // 
-      <nono> S:Set => S SetItem(I) </nono>                           // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> _:Set </nono>                                           // do NOT add send id to nono set so it can match again
       <bindstore>...                                                 // 
        (.Bag => <pair>                                               // 
                   <bind> Y <! X </bind>                              // 
@@ -882,19 +985,98 @@ module JOIN
        (.Bag => <vsend>                                              // 
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
-                  <vlen>  M  </vlen>                                 // 
+                  <vlen>  1  </vlen>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    <send>                                                           // 
+    <send>                                                           // matching send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Proc    </msg>                                       // message Q
+      <tuple> 1       </tuple>                                       // 1-tuple
+      <stype> 1       </stype>                                       // unconsumable send
+      <sid>   I:Int     </sid>                                       // 
+	    requires L >Int M                                      [match] //  
+
+// N-tuple messages, N > 2
+// consumable sends
+  rule
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     // N-tuple
+          <type> 2       </type>                                     // peek
+        </listen>                                                    // 
+      </listens>                                                     // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> S:Set => S SetItem(I) </nono>                           // add send id to nono set so it is not matched again
+      <bindstore>...                                                 // 
+       (.Bag => <pair>                                               // 
+                  <bind> Y <! X </bind>                              // 
+                  <bid>  I       </bid>                              // 
+                </pair>)                                             // 
+      </bindstore>                                                   // 
+      <sendstore>...                                                 // 
+       (.Bag => <vsend>                                              // 
+                  <vchan> X </vchan>                                 // 
+                  <vmsg>  Q  </vmsg>                                 // 
+                  <vlen>  N  </vlen>                                 // 
+                  <vid>   I   </vid>                                 // 
+                </vsend>)                                            // 
+      </sendstore>                                                   // 
+    </rec>                                                           //
+    <send>                                                           // matching send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Procs   </msg>                                       // messages Q
-      <tuple> M       </tuple>                                       // M-tuple
-      <stype> _:Int   </stype>                                       // any send
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> T:Int   </stype>                                       // any consumable send
       <sid>   I:Int     </sid>                                       // 
     </send>                                                          // 
-    requires notBool I in S                                          // 
+    requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
+                                                             [match] // 
+
+// unconsumable sends
+  rule
+    <rec>...                                                         // 
+      <length> L:Int </length>                                       // 
+      <cont>   P:Proc  </cont>                                       //  
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     // N-tuple
+          <type> 2       </type>                                     // peek
+        </listen>                                                    // 
+      </listens>                                                     // 
+			<match>  M:Int => M +Int 1  </match>                           // increase match count
+      <nono> _:Set </nono>                                           // do NOT add send id to nono set so it can match again
+      <bindstore>...                                                 // 
+       (.Bag => <pair>                                               // 
+                  <bind> Y <! X </bind>                              // 
+                  <bid>  I       </bid>                              // 
+                </pair>)                                             // 
+      </bindstore>                                                   // 
+      <sendstore>...                                                 // 
+       (.Bag => <vsend>                                              // 
+                  <vchan> X </vchan>                                 // 
+                  <vmsg>  Q  </vmsg>                                 // 
+                  <vlen>  N  </vlen>                                 // 
+                  <vid>   I   </vid>                                 // 
+                </vsend>)                                            // 
+      </sendstore>                                                   // 
+    </rec>                                                           //
+    <send>                                                           // matching send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Procs   </msg>                                       // messages Q
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> 1       </stype>                                       // unconsumable send
+      <sid>   I:Int     </sid>                                       // 
+    </send>                                                          // 
+    requires L >Int M                                        [match] // 
 
 //-------------------
 //--- COMM EVENTS ---
@@ -923,13 +1105,102 @@ module JOIN
    (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                  // 
 
 //--- Comm Semantics ---
+// Comm occurs when # of sends matched = # of listens in join (i.e. length)
+
 // Single listen, single send
 // Both immediately consumed
 // Send info dissolved from all <sendstore/>s and corresponding <bind/>s in <bindstore/> are restored as <listen/>s to <listens/>
 // 1-tuple
-  rule                                                               // consume single send, single receive
-   (<rec>...                                                         // 
+  rule                                                               // to be consumed linear sends and receive
+    <rec>                                                            // number of listens in receive
+      <id>     J:Int     </id>                                       //  
+      <length> L:Int </length>                                       // continuation
+      <cont>   P:Proc  </cont>                                       // 
+      ...                                                            // 
+      <match>  L      </match>                                       // once match count is equal to listen length: initialize comm
+ ...</rec>                                                           //
+    <rec>                                                            // virtual send management
+      <id> H:Int </id>                                               // 
+      ...
+      <listens>...                                                   // 
+        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
+                   <chan>     X     </chan>                          // 
+                   <vars>     Z     </vars>                          // 
+                   <num>  #length(Z) </num>                          // 
+                   <type>     0     </type>                          // 
+                 </listen>)                                          // 
+      </listens>                                                     // 
+      <match> M:Int => M -Int 1        </match>                      // decrease match count in all joins (send was already consumed)
+      <nono> S:Set => S -Set SetItem(I) </nono>                      // delete send id from the nono set in all joins
+      <bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
+       (<pair>                                                       // 
+          <bind> Z:Name <- X </bind>                                 // 
+          <bid>  I            </bid>                                 // 
+        </pair> => .Bag)                                             // 
+   ...</bindstore>                                                   //  
+      <sendstore>                                                    // delete corresponding virtual send from <sendstore/> in all joins
+        (<vsend>                                                     // 
+			     <vchan> X:Name </vchan>                                   // 
+			     <vmsg>  Q:Proc  </vmsg>                                   // 
+			     <vlen>  1       </vlen>                                   // 
+			     <vid>   I:Int    </vid>                                   // 
+			   </vsend> => .Bag)                                           //
+   ...</sendstore>                                                   // 
+    </rec>                                                    [comm] // tagged "comm" for tracking nondeterminism
+
+// N-tuple, N > 2
+  rule                                                               // to be consumed single send and receive
+    <rec>...                                                         // 
       <cont> P:Proc </cont>                                          // continuation P
+      <listens>                                                      // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     //
+          <type> 0       </type>                                     // consumable
+        </listen>                                                    // 
+      </listens>                                                     // 
+ ...</rec>                                                           //
+    <send>                                                           // consume single send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Procs   </msg>                                       // message Q
+      <tuple> N       </tuple>                                       // 1-tuple
+      <stype> 0       </stype>                                       // single send
+      <sid>   I:Int     </sid>                                       // 
+    </send>                                                          //
+    <rec>...                                                         // virtual send management
+      <listens>                                                      // 
+        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
+                   <chan>     X     </chan>                          // 
+                   <vars>     Z     </vars>                          // 
+                   <num>  #length(Z) </num>                          // 
+                   <type>     0     </type>                          // 
+                 </listen>)                                          // 
+   ...</listens>                                                     // 
+      <match> M:Int => M -Int 1        </match>                      // decrease match count in all joins
+      <nono> S:Set => S -Set SetItem(I) </nono>                      // delete send id from the nono set in all joins
+      <bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
+       (<pair>                                                       // 
+          <bind> Z:Names <- X </bind>                                // 
+          <bid>  I             </bid>                                // 
+        </pair> => .Bag)                                             // 
+   ...</bindstore>                                                   //  
+      <sendstore>                                                    // delete corresponding virtual send from <sendstore/> in all joins
+        (<vsend>                                                     // 
+			     <vchan> X </vchan>                                        // 
+			     <vmsg>  Q  </vmsg>                                        // 
+			     <vlen>  1  </vlen>                                        // 
+			     <vid>   I   </vid>                                        // 
+			   </vsend> => .Bag)                                           //
+   ...</sendstore>                                                   // 
+    </rec>                                                           //
+                                                              [comm] // tagged "comm" for tracking nondeterminism
+// Single listen, repeated send
+// <rec/> immediately consumed
+// Send info NOT dissolved from <sendstore/>s and corresponding <bind/>s in <bindstore/> are restored as <listen/>s to <listens/>
+// 1-tuple
+  rule                                                               // to be consumed single receive
+    <rec>...                                                         // 
       <listens>                                                      // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
@@ -938,7 +1209,98 @@ module JOIN
           <type> 0       </type>                                     // consumable
         </listen>                                                    // 
       </listens>                                                     // 
+ ...</rec>                                                           //
+    <send>                                                           // do not consume repeated send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Proc    </msg>                                       // message Q
+      <tuple> 1       </tuple>                                       // 1-tuple
+      <stype> 1       </stype>                                       // repeated send
+      <sid>   I:Int     </sid>                                       // 
+    </send>                                                          //
+    <rec>...                                                         // virtual send management 
+      <listens>                                                      // 
+        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
+                   <chan>     X     </chan>                          // 
+                   <vars>     Z     </vars>                          // 
+                   <num>  #length(Z) </num>                          // 
+                   <type>     0     </type>                          // 
+                 </listen>)                                          // 
+   ...</listens>                                                     // 
+   ...<bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
+       (<pair>                                                       // 
+          <bind> Z:Name <- X </bind>                                 // 
+          <bid>  I            </bid>                                 // 
+        </pair> => .Bag)                                             // 
+   ...</bindstore>                                                   // 
+ ...</rec>                                                           // repeated send => do not delete corresponding <vsend/> from <sendstore/>
+                                                              [comm] // tagged "comm" for tracking nondeterminism
+
+// N-tuple, N > 2
+  rule                                                               // consume single receive
+   (<rec>                                                            // 
+      <id>     0        </id>                                        // 
+      <length> 1    </length>                                        // 
+      <cont>   P:Proc </cont>                                        // continuation P
+      <listens>                                                      // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     // N variables
+          <type> 0       </type>                                     // consumable
+        </listen>                                                    // 
+      </listens>                                                     // 
  ...</rec> => .Bag)                                                  //
+    <send>                                                           // consume single send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Procs   </msg>                                       // message Q
+      <tuple> N       </tuple>                                       // N-tuple
+      <stype> 1       </stype>                                       // repeated send
+      <sid>   I:Int     </sid>                                       // 
+    </send>                                                          //
+    <reaction>                                                       //
+	    <who>   .K => P   </who>                                       //
+	    <what>  .K => Q  </what>                                       //
+	    <where> .K => Y </where>                                       //
+	  </reaction>                                                      // ultimately spawns a single <thread/> holding P[@Q / Y]
+    <rec>                                                            // virtual send management
+      <id>      _:Int     </id>                                      // 
+      <length>  _:Int </length>                                      // 
+      <cont>    _:Proc  </cont>                                      // 
+      <listens>                                                      // 
+        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
+                   <chan>     X     </chan>                          // 
+                   <vars>     Z     </vars>                          // 
+                   <num>  #length(Z) </num>                          // 
+                   <type>     0     </type>                          // 
+                 </listen>)                                          // 
+   ...</listens>                                                     // 
+      <match> _:Int </match>                                         // 
+      <nono>  _:Set  </nono>                                         // 
+      <bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
+       (<pair>                                                       // 
+          <bind> Z:Names <- X </bind>                                // 
+          <bid>  I             </bid>                                // 
+        </pair> => .Bag)                                             // 
+   ...</bindstore>                                                   // 
+ ...</rec>                                                           // repeated send => do not delete corresponding <vsend/> from <sendstore/>
+                                                              [comm] // tagged "comm" for tracking nondeterminism
+
+// Repeated listen, single send
+// <send/> immediately consumed
+// Send info dissolved from all <sendstore/>s and corresponding <bind/>s in <bindstore/> are restored as <listen/>s to <listens/>
+// 1-tuple
+  rule                                                               // consume single send
+    <rec>...                                                         // 
+      <cont> P:Proc </cont>                                          // continuation P
+      <listens>                                                      // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Name  </vars>                                     // variable Y binding in continuation P
+          <num>  1        </num>                                     //
+          <type> 1       </type>                                     // unconsumable
+        </listen>                                                    // 
+      </listens>                                                     // 
+ ...</rec>                                                           //
    (<send>                                                           // consume single send
       <schan> X       </schan>                                       // channel X
       <msg>   Q:Proc    </msg>                                       // message Q
@@ -962,11 +1324,12 @@ module JOIN
                    <num>  #length(Y) </num>                          // 
                    <type>     0     </type>                          // 
                  </listen>)                                          // 
-   ...</listens>                                                     //
+   ...</listens>                                                     // 
+      <match> M:Int => M -Int 1        </match>                      // decrease match count in all joins (send was consumed)
       <nono> S:Set => S -Set SetItem(I) </nono>                      // delete send id from the nono set in all joins
       <bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
        (<pair>                                                       // 
-          <bind> Z:Name <- X </bind>                                 // 
+          <bind> Z:Name <= X </bind>                                 // 
           <bid>  I            </bid>                                 // 
         </pair> => .Bag)                                             // 
    ...</bindstore>                                                   //  
@@ -974,7 +1337,62 @@ module JOIN
         (<vsend>                                                     // 
 			     <vchan> X </vchan>                                        // 
 			     <vmsg>  Q  </vmsg>                                        // 
-			     <vlen>  1 </vlen>                                         // 
+			     <vlen>  1  </vlen>                                        // 
+			     <vid>   I   </vid>                                        // 
+			   </vsend> => .Bag)                                           //
+   ...</sendstore>                                                   // 
+    </rec>                                                           //
+                                                              [comm] // tagged "comm" for tracking nondeterminism
+// N-tuple, N > 2
+  rule                                                               // consume single send, single receive
+   (<rec>...                                                         // 
+      <cont> P:Proc </cont>                                          // continuation P
+      <listens>                                                      // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> Y:Names </vars>                                     // variables Y binding in continuation P
+          <num>  N:Int    </num>                                     //
+          <type> 0       </type>                                     // consumable
+        </listen>                                                    // 
+      </listens>                                                     // 
+ ...</rec> => .Bag)                                                  //
+   (<send>                                                           // consume single send
+      <schan> X       </schan>                                       // channel X
+      <msg>   Q:Procs   </msg>                                       // message Q
+      <tuple> N       </tuple>                                       // 1-tuple
+      <stype> 0       </stype>                                       // single send
+      <sid>   I:Int     </sid>                                       // 
+    </send> => .Bag)                                                 //
+    <reaction>                                                       //
+	    <who>   .K => P   </who>                                       //
+	    <what>  .K => Q  </what>                                       //
+	    <where> .K => Y </where>                                       //
+	  </reaction>                                                      // ultimately spawns a single <thread/> holding P[@Q / Y]
+    <rec>                                                            // virtual send management
+      <id>      _:Int     </id>                                      // 
+      <length>  _:Int </length>                                      // 
+      <cont>    _:Proc  </cont>                                      // 
+      <listens>                                                      // 
+        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
+                   <chan>     X     </chan>                          // 
+                   <vars>     Z     </vars>                          // 
+                   <num>  #length(Z) </num>                          // 
+                   <type>     0     </type>                          // 
+                 </listen>)                                          // 
+   ...</listens>                                                     // 
+      <match> M:Int => M -Int 1        </match>                      // decrease match count in all joins
+      <nono> S:Set => S -Set SetItem(I) </nono>                      // delete send id from the nono set in all joins
+      <bindstore>                                                    // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
+       (<pair>                                                       // 
+          <bind> Z:Names <- X </bind>                                // 
+          <bid>  I             </bid>                                // 
+        </pair> => .Bag)                                             // 
+   ...</bindstore>                                                   //  
+      <sendstore>                                                    // delete corresponding virtual send from <sendstore/> in all joins
+        (<vsend>                                                     // 
+			     <vchan> X </vchan>                                        // 
+			     <vmsg>  Q  </vmsg>                                        // 
+			     <vlen>  1  </vlen>                                        // 
 			     <vid>   I   </vid>                                        // 
 			   </vsend> => .Bag)                                           //
    ...</sendstore>                                                   // 
@@ -1015,7 +1433,7 @@ module JOIN
         (.Bag => <listen>                                            // restore listen to <listens/> in all joins
                    <chan>     X     </chan>                          // 
                    <vars>     Z     </vars>                          // 
-                   <num>  #length(Y) </num>                          // 
+                   <num>  #length(Z) </num>                          // 
                    <type>     0     </type>                          // 
                  </listen>)                                          // 
    ...</listens>                                                     //
@@ -1030,7 +1448,7 @@ module JOIN
         (<vsend>                                                     // 
 			     <vchan> X </vchan>                                        // 
 			     <vmsg>  Q  </vmsg>                                        // 
-			     <vlen>  1 </vlen>                                         // 
+			     <vlen>  1  </vlen>                                        // 
 			     <vid>   I   </vid>                                        // 
 			   </vsend> => .Bag)                                           //
    ...</sendstore>                                                   // 
@@ -1040,14 +1458,6 @@ module JOIN
 // Eliminate no longer useful Nothing cells
   rule
     <rec>...
-      <listens>...                                                   // 
-       (<listen>                                                     //
-          <chan> Nothing </chan>                                     //
-          <vars> Nothing </vars>                                     // 
-          <num>  Nothing  </num>                                     // 
-          <type> Nothing </type>                                     // 
-        </listen> => .Bag)                                           // 
-      </listens>                                                     // 
       <nono> S:Set </nono>                                           // 
       <bindstore>...                                                 // 
        (<pair>                                                       // 
@@ -1064,7 +1474,21 @@ module JOIN
         </vsend> => .Bag)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
-    when size(S) >Int 0                                              // 
+    when size(S) >=Int 0                                             // 
+
+  rule
+    <rec>...
+      <listens>...                                                   // 
+       (<listen>                                                     //
+          <chan> Nothing </chan>                                     //
+          <vars> Nothing </vars>                                     // 
+          <num>  Nothing  </num>                                     // 
+          <type> Nothing </type>                                     // 
+        </listen> => .Bag)                                           // 
+      </listens>                                                     // 
+      <nono> S:Set </nono>                                           // 
+ ...</rec>                                                           //
+    when size(S) >=Int 0                                             // 
 
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P                             [structural] //
