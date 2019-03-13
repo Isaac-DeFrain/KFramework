@@ -49,10 +49,10 @@ module AUXFUN-SYNTAX
                   | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds ----> Bool
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ---> Bool
 
-  syntax String ::= "toString("      Proc  ")"
-                  | "toString("      Name  ")"
-                  | "toString("      Bind  ")"
-                  | "toString("      Binds ")"
+  syntax String ::= "toString("      Proc  ")"                           // toString(_): Proc -------> String
+                  | "toString("      Name  ")"                           // toString(_): Name -------> String
+                  | "toString("      Bind  ")"                           // toString(_): Bind -------> String
+                  | "toString("      Binds ")"                           // toString(_): Binds ------> String
 
 endmodule
 
@@ -84,6 +84,17 @@ module AUXFUN
   rule A:Bind  #ine ( B:Bind  ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Bind  #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Binds #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
+
+//----------------
+//--- #listens ---
+//----------------
+  rule #listens( _:Bind             ) => 1
+  rule #listens( A:Lbind ; B:Lbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Lbind ; B:Lbinds ) => 1 +Int #listens(B)
+  rule #listens( A:Rbind ; B:Rbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Rbind ; B:Rbinds ) => 1 +Int #listens(B)
+  rule #listens( A:Pbind ; B:Pbind  ) => 1 +Int #listens(B)
+  rule #listens( A:Pbind ; B:Pbinds ) => 1 +Int #listens(B)
 
 //---------------
 //--- #length ---
@@ -120,17 +131,6 @@ module AUXFUN
 
   rule #length ( B:Pbind ; C:Pbind  ) => 2
   rule #length ( B:Pbind ; C:Pbinds ) => 1 +Int #length (C)
-
-//----------------
-//--- #listens ---
-//----------------
-  rule #listens( _:Bind             ) => 1
-  rule #listens( A:Lbind ; B:Lbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Lbind ; B:Lbinds ) => 1 +Int #listens(B)
-  rule #listens( A:Rbind ; B:Rbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Rbind ; B:Rbinds ) => 1 +Int #listens(B)
-  rule #listens( A:Pbind ; B:Pbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Pbind ; B:Pbinds ) => 1 +Int #listens(B)
 
 //----------------
 //--- #lengths ---
