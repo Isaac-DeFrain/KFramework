@@ -20,72 +20,86 @@ module GRHO-SYNTAX
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
-  syntax     Names ::= Name  "," Name                                // _,_: Name x Name ------> Names
-                     | Name  "," Names                               // _,_: Name x Names -----> Names
+  syntax     Names ::= Name "," Name                                 // _,_: Name x Name ------> Names
+                     | Name "," Names                                // _,_: Name x Names -----> Names
+
+  syntax  NameList ::= Name                                          //  Name < NameList
+                     | Names                                         // Names < NameList
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
   syntax      Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --------> Proc
-	                   > New                                           // 
+	                   > New                                           //        New < Proc
                      > "Nil"                                         // Nil: -------------> Proc
-                     | Collection                                    // Collection of processes
-                     | Ground                                        // Bool, Int, String < Proc
-                     > AExp                                          //    AExp < Proc
-                     > BExp                                          //    BExp < Proc
-                     | Eval                                          //    Eval < Proc
-                     | Receive                                       // Receive < Proc
-                     | Send                                          //    Send < Proc
-                     | Bundle                                        //  Bundle < Proc
-                     > Par                                           //     Par < Proc
+                     | Collection                                    // Collection < Proc
+                     | Ground                                        //     Ground < Proc
+                     > AExp                                          //       AExp < Proc
+                     > BExp                                          //       BExp < Proc
+                     | Eval                                          //       Eval < Proc
+                     | Receive                                       //    Receive < Proc
+                     | Send                                          //       Send < Proc
+                     | Bundle                                        //     Bundle < Proc
+                     > Par                                           //        Par < Proc
 
 // Parallel
   syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
 
 // Receives - no mixed linear/peek/repeated
-  syntax   Receive ::= "for" "(" Bind  ")" "{" Proc "}"     [binder] // _(_){_}: Bind  x Proc ---> Receive, single pattern
-                     | "for" "(" Binds ")" "{" Proc "}"     [binder] // _(_){_}: Binds x Proc ---> Receive, several patterns
+  syntax   Receive ::= "for" "(" BindList ")" "{" Proc "}"           // for(_){_}: BindList x Proc ---> Receive
 
-  syntax      Bind ::= Lbind                                         // single linear bind --- for( y <- x ){ P }
-                     | Pbind                                         // single peek bind ----- for( y <! x ){ P }
-                     | Rbind                                         // single repeated bind - for( y <= x ){ P }
+  syntax     Lbind ::= NameList "<-" Name                            // for( y1,...,yN <- x ){ P }
 
-  syntax     Binds ::= Lbinds                                        // several linear binds --- for( y1 <- x1 ; ... ; yN <- xN ){ P }
-                     | Pbinds                                        // several peek binds ----- for( y1 <! x1 ; ... ; yN <! xN ){ P }
-                     | Rbinds                                        // several repeated binds - for( y1 <= x1 ; ... ; yN <= xN ){ P }
+  syntax    Lbinds ::= Lbind ";" Lbind                               // 2 linear listens 
+                     | Lbind ";" Lbinds                              // N liner listens, N > 2
 
-  syntax     Lbind ::= Name  "<-" Name                               // linear listen for 1-tuple
-                     | Names "<-" Name                               // linear listen for N-tuple, N > 1
+  syntax     Pbind ::= NameList "<!" Name                            // for( y1,...,yN <! x ){ P }
 
-  syntax    Lbinds ::= Lbind ";" Lbind                               // 2 liner listens
-                     | Lbind ";" Lbinds                              // N linear listens, N > 2
+  syntax    Pbinds ::= Pbind ";" Pbind                               // 2 peeks
+                     | Pbind ";" Pbinds                              // N peeks, N > 2
 
-  syntax     Pbind ::= Name  "<!" Name                               // peek for 1-tuple
-                     | Names "<!" Name                               // peek for N-tuple, N > 1
-
-  syntax    Pbinds ::= Pbind ";" Pbind                              // 2 peeks
-                     | Pbind ";" Pbinds                             // N peeks, N > 1
-
-  syntax     Rbind ::= Name  "<=" Name                               // 1-tuple
-                     | Names "<=" Name                               // N-tuple, N > 1
+  syntax     Rbind ::= NameList "<=" Name                            // for( y1,...,yN <= x ){ P }
 
   syntax    Rbinds ::= Rbind ";" Rbind                               // 2 repeated listens
                      | Rbind ";" Rbinds                              // N repeated listens, N > 2
 
+  syntax      Bind ::= Lbind                                         // single linear listen, implicit
+                     | Pbind                                         // single peek, implicit
+                     | Rbind                                         // single repated listen, implicit
+
+  syntax     Binds ::= Lbinds                                        // linear binds --- for( y1 <- x1 ; ... ; yN <- xN ){ P }, implicit
+                     | Pbinds                                        // peek binds ----- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
+                     | Rbinds                                        // repeated binds - for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
+
+  syntax LbindList ::= Lbind                                         // single linear listen, implicit
+                     | Lbinds                                        // multiple linear listens, implicit
+
+  syntax PbindList ::= Pbind                                         // single peek, implicit
+                     | Pbinds                                        // multiple peeks, implicit
+
+  syntax RbindList ::= Rbind                                         // single repeated listen, implicit
+                     | Rbinds                                        // multiple repeated listens, implicit
+
+  syntax  BindList ::= LbindList                                     // one or more linear listens
+                     | PbindList                                     // one or more peeks
+                     | RbindList                                     // one or more repeated listens
+
 // Send
-  syntax      Send ::= Name "!"  RhoTuple                            // _!_: Name x RhoTuple ---> Send, single send
-                     | Name "!!" RhoTuple                            // _!_: Name x RhoTuple ---> Send, repeated send
+  syntax      Send ::= Name "!"  RhoTuple                            //  _!_: Name x RhoTuple ---> Send, single send
+                     | Name "!!" RhoTuple                            // _!!_: Name x RhoTuple ---> Send, repeated send
 
 // Eval
   syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
 
 // Several Processes
-  syntax     Procs ::= Proc  "," Proc                       [strict] // _,_: Proc x Proc ----> Procs
-                     | Proc  "," Procs                      [strict] // _,_: Proc x Procs ---> Procs
+  syntax     Procs ::= Proc "," Proc                        [strict] // _,_: Proc x Proc ----> Procs
+                     | Proc "," Procs                       [strict] // _,_: Proc x Procs ---> Procs
+
+  syntax  ProcList ::= Proc
+                     | Procs
 
 // New
-  syntax       New ::= "new" Name  "in" "{" Proc "}"        [binder] // create unforgeable name
-                     | "new" Names "in" "{" Proc "}"        [binder] // create unforgeable names
+  syntax       New ::= "new" NameList  "in" "{" Proc "}"    [binder] // create unforgeable name
 
 // Collections
   syntax
@@ -95,8 +109,7 @@ module GRHO-SYNTAX
                      | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax   RhoList ::= "[" Proc  "]"                                 // [_]: Proc ----> RhoList, singleton list
-                     | "[" Procs "]"                                 // [_]: Procs ---> RhoList, length > 1
+  syntax   RhoList ::= "[" ProcList   "]"                            // [_]: ProcList ----> RhoList
 
 // Process maps
   syntax    RhoMap ::= "{" RhoKVPairs "}"                            // {_}: RhoKVPairs ---> RhoMap
@@ -106,12 +119,10 @@ module GRHO-SYNTAX
                      | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
 
 // Process sets
-  syntax    RhoSet ::= "Set" "(" Proc  ")"                           // Set(_): Proc ----> RhoSet, singleton set
-                     | "Set" "(" Procs ")"                           // Set(_): Procs ---> RhoSet, set size > 1
+  syntax    RhoSet ::= "Set" "(" ProcList ")"                        // Set(_): ProcList ----> RhoSet
 
 // Process tuples
-  syntax  RhoTuple ::= "(" Proc  ")"                [klabel(tuple1)] // (_): Proc ----> RhoTuple, 1-tuple
-                     | "(" Procs ")"                [klabel(tuplen)] // (_): Procs ---> RhoTuple, N-tuple, N > 1
+  syntax  RhoTuple ::= "(" ProcList ")"              [klabel(tuple)] // (_): ProcList ----> RhoTuple
 
 // Ground terms
   syntax    Ground ::= Bool                                          //   Bool < Ground
@@ -148,22 +159,20 @@ module GRHO-SYNTAX
                      | "bundle"  "{" Proc "}"                        // both read/write
 
 // For handling joins in configuration
-  syntax  JoinList ::= "{[" Proc ";" Int  "]}"                       // for uniform join id
+  syntax  JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
 
-  syntax   ChanLen ::= "("  Name ";" Int   ")"                       // (listening channel ; number of variables to bind)
+  syntax   ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
 
-  syntax  ChanList ::= "("  Name ";" Name  ")"                       // (listening channel ; variable to bind)
-                     | "("  Name ";" Names ")"                       // (listening channel ; variables to bind)
+  syntax  ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
 
-  syntax   BindOcc ::= Name ";" Int   ";;" Int                       // listening channel; number of variables to bind; number of occurences
-                     | Name ";" Name  ";;" Int                       // listening channel; variable to bind; number of occurences
-                     | Name ";" Names ";;" Int                       // listening channel; variables to bind; number of occurences
+  syntax   BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
+                     | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
 
   syntax      Proc ::= ChanLen                                       // for
                      | BindOcc                                       // auxfun
                      | JoinList                                      // definitions
 
-  syntax   Nothing ::= "Nothing"
+  syntax   Nothing ::= "Nothing"                                     // for cell initialization
 
   syntax KVariable ::= Names | Name
 
@@ -235,10 +244,8 @@ module GRHO
 
 // New Operator Semantics
   rule new N:Name in { P:Proc } => P[unforgeable(!I:Int) / N]        //
-
   rule new M:Name , N:Name  in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  // 
-
-  rule new M:Name , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  //
+  rule new M:Name , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  // 
 
 // Par Operator Semantics
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           //
@@ -249,109 +256,56 @@ module GRHO
 //--- Send Operator Semantics ---
 //-------------------------------
 
-//--- Single Sends ---
-// Process message <=> 1-tuple
-  rule <k> X:Name ! ( P:Proc ) => . ...</k>                          //dissolve send in <threads/> and spawn <send/>
+// Single Send => consumable
+  rule <k> X:Name ! ( P:ProcList ) => . ...</k>                      // dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
-                  <schan>      X     </schan>                        //sending channel X
-                  <msg>        P       </msg>                        //sending message P
-                  <tuple>      1     </tuple>                        //1-tuple = ( Proc )
-                  <stype>      0     </stype>                        //single send => consumed in comm
+                  <schan>      X     </schan>                        // sending channel X
+                  <msg>        P       </msg>                        // sending message(s) P
+                  <tuple> #length(P) </tuple>                        // length of tuple - how many messages
+                  <stype>      0     </stype>                        // single send => consumed in comm
                 </send>)                                             //
 
-// N-tuple messages, N > 1
-  rule <k> X:Name ! ( P:Procs ) => . ...</k>                         //dissolve send in <threads/> and spawn <send/>
+// Persistent Send => unconsumable
+  rule <k> X:Name !! ( P:ProcList ) => . ...</k>                     // dissolve send in <threads/> and spawn <send/>
        (.Bag => <send>                                               //
-                  <schan>      X     </schan>                        //sending channel X
-                  <msg>        P       </msg>                        //sending messages P, two or more
-                  <tuple> #length(P) </tuple>                        //length of tuple - how many messages
-                  <stype>      0     </stype>                        //single send => consumed in comm
-                </send>)                                             //
-
-//--- Persistent Sends ---
-// Process message <=> 1-tuple
-  rule <k> X:Name !! ( P:Proc ) => . ...</k>                         //dissolve send in <threads/> and spawn <send/>
-       (.Bag => <send>                                               //
-                  <schan>      X     </schan>                        //sending channel X
-                  <msg>        P       </msg>                        //sending message P
-                  <tuple>      1     </tuple>                        //1-tuple
-                  <stype>      1     </stype>                        //repeated send => NOT consumed in comm
-                </send>)                                             //
-
-// N-tuple messages, N > 1
-  rule <k> X:Name !! ( P:Procs ) => . ...</k>                        //dissolve send in <threads/> and spawn <send/>
-       (.Bag => <send>                                               //
-                  <schan>      X     </schan>                        //sending channel X
-                  <msg>        P       </msg>                        //sending messages P, two or more
-                  <tuple> #length(P) </tuple>                        //length of tuple
-                  <stype>      1     </stype>                        //repeated send
+                  <schan>      X     </schan>                        // sending channel X
+                  <msg>        P       </msg>                        // sending message(s) P
+                  <tuple> #length(P) </tuple>                        // length of tuple
+                  <stype>      1     </stype>                        // repeated send => persists
                 </send>)                                             //
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
 
-//--- Single Receives ---
-// Listen for 1-tuple
-  rule <k> for ( Y:Name <- X:Name ) { P:Proc } => . ...</k>          //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //variable Y binding in continuation P
-                  <bnum>      1      </bnum>                         //
-                  <rtype>     0     </rtype>                         //consumable
-                  <cont>      P      </cont>                         //continuation P
+// Linear Receive
+  rule <k> for ( B:Lbind ) { P:Proc } => . ...</k>                   // dissolve Rec in <threads/> and spawn <rec/>
+       (.Bag => <rec>                                                // 
+                  <rchan>  #chan(B) </rchan>                         // receiving channel X
+                  <bvars>  #bvar(B) </bvars>                         // pattern(s) Y binding in continuation P
+                  <bnum> #length(B)  </bnum>                         // 
+                  <rtype>     0     </rtype>                         // linear
+                  <cont>      P      </cont>                         // continuation P
                 </rec>)                                              //
 
-// Listen for N-tuple, N > 1
-  rule <k> for ( Y:Names <- X:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //comma-separated list of patterns Y binding in continuation P
-                  <bnum>  #length(Y) </bnum>                         //
-                  <rtype>     0     </rtype>                         //consumable
-                  <cont>      P      </cont>                         //continuation P
+// Persistent Receive
+  rule <k> for ( B:Rbind ) { P:Proc } => . ...</k>      // dissolve Rec in <threads/> and spawn <rec/>
+       (.Bag => <rec>                                                // 
+                  <rchan>  #chan(B) </rchan>                         // receiving channel X
+                  <bvars>  #bvar(B) </bvars>                         // pattern(s) Y binding in continuation P
+                  <bnum> #length(B)  </bnum>                         // 
+                  <rtype>     1     </rtype>                         // unconsumable
+                  <cont>      P      </cont>                         // continuation P
                 </rec>)                                              //
 
-//--- Persistent Receives ---
-// Listen for 1-tuple
-  rule <k> for ( Y:Name <= X:Name ) { P:Proc } => . ...</k>          //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //variable Y binding in continuation P
-                  <bnum>      1      </bnum>                         //
-                  <rtype>     1     </rtype>                         //unconsumable
-                  <cont>      P      </cont>                         //continuation P
-                </rec>)                                              //
-
-// Listen for N-tuple, N > 1
-  rule <k> for ( Y:Names <= X:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //variables Y binding in continuation P
-                  <bnum>  #length(Y) </bnum>                         //
-                  <rtype>     1     </rtype>                         //unconsumable
-                  <cont>      P      </cont>                         //continuation P
-                </rec>)                                              //
-
-//--- Peek ---
-// Peek for 1-tuple
-  rule <k> for ( Y:Name <! X:Name ) { P:Proc } => . ...</k>          //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //variable Y binding in continuation P
-                  <bnum>      1      </bnum>                         //
-                  <rtype>     2     </rtype>                         //peek
-                  <cont>      P      </cont>                         //continuation P
-                </rec>)                                              //
-
-// Listen for N-tuple, N > 1
-  rule <k> for ( Y:Names <! X:Name ) { P:Proc } => . ...</k>         //dissolve Rec in <threads/> and spawn <rec/>
-       (.Bag => <rec>                                                //
-                  <rchan>     X     </rchan>                         //receiving channel X
-                  <bvars>     Y     </bvars>                         //variables Y binding in continuation P
-                  <bnum>  #length(Y) </bnum>                         //
-                  <rtype>     2     </rtype>                         //peek
-                  <cont>      P      </cont>                         //continuation P
+// Peek
+  rule <k> for ( B:Pbind ) { P:Proc } => . ...</k>      // dissolve Rec in <threads/> and spawn <rec/>
+       (.Bag => <rec>                                                // 
+                  <rchan>  #chan(B) </rchan>                         // receiving channel X
+                  <bvars>  #bvar(B) </bvars>                         // pattern(s) Y binding in continuation P
+                  <bnum> #length(B)  </bnum>                         // 
+                  <rtype>     2     </rtype>                         // peek
+                  <cont>      P      </cont>                         // continuation P
                 </rec>)                                              //
 
 //-------------
@@ -359,31 +313,31 @@ module GRHO
 //-------------
   rule <thread> <k> for ( B:Lbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
-                  <rchan>   #chan (B) </rchan>                       //
-                  <bvars>   #bvar (B) </bvars>                       //
-                  <bnum> #lengths (B)  </bnum>                       //
-                  <rtype>      0      </rtype>                       //
-                  <cont>       P       </cont>                       //
+                  <rchan>   #chan(B) </rchan>                        //
+                  <bvars>   #bvar(B) </bvars>                        //
+                  <bnum> #lengths(B)  </bnum>                        //
+                  <rtype>      0     </rtype>                        //
+                  <cont>       P      </cont>                        //
                 </rec>)                                              //
 
 // Repeated
   rule <thread> <k> for ( B:Rbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
-                  <rchan>   #chan (B) </rchan>                       //
-                  <bvars>   #bvar (B) </bvars>                       //
-                  <bnum> #lengths (B)  </bnum>                       //
-                  <rtype>      1      </rtype>                       //
-                  <cont>       P       </cont>                       //
+                  <rchan>   #chan(B) </rchan>                        //
+                  <bvars>   #bvar(B) </bvars>                        //
+                  <bnum> #lengths(B)  </bnum>                        //
+                  <rtype>      1     </rtype>                        //
+                  <cont>       P      </cont>                        //
                 </rec>)                                              //
 
 // Peek
   rule <thread> <k> for ( B:Pbinds ){ P:Proc } => . ...</k> </thread>
        (.Bag => <rec>                                                //
-                  <rchan>   #chan (B) </rchan>                       //
-                  <bvars>   #bvar (B) </bvars>                       //
-                  <bnum> #lengths (B)  </bnum>                       //
-                  <rtype>      2      </rtype>                       //
-                  <cont>       P       </cont>                       //
+                  <rchan>   #chan(B) </rchan>                        //
+                  <bvars>   #bvar(B) </bvars>                        //
+                  <bnum> #lengths(B)  </bnum>                        //
+                  <rtype>      2     </rtype>                        //
+                  <cont>       P      </cont>                        //
                 </rec>)                                              //
 
 //-------------------
@@ -415,65 +369,42 @@ module GRHO
    (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)
 
 // Comm semantics
-// Single listen, single send
-// 1-tuple
+// Linear listen, linear send
   rule                                                                 //consume single send, single receive
   (<rec>                                                               //consume single receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Name  </bvars>                                          // binding variable Y
-     <bnum>  1        </bnum>                                          // one name to bind
-     <rtype> 0       </rtype>                                          // single listen
+     <rchan> X:Name     </rchan>                                       // channel X
+     <bvars> Y:NameList </bvars>                                       // binding variable(s) Y
+     <bnum>  N:Int       </bnum>                                       // number of names to bind
+     <rtype> 0       </rtype>                                          // linear listen
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
   (<send>                                                              //consume single send
-     <schan> X       </schan>                                          // channel X
-     <msg>   Q:Proc    </msg>                                          // message Q
-     <tuple> 1       </tuple>                                          // 1-tuple
-     <stype> 0       </stype>                                          // single send
+     <schan> X        </schan>                                         // channel X
+     <msg>   Q:ProcList </msg>                                         // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 0       </stype>                                          // linear send
    </send> => .Bag)                                                    //
    <reaction>                                                          //
 	   <who>   .K => P   </who>                                          //
 	   <what>  .K => Q  </what>                                          //
 	   <where> .K => Y </where>                                          //
-	 </reaction>                                                         //spawn single <thread/> holding sub P[@Q / Y]
+	 </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
                                                                 [comm] //tagged "comm" for tracking nondeterminism
 
-// N-tuple, N > 1
-  rule                                                                 //consume single send, single receive
-  (<rec>                                                               //consume single receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Names </bvars>                                          // binding variable Y
-     <bnum>  N:Int    </bnum>                                          // N names to bind
-     <rtype> 0       </rtype>                                          // single listen
-     <cont>  P:Proc   </cont>                                          // continuation P
-   </rec> => .Bag)                                                     //
-  (<send>                                                              //consume single send
-     <schan> X       </schan>                                          // channel
-     <msg>   Q:Procs   </msg>                                          // message
-     <tuple> N       </tuple>                                          // N-tuple, N > 1
-     <stype> 0       </stype>                                          // single send
-   </send> => .Bag)                                                    //
-   <reaction>                                                          //
-     <who>   .K => P   </who>                                          //
-     <what>  .K => Q  </what>                                          //
-     <where> .K => Y </where>                                          //
-   </reaction>                                                  [comm] //
-
-// Persistent listen, single send
-// 1-tuple
+// Persistent listen, linear send
   rule                                                                 //consume single send, keep persistent receive
    <rec>                                                               //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Name  </bvars>                                          // binding variable Y
-     <bnum>  1        </bnum>                                          // one name to bind
-     <rtype> 1       </rtype>                                          // single listen
-     <cont>  P:Proc   </cont>                                          // continuation P
+     <rchan> X:Name     </rchan>                                       // channel X
+     <bvars> Y:NameList </bvars>                                       // binding variable(s) Y
+     <bnum>  N:Int       </bnum>                                       // number of name(s) to bind
+     <rtype> 1          </rtype>                                       // repeated listen
+     <cont>  P:Proc      </cont>                                       // continuation P
    </rec>                                                              //
   (<send>                                                              //consume single send
-     <schan> X       </schan>                                          // channel X
-     <msg>   Q:Proc    </msg>                                          // message
-     <tuple> 1       </tuple>                                          // 1-tuple
-     <stype> 0       </stype>                                          // single send
+     <schan> X        </schan>                                         // channel X
+     <msg>   Q:ProcList </msg>                                         // message(s) Q
+     <tuple> N        </tuple>                                         // number of messages matches number of names to bind
+     <stype> 0        </stype>                                         // linear send
    </send> => .Bag)                                                    //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -481,62 +412,19 @@ module GRHO
      <where> .K => Y </where>                                          //
    </reaction>                                                  [comm] //
 
-// N-tuple, N > 2
-  rule                                                                 //consume single send, keep persistent receive
-   <rec>                                                               //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Names </bvars>                                          // binding variables Y, Z
-     <bnum>  N:Int    </bnum>                                          // N names to bind
-     <rtype> 1       </rtype>                                          // single listen
-     <cont>  P:Proc   </cont>                                          // continuation P
-   </rec>                                                              //
-  (<send>                                                              //consume single send
-     <schan> X       </schan>                                          // channel X
-     <msg>   Q:Procs   </msg>                                          // message(s)
-     <tuple> N       </tuple>                                          // N-tuple
-     <stype> 0       </stype>                                          // single send
-   </send> => .Bag)                                                    //
-   <reaction>                                                          //
-     <who>   .K => P   </who>                                          //
-     <what>  .K => Q  </what>                                          //
-     <where> .K => Y </where>                                          //
-   </reaction>                                                  [comm] //
-
-// Single listen, persistent send
-// 1-tuple
-  rule                                                                 //consume single receive, keep persistent send
-  (<rec>                                                               //consume single receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Name  </bvars>                                          // binding variable(s)
-     <bnum>  1        </bnum>                                          // one name to bind
-     <rtype> 0       </rtype>                                          // single listen
-     <cont>  P:Proc   </cont>                                          // continuation
-   </rec> => .Bag)                                                     //
-   <send>                                                              //DON'T consume persistent send
-     <schan> X       </schan>                                          // channel X
-     <msg>   Q:Proc    </msg>                                          // message Q
-     <tuple> 1       </tuple>                                          // 1-tuple
-     <stype> 1       </stype>                                          // single send
-   </send>                                                             //
-   <reaction>                                                          //
-     <who>   .K => P   </who>                                          //
-     <what>  .K => Q  </what>                                          //
-     <where> .K => Y </where>                                          //
-   </reaction>                                                  [comm] //
-
-// N-tuple, N > 1
+// Linear listen, persistent send
   rule                                                                 //consume single receive and keep single receive
   (<rec>                                                               //consume single receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Names </bvars>                                          // binding variable(s)
-     <bnum>  N:Int    </bnum>                                          // N names to bind
-     <rtype> 0       </rtype>                                          // single listen
-     <cont>  P:Proc   </cont>                                          // continuation
+     <rchan> X:Name     </rchan>                                       // channel X
+     <bvars> Y:NameList </bvars>                                       // binding variable(s) Y
+     <bnum>  N:Int       </bnum>                                       // number of name(s) to bind
+     <rtype> 0          </rtype>                                       // linear listen
+     <cont>  P:Proc      </cont>                                       // continuation
    </rec> => .Bag)                                                     //
    <send>                                                              //DON'T consume persistent send
      <schan> X       </schan>                                          // channel X
-     <msg>   Q:Procs   </msg>                                          // messages
-     <tuple> N       </tuple>                                          // N-tuple
+     <msg>   Q:Procs   </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
      <stype> 1       </stype>                                          // persistent send
    </send>                                                             //
    <reaction>                                                          //
@@ -546,41 +434,19 @@ module GRHO
    </reaction>                                                  [comm] //
 
 // Peek semantics
-// 1-tuple
   rule                                                                 //consume single send, single receive
   (<rec>                                                               //consume single receive
-     <rchan> X:Name </rchan>                                           // channel X
-     <bvars> Y:Name </bvars>                                           // binding variable Y
-     <bnum>  1       </bnum>                                           // one name to bind
-     <rtype> 2      </rtype>                                           // peek
-     <cont>  P:Proc  </cont>                                           // continuation P
+     <rchan> X:Name     </rchan>                                       // channel X
+     <bvars> Y:NameList </bvars>                                       // binding variable(s) Y
+     <bnum>  N:Int       </bnum>                                       // number of name(s) to bind
+     <rtype> 2          </rtype>                                       // peek
+     <cont>  P:Proc      </cont>                                       // continuation P
    </rec> => .Bag)                                                     //
    <send>                                                              //consume single send
-     <schan> X      </schan>                                           // channel X
-     <msg>   Q:Proc   </msg>                                           // message Q
-     <tuple> 1      </tuple>                                           // 1-tuple
-     <stype> _      </stype>                                           // single or repeated send
-   </send>                                                             //
-   <reaction>                                                          //
-     <who>   .K => P   </who>                                          //
-     <what>  .K => Q  </what>                                          //
-     <where> .K => Y </where>                                          //
-   </reaction>                                                  [comm] //
-
-// N-tuple, N > 1
-  rule                                                                 //consume single send, single receive
-  (<rec>                                                               //consume single receive
-     <rchan> X:Name  </rchan>                                          // channel X
-     <bvars> Y:Names </bvars>                                          // binding variable Y
-     <bnum>  N:Int    </bnum>                                          // N names to bind
-     <rtype> 2       </rtype>                                          // peek
-     <cont>  P:Proc   </cont>                                          // continuation P
-   </rec> => .Bag)                                                     //
-   <send>                                                              //consume single send
-     <schan> X       </schan>                                          // channel
-     <msg>   Q:Procs   </msg>                                          // message
-     <tuple> N       </tuple>                                          // N-tuple
-     <stype> _       </stype>                                          // single or repeated send
+     <schan> X        </schan>                                         // channel X
+     <msg>   Q:ProcList </msg>                                         // message(s) Q
+     <tuple> N        </tuple>                                         // number of messages matches number of names to bind
+     <stype> _        </stype>                                         // any kind of send
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //

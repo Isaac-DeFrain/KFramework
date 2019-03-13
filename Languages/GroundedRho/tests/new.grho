@@ -1,6 +1,6 @@
 // New
 
-  new x , y , z in { x!(3 + 5) | y!("a") | z!(*x,8) | for( a <- x ){*a} | for( y,z <! z){*y} } | for( a <- x ){(*a,"not in new")}
+  new x , y , z in { x!(3 + 5) | y!("a") | z!(*x,Nil) | for( a <- x ){*a} | for( y,z <! z){*y} } | for( a <- x ){"no unforgeable names here"}
 
 /*
   Output:
@@ -12,7 +12,7 @@
       </k>
     </thread> <thread>
       <k>
-        * unforgeable( 4 )
+        * unforgeable( 1 )
       </k>
     </thread>
   </threads>
@@ -28,22 +28,22 @@
         <tuple>
           1
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
+        </stype>
       </send> <send>
         <schan>
           unforgeable( 6 )
         </schan>
         <msg>
-          * unforgeable( 4 ) , 8
+          * unforgeable( 1 ) , Nil
         </msg>
         <tuple>
           2
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
+        </stype>
       </send>
     </sends>
     <receives>
@@ -57,11 +57,11 @@
         <bnum>
           1
         </bnum>
-        <rper>
+        <rtype>
           0
-        </rper>
+        </rtype>
         <cont>
-          ( * a , "not in new" )
+          "no unforgeable names here"
         </cont>
       </rec>
     </receives>
