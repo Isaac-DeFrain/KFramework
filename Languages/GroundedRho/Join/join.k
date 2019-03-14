@@ -172,11 +172,11 @@ module JOIN
 //-------------
 // Receives with several listens are immediately id wrapped
 // We generate a fresh id in a <rec/> for each join and initialize this <rec/> with this id, number of listens, and continuation
-  rule <k> for( B:Binds ){ P:Proc } => {[ for(B){P} ; !I:Int ]} ...</k>// id wrap join
+  rule <k> R:MultiRec => {[ R ; !I:Int ]} ...</k>                    // generate id & wrap join
        (.Bag => <rec>                                                // 
-                  <id>         !I          </id>                     // 
-                  <length> #listens(B) </length>                     // 
-                  <cont>        P        </cont>                     // continuation P
+                  <id>         !I       </id>                        // 
+                  <length> #bnum(R) </length>                        // number of listens in receive
+                  <cont>   #cont(R)   </cont>                        // continuation
                   <listens>                                          //    
                     <listen>                                         // 
                       <chan> Nothing </chan>                         // 
@@ -214,13 +214,14 @@ module JOIN
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan>  #chan(R) </chan>                       // receiving channel
-                      <vars>  #bvar(R) </vars>                       // variable Y binding in continuation
+                      <vars>  #bvar(R) </vars>                       // variable(s) binding in continuation
                       <num>   #bnum(R)  </num>                       // number of variables to bind
                       <type> #rtype(R) </type>                       // listen type
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        // 
 
+// Recursive steps
 // Linear
 // 2 single listen joins
   rule <k> {[ for( A:Lbind ; B:Lbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
@@ -230,10 +231,10 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        0  </type>                       // linear
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       0  </type>                        // linear
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -246,15 +247,16 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        0  </type>                       // linear
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       0  </type>                        // linear
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
 
 // Repeated
+// 2 repeated listen joins
   rule <k> {[ for( A:Rbind ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
@@ -262,15 +264,15 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        1  </type>                       // repeated
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       1  </type>                        // repeated
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
 
-// N linear listen joins, N > 2
+// N repeated listen joins, N > 2
   rule <k> {[ for( A:Rbind ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
@@ -278,15 +280,16 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        1  </type>                       // repeated
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       1  </type>                        // repeated
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
 
 // Peek
+// 2 peek joins
   rule <k> {[ for( A:Pbind ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
@@ -294,15 +297,15 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        2  </type>                       // peek
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       2  </type>                        // peek
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
 
-// N linear listen joins, N > 2
+// N peek joins, N > 2
   rule <k> {[ for( A:Pbind ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
@@ -310,10 +313,10 @@ module JOIN
          <cont>   _:Proc  </cont>                                    // 
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(A) </chan>                       // receiving channel X
-                      <vars>  #bvar(A) </vars>                       // variable Y binding in continuation P
-                      <num> #length(A)  </num>                       // 
-                      <type>        2  </type>                       // peek
+                      <chan> #chan(A) </chan>                        // receiving channel
+                      <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
+                      <num>  #bnum(A)  </num>                        // 
+                      <type>       2  </type>                        // peek
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -328,18 +331,17 @@ module JOIN
 // 4. the send is moved to the sendstore (so it can be consumed from the tuplspace when a comm occurs)
 
 // Linear listens
-// 1-tuple messages
 // consumable sends
   rule
     <rec>...                                                         // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
+      <length> L:Int </length>                                       // L listen receive
+      <cont>   _:Proc  </cont>                                       // 
       <listens>...                                                   // 
         <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // receiving channel X
-          <vars> Y:Name  </vars>                                     // variable Y binding in continuation P
-          <num>  1        </num>                                     // 1-tuple
-          <type> 0       </type>                                     // linear
+          <chan> X:Name     </chan>                                  // receiving channel X
+          <vars> Y:NameList </vars>                                  // variable(s) Y binding in continuation P
+          <num>  N:Int       </num>                                  // N variables to bind
+          <type> R:Int      </type>                                  // any receive type
         </listen>                                                    // 
       </listens>                                                     // 
 			<match>  M:Int => M +Int 1  </match>                           // increase match count
@@ -354,17 +356,18 @@ module JOIN
        (.Bag => <vsend>                                              // add virtual copy of Send to <sendstore/>
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
-                  <vlen>  1  </vlen>                                 // 
+                  <vlen>  N  </vlen>                                 // 
+                  <vtype> T </vtype>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
     <send>                                                           // matching send
-      <schan> X       </schan>                                       // channel X
-      <msg>   Q:Proc    </msg>                                       // message Q
-      <tuple> 1       </tuple>                                       // 1-tuple
-      <stype> T:Int   </stype>                                       // consumable send
-      <sid>   I:Int     </sid>                                       // 
+      <schan> X        </schan>                                      // channel X
+      <msg>   Q:ProcList </msg>                                      // message(s) Q
+      <tuple> N        </tuple>                                      // N-tuple
+      <stype> T:Int    </stype>                                      // any send type
+      <sid>   I:Int      </sid>                                      // 
     </send>                                                          // 
     requires (notBool I in S) andBool (T =/=Int 1) andBool (L >Int M)//
                                                              [match] // 
@@ -378,7 +381,7 @@ module JOIN
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
           <vars> Y:Name  </vars>                                     // variable Y binding in continuation P
-          <num>  1        </num>                                     // 1-tuple
+          <num>  N:Int    </num>                                     // 1-tuple
           <type> 0       </type>                                     // linear
         </listen>                                                    // 
       </listens>                                                     // 
@@ -395,16 +398,17 @@ module JOIN
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
                   <vlen>  1  </vlen>                                 // 
+                  <vtype> 1 </vtype>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
     </rec>                                                           //
     <send>                                                           // matching send
-      <schan> X       </schan>                                       // channel X
-      <msg>   Q:Proc    </msg>                                       // message Q
-      <tuple> 1       </tuple>                                       // 1-tuple
-      <stype> 1       </stype>                                       // unconsumable send
-      <sid>   I:Int     </sid>                                       // 
+      <schan> X        </schan>                                      // channel X
+      <msg>   Q:ProcList </msg>                                      // message(s) Q
+      <tuple> N        </tuple>                                      // N-tuple
+      <stype> 1        </stype>                                      // unconsumable send => repeated
+      <sid>   I:Int      </sid>                                      // 
     </send>                                                          // 
 	    requires L >Int M                                      [match] // 
 
@@ -435,6 +439,7 @@ module JOIN
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
                   <vlen>  N  </vlen>                                 // 
+                  <vtype> T </vtype>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
@@ -475,6 +480,7 @@ module JOIN
                   <vchan> X </vchan>                                 // 
                   <vmsg>  Q  </vmsg>                                 // 
                   <vlen>  N  </vlen>                                 // 
+                  <vtype> 1 </vtype>                                 // 
                   <vid>   I   </vid>                                 // 
                 </vsend>)                                            // 
       </sendstore>                                                   // 
@@ -735,6 +741,7 @@ module JOIN
     </send>                                                          // 
     requires L >Int M                                        [match] // 
 
+/*
 //-------------------
 //--- COMM EVENTS ---
 //-------------------
@@ -1135,7 +1142,7 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           //
                                                               [comm] // tagged "comm" for tracking nondeterminism
-
+*/
 // Eliminate no longer useful Nothing cells
   rule
     <rec>...
