@@ -13,6 +13,7 @@ module AUXFUN-SYNTAX
                   | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
                   | "#length"    "(" Bind  ")"               [function]  // #length(_): Bind -------------------> Int
                   | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#bnum"    "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
                   | "#listens"   "(" Bind  ")"               [function]  // #listens(_): Bind ------------------> Int
                   | "#listens"   "(" Binds ")"               [function]  // #listens(_): Binds -----------------> Int
                   | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
@@ -20,6 +21,8 @@ module AUXFUN-SYNTAX
                   | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
                   | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
                   | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
+                  | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send ---------------------> Int
+                  | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive ------------------> Int
 
   syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
                   | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
@@ -30,14 +33,27 @@ module AUXFUN-SYNTAX
                   | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
                   | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
 
-  syntax  Procs ::= "#lengths"   "(" Binds ")"               [function]  //   #length(_): Binds ------> Procs
+  syntax   Bind ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Bind
 
-  syntax   Name ::= "#chan"      "(" Bind  ")"               [function]  //     #chan(_): Bind -------> Name
-                  | "#bvar"      "(" Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
+  syntax  Binds ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Binds
 
-  syntax  Names ::= "#chan"      "(" Binds ")"               [function]  //    #chans(_): Binds ------> Names
-                  | "#bvar"      "(" Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
-                  | "#bvar"      "(" Binds ")"               [function]  //    #bvars(_): Binds ------> Names
+  syntax   Proc ::= "#cont" "(" Receive ")"                  [function]  // #cont(_): Receive --------> Proc
+                  | "#msg"  "(" Send    ")"                  [function]  // #msg(_): Send ------------> Proc
+
+  syntax  Procs ::= "#lengths" "("   Binds ")"               [function]  // #length(_): Binds --------> Procs
+                  | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Procs
+
+  syntax   Name ::= "#chan"    "("   Send  ")"               [function]  //     #chan(_): Send -------> Name
+                  | "#chan"    "(" Receive ")"               [function]  //     #chan(_): Receive ----> Name
+                  | "#chan"    "("   Bind  ")"               [function]  //     #chan(_): Bind -------> Name
+                  | "#bvar"    "("   Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
+                  | "#bvar"    "(" Receive ")"               [function]  //     #bvar(_): Receive ----> Name
+
+  syntax  Names ::= "#chan"    "("   Binds ")"               [function]  //     #chan(_): Binds ------> Names
+                  | "#chan"    "(" Receive ")"               [function]  //     #chan(_): Receive ----> Names
+                  | "#bvar"    "("   Binds ")"               [function]  //     #bvar(_): Binds ------> Names
+                  | "#bvar"    "("   Bind  ")"               [function]  //     #bvar(_): Bind -------> Names
+                  | "#bvar"    "(" Receive ")"               [function]  //     #bvar(_): Receive ----> Names
 
   syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ---> Bool
                   | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  -----> Bool
@@ -60,6 +76,41 @@ module AUXFUN
   import AUXFUN-SYNTAX
 
   syntax KResult ::= Int | Procs | Name
+
+// Sends
+  rule #chan  ( N:Name !  ( _:ProcList ) ) => N
+  rule #chan  ( N:Name !! ( _:ProcList ) ) => N
+
+  rule #msg   ( _:Name !  ( P:Proc     ) ) => P
+  rule #msg   ( _:Name !  ( P:Procs    ) ) => P
+  rule #msg   ( _:Name !! ( P:Proc     ) ) => P
+  rule #msg   ( _:Name !! ( P:Procs    ) ) => P
+
+  rule #stype ( _:Name !  ( _:ProcList ) ) => 0
+  rule #stype ( _:Name !! ( _:ProcList ) ) => 1
+
+// Receives
+  rule #bind  ( for ( B:Bind      ){ _:Proc } ) => B
+  rule #bind  ( for ( B:Binds     ){ _:Proc } ) => B
+
+  rule #bvar  ( for ( B:Bind      ){ _:Proc } ) => #bvar(B)
+  rule #bvar  ( for ( B:Binds     ){ _:Proc } ) => #bvar(B)
+
+  rule #chan  ( for ( B:Bind      ){ _:Proc } ) => #chan(B)
+  rule #chan  ( for ( B:Binds     ){ _:Proc } ) => #chan(B)
+
+  rule #cont  ( for ( _:Bind      ){ P:Proc } ) => P
+  rule #cont  ( for ( _:Binds     ){ P:Proc } ) => P
+
+  rule #bnum ( for ( B:Bind     ){ _:Proc } ) => #length(B)
+  rule #bnum ( for ( B:Binds    ){ _:Proc } ) => #length(B)
+
+  rule #rtype ( for ( _:Lbind     ){ _:Proc } ) => 0
+  rule #rtype ( for ( _:Lbinds    ){ _:Proc } ) => 0
+  rule #rtype ( for ( _:Rbind     ){ _:Proc } ) => 1
+  rule #rtype ( for ( _:Rbinds    ){ _:Proc } ) => 1
+  rule #rtype ( for ( _:Pbind     ){ _:Proc } ) => 2
+  rule #rtype ( for ( _:Pbinds    ){ _:Proc } ) => 2
 
 //-----------
 //--- #in ---
@@ -158,9 +209,6 @@ module AUXFUN
   rule #chan ( _:Name  <! N:Name ) => N
   rule #chan ( _:Names <! N:Name ) => N
 
-//--------------
-//--- #chans ---
-//--------------
 // comma-separated list of channels involved in bindings
   rule #chan ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)
   rule #chan ( B:Lbind ; C:Lbinds ) => #chan(B) , #chan(C)
