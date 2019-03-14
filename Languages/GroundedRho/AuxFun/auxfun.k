@@ -33,16 +33,20 @@ module AUXFUN-SYNTAX
                   | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
                   | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
 
-  syntax   Bind ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Bind
-                  | "#bind" "(" BindOcc ")"                  [function]  // #bind(_): BindOcc --------> Bind
+  syntax   Bind ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Bind
+                  | "#bind"    "(" BindOcc ")"               [function]  // #bind(_): BindOcc --------> Bind
 
-  syntax  Binds ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Binds
+  syntax  Binds ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Binds
 
-  syntax   Proc ::= "#cont" "(" Receive ")"                  [function]  // #cont(_): Receive --------> Proc
-                  | "#msg"  "(" Send    ")"                  [function]  // #msg(_): Send ------------> Proc
+  syntax   Proc ::= "#cont"    "(" Receive ")"               [function]  // #cont(_): Receive --------> Proc
+                  | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Proc
 
   syntax  Procs ::= "#lengths" "("   Binds ")"               [function]  // #length(_): Binds --------> Procs
                   | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Procs
+                  | "#append" "(" Proc  ";" Proc  ")"        [function]  // #append(_;_): Proc  x Proc ---------> Procs
+                  | "#append" "(" Procs ";" Proc  ")"        [function]  // #append(_;_): Procs x Proc ---------> Procs
+                  | "#append" "(" Proc  ";" Procs ")"        [function]  // #append(_;_): Proc  x Procs --------> Procs
+                  | "#append" "(" Procs ";" Procs ")"        [function]  // #append(_;_): Procs x Procs --------> Procs
 
   syntax   Name ::= "#chan"    "("   Send  ")"               [function]  //     #chan(_): Send -------> Name
                   | "#chan"    "(" Receive ")"               [function]  //     #chan(_): Receive ----> Name
@@ -55,28 +59,32 @@ module AUXFUN-SYNTAX
                   | "#bvar"    "("   Binds ")"               [function]  //     #bvar(_): Binds ------> Names
                   | "#bvar"    "("   Bind  ")"               [function]  //     #bvar(_): Bind -------> Names
                   | "#bvar"    "(" Receive ")"               [function]  //     #bvar(_): Receive ----> Names
+                  | "#append"  "(" Name  ";" Name  ")"       [function]  //     #bvar(_): Name  x Name -------> Names
+                  | "#append"  "(" Names ";" Name  ")"       [function]  //     #bvar(_): Names x Name -------> Names
+                  | "#append"  "(" Name  ";" Names ")"       [function]  //     #bvar(_): Name  x Names ------> Names
+                  | "#append"  "(" Names ";" Names ")"       [function]  //     #bvar(_): Names x Names ------> Names
 
-  syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ---> Bool
-                  | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  -----> Bool
-                  | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names -----> Bool
-                  | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind -----> Bool
-                  | Bind  "#in"  "(" Binds ")"               [function]  // _#in_: Bind  x Binds ----> Bool
-                  | Binds "#in"  "(" Binds ")"               [function]  // _#in_: Binds x Binds ----> Bool
-                  | Bind  "#ine" "(" Bind  ")"               [function]  // _#ine_: Bind x Bind -----> Bool
-                  | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds ----> Bool
-                  | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ---> Bool
+  syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
+                  | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  ------> Bool
+                  | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names ------> Bool
+                  | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind ------> Bool
+                  | Bind  "#in"  "(" Binds ")"               [function]  // _#in_: Bind  x Binds -----> Bool
+                  | Binds "#in"  "(" Binds ")"               [function]  // _#in_: Binds x Binds -----> Bool
+                  | Bind  "#ine" "(" Bind  ")"               [function]  // _#ine_: Bind x Bind ------> Bool
+                  | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds -----> Bool
+                  | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
 
-  syntax String ::= "toString("      Proc  ")"                           // toString(_): Proc -------> String
-                  | "toString("      Name  ")"                           // toString(_): Name -------> String
-                  | "toString("      Bind  ")"                           // toString(_): Bind -------> String
-                  | "toString("      Binds ")"                           // toString(_): Binds ------> String
+  syntax String ::= "toString("      Proc  ")"                           // toString(_): Proc --------> String
+                  | "toString("      Name  ")"                           // toString(_): Name --------> String
+                  | "toString("      Bind  ")"                           // toString(_): Bind --------> String
+                  | "toString("      Binds ")"                           // toString(_): Binds -------> String
 
 endmodule
 
 module AUXFUN
   import AUXFUN-SYNTAX
 
-  syntax KResult ::= Int | Procs | Name
+  syntax KResult ::= Int | Name
 
 // Sends
   rule #chan  ( N:Name !  ( _:ProcList ) ) => N
@@ -119,6 +127,23 @@ module AUXFUN
   rule #rtype ( _:Rbinds ) => 1
   rule #rtype ( _:Pbind  ) => 2
   rule #rtype ( _:Pbinds ) => 2
+
+//---------------
+//--- #append ---
+//---------------
+  rule #append ( A:Name           ; B:Name  ) => A,B
+  rule #append ( A:Name , B:Name  ; C:Name  ) => A,#append(B;C)
+  rule #append ( A:Name , B:Names ; C:Name  ) => A,#append(B;C)
+  rule #append ( A:Name           ; B:Names ) => A,B
+  rule #append ( A:Name , B:Name  ; C:Names ) => A,#append(B;C)
+  rule #append ( A:Name , B:Names ; C:Names ) => A,#append(B;C)
+
+  rule #append ( A:Proc           ; B:Proc  ) => A,B
+  rule #append ( A:Proc , B:Proc  ; C:Proc  ) => A,#append(B;C)
+  rule #append ( A:Proc , B:Procs ; C:Proc  ) => A,#append(B;C)
+  rule #append ( A:Proc           ; B:Procs ) => A,B
+  rule #append ( A:Proc , B:Proc  ; C:Procs ) => A,#append(B;C)
+  rule #append ( A:Proc , B:Procs ; C:Procs ) => A,#append(B;C)
 
 //-------------
 //--- #bind ---
