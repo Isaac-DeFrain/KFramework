@@ -11,11 +11,9 @@ module AUXFUN-SYNTAX
   syntax    Int ::= "#length"        RhoTuple                [function]  // #length: RhoTuple ------------------> Int
                   | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
                   | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
-                  | "#length"    "(" Bind  ")"               [function]  // #length(_): Bind -------------------> Int
                   | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#bnum"      "(" Bind  ")"               [function]  // #bnum(_): Bind ---------------------> Int
                   | "#bnum"    "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
-                  | "#listens"   "(" Bind  ")"               [function]  // #listens(_): Bind ------------------> Int
-                  | "#listens"   "(" Binds ")"               [function]  // #listens(_): Binds -----------------> Int
                   | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
                   | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
                   | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
@@ -36,6 +34,7 @@ module AUXFUN-SYNTAX
                   | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
 
   syntax   Bind ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Bind
+                  | "#bind" "(" BindOcc ")"                  [function]  // #bind(_): BindOcc --------> Bind
 
   syntax  Binds ::= "#bind" "(" Receive ")"                  [function]  // #bind(_): Receive --------> Binds
 
@@ -92,27 +91,26 @@ module AUXFUN
   rule #stype ( _:Name !! ( _:ProcList ) ) => 1
 
 // Receives
-  rule #bind  ( for ( B:Bind      ){ _:Proc } ) => B
-  rule #bind  ( for ( B:Binds     ){ _:Proc } ) => B
+  rule #bind  ( for ( B:Bind   ){ _:Proc } ) => B
+  rule #bind  ( for ( B:Binds  ){ _:Proc } ) => B
 
-  rule #bvar  ( for ( B:Bind      ){ _:Proc } ) => #bvar(B)
-  rule #bvar  ( for ( B:Binds     ){ _:Proc } ) => #bvar(B)
+  rule #bvar  ( for ( B:Bind   ){ _:Proc } ) => #bvar(B)
+  rule #bvar  ( for ( B:Binds  ){ _:Proc } ) => #bvar(B)
 
-  rule #chan  ( for ( B:Bind      ){ _:Proc } ) => #chan(B)
-  rule #chan  ( for ( B:Binds     ){ _:Proc } ) => #chan(B)
+  rule #chan  ( for ( B:Bind   ){ _:Proc } ) => #chan(B)
+  rule #chan  ( for ( B:Binds  ){ _:Proc } ) => #chan(B)
 
-  rule #cont  ( for ( _:Bind      ){ P:Proc } ) => P
-  rule #cont  ( for ( _:Binds     ){ P:Proc } ) => P
+  rule #cont  ( for ( _:Bind   ){ P:Proc } ) => P
+  rule #cont  ( for ( _:Binds  ){ P:Proc } ) => P
 
-  rule #bnum  ( for ( B:Bind      ){ _:Proc } ) => #length(B)
-  rule #bnum  ( for ( B:Binds     ){ _:Proc } ) => #length(B)
+  rule #bnum  ( for ( B:Bind   ){ _:Proc } ) => #bnum(B)
 
-  rule #rtype ( for ( _:Lbind     ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Lbinds    ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Rbind     ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Rbinds    ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Pbind     ){ _:Proc } ) => 2
-  rule #rtype ( for ( _:Pbinds    ){ _:Proc } ) => 2
+  rule #rtype ( for ( _:Lbind  ){ _:Proc } ) => 0
+  rule #rtype ( for ( _:Lbinds ){ _:Proc } ) => 0
+  rule #rtype ( for ( _:Rbind  ){ _:Proc } ) => 1
+  rule #rtype ( for ( _:Rbinds ){ _:Proc } ) => 1
+  rule #rtype ( for ( _:Pbind  ){ _:Proc } ) => 2
+  rule #rtype ( for ( _:Pbinds ){ _:Proc } ) => 2
 
   rule #rtype ( _:Lbind  ) => 0
   rule #rtype ( _:Lbinds ) => 0
@@ -145,17 +143,6 @@ module AUXFUN
   rule A:Bind  #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Binds #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
 
-//----------------
-//--- #listens ---
-//----------------
-  rule #listens( _:Bind             ) => 1
-  rule #listens( A:Lbind ; B:Lbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Lbind ; B:Lbinds ) => 1 +Int #listens(B)
-  rule #listens( A:Rbind ; B:Rbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Rbind ; B:Rbinds ) => 1 +Int #listens(B)
-  rule #listens( A:Pbind ; B:Pbind  ) => 1 +Int #listens(B)
-  rule #listens( A:Pbind ; B:Pbinds ) => 1 +Int #listens(B)
-
 //---------------
 //--- #length ---
 //---------------
@@ -170,19 +157,7 @@ module AUXFUN
   rule #length ( _:Name , N:Names ) => 1 +Int #length (N)
 
 //--- Binds ---
-// Linear
-  rule #length ( _:Name  <- _:Name ) => 1
-  rule #length ( N:Names <- _:Name ) => #length (N)
-
-// Repeated
-  rule #length ( _:Name  <= _:Name ) => 1
-  rule #length ( N:Names <= _:Name ) => #length (N)
-
-// Peek
-  rule #length ( _:Name  <! _:Name ) => 1
-  rule #length ( N:Names <! _:Name ) => #length (N)
-
-// Binds
+// Binds - number of listens in a join
   rule #length ( B:Lbind ; C:Lbind  ) => 2
   rule #length ( B:Lbind ; C:Lbinds ) => 1 +Int #length (C)
 
@@ -196,14 +171,14 @@ module AUXFUN
 //--- #lengths ---
 //----------------
 // Binds
-  rule #lengths ( B:Lbind ; C:Lbind  ) => #length(B) , #length (C)
-  rule #lengths ( B:Lbind ; C:Lbinds ) => #length(B) , #lengths(C)
+  rule #lengths ( B:Lbind ; C:Lbind  ) => #bnum(B) , #bnum (C)
+  rule #lengths ( B:Lbind ; C:Lbinds ) => #bnum(B) , #lengths(C)
 
-  rule #lengths ( B:Rbind ; C:Rbind  ) => #length(B) , #length (C)
-  rule #lengths ( B:Rbind ; C:Rbinds ) => #length(B) , #lengths(C)
+  rule #lengths ( B:Rbind ; C:Rbind  ) => #bnum(B) , #bnum (C)
+  rule #lengths ( B:Rbind ; C:Rbinds ) => #bnum(B) , #lengths(C)
 
-  rule #lengths ( B:Pbind ; C:Pbind  ) => #length(B) , #length (C)
-  rule #lengths ( B:Pbind ; C:Pbinds ) => #length(B) , #lengths(C)
+  rule #lengths ( B:Pbind ; C:Pbind  ) => #bnum(B) , #bnum (C)
+  rule #lengths ( B:Pbind ; C:Pbinds ) => #bnum(B) , #lengths(C)
 
 //-------------
 //--- #chan ---
@@ -227,6 +202,17 @@ module AUXFUN
 
   rule #chan ( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
   rule #chan ( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
+
+//-------------
+//--- #bnum ---
+//-------------
+// number of binding variables in a listen
+  rule #bnum ( _:Name  <- _:Name ) => 1
+  rule #bnum ( N:Names <- _:Name ) => #length(N)
+  rule #bnum ( _:Name  <= _:Name ) => 1
+  rule #bnum ( N:Names <= _:Name ) => #length(N)
+  rule #bnum ( _:Name  <! _:Name ) => 1
+  rule #bnum ( N:Names <! _:Name ) => #length(N)
 
 //-------------
 //--- #bvar ---
@@ -317,41 +303,41 @@ module AUXFUN
 //----------------
 
 // set of binding occurrences and number of appearences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
-  rule #bindocc ( A:Bind ) => SetItem( #chan(A) ; #length(A) ;; 1 )
+  rule #bindocc ( A:Bind ) => SetItem( #chan(A) ; #bnum(A) ;; 1 )
 
 // Linear join
   rule #bindocc ( A:Lbind ; B:Lbind  )
        => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #length(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
+          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
           #else #bindocc(A) #bindocc(B)
           #fi
   rule #bindocc ( A:Lbind ; B:Lbinds )
-       => #if #chanmany((#chan(A) ; #length(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #length(A) ;; 1 +Int #chanmany((#chan(A);#length(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #length(A) ;; #chanmany((#chan(A);#length(A)):B)))
+       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
+          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
           #else #bindocc(A) #bindocc(B)
           #fi
 
 // Repeated join
   rule #bindocc ( A:Rbind ; B:Rbind  )
        => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #length(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
+          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
           #else #bindocc(A) #bindocc(B)
           #fi
   rule #bindocc ( A:Rbind ; B:Rbinds )
-       => #if #chanmany((#chan(A) ; #length(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #length(A) ;; 1 +Int #chanmany((#chan(A);#length(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #length(A) ;; #chanmany((#chan(A);#length(A)):B)))
+       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
+          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
           #else #bindocc(A) #bindocc(B)
           #fi
 
 // Peek join
   rule #bindocc ( A:Pbind ; B:Pbind  )
        => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #length(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
+          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
           #else #bindocc(A) #bindocc(B)
           #fi
   rule #bindocc ( A:Pbind ; B:Pbinds )
-       => #if #chanmany((#chan(A) ; #length(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #length(A) ;; 1 +Int #chanmany((#chan(A);#length(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #length(A) ;; #chanmany((#chan(A);#length(A)):B)))
+       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
+          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
           #else #bindocc(A) #bindocc(B)
           #fi
 
