@@ -21,8 +21,10 @@ module AUXFUN-SYNTAX
                   | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
                   | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
                   | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
-                  | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send ---------------------> Int
-                  | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive ------------------> Int
+                  | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send --------------------> Int
+                  | "#rtype"  "(" Bind     ")"               [function]  // #rtype(_): Bind --------------------> Int
+                  | "#rtype"  "(" Binds    ")"               [function]  // #rtype(_): Bind --------------------> Int
+                  | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
 
   syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
                   | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
@@ -102,8 +104,8 @@ module AUXFUN
   rule #cont  ( for ( _:Bind      ){ P:Proc } ) => P
   rule #cont  ( for ( _:Binds     ){ P:Proc } ) => P
 
-  rule #bnum ( for ( B:Bind     ){ _:Proc } ) => #length(B)
-  rule #bnum ( for ( B:Binds    ){ _:Proc } ) => #length(B)
+  rule #bnum  ( for ( B:Bind      ){ _:Proc } ) => #length(B)
+  rule #bnum  ( for ( B:Binds     ){ _:Proc } ) => #length(B)
 
   rule #rtype ( for ( _:Lbind     ){ _:Proc } ) => 0
   rule #rtype ( for ( _:Lbinds    ){ _:Proc } ) => 0
@@ -111,6 +113,13 @@ module AUXFUN
   rule #rtype ( for ( _:Rbinds    ){ _:Proc } ) => 1
   rule #rtype ( for ( _:Pbind     ){ _:Proc } ) => 2
   rule #rtype ( for ( _:Pbinds    ){ _:Proc } ) => 2
+
+  rule #rtype ( _:Lbind  ) => 0
+  rule #rtype ( _:Lbinds ) => 0
+  rule #rtype ( _:Rbind  ) => 1
+  rule #rtype ( _:Rbinds ) => 1
+  rule #rtype ( _:Pbind  ) => 2
+  rule #rtype ( _:Pbinds ) => 2
 
 //-----------
 //--- #in ---
