@@ -104,6 +104,7 @@ module AUXFUN
   rule #cont  ( for ( _:Binds  ){ P:Proc } ) => P
 
   rule #bnum  ( for ( B:Bind   ){ _:Proc } ) => #bnum(B)
+  rule #bnum  ( for ( B:Binds  ){ _:Proc } ) => #length(B)
 
   rule #rtype ( for ( _:Lbind  ){ _:Proc } ) => 0
   rule #rtype ( for ( _:Lbinds ){ _:Proc } ) => 0
@@ -118,6 +119,17 @@ module AUXFUN
   rule #rtype ( _:Rbinds ) => 1
   rule #rtype ( _:Pbind  ) => 2
   rule #rtype ( _:Pbinds ) => 2
+
+//-------------
+//--- #bind ---
+//-------------
+// Reconstruct listen from listen info
+  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
+  rule #bind ( A:Name ; B:Names ;; 0 ) => B <- A
+  rule #bind ( A:Name ; B:Name  ;; 1 ) => B <= A
+  rule #bind ( A:Name ; B:Names ;; 1 ) => B <= A
+  rule #bind ( A:Name ; B:Name  ;; 2 ) => B <! A
+  rule #bind ( A:Name ; B:Names ;; 2 ) => B <! A
 
 //-----------
 //--- #in ---
