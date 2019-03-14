@@ -506,8 +506,8 @@ module JOIN
       <what>  Q:Proc , R:Procs => R  </what>                         // 
       <where> Y:Name , Z:Names => Z </where>                         // 
       <rid>          _:Int            </rid>                         // 
-      <rnum>         _:Int           </rnum>                         //
-      <react>        true           </react>                         // 
+      <rnum>         _:Int           </rnum>                         // 
+      <react>       "react"         </react>                         // 
     </reaction>                                                      // 
 
   rule
@@ -516,18 +516,18 @@ module JOIN
       <what>  Q:Proc , R:Proc => R   </what>                         // 
       <where> Y:Name , Z:Name => Z  </where>                         // 
       <rid>          _:Int            </rid>                         // 
-      <rnum>         _:Int           </rnum>                         //
-      <react>        true           </react>                         // 
+      <rnum>         _:Int           </rnum>                         // 
+      <react>       "react"         </react>                         // 
     </reaction>                                                      // 
 
   rule
     <reaction>                                                       // 
-      <who>   P:Proc => .K   </who>                                  // 
-      <what>  Q:Proc => .K  </what>                                  // 
-      <where> Y:Name => .K </where>                                  // 
-      <rid>   _:Int  => .K   </rid>                                  // 
-      <rnum>  _:Int  => .K  </rnum>                                  //
-      <react>  true  => .K </react>                                  // 
+      <who>   P:Proc  => .K   </who>                                 // 
+      <what>  Q:Proc  => .K  </what>                                 // 
+      <where> Y:Name  => .K </where>                                 // 
+      <rid>   _:Int   => .K   </rid>                                 // 
+      <rnum>  _:Int   => .K  </rnum>                                 //
+      <react> "react" => .K </react>                                 // 
     </reaction>                                                      // 
    (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                  // 
 
@@ -562,12 +562,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P       </who>                                   // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q      </what>                                   // 
-      <where> .K => Y     </where>                                   // 
-      <rid>   .K => J       </rid>                                   // 
-      <rnum>  .K => 1      </rnum>                                   //
-      <react> .K => false </react>                                   // wait for all info to be collected before reaction occurs
+      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
+      <what>  .K => Q          </what>                               // 
+      <where> .K => Y         </where>                               // 
+      <rid>   .K => J           </rid>                               // 
+      <rnum>  .K => 1          </rnum>                               //
+      <react> .K => "collect" </react>                               // collect all info before reaction begins
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -635,12 +635,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                   </who>                             // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc => Q , R    </what>                             // 
-      <where> Z:Name => Y , Z   </where>                             // 
-      <rid>   J                   </rid>                             // 
-      <rnum>  U:Int => U +Int 1  </rnum>                             // increase reaction number
-      <react> false             </react>                             // waiting for all info to be collected before reaction occurs
+      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc => #append(Q;R)   </what>                       // 
+      <where> Z:Name => #append(Y;Z)  </where>                       // 
+      <rid>   J                         </rid>                       // 
+      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
+      <react> "collect"               </react>                       // collecting info before reaction begins
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -708,12 +708,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                   </who>                             // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R   </what>                             // 
-      <where> Z:Names => Y , Z  </where>                             // 
-      <rid>   J                   </rid>                             // 
-      <rnum>  U:Int => U +Int 1  </rnum>                             // increase reaction number
-      <react> false             </react>                             // waiting for all info to be collected before reaction occurs
+      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => #append(Q;R)  </what>                       // 
+      <where> Z:Names => #append(Y;Z) </where>                       // 
+      <rid>   J                         </rid>                       // 
+      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
+      <react> "collect"               </react>                       // collecting info before reaction begins
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -782,12 +782,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // relocate continuation & substitution info to <reaction/>
-      <who>   .K => P          </who>                                // 
-      <what>  .K => Q         </what>                                // 
-      <where> .K => Y        </where>                                // 
-      <rid>   .K => J          </rid>                                // 
-      <rnum>  .K => 1         </rnum>                                // 
-      <react> .K => false    </react>                                // wait for all info to be collected before reaction occurs
+      <who>   .K => P           </who>                               // 
+      <what>  .K => Q          </what>                               // 
+      <where> .K => Y         </where>                               // 
+      <rid>   .K => J           </rid>                               // 
+      <rnum>  .K => 1          </rnum>                               // 
+      <react> .K => "collect" </react>                               // collect all info before reaction begins
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -855,12 +855,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                   </who>                             // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc => R , Q    </what>                             // 
-      <where> Z:Name => Z , Y   </where>                             // 
-      <rid>   J                   </rid>                             // 
-      <rnum>  U:Int => U +Int 1  </rnum>                             // increase reaction number
-      <react> false             </react>                             // waiting for all info to be collected before reaction occurs
+      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc => #append(Q;R)   </what>                       // 
+      <where> Z:Name => #append(Y;Z)  </where>                       // 
+      <rid>   J                         </rid>                       // 
+      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
+      <react> "collect"               </react>                       // waiting for all info to be collected before reaction occurs
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -928,12 +928,12 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                   </who>                             // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R   </what>                             // 
-      <where> Z:Names => Y , Z  </where>                             // 
-      <rid>   J                   </rid>                             // 
-      <rnum>  U:Int => U +Int 1  </rnum>                             // increase reaction number
-      <react> false             </react>                             // waiting for all info to be collected before reaction occurs
+      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => #append(Q;R)  </what>                       // 
+      <where> Z:Names => #append(Y;Z) </where>                       // 
+      <rid>   J                         </rid>                       // 
+      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
+      <react> "collect"               </react>                       // waiting for all info to be collected before reaction occurs
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
       <id> H:Int </id>                                               // 
@@ -978,12 +978,12 @@ module JOIN
 
   rule
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P:Proc          </who>                                 // relocate continuation & substitution info to <reaction/>
-      <what>  _              </what>                                 // 
-      <where> _             </where>                                 // 
-      <rid>   J:Int           </rid>                                 // 
-      <rnum>  L:Int          </rnum>                                 // once reaction number = number of listens in receive with id J
-      <react> false => true </react>                                 // wait for all info to be collected before reaction occurs
+      <who>   P:Proc                 </who>                          // relocate continuation & substitution info to <reaction/>
+      <what>  _                     </what>                          // 
+      <where> _                    </where>                          // 
+      <rid>   J:Int                  </rid>                          // 
+      <rnum>  L:Int                 </rnum>                          // once reaction number = number of listens in receive with id J
+      <react> "collect" => "react" </react>                          // once all info is collected, reaction begins
     </reaction>                                                      // 
    (<rec>                                                            // number of listens in receive
       <id>      J      </id>                                         //  
