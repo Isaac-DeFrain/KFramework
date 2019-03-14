@@ -1,5 +1,0 @@
-// Length of join send id list
-
-  #length {[ 12 ; 1 , 2 , 3 , 5 , 7  ]}
-
-// Output: 5
