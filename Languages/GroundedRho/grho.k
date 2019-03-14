@@ -96,8 +96,8 @@ module GRHO-SYNTAX
   syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
 
 // Several Processes
-  syntax     Procs ::= Proc "," Proc                        [strict] // _,_: Proc x Proc ----> Procs
-                     | Proc "," Procs                       [strict] // _,_: Proc x Procs ---> Procs
+  syntax     Procs ::= Proc "," Proc                                 // _,_: Proc x Proc ----> Procs
+                     | Proc "," Procs                                // _,_: Proc x Procs ---> Procs
 
   syntax  ProcList ::= Proc
                      | Procs
@@ -270,8 +270,6 @@ module GRHO
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-
-// Linear Receive
   rule <k> R:SingleRec => . ...</k>                                  // dissolve Rec in <threads/> and spawn <rec/>
        (.Bag => <rec>                                                // 
                   <rchan>  #chan(R) </rchan>                         // receiving channel
@@ -281,9 +279,7 @@ module GRHO
                   <cont>   #cont(R)  </cont>                         // continuation
                 </rec>)                                              //
 
-//-------------
-//--- Joins ---
-//-------------
+// Joins
   rule <k> R:MultiRec => . ...</k>                                   //
        (.Bag => <rec>                                                // 
                   <rchan>  #chan(R) </rchan>                         // receiving channel
