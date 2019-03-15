@@ -450,36 +450,30 @@ module JOIN
       <react> "react" => .K </react>                                 // 
     </reaction>                                                      // 
    (.Bag => <thread> <k> P[@ Q / Y] </k> </thread>)                  // 
-/*
+
 //--- Comm Semantics ---
 // Comm occurs when # of sends matched = # of listens in join (i.e. match = length)
 
 // Single listen, single send
 // Send info dissolved from all <sendstore/>s and corresponding <bind/>s in <bindstore/> are restored as <listen/>s to <listens/>
 // 1-tuple
-  rule                                                               // to be consumed linear sends and receive
+  rule
     <rec>                                                            // number of listens in receive
-      <id>      J:Int     </id>                                      //  
-      <length>  L:Int </length>                                      // 
-      <cont>    P:Proc  </cont>                                      // 
-      <listens> _    </listens>                                      // 
-      <match>   L      </match>                                      // once match count is equal to listen length: initialize comm
-      <nono>    _       </nono>                                      // 
-      <bindstore>...                                                 // 
-       (<pair>                                                       // 
-          <bind> Y:Name <- X:Name </bind>                            // 
-          <bid>  I       </bid>                                      // 
-        </pair> => .Bag)                                             // 
-      </bindstore>                                                   // 
-      <sendstore>...                                                 // 
-       (<vsend>                                                      // 
-          <vchan>  X      </vchan>                                   // 
-          <vmsg>   Q:Proc  </vmsg>                                   // 
-          <vlen>   1       </vlen>                                   // 
-          <vtype>  0      </vtype>                                   // 
-          <vid>    I:Int    </vid>                                   // 
-        </vsend> => .Bag)                                            // 
-      </sendstore>                                                   // 
+      <id>      J:Int     </id>                                      // 
+      <length>  L:Int      </length>                                 // 
+      <cont>    P:Proc       </cont>                                 // 
+      <comm> "" => "matched" </comm>                                 // once match count is equal to listen length: initialize comm
+      <match>   L           </match>                                 // 
+      <nono>    _            </nono>                                 // 
+      <listens>...
+        (<listen>
+           <chan> X:Name </chan>
+           <vars> Y:Name </vars>
+           <num>  1       </num>
+           <type> T:Int  </type>
+           <msid> I      </msid>
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
     </rec>                                                           // 
     <reaction>                                                       // begin populating <reaction/>
       <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
@@ -490,34 +484,21 @@ module JOIN
       <react> .K => "collect" </react>                               // collect all info before reaction begins
     </reaction>                                                      // 
     <rec>                                                            // virtual send management
-      <id> H:Int </id>                                               // 
+      <id>     H:Int     </id>                                       // 
       <length> _:Int </length>                                       // 
       <cont>   _:Proc  </cont>                                       // 
-      <listens>...                                                   // 
-        (.Bag => <listen>                                            // restore listen to <listens/> in all joins
-                   <chan>     X     </chan>                          // 
-                   <vars>  #bvar(C) </vars>                          // 
-                   <num>      1      </num>                          // 
-                   <type> #rtype(C) </type>                          // 
-                 </listen>)                                          // 
-      </listens>                                                     // 
+      <comm>   ""      </comm>                                       // 
       <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins (send was already consumed)
       <nono>  S:Set => S -Set SetItem(I) </nono>                     // delete send id from the nono set in all joins
-      <bindstore>...                                                 // delete corresponding bind/id <pair/> and restore corresponding <listen/> to <listens/> in all joins
-       (<pair>                                                       // 
-          <bind> C:Bind </bind>                                      // 
-          <bid>  I       </bid>                                      // 
-        </pair> => .Bag)                                             // 
-      </bindstore>                                                   //  
-      <sendstore>...                                                 // delete corresponding virtual send from <sendstore/> in all joins
-        (<vsend>                                                     // 
-			     <vchan> X </vchan>                                        // 
-			     <vmsg>  Q  </vmsg>                                        // 
-			     <vlen>  1  </vlen>                                        // 
-           <vtype> 0 </vtype>                                        // 
-			     <vid>   I   </vid>                                        // 
-			   </vsend> => .Bag)                                           //
-      </sendstore>                                                   // 
+      <listens>...                                                   // 
+        <listen>                                                     // restore listen to <listens/> in all joins
+          <chan>  X       </chan>                                    // 
+          <vars>  _       </vars>                                    // 
+          <num>   _        </num>                                    // 
+          <type>  _       </type>                                    // 
+          <msid>  I => "" </msid>                                    // 
+        </listen>                                                    // 
+      </listens>                                                     // 
     </rec>                                                           // 
     <sends>...                                                       // 
      (<send>                                                         // consume send from tuplespace
@@ -529,7 +510,7 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     requires (H =/=Int J) andBool (I in S)                    [comm] // 
-
+/*
   rule                                                               // to be consumed linear sends and receive
     <rec>                                                            // number of listens in receive
       <id>      J:Int     </id>                                      //  
@@ -1206,43 +1187,21 @@ module JOIN
       </sendstore>                                                   // 
     </rec>                                                           //
                                                               [comm] // tagged "comm" for tracking nondeterminism
-
-// Eliminate no longer useful Nothing cells
+*/
+// Eliminate no longer useful initializing cells
   rule
     <rec>...
-      <nono> S:Set </nono>                                           // 
-      <bindstore>...                                                 // 
-       (<pair>                                                       // 
-          <bind> Nothing </bind>                                     // 
-          <bid>  Nothing  </bid>                                     // 
-        </pair> => .Bag)                                             // 
-      </bindstore>                                                   // 
-      <sendstore>...                                                 // 
-       (<vsend>                                                      // 
-          <vchan> Nothing </vchan>                                   // 
-          <vmsg>  Nothing  </vmsg>                                   // 
-          <vlen>  Nothing  </vlen>                                   // 
-          <vtype> Nothing </vtype>                                   // 
-          <vid>   Nothing   </vid>                                   // 
-        </vsend> => .Bag)                                            // 
-      </sendstore>                                                   // 
-    </rec>                                                           //
-    when size(S) >=Int 0                                             // 
-
-  rule
-    <rec>...
-      <listens>...                                                   // 
-       (<listen>                                                     //
-          <chan> Nothing </chan>                                     //
-          <vars> Nothing </vars>                                     // 
-          <num>  Nothing  </num>                                     // 
-          <type> Nothing </type>                                     // 
+      <listens>                                                      // 
+        (<listen>                                                    // 
+           <chan> "" </chan>                                         // 
+           <vars> "" </vars>                                         // 
+           <num>  ""  </num>                                         // 
+           <type> "" </type>                                         // 
+           <msid> "" </msid>                                         // 
         </listen> => .Bag)                                           // 
       </listens>                                                     // 
-      <nono> S:Set </nono>                                           // 
- ...</rec>                                                           //
-    when size(S) >=Int 0                                             // 
-*/
+    </rec>                                                           //
+
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P                             [structural] //
   rule P:Proc | Nil    => P                             [structural] //
