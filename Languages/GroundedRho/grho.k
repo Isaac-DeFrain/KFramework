@@ -176,11 +176,9 @@ module GRHO-SYNTAX
                      | BindOcc                                       // auxfun
                      | JoinList                                      // definitions
 
-  syntax   Nothing ::= "Nothing"                                     // for cell initialization
-
   syntax KVariable ::= Names | Name
 
-  syntax     KItem ::= Name | Names | Proc | Procs | Set | Nothing
+  syntax     KItem ::= Name | Names | Proc | Procs | Set
 
 endmodule
 
