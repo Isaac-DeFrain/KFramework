@@ -1,3 +1,4 @@
 // Join - only listening for 1- and 2-tuples
 
-  for( a,b <- x ; c <- y ; d,e,f <- z ){ ( *a , *b , *c , *d , *e , *f ) } | for( a,b <- x ; c <- y ){ ( *a , *b , *c ) } | for( v <! u ){ *v } | x!("x") | y!("y") | x!(*x1,*x2) | z!(1,2,3) | u!("comm")
+  for( a,b <- x ; c <- y ; d,e,f <- z ){ ( *a , *b , *c , *d , *e , *f ) } | for( a,b <= x ; c <= y ){ ( *a , *b , *c ) } | 
+  for( v <! u ){ *v } | x!("x") | y!("y") | x!(*x1,*x2) | z!(1,2,3) | u!("comm")
