@@ -222,11 +222,7 @@ module GRHO
         <what>  .K  </what>                                          // msg process(es)
         <where> .K </where>                                          // binding variable(s)
       </reaction>                                                    // all comms are processed here
-    </T>                                                             //
-/*
-  Add quarantine cell containing mainreact cell and reaction* cells for testing joins in comms
-  SendCellBag <=> send "environment"
-*/
+    </T>                                                             // 
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
@@ -251,8 +247,8 @@ module GRHO
 
 // Par Operator Semantics
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           //
-       (.Bag => <thread> <k> P </k> </thread>)                       //
-       (.Bag => <thread> <k> Q </k> </thread>)                       //
+                    (.Bag => <thread> <k> P </k> </thread>)          //
+                    (.Bag => <thread> <k> Q </k> </thread>)          //
 
 //-------------------------------
 //--- Send Operator Semantics ---
@@ -293,6 +289,7 @@ module GRHO
 // x!(Q) | y(z){P} and x equivN y => P[@Q / y]
 
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
+// N substitutions, N > 2
   rule 
     <reaction>
       <who>   P:Proc => P[@ Q / Y]    </who>
@@ -300,6 +297,7 @@ module GRHO
       <where> Y:Name , Z:Names => Z </where>
     </reaction>
 
+// 2 substitutions
   rule
     <reaction>
       <who>   P:Proc => P[@ Q / Y]   </who>
@@ -307,6 +305,7 @@ module GRHO
       <where> Y:Name , Z:Name => Z </where>
     </reaction>
 
+// Final substitution spawn in a new thread holding the fully substituted continuation
   rule
     <reaction>
       <who>   P:Proc => .K   </who>
@@ -326,16 +325,16 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
   (<send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Proc  </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 0     </stype>                                            // linear send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Proc    </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 0       </stype>                                          // linear send
    </send> => .Bag)                                                    //
    <reaction>                                                          //
-	   <who>   .K => P   </who>                                          //
-	   <what>  .K => Q  </what>                                          //
-	   <where> .K => Y </where>                                          //
-	 </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
+     <who>   .K => P   </who>                                          // 
+     <what>  .K => Q  </what>                                          // 
+     <where> .K => Y </where>                                          // 
+   </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
                                                                 [comm] //tagged "comm" for tracking nondeterminism
 
   rule                                                                 //consume single send, single receive
@@ -347,16 +346,16 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
   (<send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Procs </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 0     </stype>                                            // linear send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Procs   </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 0       </stype>                                          // linear send
    </send> => .Bag)                                                    //
-   <reaction>                                                          //
-	   <who>   .K => P   </who>                                          //
-	   <what>  .K => Q  </what>                                          //
-	   <where> .K => Y </where>                                          //
-	 </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
+   <reaction>                                                          // 
+     <who>   .K => P   </who>                                          // 
+     <what>  .K => Q  </what>                                          // 
+     <where> .K => Y </where>                                          // 
+   </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
                                                                 [comm] //tagged "comm" for tracking nondeterminism
 
 // Persistent listen, linear send
@@ -369,10 +368,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec>                                                              //
   (<send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Proc  </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 0     </stype>                                            // linear send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Proc    </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 0       </stype>                                          // linear send
    </send> => .Bag)                                                    //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -389,10 +388,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec>                                                              //
   (<send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Procs </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 0     </stype>                                            // linear send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Procs   </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 0       </stype>                                          // linear send
    </send> => .Bag)                                                    //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -410,10 +409,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation
    </rec> => .Bag)                                                     //
    <send>                                                              //DON'T consume persistent send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Proc  </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 1     </stype>                                            // persistent send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Proc    </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 1       </stype>                                          // persistent send
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -430,10 +429,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation
    </rec> => .Bag)                                                     //
    <send>                                                              //DON'T consume persistent send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Procs </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> 1     </stype>                                            // persistent send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Procs   </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> 1       </stype>                                          // persistent send
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -451,10 +450,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
    <send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Proc  </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> _     </stype>                                            // any kind of send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Proc    </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> _       </stype>                                          // any kind of send
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -471,10 +470,10 @@ module GRHO
      <cont>  P:Proc   </cont>                                          // continuation P
    </rec> => .Bag)                                                     //
    <send>                                                              //consume single send
-     <schan> X     </schan>                                            // channel X
-     <msg>   Q:Procs </msg>                                            // message(s) Q
-     <tuple> N     </tuple>                                            // number of messages matches number of names to bind
-     <stype> _     </stype>                                            // any kind of send
+     <schan> X       </schan>                                          // channel X
+     <msg>   Q:Procs   </msg>                                          // message(s) Q
+     <tuple> N       </tuple>                                          // number of messages matches number of names to bind
+     <stype> _       </stype>                                          // any kind of send
    </send>                                                             //
    <reaction>                                                          //
      <who>   .K => P   </who>                                          //
@@ -482,8 +481,8 @@ module GRHO
      <where> .K => Y </where>                                          //
    </reaction>                                                  [comm] // 
 
-// Join
-// moved progress to join.k
+// Join semantics seem to be much more complicated...
+// moved progress to join.k and altjoin.k
 
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P                               [structural]
