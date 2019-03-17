@@ -89,8 +89,14 @@ module GRHO-SYNTAX
                      | Binds                                         // multiple listens
 
 // Send
-  syntax      Send ::= Name "!"  RhoTuple                            //  _!_: Name x RhoTuple ---> Send, single send
-                     | Name "!!" RhoTuple                            // _!!_: Name x RhoTuple ---> Send, repeated send
+  syntax      Send ::= ConsumableSend
+                     | UnconsumableSend
+
+  syntax
+    ConsumableSend ::= Name "!"  RhoTuple                            //  _!_: Name x RhoTuple ---> Send, single send
+
+  syntax
+  UnconsumableSend ::= Name "!!" RhoTuple                            // _!!_: Name x RhoTuple ---> Send, repeated send
 
 // Eval
   syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
@@ -247,8 +253,8 @@ module GRHO
 
 // Par Operator Semantics
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           //
-                    (.Bag => <thread> <k> P </k> </thread>)          //
-                    (.Bag => <thread> <k> Q </k> </thread>)          //
+       (.Bag => <thread> <k> P </k> </thread>)                       //
+       (.Bag => <thread> <k> Q </k> </thread>)             [unravel] //
 
 //-------------------------------
 //--- Send Operator Semantics ---
