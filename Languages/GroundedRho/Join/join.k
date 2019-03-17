@@ -487,7 +487,7 @@ module JOIN
     </reaction>                                                      // 
 
 // Consuming after a complete reaction
-// consume receive once reaction completes
+// once reaction completes and sends have been consumed, spawn a thread containing the fully substituted continuation
   rule
     <reaction>                                                       // 
       <who>    P:Proc => .K   </who>                                 // 
@@ -499,22 +499,9 @@ module JOIN
       <rset>   .Set          </rset>                                 // 
       <reat>   .Set          </reat>                                 // eat set is finished off
     </reaction>                                                      // 
-    <receives>...
-     (<rec>
-        <id>        R         </id>
-        <length>    _     </length>
-        <cont>      _       </cont>
-        <comm> "processing" </comm>
-        <match>     _      </match>
-        <type>    T:Int      </type>
-        <nomo>      _       </nomo>
-        <listens>   _    </listens>
-      </rec> => .Bag)
-    </receives>
     <threads>...
     (.Bag => <thread> <k> P </k> </thread>)                          // spawn a thread containing the fully substituted continuation
-    </threads>
-    requires T =/=Int 1                                       [comm] // 
+    </threads>                                                [comm] // 
 
   rule
     <reaction>                                                       // 
