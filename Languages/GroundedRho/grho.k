@@ -174,6 +174,8 @@ module GRHO-SYNTAX
   syntax   ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
 
   syntax  ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
+  
+  syntax   ChanNum ::= Name ";;" Int
 
   syntax   BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
                      | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
@@ -184,7 +186,7 @@ module GRHO-SYNTAX
 
   syntax KVariable ::= Names | Name
 
-  syntax     KItem ::= Name | Names | Proc | Procs | Set
+  syntax     KItem ::= Name | Names | Proc | Procs | Set | ChanNum
 
 endmodule
 
