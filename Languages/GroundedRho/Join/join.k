@@ -59,13 +59,13 @@ module JOIN
         </receives>                                                  // 
       </tuplespace>                                                  // 
       <reaction>                                                     //**where the magic happens**
-        <who>       .K      </who>                                   // continuation
-        <what>      .K     </what>                                   // msg process(es)
-        <where>     .K    </where>                                   // binding variable(s)
-        <rid>       .K      </rid>                                   // receive id; which receive is info being collected from
-        <rnum>      .K     </rnum>                                   // reaction count
-        <react>     .K    </react>                                   // "collect" = collect relevant info from send(s) and receive, "react" = substitute (allows multiple sends to be collected for joins)
-        <reat>     .Set    </reat>                                   // set of send ids to consume from the tuplespace upon completion of a reaction
+        <who>      .K      </who>                                    // continuation
+        <what>     .K     </what>                                    // msg process(es)
+        <where>    .K    </where>                                    // binding variable(s)
+        <rid>      .K      </rid>                                    // receive id; which receive is info being collected from
+        <rnum>     .K     </rnum>                                    // reaction count
+        <react>    .K    </react>                                    // "collect" = collect relevant info from send(s) and receive, "react" = substitute (allows multiple sends to be collected for joins)
+        <reat>     .K    </reat>                                     // set of send ids to consume from the tuplespace upon completion of a reaction
       </reaction>                                                    // once a comm is identified, all components are move here and all relevant cells are dissolved
       <consumable> .Set </consumable>                                // set of pairs of consumable send ids and # of matching listens
     </T>                                                             //
@@ -348,6 +348,15 @@ module JOIN
       <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <reat>  .K  </reat>                                            // 
+    </reaction>                                                      // 
     <consumable> C:Set SetItem(I;A:Int) => C SetItem(I;A +Int 1) </consumable>// 
     requires notBool (I in S) andBool (L >Int M)             [match] // 
 
@@ -376,6 +385,15 @@ module JOIN
       <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <reat>  .K  </reat>                                            // 
+    </reaction>                                                      // 
     <consumable> C:Set SetItem(I;A) => C SetItem(I;A +Int 1) </consumable>// 
     requires notBool (I in S) andBool (L >Int M)             [match] // 
 
@@ -405,6 +423,15 @@ module JOIN
       <stype> 1     </stype>                                         // unconsumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <reat>  .K  </reat>                                            // 
+    </reaction>                                                      // 
     requires L >Int M                                        [match] // 
 
 // N-tuple, N > 1
@@ -432,6 +459,15 @@ module JOIN
       <stype> 1     </stype>                                         // unconsumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <reat>  .K  </reat>                                            // 
+    </reaction>                                                      // 
     requires L >Int M                                        [match] // 
 
 //-------------------
@@ -482,12 +518,12 @@ module JOIN
       <rid>         R:Int  => .K   </rid>                            // 
       <rnum>          .           </rnum>                            // 
       <react> "processing" => .K </react>                            // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
-      <reat>         .Set         </reat>                            // eat set is empty
+      <reat>         .Set  => .K  </reat>                            // eat set has been exhausted
     </reaction>                                                      // 
     <threads>...                                                     // 
     (.Bag => <thread> <k> P </k> </thread>)                          // spawn a thread containing the fully substituted continuation
-    </threads>                                                       // 
-/*
+    </threads>                                                [comm] // 
+
 // Consume sends and matching listens forget id
 // No other matching listens
   rule
@@ -498,8 +534,8 @@ module JOIN
       <rid>             _:Int            </rid>                      // 
       <rnum>              .             </rnum>                      // 
       <react>        "processing"      </react>                      // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
-      <reat>...SetItem(I:Int;1) => .Set </reat>                      // 
-    </reaction>                                                      // 
+      <reat>...SetItem(I:Int;0) => .Set </reat>                      // 
+    </reaction>                                               [comm] // 
 
 // Other matching listens forget consumed send id
   rule
@@ -531,22 +567,31 @@ module JOIN
         </listens>                                                   // 
       </rec>                                                         // 
     </receives>                                                      // 
-    requires A >Int 1                                                // 
-*/
+    requires A >Int 0                                         [comm] // 
+
 // Matched states
 // Comm initializes when # of sends matched = # of listens in receive (i.e. match = length)
 // Start processing phase
   rule
     <rec>                                                            // 
-      <id>            _             </id>                            // 
+      <id>            J:Int         </id>                            // 
       <length>        L:Int     </length>                            // 
-      <cont>          _           </cont>                            // 
+      <cont>          P:Proc      </cont>                            // 
       <state> "" => "processing" </state>                            // once match count is equal to listen length: initialize comm
       <match>         L          </match>                            // 
       <type>          _           </type>                            // 
       <nomo>          _           </nomo>                            // 
       <listens>       _        </listens>                            // 
-    </rec>                                                 [promote] // 
+    </rec>                                                           // 
+    <reaction>                                                       // reaction cell must be empty
+      <who>   .K => P </who>                                         // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K => J  </rid>                                        // 
+      <rnum>  .K => 0 </rnum>                                        // 
+      <react> .K => "collect" </react>                               // 
+      <reat>  .K => .Set </reat>                                     // 
+    </reaction>                                            [promote] // 
 
 // once collection finishes, consume receive (if consumable)
   rule
@@ -629,13 +674,13 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>     .K => P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
       <what>    .K => Q              </what>                         // 
       <where>   .K => Y             </where>                         // 
-      <rid>     .K => J               </rid>                         // 
-      <rnum>    .K => 1              </rnum>                         // start reaction count
-      <react>   .K => "collect"     </react>                         // collect all info before reaction begins
-      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A -Int 1) </reat>                  // 
     </reaction>                                                      // 
     <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
 
@@ -668,13 +713,13 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>     .K => P             </who>                           // relocate continuation & substitution info to <reaction/>
-      <what>    .K => Q            </what>                           // 
-      <where>   .K => Y           </where>                           // 
-      <rid>     .K => J             </rid>                           // 
-      <rnum>    .K => 1            </rnum>                           // start reaction count
-      <react>   .K => "collect"   </react>                           // collect all info before reaction begins
-      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A -Int 1) </reat>                  // 
     </reaction>                                                      // 
     <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
 
@@ -708,13 +753,13 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>     .K => P             </who>                           // relocate continuation & substitution info to <reaction/>
-      <what>    .K => Q            </what>                           // 
-      <where>   .K => Y           </where>                           // 
-      <rid>     .K => J             </rid>                           // 
-      <rnum>    .K => 1            </rnum>                           // start reaction count
-      <react>   .K => "collect"   </react>                           // collect all info before reaction begins
-      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A -Int 1) </reat>                  // 
     </reaction>                                                      // 
     <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
 
@@ -747,13 +792,13 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>        .K => P             </who>                        // relocate continuation & substitution info to <reaction/>
-      <what>       .K => Q            </what>                        // 
-      <where>      .K => Y           </where>                        // 
-      <rid>        .K => J             </rid>                        // 
-      <rnum>       .K => 1            </rnum>                        // start reaction count
-      <react>      .K => "collect"   </react>                        // collect all info before reaction begins
-      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A -Int 1) </reat>                  // 
     </reaction>                                                      // 
     <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
 
@@ -788,12 +833,12 @@ module JOIN
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>    .K => P           </who>                              // relocate continuation & substitution info to <reaction/>
-      <what>   .K => Q          </what>                              // 
-      <where>  .K => Y         </where>                              // 
-      <rid>    .K => J           </rid>                              // 
-      <rnum>   .K => 1          </rnum>                              // start reaction count
-      <react>  .K => "collect" </react>                              // collect all info before reaction begins
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
       <reat>   .Set             </reat>                              // 
     </reaction>                                         [initialize] // 
 
@@ -826,12 +871,12 @@ module JOIN
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // 
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
       <reat>  .Set             </reat>                               // send will not be consumed
     </reaction>                                         [initialize] // 
     
@@ -865,12 +910,12 @@ module JOIN
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>    .K => P           </who>                              // relocate continuation & substitution info to <reaction/>
-      <what>   .K => Q          </what>                              // 
-      <where>  .K => Y         </where>                              // 
-      <rid>    .K => J           </rid>                              // 
-      <rnum>   .K => 1          </rnum>                              // start reaction count
-      <react>  .K => "collect" </react>                              // collect all info before reaction begins
+      <who>        P                  </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>        J                  </rid>                         // 
+      <rnum>     0 => 1              </rnum>                         // start reaction count
+      <react>  "collect"            </react>                         // collect all info before reaction begins
       <reat>   .Set             </reat>                              // 
     </reaction>                                         [initialize] // 
 
@@ -903,12 +948,12 @@ module JOIN
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // 
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
+      <who>        P            </who>                               // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q        </what>                               // 
+      <where>   .K => Y       </where>                               // 
+      <rid>        J            </rid>                               // 
+      <rnum>     0 => 1        </rnum>                               // start reaction count
+      <react>  "collect"      </react>                               // collect all info before reaction begins
       <reat>  .Set             </reat>                               // send will not be consumed
     </reaction>                                         [initialize] // 
 
