@@ -43,7 +43,7 @@ module JOIN
             <id>     .K     </id>                                    // join id - makes it so only listens from the same receive are packaged together and reaction info only comes from one receive at a time
             <length> .K </length>                                    // number of listens in receive
             <cont>   .K   </cont>                                    // continuation
-            <comm>   .K   </comm>                                    // "load" if initializing, "" if initialized but not matched, "matched" if all listens have been matched and we're ready to move everything to <reaction/>, "processing" if currently moving info to <reaction/>
+            <state>  .K  </state>                                    // "load" if initializing, "" if initialized but not matched, "matched" if all listens have been matched and we're ready to move everything to <reaction/>, "processing" if currently moving info to <reaction/>
             <match>  .K  </match>                                    // number of matches made
             <type>   .K   </type>                                    // 0 = linear (consumed), 1 = persistent (not consumed), 2 = peek (consumed)
             <nomo>  .Set  </nomo>                                    // list of send ids not to match with (because they are consumable and have already been matched)
@@ -53,7 +53,6 @@ module JOIN
                 <vars> .K </vars>                                    // binding varible(s) in continuation
                 <num>  .K  </num>                                    // number of bindings
                 <msid> .K </msid>                                    // id of matched send
-                <lid>  .K  </lid>                                    // listen id
               </listen>                                              // 
             </listens>                                               // 
           </rec>                                                     // 
@@ -66,10 +65,9 @@ module JOIN
         <rid>       .K      </rid>                                   // receive id; which receive is info being collected from
         <rnum>      .K     </rnum>                                   // reaction count
         <react>     .K    </react>                                   // "collect" = collect relevant info from send(s) and receive, "react" = substitute (allows multiple sends to be collected for joins)
-        <rset>     .Set    </rset>                                   // set of processed listen ids
         <reat>     .Set    </reat>                                   // set of send ids to consume from the tuplespace upon completion of a reaction
       </reaction>                                                    // once a comm is identified, all components are move here and all relevant cells are dissolved
-      <consumable> .Set </consumable>                                // global set of consumable send ids 
+      <consumable> .Set </consumable>                                // set of pairs of consumable send ids and # of matching listens
     </T>                                                             //
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
@@ -82,8 +80,8 @@ module JOIN
 // Boolean
   rule I1:Int <= I2:Int => I1 <=Int I2                    [anywhere] //
   rule not B:Bool => notBool B                            [anywhere] //
-  rule true and B:Bool => B                               [anywhere] //
-  rule false and _ => false                               [anywhere] //
+  rule true  and B:Bool => B                              [anywhere] //
+  rule false and _:Bool => false                          [anywhere] //
 
 // String
   rule S1:String + S2:String => S1 +String S2             [anywhere] //
@@ -94,8 +92,8 @@ module JOIN
   rule new M:Name , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  //
 
 // Par Operator Semantics: par => bag of concurrently executing processes
-  rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           // puts each process in parallel
-       (.Bag => <thread> <k> P </k> </thread>)                       // into its own k cell
+  rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           // puts each parallel process
+       (.Bag => <thread> <k> P </k> </thread>)                       // in into its own k cell
        (.Bag => <thread> <k> Q </k> </thread>)                       // 
 
 //-------------------------------
@@ -109,7 +107,8 @@ module JOIN
                   <stype>       #stype(S)  </stype>                  // send type
                   <sid>         !I:Int       </sid>                  // send id
                 </send>)                                             //
-        <consumable> C:Set => C SetItem(!I) </consumable>            // add send id to global consumable set
+        <consumable> C:Set => C SetItem(!I;0) </consumable>          // add IdNum to global consumable set
+                                                                     // 
 
   rule <k> S:UnconsumableSend => . ...</k>                           // dissolve Send and spawn <send/>
        (.Bag => <send>                                               //
@@ -119,6 +118,7 @@ module JOIN
                   <stype>       #stype(S)  </stype>                  // send type
                   <sid>         !I:Int       </sid>                  // send id
                 </send>)                                             //
+                                                                     // 
 
 //----------------------------------
 //--- Receive Operator Semantics ---
@@ -128,11 +128,11 @@ module JOIN
   rule <k> R:SingleRec => . ...</k>                                  // dissolve Rec and spawn <rec/>
        (.Bag => <rec>                                                // 
                   <id>       !I:Int    </id>                         // 
-		  <length>    1    </length>                         // 
+                  <length>    1    </length>                         // 
                   <cont>   #cont(R)  </cont>                         // continuation
-                  <comm>      ""     </comm>                         // matching is initiated immediately for single listen receives
+                  <state>     ""    </state>                         // matching is initiated immediately for single listen receives
                   <match>     0     </match>                         // initialized with 0 matches
-		  <type>  #rtype(R)  </type>                         // receive type
+                  <type>  #rtype(R)  </type>                         // receive type
                   <nomo>     .Set    </nomo>                         // initialized with empty nomo set
                   <listens>                                          // 
                     <listen>                                         // add <listen/> to <listens/>
@@ -140,7 +140,6 @@ module JOIN
                       <vars>  #bvar(R) </vars>                       // variable Y binding in continuation
                       <num>   #bnum(R)  </num>                       // number of variables to bind
                       <msid>     ""    </msid>                       // matched send id
-		      <lid>    !L:Int   </lid>                       // 
                     </listen>                                        // 
                   </listens>                                         // 
                 </rec>)                                              // 
@@ -155,9 +154,9 @@ module JOIN
                   <id>        !I        </id>                        // 
                   <length> #bnum(R) </length>                        // number of listens in receive
                   <cont>   #cont(R)   </cont>                        // continuation
-                  <comm>    "load"    </comm>                        // loading is initialized
+                  <state>   "load"   </state>                        // loading is initialized
                   <match>      0     </match>                        // initialized with 0 matches
-		  <type>  #rtype(R)   </type>                        // receive type
+                  <type>  #rtype(R)   </type>                        // receive type
                   <nomo>     .Set     </nomo>                        // 
                   <listens>                                          //    
                     <listen>                                         // something needs to go here to concretize the configuration
@@ -165,32 +164,30 @@ module JOIN
                       <vars> "" </vars>                              // 
                       <num>  ""  </num>                              // 
                       <msid> "" </msid>                              // 
-                      <lid>  ""  </lid>                              // 
                     </listen>                                        // 
                   </listens>                                         // 
                 </rec>)                                              // generate <rec/> with id !I, #bnum(R) listens, and continuation #cont(R)
 
 // Next, each listen is processed within the id wrapped join into the <listen/> in the <rec/> with appropriate id
 // Terminating case
-  rule <k> {[ R:SingleRec ; I:Int ]} => . ...</k>                    // 
+  rule <k> {[ R:SingleRec ; I:Int ]} => . ...</k>                    // intitialize matching once loading is complete
        <rec>                                                         // 
-         <id>     I            </id>                                 // 
-	 <length> _:Int    </length>                                 // 
-         <cont>   _:Proc     </cont>                                 // 
-	 <comm> "load" => "" </comm>                                 // matching initialized, loading disengaged
-	 <match>  0         </match>                                 // 0 matches
-	 <type>   _          </type>                                 // receive type
-	 <nomo>  .Set        </nomo>                                 // empty nomo set
+         <id>       I            </id>                               // 
+         <length>   _:Int    </length>                               // 
+         <cont>     _:Proc     </cont>                               // 
+         <state> "load" => "" </state>                               // matching initialized, loading disengaged
+         <match>    0         </match>                               // start with 0 matches
+         <type>     _          </type>                               // receive type
+         <nomo>    .Set        </nomo>                               // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan>  #chan(R) </chan>                       // receiving channel
                       <vars>  #bvar(R) </vars>                       // variable(s) binding in continuation
                       <num>   #bnum(R)  </num>                       // number of variables to bind
-                      <msid>     ""    </msid>                       // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>     ""    </msid>                       // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
-    ...</rec>                                                        // 
+    ...</rec>                                                        //  
 
 // Recursive steps (there are several rules to handle all of the cases here because Binds ::= Lbinds | Pbinds | Rbinds and the Xbinds are 2 or more)
 // Linear
@@ -198,62 +195,59 @@ module JOIN
   rule <k> {[ for( A:Lbind ; B:Lbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   0       </type>                                    // linear
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state>  "load" </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   0       </type>                                    // linear
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
-    ...</rec>                                                        //
+    ...</rec>                                                        // 
 
 // N linear listen joins, N > 2
   rule <k> {[ for( A:Lbind ; B:Lbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   0       </type>                                    // linear
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state>  "load" </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   0       </type>                                    // linear
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
-    ...</rec>                                                        //
+    ...</rec>                                                        // 
 
 // Repeated
 // 2 repeated listen joins
   rule <k> {[ for( A:Rbind ; B:Rbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   1       </type>                                    // repeated
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state>  "load" </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   1       </type>                                    // repeated
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -262,19 +256,18 @@ module JOIN
   rule <k> {[ for( A:Rbind ; B:Rbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   1       </type>                                    // repeated
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state> "load"  </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   1       </type>                                    // repeated
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -284,19 +277,18 @@ module JOIN
   rule <k> {[ for( A:Pbind ; B:Pbind ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   2       </type>                                    // peek
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state> "load"  </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   2       </type>                                    // peek
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -305,19 +297,18 @@ module JOIN
   rule <k> {[ for( A:Pbind ; B:Pbinds ){ P:Proc } ; I:Int ]} => {[ for(B){P} ; I ]} ...</k> 
        <rec>                                                         // 
          <id>     I         </id>                                    // 
-	 <length> _:Int </length>                                    // 
+         <length> _:Int </length>                                    // 
          <cont>   _:Proc  </cont>                                    // 
-	 <comm>   "load"  </comm>                                    // loading
-	 <match>  0      </match>                                    // 0 matches
-	 <type>   2       </type>                                    // peek
-	 <nomo>  .Set     </nomo>                                    // empty nomo set
+         <state> "load"  </state>                                    // loading
+         <match>  0      </match>                                    // 0 matches
+         <type>   2       </type>                                    // peek
+         <nomo>  .Set     </nomo>                                    // empty nomo set
          <listens>...                                                // 
            (.Bag => <listen>                                         // add <listen/> to <listens/>
                       <chan> #chan(A) </chan>                        // receiving channel
                       <vars> #bvar(A) </vars>                        // variable(s) binding in continuation
                       <num>  #bnum(A)  </num>                        // 
-                      <msid>    ""    </msid>                        // not matched yet
-                      <lid>    !L:Int   </lid>                       // generate listen id
+                      <msid>    ""    </msid>                        // initially not matched
                     </listen>)                                       // 
          </listens>                                                  // 
     ...</rec>                                                        //
@@ -335,11 +326,11 @@ module JOIN
 // 1-tuple
   rule
     <rec>...                                                         // 
-      <length>     L:Int          </length>                          // L listen receive
-      <cont>       _:Proc           </cont>                          // 
-      <comm>       ""               </comm>                          // matching
+      <length>      L:Int         </length>                          // L listen receive
+      <cont>        _:Proc          </cont>                          // 
+      <state>       ""             </state>                          // matching
       <match> M:Int => M +Int 1    </match>                          // increase match count
-      <type>       _                </type>                          // any receive type
+      <type>        _               </type>                          // any receive type
       <nomo>  S:Set => S SetItem(I) </nomo>                          // add send id to nomo set so it is not matched again
       <listens>...                                                   // 
         <listen>                                                     // 
@@ -347,7 +338,6 @@ module JOIN
           <vars> _:Name  </vars>                                     // variable binding in continuation
           <num>  1        </num>                                     // 1 variable to bind
           <msid> "" => I </msid>                                     // id of send mactching the listen
-          <lid>  _        </lid>                                     // 
         </listen>                                                    // 
       </listens>                                                     // 
     </rec>                                                           //
@@ -358,16 +348,17 @@ module JOIN
       <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <consumable> C:Set SetItem(I;A:Int) => C SetItem(I;A +Int 1) </consumable>// 
     requires notBool (I in S) andBool (L >Int M)             [match] // 
 
 // N-tuple, N > 1
   rule
     <rec>...                                                         // 
-      <length>     L:Int          </length>                          // L listen receive
-      <cont>       _:Proc           </cont>                          // 
-      <comm>       ""               </comm>                          // matching
+      <length>      L:Int         </length>                          // L listen receive
+      <cont>        _:Proc          </cont>                          // 
+      <state>       ""             </state>                          // matching
       <match> M:Int => M +Int 1    </match>                          // increase match count
-      <type>       _                </type>                          // any receive type
+      <type>        _               </type>                          // any receive type
       <nomo>  S:Set => S SetItem(I) </nomo>                          // add send id to nomo set so it is not matched again
       <listens>...                                                   // 
         <listen>                                                     // 
@@ -375,7 +366,6 @@ module JOIN
           <vars> _:Names </vars>                                     // variables binding in continuation
           <num>  N:Int    </num>                                     // N variables to bind
           <msid> "" => I </msid>                                     // id of send mactching the listen
-          <lid>  _        </lid>                                     // 
         </listen>                                                    // 
       </listens>                                                     // 
     </rec>                                                           //
@@ -386,25 +376,25 @@ module JOIN
       <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
     </send>                                                          // 
+    <consumable> C:Set SetItem(I;A) => C SetItem(I;A +Int 1) </consumable>// 
     requires notBool (I in S) andBool (L >Int M)             [match] // 
 
 // Unconsumable sends (send id is NOT added to nomo set)
 // 1-tuple
   rule
     <rec>...                                                         // 
-      <length>     L:Int       </length>                             // L listen receive
-      <cont>       _:Proc        </cont>                             // 
-      <comm>       ""            </comm>                             // matching
+      <length>      L:Int      </length>                             // L listen receive
+      <cont>        _:Proc       </cont>                             // 
+      <state>       ""          </state>                             // matching
       <match> M:Int => M +Int 1 </match>                             // increase match count
-      <type>       _             </type>                             // any receive type
-      <nomo>       _             </nomo>                             // send id is NOT added to nomo set so it can match again
+      <type>        _            </type>                             // any receive type
+      <nomo>        _            </nomo>                             // send id is NOT added to nomo set so it can match again
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
           <vars> _:Name  </vars>                                     // variable binding in continuation
           <num>  1        </num>                                     // 1 variable to bind
           <msid> "" => I </msid>                                     // id of send mactching the listen
-          <lid>  _        </lid>                                     // 
         </listen>                                                    // 
       </listens>                                                     // 
     </rec>                                                           //
@@ -420,19 +410,18 @@ module JOIN
 // N-tuple, N > 1
   rule
     <rec>...                                                         // 
-      <length>     L:Int       </length>                             // L listen receive
-      <cont>       _:Proc        </cont>                             // 
-      <comm>       ""            </comm>                             // matching
+      <length>      L:Int      </length>                             // L listen receive
+      <cont>        _:Proc       </cont>                             // 
+      <state>       ""          </state>                             // matching
       <match> M:Int => M +Int 1 </match>                             // increase match count
-      <type>       _             </type>                             // any receive type
-      <nomo>       _             </nomo>                             // send id is NOT added to nomo set so it can match again
+      <type>        _            </type>                             // any receive type
+      <nomo>        _            </nomo>                             // send id is NOT added to nomo set so it can match again
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name  </chan>                                     // receiving channel X
           <vars> _:Names </vars>                                     // variables binding in continuation
           <num>  N:Int    </num>                                     // N variables to bind
           <msid> "" => I </msid>                                     // id of send mactching the listen
-          <lid>  _        </lid>                                     // 
         </listen>                                                    // 
       </listens>                                                     // 
     </rec>                                                           //
@@ -458,9 +447,8 @@ module JOIN
       <rid>          _                </rid>                         // 
       <rnum>         _               </rnum>                         // 
       <react>     "react"           </react>                         // substitution only happens in react mode
-      <rset>         _               </rset>                         // 
       <reat>         _               </reat>                         // 
-    </reaction>                                                      // 
+    </reaction>                                               [comm] // 
 
   rule
     <reaction>                                                       // 
@@ -470,144 +458,129 @@ module JOIN
       <rid>          _                </rid>                         // 
       <rnum>         _               </rnum>                         // 
       <react>     "react"           </react>                         // substitution only happens in react mode
-      <rset>         _               </rset>                         // 
       <reat>         _               </reat>                         // 
-    </reaction>                                                      // 
+    </reaction>                                               [comm] // 
 
   rule
     <reaction>                                                       // 
-      <who>   P:Proc  => P[@ Q / Y] </who>                           // 
-      <what>  Q:Proc  => .K        </what>                           // 
-      <where> Y:Name  => .K       </where>                           // 
-      <rid>   I:Int   =>  I         </rid>                           // 
-      <rnum>       _  => .K        </rnum>                           // 
-      <react> "react" => "comm"   </react>                           // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
-      <rset>       _  => .Set      </rset>                           // 
-      <reat>       _               </reat>                           // eat set is left untouched
-    </reaction>                                                      // 
+      <who>   P:Proc  => P[@ Q / Y]     </who>                       // 
+      <what>  Q:Proc  => .K            </what>                       // 
+      <where> Y:Name  => .K           </where>                       // 
+      <rid>   I:Int   =>  I             </rid>                       // 
+      <rnum>       _  => .K            </rnum>                       // 
+      <react> "react" => "processing" </react>                       // when reaction is complete, we move to the processing phase
+      <reat>          _                </reat>                       // consumable sends will be consumed and listens matching them will be reset
+    </reaction>                                               [comm] // 
 
 // Consuming after a complete reaction
 // once reaction completes and sends have been consumed, spawn a thread containing the fully substituted continuation
   rule
     <reaction>                                                       // 
-      <who>    P:Proc => .K   </who>                                 // 
-      <what>  .              </what>                                 // 
-      <where> .             </where>                                 // 
-      <rid>    R:Int  => .K   </rid>                                 // 
-      <rnum>  .              </rnum>                                 // 
-      <react> "comm"  => .K </react>                                 // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
-      <rset>   .Set          </rset>                                 // 
-      <reat>   .Set          </reat>                                 // eat set is finished off
+      <who>         P:Proc => .K   </who>                            // 
+      <what>          .           </what>                            // 
+      <where>         .          </where>                            // 
+      <rid>         R:Int  => .K   </rid>                            // 
+      <rnum>          .           </rnum>                            // 
+      <react> "processing" => .K </react>                            // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
+      <reat>         .Set         </reat>                            // eat set is empty
     </reaction>                                                      // 
-    <threads>...
+    <threads>...                                                     // 
     (.Bag => <thread> <k> P </k> </thread>)                          // spawn a thread containing the fully substituted continuation
-    </threads>                                                [comm] // 
-
+    </threads>                                                       // 
+/*
+// Consume sends and matching listens forget id
+// No other matching listens
   rule
     <reaction>                                                       // 
-      <who>        _:Proc          </who>                            // 
-      <what>  .                   </what>                            // 
-      <where> .                  </where>                            // 
-      <rid>        _:Int           </rid>                            // 
-      <rnum>  .                   </rnum>                            // 
-      <react>      "comm"        </react>                            // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
-      <rset>        .Set          </rset>                            // 
-      <reat> E:Set => E -Set SetItem(I) </reat>                      // 
+      <who>             _:Proc           </who>                      // 
+      <what>              .             </what>                      // 
+      <where>             .            </where>                      // 
+      <rid>             _:Int            </rid>                      // 
+      <rnum>              .             </rnum>                      // 
+      <react>        "processing"      </react>                      // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
+      <reat>...SetItem(I:Int;1) => .Set </reat>                      // 
     </reaction>                                                      // 
-    <sends>...
-     (<send>
-        <schan> _ </schan>
-        <msg>   _   </msg>
-        <tuple> _ </tuple>
-        <stype> 0 </stype>
-        <sid> I:Int </sid>
-      </send> => .Bag)
-    </sends>
-/*    <receives>...
-      <rec>
-        <id>     _         </id>
-        <length> L:Int </length>
-        <cont>   _       </cont>
-        <comm>   _       </comm>
-        <match>  L      </match>
-        <type>   _       </type>
-        <nomo>   _       </nomo>
-        <listens>...
-          <listen>
-            <chan> _       </chan>
-            <vars> _       </vars>
-            <num>  _        </num>
-            <msid> I => "" </msid>
-            <lid>  _        </lid>
-          </listen>
-        </listens>
-      </rec>
-    </receives>  */
-    <consumable> C:Set => C -Set SetItem(I) </consumable>
-    requires I in E           [comm]
 
-// Match states
+// Other matching listens forget consumed send id
+  rule
+    <reaction>                                                       // 
+      <who>          _:Proc         </who>                           // 
+      <what>           .           </what>                           // 
+      <where>          .          </where>                           // 
+      <rid>          R:Int          </rid>                           // 
+      <rnum>           .           </rnum>                           // 
+      <react>     "processing"    </react>                           // when reaction is complete and all consumable sends have been consumed, prosume mode disengaged
+      <reat>... SetItem(I:Int;A:Int) => SetItem(I;A -Int 1) </reat>  // 
+    </reaction>                                                      // 
+    <receives>...                                                    // 
+      <rec>                                                          // 
+        <id>          _              </id>                           // 
+        <length>      _          </length>                           // 
+        <cont>        _            </cont>                           // 
+        <state>       _           </state>                           // 
+        <match> M:Int => M -Int 1 </match>                           // 
+        <type>        _            </type>                           // 
+        <nomo>        _            </nomo>                           // 
+        <listens>...                                                 // 
+          <listen>                                                   // 
+            <chan>   _     </chan>                                   // 
+            <vars>   _     </vars>                                   // 
+            <num>    _      </num>                                   // 
+            <msid> I => "" </msid>                                   // 
+          </listen>                                                  // 
+        </listens>                                                   // 
+      </rec>                                                         // 
+    </receives>                                                      // 
+    requires A >Int 1                                                // 
+*/
+// Matched states
 // Comm initializes when # of sends matched = # of listens in receive (i.e. match = length)
+// Start processing phase
   rule
     <rec>                                                            // 
-      <id>      _              </id>                                 // 
-      <length>  L:Int      </length>                                 // 
-      <cont>    _            </cont>                                 // 
-      <comm> "" => "matched" </comm>                                 // once match count is equal to listen length: initialize comm
-      <match>   L           </match>                                 // 
-      <type>    _            </type>                                 // 
-      <nomo>    _            </nomo>                                 // 
-      <listens> _         </listens>                                 // 
+      <id>            _             </id>                            // 
+      <length>        L:Int     </length>                            // 
+      <cont>          _           </cont>                            // 
+      <state> "" => "processing" </state>                            // once match count is equal to listen length: initialize comm
+      <match>         L          </match>                            // 
+      <type>          _           </type>                            // 
+      <nomo>          _           </nomo>                            // 
+      <listens>       _        </listens>                            // 
     </rec>                                                 [promote] // 
-
-// when a matched send is consumed from a "matched" receive, the receive is demoted back to matching
-  rule
-    <rec>                                                            // TODO: not 100% sure this is what I want here...
-      <id>      _              </id>                                 // I want to make it so that "matched" receives
-      <length>  L:Int      </length>                                 // are demoted to "" if a consumable send they
-      <cont>    _            </cont>                                 // matched is consumed by another receive.
-      <comm> "matched" => "" </comm>                                 // 
-      <match>   J:Int       </match>                                 // 
-      <type>    _            </type>                                 // 
-      <nomo>    _            </nomo>                                 // 
-      <listens> _         </listens>                                 // 
-    </rec>                                                           // 
-    when J <Int L                                           [demote] // 
 
 // once collection finishes, consume receive (if consumable)
   rule
    (<rec>                                                            // consumable receives are consumed once collection completes
-      <id>     J:Int        </id>                                    // 
-      <length> L:Int    </length>                                    // 
-      <cont>     _        </cont>                                    // 
-      <comm> "processing" </comm>                                    // 
-      <match>    _       </match>                                    // 
-      <type>   T:Int      </type>                                    // 
-      <nomo>     _        </nomo>                                    // 
-      <listens>  _     </listens>                                    // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>       _        </cont>                                  // 
+      <state> "processing" </state>                                  // 
+      <match>      _       </match>                                  // 
+      <type>     T:Int      </type>                                  // 
+      <nomo>       _        </nomo>                                  // 
+      <listens>    _     </listens>                                  // 
     </rec> => .Bag)                                                  // 
     <reaction>                                                       // 
-      <who>      _                   </who>                          // 
-      <what>     _                  </what>                          // 
-      <where>    _                 </where>                          // 
-      <rid>      J                   </rid>                          // 
-      <rnum>     L                  </rnum>                          // collection completes when the reaction number matches the listen length
+      <who>            _             </who>                          // 
+      <what>           _            </what>                          // 
+      <where>          _           </where>                          // 
+      <rid>            J             </rid>                          // 
+      <rnum>           L            </rnum>                          // collection completes when the reaction number matches the listen length
       <react> "collect" => "react" </react>                          // when collection is complete, react mode engages
-      <rset>     _                  </rset>                          // 
-      <reat>     _                  </reat>                          // 
+      <reat>           _            </reat>                          // 
     </reaction>                                                      // 
-    requires T =/=Int 1                                      [react] //
-/*
+    requires T =/=Int 1                                              //
+
   rule
     <rec>                                                            // unconsumable receives persist and values are restored to initial
-      <id>       J:Int            </id>                              // 
-      <length>   L:Int        </length>                              // 
-      <cont>     _              </cont>                              // 
-      <comm> "processing" => "" </comm>                              // 
-      <match>    L => 0        </match>                              // 
-      <type>     1              </type>                              // 
-      <nomo>     _ => .Set      </nomo>                              // 
-      <listens>  _           </listens>                              // 
+      <id>         J:Int            </id>                            // 
+      <length>     L:Int        </length>                            // 
+      <cont>       _              </cont>                            // 
+      <state> "processing" => "" </state>                            // 
+      <match>      L => 0        </match>                            // 
+      <type>       1              </type>                            // 
+      <nomo>       _ => .Set      </nomo>                            // 
+      <listens>    _           </listens>                            // 
     </rec>                                                           // 
     <reaction>                                                       // 
       <who>      _                   </who>                          // 
@@ -616,10 +589,9 @@ module JOIN
       <rid>      J                   </rid>                          // 
       <rnum>     L                  </rnum>                          // collection completes when the reaction number matches the listen length
       <react> "collect" => "react" </react>                          // when collection is complete, react mode engages
-      <rset>     _                  </rset>                          // 
       <reat>     _                  </reat>                          // 
-    </reaction>                                              [react] // 
-*/
+    </reaction>                                              [reset] // 
+
 //----------------------
 //--- Comm Semantics ---
 //----------------------
@@ -628,63 +600,22 @@ module JOIN
 // First...
 // Consumable sends (send id forgotten by all other listens, if there are any)
 // Linear listens
-// 1-tuple message, no other matching listens
+// 1-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int                     </id>                       // 
-      <length> L:Int                 </length>                       // number of listens in receive
-      <cont>   P:Proc                  </cont>                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L                      </match>                       // 
-      <type>   0                       </type>                       // linear
-      <nomo>   _                       </nomo>                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // dissolve consumable listen
            <chan> X:Name </chan>                                     // 
            <vars> Y:Name </vars>                                     // 
            <num>  1       </num>                                     // 
            <msid> I:Int  </msid>                                     // 
-           <lid>  _       </lid>                                     // 
-         </listen> => .Bag)                                          // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-      <send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Proc  </msg>                                       // 
-        <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send>                                                        // 
-    </sends>                                                         // 
-    <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // start reaction count
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
-      <rset>     _             </rset>                               // 
-      <reat> C:Set => C SetItem(I) </reat>                           // 
-    </reaction>                                            [initial] // 
-/*
-// 1-tuple message, more than one receive has a matching listen
-  rule
-    <rec>                                                            // 
-      <id>     J:Int                     </id>                       // 
-      <length> L:Int                 </length>                       // number of listens in receive
-      <cont>   P:Proc                  </cont>                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L                      </match>                       // 
-      <type>   0                       </type>                       // linear
-      <nomo>   _                       </nomo>                       // 
-      <listens>...                                                   // 
-        (<listen>                                                    // consume linear listen
-           <chan> X:Name  </chan>                                    // listen channel
-           <vars> Y:Name  </vars>                                    // variable binding in continuation
-           <num>  1        </num>                                    // 1-tuple message
-           <msid> I:Int   </msid>                                    // matching send id
-           <lid>  _        </lid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -698,193 +629,72 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // start reaction count
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
-      <rset>     _             </rset>                               // 
+      <who>     .K => P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q              </what>                         // 
+      <where>   .K => Y             </where>                         // 
+      <rid>     .K => J               </rid>                         // 
+      <rnum>    .K => 1              </rnum>                         // start reaction count
+      <react>   .K => "collect"     </react>                         // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
     </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // forget send id
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires H =/=Int J                                    [initial] // 
-*/
-// N-tuple message, only this receive has a matching listen
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
+
+// N-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int                     </id>                       // 
-      <length> L:Int                 </length>                       // number of listens in receive
-      <cont>   P:Proc                  </cont>                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L                      </match>                       // 
-      <type>   0                       </type>                       // linear
-      <nomo>   _                       </nomo>                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // only dissolve consumable listens, T =/= 1
            <chan> X:Name  </chan>                                    // 
            <vars> Y:Names </vars>                                    // 
            <num>  N:Int    </num>                                    // 
            <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
     <sends>...                                                       // 
-      <send>                                                         // consume send from tuplespace
+     (<send>                                                         // consume send from tuplespace
         <schan> X     </schan>                                       // 
         <msg>   Q:Procs </msg>                                       // 
         <tuple> N     </tuple>                                       // 
         <stype> 0     </stype>                                       // 
         <sid>   I       </sid>                                       // 
-      </send>                                                        // 
-    </sends>                                                         // 
-    <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // start reaction count
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
-      <rset>     _             </rset>                               // 
-      <reat> C:Set => C SetItem(I) </reat>                           // 
-    </reaction>                                            [initial] // 
-/*
-// N-tuple message, more than one receive has a matching listen
-  rule
-    <rec>                                                            // 
-      <id>     J:Int                     </id>                       // 
-      <length> L:Int                 </length>                       // number of listens in receive
-      <cont>   P:Proc                  </cont>                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L                      </match>                       // 
-      <type>   0                       </type>                       // linear
-      <nomo>   _                       </nomo>                       // 
-      <listens>...                                                   // 
-       (<listen>                                                     // only dissolve consumable listens, T =/= 1
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Names </vars>                                     // 
-          <num>  N:Int    </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  _        </lid>                                     // 
-        </listen> => .Bag)                                           // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // N-tuple message
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
-      <what>  .K => Q          </what>                               // 
-      <where> .K => Y         </where>                               // 
-      <rid>   .K => J           </rid>                               // 
-      <rnum>  .K => 1          </rnum>                               // start reaction count
-      <react> .K => "collect" </react>                               // collect all info before reaction begins
-      <rset>     _             </rset>                               // 
+      <who>     .K => P             </who>                           // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q            </what>                           // 
+      <where>   .K => Y           </where>                           // 
+      <rid>     .K => J             </rid>                           // 
+      <rnum>    .K => 1            </rnum>                           // start reaction count
+      <react>   .K => "collect"   </react>                           // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
     </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   N        </num>                                    // 
-          <msid>  I => "" </msid>                                    // forget send id
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires H =/=Int J                                    [initial] // 
-*/
-// Reapeted listen
-// Send id dissolved from all <msid/>s in other receives, if they exist
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
 
-// 1-tuple message, only this receive has a matching listen
+// Reapeted listen
+// 1-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // 
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     1          </type>                                  // 
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
          <listen>                                                    // repeated
            <chan> X:Name      </chan>                                // 
            <vars> Y:Name      </vars>                                // 
            <num>  1            </num>                                // 
            <msid> I:Int => "" </msid>                                // forget send id
-           <lid>  V:Int        </lid>                                // 
-         </listen>                                                   // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-      <send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Proc  </msg>                                       // 
-        <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send>                                                        // 
-    </sends>                                                         // 
-    <reaction>                                                       // begin populating <reaction/>
-      <who>        .K => P                </who>                     // relocate continuation & substitution info to <reaction/>
-      <what>       .K => Q               </what>                     // 
-      <where>      .K => Y              </where>                     // 
-      <rid>        .K => J                </rid>                     // 
-      <rnum>       .K => 1               </rnum>                     // start reaction count
-      <react>      .K => "collect"      </react>                     // collect all info before reaction begins
-      <rset>    S:Set => S SetItem(V)    </rset>                     // add listen id to rset
-      <reat>    C:Set => C SetItem(I)    </reat>                     // add send id to eat set
-    </reaction>                                                      // 
-    requires notBool (V in S)                              [initial] // 
-/*
-// 1-tuple message, more than one receive has a matching listen
-  rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // 
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-         <listen>                                                    // repeated
-           <chan> X:Name      </chan>                                // 
-           <vars> Y:Name      </vars>                                // 
-           <num>  1            </num>                                // 
-           <msid> I:Int => "" </msid>                                // forget send id
-           <lid>  V:Int        </lid>                                // 
          </listen>                                                   // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -898,93 +708,32 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>        .K => P                </who>                     // relocate continuation & substitution info to <reaction/>
-      <what>       .K => Q               </what>                     // 
-      <where>      .K => Y              </where>                     // 
-      <rid>        .K => J                </rid>                     // 
-      <rnum>       .K => 1               </rnum>                     // start reaction count
-      <react>      .K => "collect"      </react>                     // collect all info before reaction begins
-      <rset>    S:Set => S SetItem(V)    </rset>                     // add listen id to rset
+      <who>     .K => P             </who>                           // relocate continuation & substitution info to <reaction/>
+      <what>    .K => Q            </what>                           // 
+      <where>   .K => Y           </where>                           // 
+      <rid>     .K => J             </rid>                           // 
+      <rnum>    .K => 1            </rnum>                           // start reaction count
+      <react>   .K => "collect"   </react>                           // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
     </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <type>  _       </type>                                    // any listen type
-          <msid>  I => "" </msid>                                    // forget send id
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool notBool (V in S)         [initial] // 
-*/
-// N-tuple message, only this receive has a matching listen
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
+
+// N-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     1          </type>                                  // repeated
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // only dissolve consumable listens, T =/= 1
           <chan> X:Name      </chan>                                 // 
           <vars> Y:Names     </vars>                                 // 
           <num>  N:Int        </num>                                 // 
           <msid> I:Int => "" </msid>                                 // 
-          <lid>  V:Int        </lid>                                 // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-      <send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send>                                                        // 
-    </sends>                                                         // 
-    <reaction>                                                       // begin populating <reaction/>
-      <who>        .K => P                </who>                     // relocate continuation & substitution info to <reaction/>
-      <what>       .K => Q               </what>                     // 
-      <where>      .K => Y              </where>                     // 
-      <rid>        .K => J                </rid>                     // 
-      <rnum>       .K => 1               </rnum>                     // start reaction count
-      <react>      .K => "collect"      </react>                     // collect all info before reaction begins
-      <rset>    S:Set => S SetItem(V)    </rset>                     // add listen id to rset
-      <reat>    C:Set => C SetItem(I)    </reat>                     // 
-    </reaction>                                                      // 
-    requires notBool (V in S)                              [initial] // 
-/*
-// N-tuple message, more than one receive has a matching listen
-  rule
-    <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name      </chan>                                 // 
-          <vars> Y:Names     </vars>                                 // 
-          <num>  N:Int        </num>                                 // 
-          <msid> I:Int => "" </msid>                                 // forget send id
-          <lid>  V:Int        </lid>                                 // 
         </listen>                                                    // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -992,60 +741,40 @@ module JOIN
      (<send>                                                         // consume send from tuplespace
         <schan> X     </schan>                                       // 
         <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // N-tuple message
+        <tuple> N     </tuple>                                       // 
         <stype> 0     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // begin populating <reaction/>
-      <who>        .K => P                </who>                     // relocate continuation & substitution info to <reaction/>
-      <what>       .K => Q               </what>                     // 
-      <where>      .K => Y              </where>                     // 
-      <rid>        .K => J                </rid>                     // 
-      <rnum>       .K => 1               </rnum>                     // start reaction count
-      <react>      .K => "collect"      </react>                     // collect all info before reaction begins
-      <rset>    S:Set => S SetItem(V)    </rset>                     // add listen id to rset
+      <who>        .K => P             </who>                        // relocate continuation & substitution info to <reaction/>
+      <what>       .K => Q            </what>                        // 
+      <where>      .K => Y           </where>                        // 
+      <rid>        .K => J             </rid>                        // 
+      <rnum>       .K => 1            </rnum>                        // start reaction count
+      <react>      .K => "collect"   </react>                        // collect all info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
     </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   N        </num>                                    // 
-          <msid>  I => "" </msid>                                    // listens in other receives also forget send id
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool notBool (V in S)         [initial] // 
-*/
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [initialize]
+
 // Peek
 // The send is not consumed so its id is not forgotten by other matching listens
-
-// 1-tuple message, only this receive has a matching listen
+// 1-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   2       </type>                                       // peek
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     2          </type>                                  // peek
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
        (<listen>                                                     // dissolve consumable listen
           <chan> X:Name </chan>                                      // 
           <vars> Y:Name </vars>                                      // 
           <num>  1       </num>                                      // 
           <msid> I:Int  </msid>                                      // 
-          <lid>  _       </lid>                                      // 
         </listen> => .Bag)                                           // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -1054,7 +783,7 @@ module JOIN
         <schan> X     </schan>                                       // 
         <msg>   Q:Proc  </msg>                                       // 
         <tuple> 1     </tuple>                                       // 
-        <stype> _     </stype>                                       // 
+        <stype> 0     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send>                                                        // 
     </sends>                                                         // 
@@ -1065,27 +794,25 @@ module JOIN
       <rid>    .K => J           </rid>                              // 
       <rnum>   .K => 1          </rnum>                              // start reaction count
       <react>  .K => "collect" </react>                              // collect all info before reaction begins
-      <rset>    _               </rset>                              // 
-      <reat>    _               </reat>                              // 
-    </reaction>                                           [initiala] // 
+      <reat>   .Set             </reat>                              // 
+    </reaction>                                         [initialize] // 
 
-// N-tuple message, only this receive has a matching listen
+// N-tuple message
   rule
     <rec>                                                            // 
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // number of listens in receive
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "matched" => "processing" </comm>                       // once collection begins: initialize processing
-      <match>  L      </match>                                       // 
-      <type>   2       </type>                                       // peek
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     2          </type>                                  // peek
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
        (<listen>                                                     // 
           <chan> X:Name  </chan>                                     // 
           <vars> Y:Names </vars>                                     // 
           <num>  N:Int    </num>                                     // 
           <msid> I:Int   </msid>                                     // 
-          <lid>  _        </lid>                                     // 
         </listen> => .Bag)                                           // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -1094,7 +821,7 @@ module JOIN
         <schan> X     </schan>                                       // 
         <msg>   Q:Procs </msg>                                       // 
         <tuple> N     </tuple>                                       // 
-        <stype> _     </stype>                                       // either send type
+        <stype> 0     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send>                                                        // 
     </sends>                                                         // 
@@ -1105,78 +832,112 @@ module JOIN
       <rid>   .K => J           </rid>                               // 
       <rnum>  .K => 1          </rnum>                               // 
       <react> .K => "collect" </react>                               // collect all info before reaction begins
-      <rset>   _               </rset>                               // 
-      <reat>   _               </reat>                               // send will not be consumed
-    </reaction>                                            [initial] // 
+      <reat>  .Set             </reat>                               // send will not be consumed
+    </reaction>                                         [initialize] // 
+    
+// Unconsumable Sends
+// 1-tuple message
+  rule
+    <rec>                                                            // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     _          </type>                                  // any
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+       (<listen>                                                     // dissolve consumable listen
+          <chan> X:Name </chan>                                      // 
+          <vars> Y:Name </vars>                                      // 
+          <num>  1       </num>                                      // 
+          <msid> I:Int  </msid>                                      // 
+        </listen> => .Bag)                                           // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+      <send>                                                         // 
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Proc  </msg>                                       // 
+        <tuple> 1     </tuple>                                       // 
+        <stype> 1     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // begin populating <reaction/>
+      <who>    .K => P           </who>                              // relocate continuation & substitution info to <reaction/>
+      <what>   .K => Q          </what>                              // 
+      <where>  .K => Y         </where>                              // 
+      <rid>    .K => J           </rid>                              // 
+      <rnum>   .K => 1          </rnum>                              // start reaction count
+      <react>  .K => "collect" </react>                              // collect all info before reaction begins
+      <reat>   .Set             </reat>                              // 
+    </reaction>                                         [initialize] // 
+
+// N-tuple message
+  rule
+    <rec>                                                            // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // once collection begins: initialize processing
+      <match>    L         </match>                                  // 
+      <type>     _          </type>                                  // any
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+       (<listen>                                                     // 
+          <chan> X:Name  </chan>                                     // 
+          <vars> Y:Names </vars>                                     // 
+          <num>  N:Int    </num>                                     // 
+          <msid> I:Int   </msid>                                     // 
+        </listen> => .Bag)                                           // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     <send>                                                          // will not be consumed from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 1     </stype>                                       // either send type
+        <sid>   I       </sid>                                       // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // begin populating <reaction/>
+      <who>   .K => P           </who>                               // relocate continuation & substitution info to <reaction/>
+      <what>  .K => Q          </what>                               // 
+      <where> .K => Y         </where>                               // 
+      <rid>   .K => J           </rid>                               // 
+      <rnum>  .K => 1          </rnum>                               // 
+      <react> .K => "collect" </react>                               // collect all info before reaction begins
+      <reat>  .Set             </reat>                               // send will not be consumed
+    </reaction>                                         [initialize] // 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // COLLECTION - after reaction is initialized
 // 
-// Receives with linear listens
+// Linear Receives & Consumable Sends
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
-// only one receive with matching listen
   rule
     <rec>                                                            // 
-      <id>     J:Int        </id>                                    // 
-      <length> L:Int    </length>                                    // number of listens in receive
-      <cont>   P:Proc     </cont>                                    // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L         </match>                                    // 
-      <type>   0          </type>                                    // linear
-      <nomo>   _          </nomo>                                    // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // 
            <chan> X:Name  </chan>                                    // 
            <vars> Y:Name  </vars>                                    // 1-tuple
            <num>  1        </num>                                    // 
            <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
     <sends>...                                                       // 
-      <send>                                                         // to be consumed send in tuplespace
-        <schan> X  </schan>                                          // 
-        <msg> Q:Proc </msg>                                          // 
-        <tuple> 1  </tuple>                                          // 
-        <stype> 0  </stype>                                          // 
-        <sid>   I    </sid>                                          // 
-      </send>                                                        // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>           P                </who>                        // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => Q , R        </what>                        // single proc initially in <reaction/>
-      <where> Z:Name  => Y , Z       </where>                        // single name initially in <reaction/>
-      <rid>           J                </rid>                        // 
-      <rnum>        1 => 2            </rnum>                        // increase reaction number
-      <react>     "collect"          </react>                        // collecting info before reaction begins
-      <rset>          _               </rset>                        // 
-      <reat>    C:Set => C SetItem(I) </reat>                        // 
-    </reaction>                                            [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        (<listen>                                                    // 
-           <chan> X:Name  </chan>                                    // 
-           <vars> Y:Name  </vars>                                    // 1-tuple
-           <num>  1        </num>                                    // 
-           <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
-         </listen> => .Bag)                                          // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
+     (<send>                                                         // to be consumed from tuplespace, added to <reat/>
         <schan> X  </schan>                                          // 
         <msg> Q:Proc </msg>                                          // 
         <tuple> 1  </tuple>                                          // 
@@ -1185,53 +946,347 @@ module JOIN
       </send> => .Bag)                                               // 
     </sends>                                                         // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                  </who>                              // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => Q , R  </what>                              // single proc initially in <reaction/>
-      <where> Z:Name  => Y , Z </where>                              // single name initially in <reaction/>
-      <rid>   J                  </rid>                              // 
-      <rnum>  1 => 2            </rnum>                              // increase reaction number
-      <react> "collect"        </react>                              // collecting info before reaction begins
-      <rset>  _                 </rset>                              // 
-      <reat>    C:Set => C SetItem(I)    </reat>                     // 
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => Q , R       </what>                         // single proc initially in <reaction/>
+      <where> Z:Name  => Y , Z      </where>                         // single name initially in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>        1 => 2           </rnum>                         // increase reaction number
+      <react>     "collect"         </react>                         // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
     </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires H =/=Int J                                    [collect] // 
-*/
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
 // adding multiple names and procs to <reaction/>
-// only one receive with matching listen
   rule
     <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // 
            <chan> X:Name  </chan>                                    // 
            <vars> Y:Names </vars>                                    // N variables to bind
            <num>  N:Int    </num>                                    // 
            <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // to be consumed send in tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
+      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>        1 => 2             </rnum>                       // increase reaction number
+      <react>      "collect"          </react>                       // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A)   </reat>                       // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // all listens will
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Name  </vars>                                    // 1-tuple
+           <num>  1        </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Proc  </msg>                                       // 
+        <tuple> 1     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => Q , R       </what>                         // multiple procs currently in <reaction/>
+      <where> Z:Names => Y , Z      </where>                         // multiple names currently in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>    U:Int => U +Int 1    </rnum>                         // increase reaction number
+      <react>     "collect"         </react>                         // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // all listens will
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Names </vars>                                    // N-tuple
+           <num>  N:Int    </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
+      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>    U:Int => U +Int 1      </rnum>                       // increase reaction number
+      <react>     "collect"           </react>                       // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A)   </reat>                       // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// Persistent Receives & Consumable Sends
+// single name and proc currently in <reaction/>
+// adding single name and proc (consumable listen)
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "processing" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     1          </type>                                  // repeated
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name      </chan>                                 // 
+          <vars> Y:Name      </vars>                                 // 1-tuple
+          <num>  1            </num>                                 // 
+          <msid> I:Int => "" </msid>                                 // forget send id
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X  </schan>                                          // 
+        <msg> Q:Proc </msg>                                          // 
+        <tuple> 1  </tuple>                                          // 
+        <stype> 0  </stype>                                          // 
+        <sid>   I    </sid>                                          // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => Q , R       </what>                         // single proc initially in <reaction/>
+      <where> Z:Name  => Y , Z      </where>                         // single name initially in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>        1 => 2           </rnum>                         // increase reaction number
+      <react>      "collect"        </react>                         // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// adding multiple names and procs to <reaction/>
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "processing" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     1          </type>                                  // repeated
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name      </chan>                                 // 
+          <vars> Y:Names     </vars>                                 // N-tuple
+          <num>  N:Int        </num>                                 // 
+          <msid> I:Int => "" </msid>                                 // 
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
+      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>        1 => 2             </rnum>                       // increase reaction number
+      <react>      "collect"          </react>                       // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A)   </reat>                       // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "processing" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     1          </type>                                  // repeated
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name      </chan>                                 // 
+          <vars> Y:Name      </vars>                                 // 1-tuple
+          <num>  1            </num>                                 // 
+          <msid> I:Int => "" </msid>                                 // 
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Proc  </msg>                                       // 
+        <tuple> 1     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => Q , R       </what>                         // multiple procs currently in <reaction/>
+      <where> Z:Names => Y , Z      </where>                         // multiple names currently in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>    U:Int => U +Int 1    </rnum>                         // increase reaction number
+      <react>      "collect"        </react>                         // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A) </reat>                         // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>        J:Int       </id>                                  // 
+      <length>    L:Int   </length>                                  // 
+      <cont>      P:Proc    </cont>                                  // 
+      <state> "processing" </state>                                  // "processing" receives populate <reaction/>
+      <match>     L        </match>                                  // 
+      <type>      1         </type>                                  // repeated
+      <nomo>      _         </nomo>                                  // 
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name      </chan>                                 // 
+          <vars> Y:Names     </vars>                                 // N-tuple
+          <num>  N:Int        </num>                                 // 
+          <msid> I:Int => "" </msid>                                 // 
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+     (<send>                                                         // consume send from tuplespace
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send> => .Bag)                                               // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
+      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>    U:Int => U +Int 1      </rnum>                       // increase reaction number
+      <react>      "collect"          </react>                       // collecting info before reaction begins
+      <reat> E:Set => E SetItem(I;A)   </reat>                       // 
+    </reaction>                                                      // 
+    <consumable>... SetItem(I;A:Int) => .Set </consumable> [collect] // 
+    
+// Peeking Receives & any Sends
+// single name and proc currently in <reaction/>
+// adding single name and proc (consumable listen)
+  rule
+    <rec>                                                            // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // 
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Name  </vars>                                    // 1-tuple
+           <num>  1        </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+      <send>                                                         // NOT consumed from tuplespace
+        <schan> X  </schan>                                          // 
+        <msg> Q:Proc </msg>                                          // 
+        <tuple> 1  </tuple>                                          // 
+        <stype> _  </stype>                                          // 
+        <sid>   I    </sid>                                          // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P          </who>                              // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => Q , R  </what>                              // single proc initially in <reaction/>
+      <where> Z:Name  => Y , Z </where>                              // single name initially in <reaction/>
+      <rid>           J          </rid>                              // 
+      <rnum>        1 => 2      </rnum>                              // increase reaction number
+      <react>     "collect"    </react>                              // collecting info before reaction begins
+      <reat>        .Set        </reat>                              // 
+    </reaction>                                            [collect] // 
+
+// adding multiple names and procs to <reaction/>
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // 
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Names </vars>                                    // N variables to bind
+           <num>  N:Int    </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -1240,7 +1295,7 @@ module JOIN
         <schan> X     </schan>                                       // 
         <msg>   Q:Procs </msg>                                       // 
         <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
+        <stype> _     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send>                                                        // 
     </sends>                                                         // 
@@ -1250,88 +1305,26 @@ module JOIN
       <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
       <rid>           J                 </rid>                       // 
       <rnum>        1 => 2             </rnum>                       // increase reaction number
-      <react>      "collect"          </react>                       // collecting info before reaction begins
-      <rset>          _                </rset>                       // 
-      <reat>    C:Set => C SetItem(I)  </reat>                       // 
+      <react>     "collect"           </react>                       // collecting info before reaction begins
+      <reat>        .Set               </reat>                       // 
     </reaction>                                            [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        (<listen>                                                    // 
-           <chan> X:Name  </chan>                                    // 
-           <vars> Y:Names </vars>                                    // N-tuple
-           <num>  N:Int    </num>                                    // 
-           <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
-         </listen> => .Bag)                                          // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
-      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
-      <rid>   J                         </rid>                       // 
-      <rnum>  1 => 2                   </rnum>                       // increase reaction number
-      <react> "collect"               </react>                       // collecting info before reaction begins
-      <rset>  _                        </rset>                       // 
-      <reat>    C:Set => C SetItem(I)    </reat>                     // 
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires H =/=Int J                                    [collect] // 
-*/
+
 // multiple names and procs currently in <reaction/> => adding sinlge name and proc
-// only one receive with matching listen
   rule
     <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // all listens will
            <chan> X:Name  </chan>                                    // 
            <vars> Y:Name  </vars>                                    // 1-tuple
            <num>  1        </num>                                    // 
            <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -1340,99 +1333,37 @@ module JOIN
         <schan> X     </schan>                                       // 
         <msg>   Q:Proc  </msg>                                       // 
         <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
+        <stype> _     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                  </who>                              // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R  </what>                              // multiple procs currently in <reaction/>
-      <where> Z:Names => Y , Z </where>                              // multiple names currently in <reaction/>
-      <rid>   J                  </rid>                              // 
-      <rnum>  U:Int => U +Int 1 </rnum>                              // increase reaction number
-      <react> "collect"        </react>                              // collecting info before reaction begins
-      <rset>  _                 </rset>                              // 
-      <reat>  C:Set => C SetItem(I)    </reat>                       // 
+      <who>           P            </who>                            // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => Q , R    </what>                            // multiple procs currently in <reaction/>
+      <where> Z:Names => Y , Z   </where>                            // multiple names currently in <reaction/>
+      <rid>           J            </rid>                            // 
+      <rnum>    U:Int => U +Int 1 </rnum>                            // increase reaction number
+      <react>     "collect"      </react>                            // collecting info before reaction begins
+      <reat>        .Set          </reat>                            // 
     </reaction>                                                      // 
     requires L >Int U                                      [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        (<listen>                                                    // all listens will
-           <chan> X:Name  </chan>                                    // 
-           <vars> Y:Name  </vars>                                    // 1-tuple
-           <num>  1        </num>                                    // 
-           <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
-         </listen> => .Bag)                                          // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Proc  </msg>                                       // 
-        <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>   P                  </who>                              // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R  </what>                              // multiple procs currently in <reaction/>
-      <where> Z:Names => Y , Z </where>                              // multiple names currently in <reaction/>
-      <rid>   J                  </rid>                              // 
-      <rnum>  U:Int => U +Int 1 </rnum>                              // increase reaction number
-      <react> "collect"        </react>                              // collecting info before reaction begins
-      <rset>  _                 </rset>                              // 
-      <reat>    C:Set => C SetItem(I)    </reat>                     // 
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool (L >Int U)               [collect] // 
-*/
+
 // multiple names and procs currently in <reaction/> => adding sinlge name and proc
-// only one receive with matching listen
   rule
     <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // all listens will
            <chan> X:Name  </chan>                                    // 
            <vars> Y:Names </vars>                                    // N-tuple
            <num>  N:Int    </num>                                    // 
            <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
          </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
@@ -1441,511 +1372,200 @@ module JOIN
         <schan> X     </schan>                                       // 
         <msg>   Q:Procs </msg>                                       // 
         <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
+        <stype> _     </stype>                                       // 
         <sid>   I       </sid>                                       // 
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
       <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
       <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
-      <rid>   J                         </rid>                       // 
-      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
-      <react> "collect"               </react>                       // collecting info before reaction begins
-      <rset>  _                        </rset>                       // 
-      <reat>  C:Set => C SetItem(I)    </reat>                       // 
+      <rid>           J                 </rid>                       // 
+      <rnum>    U:Int => U +Int 1      </rnum>                       // increase reaction number
+      <react>     "collect"           </react>                       // collecting info before reaction begins
+      <reat>        .Set               </reat>                       // 
     </reaction>                                                      // 
     requires L >Int U                                      [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "matched" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        (<listen>                                                    // all listens will
-           <chan> X:Name  </chan>                                    // 
-           <vars> Y:Names </vars>                                    // N-tuple
-           <num>  N:Int    </num>                                    // 
-           <msid> I:Int   </msid>                                    // 
-           <lid>  _        </lid>                                    // 
-         </listen> => .Bag)                                          // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
-      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
-      <rid>   J                         </rid>                       // 
-      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
-      <react> "collect"               </react>                       // collecting info before reaction begins
-      <rset>  _                        </rset>                       // 
-      <reat>    C:Set => C SetItem(I)    </reat>                     // 
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   N        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool (L >Int U)               [collect] // 
-*/
-// Persistent receives
+    
+// Unconsumable Sends & Receives with Linear Listens
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
-// only one receive with matching listen
   rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
+    <rec>                                                            // 
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Name  </vars>                                     // 1-tuple
-          <num>  1        </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
+        (<listen>                                                    // 
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Name  </vars>                                    // 1-tuple
+           <num>  1        </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
       </listens>                                                     // 
     </rec>                                                           // 
     <sends>...                                                       // 
-      <send>                                                         // consume send from tuplespace
+      <send>                                                         // 
         <schan> X  </schan>                                          // 
         <msg> Q:Proc </msg>                                          // 
         <tuple> 1  </tuple>                                          // 
-        <stype> 0  </stype>                                          // 
+        <stype> 1  </stype>                                          // 
         <sid>   I    </sid>                                          // 
       </send>                                                        // 
     </sends>                                                         // 
     <reaction>                                                       // continue populating <reaction/>
-      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => Q , R         </what>                       // single proc initially in <reaction/>
-      <where> Z:Name  => Y , Z        </where>                       // single name initially in <reaction/>
-      <rid>           J                 </rid>                       // 
-      <rnum>        1 => 2             </rnum>                       // increase reaction number
-      <react>      "collect"          </react>                       // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V)  </rset>                       // add listen id to rset
-      <reat>    C:Set => C SetItem(I)  </reat>                       // 
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => Q , R       </what>                         // single proc initially in <reaction/>
+      <where> Z:Name  => Y , Z      </where>                         // single name initially in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>        1 => 2           </rnum>                         // increase reaction number
+      <react>     "collect"         </react>                         // collecting info before reaction begins
+      <reat>          _              </reat>                         // 
     </reaction>                                            [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   0       </type>                                       // linear
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Name  </vars>                                     // 1-tuple
-          <num>  1        </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X  </schan>                                          // 
-        <msg> Q:Proc </msg>                                          // 
-        <tuple> 1  </tuple>                                          // 
-        <stype> 0  </stype>                                          // 
-        <sid>   I    </sid>                                          // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => Q , R         </what>                       // single proc initially in <reaction/>
-      <where> Z:Name  => Y , Z        </where>                       // single name initially in <reaction/>
-      <rid>           J                 </rid>                       // 
-      <rnum>        1 => 2             </rnum>                       // increase reaction number
-      <react>      "collect"          </react>                       // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V)  </rset>                       // add listen id to rset
-      <reat>    C:Set => C SetItem(I)  </reat>                       // 
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-           <chan>  X       </chan>                                   // 
-           <vars>  _       </vars>                                   // 
-           <num>   1        </num>                                   // 
-           <msid>  I => "" </msid>                                   // disconnect other listens from send
-           <lid>   _        </lid>                                   // 
-         </listen>                                                   // 
-       </listens>                                                    // 
-     </rec>                                                          // 
-     requires H =/=Int J                                   [collect] // 
-*/
+
 // adding multiple names and procs to <reaction/>
-// only one receive with matching listen
   rule
     <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Names </vars>                                     // N-tuple
-          <num>  N:Int    </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
-      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
-      <rid>           J                 </rid>                       // 
-      <rnum>        1 => 2             </rnum>                       // increase reaction number
-      <react>      "collect"          </react>                       // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V)  </rset>                       // add listen id to rset
-      <reat>    C:Set => C SetItem(I)  </reat>                       // 
-    </reaction>                                            [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Names </vars>                                     // N-tuple
-          <num>  N:Int    </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
-      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
-      <rid>           J                 </rid>                       // 
-      <rnum>        1 => 2             </rnum>                       // increase reaction number
-      <react>      "collect"          </react>                       // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V)  </rset>                       // add listen id to rset
-      <reat>    C:Set => C SetItem(I)  </reat>                       // 
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires H =/=Int J                                    [collect] // 
-*/
-// multiple names and procs currently in <reaction/> => adding sinlge name and proc
-// only one receive with matching listen
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Name  </vars>                                     // 1-tuple
-          <num>  1        </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Proc  </msg>                                       // 
-        <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>         P                  </who>                        // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R        </what>                        // multiple procs currently in <reaction/>
-      <where> Z:Names => Y , Z       </where>                        // multiple names currently in <reaction/>
-      <rid>         J                  </rid>                        // 
-      <rnum>    U:Int => U +Int 1     </rnum>                        // increase reaction number
-      <react>      "collect"         </react>                        // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V) </rset>                        // add listen id to rset
-      <reat>    C:Set => C SetItem(I) </reat>                        // 
-    </reaction>                                                      // 
-    requires L >Int U                                      [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>     J:Int     </id>                                       // 
-      <length> L:Int </length>                                       // 
-      <cont>   P:Proc  </cont>                                       // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>  L      </match>                                       // 
-      <type>   1       </type>                                       // repeated
-      <nomo>   _       </nomo>                                       // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Name  </vars>                                     // 1-tuple
-          <num>  1        </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Proc  </msg>                                       // 
-        <tuple> 1     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>         P                  </who>                        // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => Q , R        </what>                        // multiple procs currently in <reaction/>
-      <where> Z:Names => Y , Z       </where>                        // multiple names currently in <reaction/>
-      <rid>         J                  </rid>                        // 
-      <rnum>    U:Int => U +Int 1     </rnum>                        // increase reaction number
-      <react>      "collect"         </react>                        // collecting info before reaction begins
-      <rset>    T:Set => T SetItem(V) </rset>                        // add listen id to rset
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   1        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool (L >Int U)               [collect] // 
-*/
-// multiple names and procs currently in <reaction/> => adding sinlge name and proc
-// only one receive with matching listen
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>        J:Int     </id>                                    // 
-      <length>    L:Int </length>                                    // 
-      <cont>      P:Proc  </cont>                                    // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>     L      </match>                                    // 
-      <type>      1       </type>                                    // repeated
-      <nomo>      _       </nomo>                                    // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Names </vars>                                     // N-tuple
-          <num>  N:Int    </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
-      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
-      <rid>   J                         </rid>                       // 
-      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
-      <react> "collect"               </react>                       // collecting info before reaction begins
-      <rset>  T:Set => T SetItem(V)    </rset>                       // add listen id to rset
-      <reat>  C:Set => C SetItem(I)    </reat>                       // 
-    </reaction>                                                      // 
-    requires L >Int U                                      [collect] // 
-/*
-// other receives with matching listens
-  rule
-    <rec>                                                            // number of listens in receive
-      <id>        J:Int     </id>                                    // 
-      <length>    L:Int </length>                                    // 
-      <cont>      P:Proc  </cont>                                    // 
-      <comm> "processing" </comm>                                    // "processing" receives populate <reaction/>
-      <match>     L      </match>                                    // 
-      <type>      1       </type>                                    // repeated
-      <nomo>      _       </nomo>                                    // 
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan> X:Name  </chan>                                     // 
-          <vars> Y:Names </vars>                                     // N-tuple
-          <num>  N:Int    </num>                                     // 
-          <msid> I:Int   </msid>                                     // 
-          <lid>  V:Int    </lid>                                     // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    <sends>...                                                       // 
-     (<send>                                                         // consume send from tuplespace
-        <schan> X     </schan>                                       // 
-        <msg>   Q:Procs </msg>                                       // 
-        <tuple> N     </tuple>                                       // 
-        <stype> 0     </stype>                                       // 
-        <sid>   I       </sid>                                       // 
-      </send> => .Bag)                                               // 
-    </sends>                                                         // 
-    <reaction>                                                       // continue populating <reaction/>
-      <who>   P                         </who>                       // relocate continuation & substitution info to <reaction/>
-      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
-      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
-      <rid>   J                         </rid>                       // 
-      <rnum>  U:Int => U +Int 1        </rnum>                       // increase reaction number
-      <react> "collect"               </react>                       // collecting info before reaction begins
-      <rset>  T:Set => T SetItem(V)    </rset>                       // add listen id to rset
-    </reaction>                                                      // 
-    <rec>                                                            // 
-      <id>          H:Int                  </id>                     // 
-      <length>      _:Int              </length>                     // 
-      <cont>        _:Proc               </cont>                     // 
-      <comm>        _                    </comm>                     // either state is valid
-      <match> M:Int => M -Int 1         </match>                     // decrease match count in all joins with a latching listen (send was already consumed)
-      <type>        _                    </type>                     // any receive type
-      <nomo>  S:Set => S -Set SetItem(I) </nomo>                     // delete send id from the nomo set in all joins with a matching listen
-      <listens>...                                                   // 
-        <listen>                                                     // 
-          <chan>  X       </chan>                                    // 
-          <vars>  _       </vars>                                    // 
-          <num>   N        </num>                                    // 
-          <msid>  I => "" </msid>                                    // disconnect other listens from send
-          <lid>   _        </lid>                                    // 
-        </listen>                                                    // 
-      </listens>                                                     // 
-    </rec>                                                           // 
-    requires (H =/=Int J) andBool (L >Int U)               [collect] // 
-*/
-// Eliminate empty initializing listen cells
-  rule
-    <rec>...
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // number of listens in receive
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         (<listen>                                                    // 
-           <chan> "" </chan>                                         // 
-           <vars> "" </vars>                                         // 
-           <num>  ""  </num>                                         // 
-           <msid> "" </msid>                                         // 
-           <lid>  ""  </lid>                                         // 
-        </listen> => .Bag)                                           // 
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Names </vars>                                    // N variables to bind
+           <num>  N:Int    </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
       </listens>                                                     // 
-    </rec>                                                           //
+    </rec>                                                           // 
+    <sends>...                                                       // 
+      <send>                                                         // 
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 0     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Proc  => #append(Q;R)  </what>                       // single proc initially in <reaction/>
+      <where> Z:Name  => #append(Y;Z) </where>                       // single name initially in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>        1 => 2             </rnum>                       // increase reaction number
+      <react>      "collect"          </react>                       // collecting info before reaction begins
+      <reat>          _                </reat>                       // 
+    </reaction>                                            [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // all listens will
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Name  </vars>                                    // 1-tuple
+           <num>  1        </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+      <send>                                                         // 
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Proc  </msg>                                       // 
+        <tuple> 1     </tuple>                                       // 
+        <stype> 1     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P               </who>                         // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => Q , R       </what>                         // multiple procs currently in <reaction/>
+      <where> Z:Names => Y , Z      </where>                         // multiple names currently in <reaction/>
+      <rid>           J               </rid>                         // 
+      <rnum>    U:Int => U +Int 1    </rnum>                         // increase reaction number
+      <react>     "collect"         </react>                         // collecting info before reaction begins
+      <reat>          _              </reat>                         // 
+    </reaction>                                            [collect] // 
+
+// multiple names and procs currently in <reaction/> => adding sinlge name and proc
+  rule
+    <rec>                                                            // number of listens in receive
+      <id>       J:Int        </id>                                  // 
+      <length>   L:Int    </length>                                  // 
+      <cont>     P:Proc     </cont>                                  // 
+      <state> "processing" </state>                                  // "matched" receives populate <reaction/>
+      <match>    L         </match>                                  // 
+      <type>     0          </type>                                  // linear
+      <nomo>     _          </nomo>                                  // 
+      <listens>...                                                   // 
+        (<listen>                                                    // all listens will
+           <chan> X:Name  </chan>                                    // 
+           <vars> Y:Names </vars>                                    // N-tuple
+           <num>  N:Int    </num>                                    // 
+           <msid> I:Int   </msid>                                    // 
+         </listen> => .Bag)                                          // 
+      </listens>                                                     // 
+    </rec>                                                           // 
+    <sends>...                                                       // 
+      <send>                                                         // 
+        <schan> X     </schan>                                       // 
+        <msg>   Q:Procs </msg>                                       // 
+        <tuple> N     </tuple>                                       // 
+        <stype> 1     </stype>                                       // 
+        <sid>   I       </sid>                                       // 
+      </send>                                                        // 
+    </sends>                                                         // 
+    <reaction>                                                       // continue populating <reaction/>
+      <who>           P                 </who>                       // relocate continuation & substitution info to <reaction/>
+      <what>  R:Procs => #append(Q;R)  </what>                       // multiple procs currently in <reaction/>
+      <where> Z:Names => #append(Y;Z) </where>                       // multiple names currently in <reaction/>
+      <rid>           J                 </rid>                       // 
+      <rnum>    U:Int => U +Int 1      </rnum>                       // increase reaction number
+      <react>     "collect"           </react>                       // collecting info before reaction begins
+      <reat>          _                </reat>                       // 
+    </reaction>                                            [collect] //
+
+// Eliminate empty initializing listen cells
+  rule
+    <listens>...                                                     // 
+      (<listen>                                                      // 
+         <chan> "" </chan>                                           // 
+         <vars> "" </vars>                                           // 
+         <num>  ""  </num>                                           // 
+         <msid> "" </msid>                                           // 
+      </listen> => .Bag)                                             // 
+    </listens>                                          [structural] // 
 
 // Eliminate unnecessary Nils
-  rule    Nil | P:Proc => P                             [structural] //
-  rule P:Proc | Nil    => P                             [structural] //
+  rule    Nil | P:Proc => P                               [anywhere] // 
+  rule P:Proc | Nil    => P                               [anywhere] // 
 
 // Dissolve computationally meaningless threads
-  rule <thread> <k> .K  </k> </thread> => .Bag          [structural] //empty threads
-  rule <thread> <k> Nil </k> </thread> => .Bag          [structural] //Nil threads
+  rule <thread> <k> .K  </k> </thread> => .Bag          [structural] // empty threads
+  rule <thread> <k> Nil </k> </thread> => .Bag          [structural] // Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
-  rule   @ * N:Name => N                                  [anywhere] //
+  rule   @ * N:Name => N                                  [anywhere] // 
 
 // INVERSES
-  rule   * @ P:Proc => P                                  [anywhere] //
+  rule   * @ P:Proc => P                                  [anywhere] // 
 
 endmodule
