@@ -1997,6 +1997,7 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax KVariable [UNIQUE_ID(9f73f65de81e0db712c6bdfaa6600af2b622fce59478f9c98a7bb8752601c0ae) org.kframework.attributes.Location(Location(7,3,7,18)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/substitution.k))]
   syntax KVariable ::= Names
   syntax KVariable ::= Name
+  syntax KVariable ::= Int
   syntax KResult ::= Name
   syntax KResult ::= Int
   syntax KResult ::= Ground
@@ -2010,7 +2011,7 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax KItem ::= Map "[" KItem "]" "orDefault" KItem
   syntax KItem ::= Map "[" KItem "]"
   syntax KItem ::= List "[" Int "]"
-  syntax KItem ::= ChanNum
+  syntax KItem ::= IdNum
   syntax KItem ::= Cell
   syntax KItem ::= "getKLabel" "(" K ")"
   syntax KItem ::= "choice" "(" Set ")"
@@ -2119,6 +2120,7 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax Int ::= "#chanmany" "(" ChanLen ":" Bind ")"
   syntax Int ::= "#bnum" "(" Receive ")"
   syntax Int ::= "#bnum" "(" Bind ")"
+  syntax IdNum ::= Int ";" Int
   syntax Id [UNIQUE_ID(f78bce53fe73a3790c06ddcf266f766a7f172886a7c88da394566828ddb128a4) org.kframework.attributes.Location(Location(733,3,733,19)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k)) token()]
   syntax Id ::= "freshId" "(" Int ")"
   syntax Id ::= "String2Id" "(" String ")"
@@ -2212,7 +2214,6 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax Collection ::= RhoSet
   syntax Collection ::= RhoMap
   syntax Collection ::= RhoList
-  syntax ChanNum ::= Name ";;" Int
   syntax ChanList ::= "(" Name ";" NameList ")"
   syntax ChanLen ::= "(" Name ";" Int ")"
   syntax Cell ::= WhoCell
@@ -2372,6 +2373,7 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax Bool ::= "isK" "(" K ")"
   syntax Bool ::= "isJoinList" "(" K ")"
   syntax Bool ::= "isInt" "(" K ")"
+  syntax Bool ::= "isIdNum" "(" K ")"
   syntax Bool ::= "isId" "(" K ")"
   syntax Bool ::= "isIOError" "(" K ")"
   syntax Bool ::= "isGround" "(" K ")"
@@ -2381,7 +2383,6 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   syntax Bool ::= "isContCell" "(" K ")"
   syntax Bool ::= "isConsumableSend" "(" K ")"
   syntax Bool ::= "isCollection" "(" K ")"
-  syntax Bool ::= "isChanNum" "(" K ")"
   syntax Bool ::= "isChanList" "(" K ")"
   syntax Bool ::= "isChanLen" "(" K ")"
   syntax Bool ::= "isCell" "(" K ")"
@@ -3081,6 +3082,7 @@ module GRHO [org.kframework.attributes.Location(Location(194,1,511,9)) org.kfram
   ModuleComment( all comms are processed here,[UNIQUE_ID(c727e5be97bb42b73091b5f34b5f14d8fdd5d6721deb1e696098f0262d8e8d4e) org.kframework.attributes.Location(Location(232,70,232,101)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _|_: Proc x Proc ---> Par,[UNIQUE_ID(8e98d8cf080178659cd3427b8c1c86cda9a140871a792b1d7ed7bca40bf50526) org.kframework.attributes.Location(Location(46,70,46,98)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _<=_: AExp x AExp ---> BExp,[UNIQUE_ID(b0e747c2f8e05e93da7a85555a87e5513d114666f53ab1871c5241a41328e9f0) org.kframework.attributes.Location(Location(160,70,160,100)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
+  ModuleComment( _;_: Int x Int ------> IdNum < KItem,[UNIQUE_ID(d06187b742dd0b4362a34a8fb5605fbdc9f90d389003e82e19406370d56cf6bc) org.kframework.attributes.Location(Location(178,70,178,109)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1,[UNIQUE_ID(2a1e41168d7a92da18ab5661b4b7c8c454157a1fd574a16882420021e1aad53f) org.kframework.attributes.Location(Location(129,70,129,134)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _-_: AExp x AExp ---> AExp,[UNIQUE_ID(d9374485a7b95b9813db0502f15d012d3935c13f02c141114b8b6d6fe2bc98be) org.kframework.attributes.Location(Location(153,70,153,99)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _,_: Proc x Procs ---> Procs,[UNIQUE_ID(6d7f1a7b69aabc756573f8ee734706cf05ef5e24602edad21b88f22c0380d4fe) org.kframework.attributes.Location(Location(106,70,106,101)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
@@ -3694,6 +3696,7 @@ module GRHO-SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9)) org.
   ModuleComment( auxfun,[UNIQUE_ID(78dc7784b97a32e1d2f825ef7b5acaf58357e0b9e75fa510623dcc49a4185fdf) org.kframework.attributes.Location(Location(184,70,184,79)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _|_: Proc x Proc ---> Par,[UNIQUE_ID(8e98d8cf080178659cd3427b8c1c86cda9a140871a792b1d7ed7bca40bf50526) org.kframework.attributes.Location(Location(46,70,46,98)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _<=_: AExp x AExp ---> BExp,[UNIQUE_ID(b0e747c2f8e05e93da7a85555a87e5513d114666f53ab1871c5241a41328e9f0) org.kframework.attributes.Location(Location(160,70,160,100)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
+  ModuleComment( _;_: Int x Int ------> IdNum < KItem,[UNIQUE_ID(d06187b742dd0b4362a34a8fb5605fbdc9f90d389003e82e19406370d56cf6bc) org.kframework.attributes.Location(Location(178,70,178,109)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1,[UNIQUE_ID(2a1e41168d7a92da18ab5661b4b7c8c454157a1fd574a16882420021e1aad53f) org.kframework.attributes.Location(Location(129,70,129,134)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _-_: AExp x AExp ---> AExp,[UNIQUE_ID(d9374485a7b95b9813db0502f15d012d3935c13f02c141114b8b6d6fe2bc98be) org.kframework.attributes.Location(Location(153,70,153,99)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( _,_: Proc x Procs ---> Procs,[UNIQUE_ID(6d7f1a7b69aabc756573f8ee734706cf05ef5e24602edad21b88f22c0380d4fe) org.kframework.attributes.Location(Location(106,70,106,101)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
@@ -3841,6 +3844,7 @@ module GRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9
   syntax Lbind ::= NameList "<-" Name
   syntax KVariable ::= Names
   syntax KVariable ::= Name
+  syntax KVariable ::= Int
   syntax KItem ::= Uri
   syntax KItem ::= UnconsumableSend
   syntax KItem ::= SingleRec
@@ -3872,11 +3876,11 @@ module GRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9
   syntax KItem ::= LbindList
   syntax KItem ::= Lbind
   syntax KItem ::= JoinList
+  syntax KItem ::= IdNum
   syntax KItem ::= Ground
   syntax KItem ::= Eval
   syntax KItem ::= ConsumableSend
   syntax KItem ::= Collection
-  syntax KItem ::= ChanNum
   syntax KItem ::= ChanList
   syntax KItem ::= ChanLen
   syntax KItem ::= Bundle
@@ -3888,6 +3892,7 @@ module GRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9
   syntax KItem ::= AExp
   syntax K
   syntax JoinList ::= "{[" Proc ";" Int "]}"
+  syntax IdNum ::= Int ";" Int
   syntax Ground ::= Uri
   syntax Ground ::= String
   syntax Ground ::= Int
@@ -3898,7 +3903,6 @@ module GRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9
   syntax Collection ::= RhoSet
   syntax Collection ::= RhoMap
   syntax Collection ::= RhoList
-  syntax ChanNum ::= Name ";;" Int
   syntax ChanList ::= "(" Name ";" NameList ")"
   syntax ChanLen ::= "(" Name ";" Int ")"
   syntax Bundle ::= "bundle0" "{" Proc "}"
@@ -3935,11 +3939,11 @@ module GRHO-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(9,1,191,9
   syntax Bool ::= "isLbindList" "(" K ")"
   syntax Bool ::= "isLbind" "(" K ")"
   syntax Bool ::= "isJoinList" "(" K ")"
+  syntax Bool ::= "isIdNum" "(" K ")"
   syntax Bool ::= "isGround" "(" K ")"
   syntax Bool ::= "isEval" "(" K ")"
   syntax Bool ::= "isConsumableSend" "(" K ")"
   syntax Bool ::= "isCollection" "(" K ")"
-  syntax Bool ::= "isChanNum" "(" K ")"
   syntax Bool ::= "isChanList" "(" K ")"
   syntax Bool ::= "isChanLen" "(" K ")"
   syntax Bool ::= "isBundle" "(" K ")"
