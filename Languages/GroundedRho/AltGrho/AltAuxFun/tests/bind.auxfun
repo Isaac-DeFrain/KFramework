@@ -1,0 +1,7 @@
+// Bind reconstruction
+
+  #bind ( x ; a,b,c,d ;; 2 )
+
+/*
+  Output: a,b,c,d <! x
+*/

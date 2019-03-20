@@ -1,0 +1,5 @@
+// #in nametuple predicate
+
+  @Nil #in ( @1 , @"Nil" )
+
+// Output: false

@@ -9,10 +9,10 @@
 
 require "domains.k"
 require "substitution.k"
-require "AuxFun/auxfun.k"
+require "AltAuxFun/auxfun.k"
 
 // SYNTAX MODULE
-module GRHO-SYNTAX
+module ALTGRHO-SYNTAX
   import DOMAINS
   import SET
   import SUBSTITUTION
@@ -26,17 +26,13 @@ module GRHO-SYNTAX
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
-  syntax     Names ::= Name "," Name                                 // _,_: Name x Name ------> Names
-                     | Name "," Names                                // _,_: Name x Names -----> Names
-
-  syntax  NameList ::= Name                                          //  Name < NameList
-                     | Names                                         // Names < NameList
+  syntax     Names ::= List{Name,","}                [klabel(names)] // comma-separated name list
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
   syntax      Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --------> Proc
-	                   > New                                           //        New < Proc
+	 > New                                           //        New < Proc
                      > "Nil"                                         // Nil: -------------> Proc
                      | Collection                                    // Collection < Proc
                      | Ground                                        //     Ground < Proc
@@ -59,20 +55,17 @@ module GRHO-SYNTAX
 
   syntax  MultiRec ::= "for" "(" Binds ")" "{" Proc "}"              // for(_){_}: Binds x Proc ---> MultiRec
 
-  syntax     Lbind ::= NameList "<-" Name                            // for( y1,...,yN <- x ){ P }, explicit
+  syntax     Lbind ::= Names "<-" Name                               // for( y1,...,yN <- x ){ P }, explicit
 
-  syntax    Lbinds ::= Lbind ";" Lbind                               // 2 linear listens 
-                     | Lbind ";" Lbinds                              // N liner listens, N > 2
+  syntax    Lbinds ::= List{Lbind,";"}              [klabel(lbinds)] // linear bind list
 
-  syntax     Pbind ::= NameList "<!" Name                            // for( y1,...,yN <! x ){ P }, explicit
+  syntax     Pbind ::= Names "<!" Name                               // for( y1,...,yN <! x ){ P }, explicit
 
-  syntax    Pbinds ::= Pbind ";" Pbind                               // 2 peeks
-                     | Pbind ";" Pbinds                              // N peeks, N > 2
+  syntax    Pbinds ::= List{Pbind,";"}              [klabel(pbinds)] // peek bind list
 
-  syntax     Rbind ::= NameList "<=" Name                            // for( y1,...,yN <= x ){ P }, explicit
+  syntax     Rbind ::= Names "<=" Name                               // for( y1,...,yN <= x ){ P }, explicit
 
-  syntax    Rbinds ::= Rbind ";" Rbind                               // 2 repeated listens
-                     | Rbind ";" Rbinds                              // N repeated listens, N > 2
+  syntax    Rbinds ::= List{Rbind,";"}              [klabel(rbinds)] // repeated bind list
 
   syntax      Bind ::= Lbind                                         // single linear listen, implicit
                      | Pbind                                         // single peek, implicit
@@ -82,34 +75,24 @@ module GRHO-SYNTAX
                      | Pbinds                                        // peek binds ----- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
                      | Rbinds                                        // repeated binds - for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
 
-  syntax LbindList ::= Lbind                                         // single linear listen, implicit
-                     | Lbinds                                        // multiple linear listens, implicit
-
-  syntax PbindList ::= Pbind                                         // single peek, implicit
-                     | Pbinds                                        // multiple peeks, implicit
-
-  syntax RbindList ::= Rbind                                         // single repeated listen, implicit
-                     | Rbinds                                        // multiple repeated listens, implicit
-
-  syntax  BindList ::= Bind                                          // one listen
-                     | Binds                                         // multiple listens
-
 // Send
-  syntax      Send ::= Name "!"  RhoTuple                            //  _!_: Name x RhoTuple ---> Send, single send
-                     | Name "!!" RhoTuple                            // _!!_: Name x RhoTuple ---> Send, repeated send
+  syntax      Send ::= ConsumableSend                                //   ConsumableSend < Send
+                     | UnconsumableSend                              // UnConsumableSend < Send
+
+  syntax 
+    ConsumableSend ::= Name "!"  RhoTuple                            //  _!_: Name x RhoTuple ---> ConsumableSend
+
+  syntax
+  UnconsumableSend ::= Name "!!" RhoTuple                            // _!!_: Name x RhoTuple ---> UnconsumableSend
 
 // Eval
   syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
 
 // Several Processes
-  syntax     Procs ::= Proc "," Proc                                 // _,_: Proc x Proc ----> Procs
-                     | Proc "," Procs                                // _,_: Proc x Procs ---> Procs
-
-  syntax  ProcList ::= Proc
-                     | Procs
+  syntax     Procs ::= List{Proc,","}                [klabel(procs)] // process list
 
 // New
-  syntax       New ::= "new" NameList  "in" "{" Proc "}"    [binder] // create unforgeable name
+  syntax       New ::= "new" Names  "in" "{" Proc "}"       [binder] // create unforgeable name
 
 // Collections
   syntax
@@ -119,20 +102,21 @@ module GRHO-SYNTAX
                      | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax   RhoList ::= "[" ProcList   "]"                            // [_]: ProcList ----> RhoList
+  syntax   RhoList ::= "[" Procs      "]"                            // [_]: Procs --------> RhoList
 
 // Process maps
   syntax    RhoMap ::= "{" RhoKVPairs "}"                            // {_}: RhoKVPairs ---> RhoMap
 
+  syntax RhoKVPair ::= Proc ":" Proc                                 // _:_: Proc x Proc ----------------> RhoKVPair
+  
   syntax
-        RhoKVPairs ::= Proc ":" Proc                                 //   _:_: Proc x Proc ----------------> RhoKVPairs, single key-value pair
-                     | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
+        RhoKVPairs ::= List{RhoKVPair,","}                           // 
 
 // Process sets
-  syntax    RhoSet ::= "Set" "(" ProcList ")"                        // Set(_): ProcList ----> RhoSet
+  syntax    RhoSet ::= "Set" "(" Procs ")"                           // Set(_): Procs ----> RhoSet
 
 // Process tuples
-  syntax  RhoTuple ::= "(" ProcList ")"              [klabel(tuple)] // (_): ProcList ----> RhoTuple
+  syntax  RhoTuple ::= "(" Procs ")"                 [klabel(tuple)] // (_): Procs ----------> RhoTuple
 
 // Ground terms
   syntax    Ground ::= Bool                                          //   Bool < Ground
@@ -169,20 +153,20 @@ module GRHO-SYNTAX
                      | "bundle"  "{" Proc "}"                        // both read/write
 
 // For handling joins in configuration
-  syntax  JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
+  syntax  JoinList ::= "{[" Proc ";" Int  "]}"                       // for uniform join id
 
-  syntax   ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
+  syntax   ChanLen ::= "("  Name ";" Int   ")"                       // (listening channel ; number of variables to bind)
 
-  syntax  ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
+  syntax  ChanList ::= "("  Name ";" Names ")"                       // (listening channel ; variable(s) to bind)
 
-  syntax   BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
-                     | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
+  syntax   BindOcc ::= Name ";" Int    ";;" Int                      // listening channel; number of variables to bind; number of occurences
+                     | Name ";" Names  ";;" Int                      // listening channel; variable(s) to bind; number of occurences
 
   syntax      Proc ::= ChanLen                                       // for
                      | BindOcc                                       // auxfun
                      | JoinList                                      // definitions
 
-  syntax      List ::= List{Name,","}                [klabel(names)] // 
+  syntax      List ::= Names | Procs | Binds
 
   syntax KVariable ::= Names | Name
 
@@ -191,10 +175,10 @@ module GRHO-SYNTAX
 endmodule
 
 // SEMANTICS MODULE
-module GRHO
-  import GRHO-SYNTAX
+module ALTGRHO
+  import ALTGRHO-SYNTAX
   import SUBSTITUTION
-  import AUXFUN
+//  import AUXFUN
 
 //---------------------
 //--- CONFIGURATION ---
@@ -231,10 +215,6 @@ module GRHO
         <where> .K </where>                                          // binding variable(s)
       </reaction>                                                    // all comms are processed here
     </T>                                                             //
-/*
-  Add quarantine cell containing mainreact cell and reaction* cells for testing joins in comms
-  SendCellBag <=> send "environment"
-*/
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
@@ -261,7 +241,7 @@ module GRHO
   rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           //
        (.Bag => <thread> <k> P </k> </thread>)                       //
        (.Bag => <thread> <k> Q </k> </thread>)                       //
-
+/*
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
@@ -294,7 +274,7 @@ module GRHO
                   <rtype> #rtype(R) </rtype>                         // receive type
                   <cont>   #cont(R)  </cont>                         // continuation
                 </rec>)                                              //
-
+*/
 //-------------------
 //--- COMM EVENTS ---
 //-------------------

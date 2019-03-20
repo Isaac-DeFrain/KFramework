@@ -1,0 +1,9 @@
+// #ine predicate: Binds in Binds
+
+   t <- x ; a <- x ; t <- x
+  #ine
+  ( a <- x ; a,b,c <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; t <- x ; t <- x ; s,t <- y )
+
+/*
+  Output: true
+*/
