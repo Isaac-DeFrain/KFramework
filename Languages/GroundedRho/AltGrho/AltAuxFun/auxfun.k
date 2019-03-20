@@ -8,12 +8,12 @@ requires "../altgrho.k"
 module AUXFUN-SYNTAX
   import ALTGRHO-SYNTAX
 
-  syntax    Int ::= "#length"        RhoTuple                [function]  // #length: RhoTuple ------------------> Int
-                  | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
-                  | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
-                  | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
-                  | "#bnum"      "(" Bind  ")"               [function]  // #bnum(_): Bind ---------------------> Int
-                  | "#bnum"    "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
+  syntax    Int ::= "#length"     RhoTuple                   [function]  // #length: RhoTuple ------------------> Int
+                  | "#length" "(" Name     ")"               [function]  // #length(_): Name -------------------> Int
+                  | "#length" "(" Names    ")"               [function]  // #length(_): Names ------------------> Int
+                  | "#length" "(" Binds    ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#bnum"   "(" Bind     ")"               [function]  // #bnum(_): Bind ---------------------> Int
+                  | "#bnum"   "(" Receive  ")"               [function]  // #bnum(_): Receive ------------------> Int
                   | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send --------------------> Int
                   | "#rtype"  "(" Bind     ")"               [function]  // #rtype(_): Bind --------------------> Int
                   | "#rtype"  "(" Binds    ")"               [function]  // #rtype(_): Bind --------------------> Int
