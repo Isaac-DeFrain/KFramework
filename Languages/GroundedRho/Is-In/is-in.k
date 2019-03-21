@@ -12,7 +12,7 @@ module IS-IN-SYNTAX
   syntax    Bool ::= Type "#isIn"   Type     [function]
                    |      "#isName" Type     [function]
                    |      "#isProc" Type     [function]
-								   |      "#isPat"  Type     [function]
+                   |      "#isPat"  Type     [function]
 
 // Name, Process, Pattern types for #isName, #isProc, #isPat predicates
   syntax    Type ::= "Name"
@@ -53,8 +53,8 @@ module IS-IN
        type[ "par" ;; E:IntermediateType ;; F:IntermediateType ]
        => (type[ S ;; A ;; B ] #isIn E  andBool  type[ T ;; C ;; D ]   #isIn F) orBool
           (type[ S ;; A ;; B ] #isIn F  andBool  type[ T ;; C ;; D ]   #isIn E) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
            requires S =/=String "par" andBool T =/=String "par"
 
   rule type[ "par" ;; type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] ;; type[ T:String ;; C:Leaf ;; D:Leaf ] ]
@@ -62,8 +62,8 @@ module IS-IN
        type[ "par" ;; E:IntermediateType ;; F:IntermediateType ]
        => (type[ S ;; A ;; B ] #isIn E  andBool  type[ T ;; C ;; D ]   #isIn F) orBool
           (type[ S ;; A ;; B ] #isIn F  andBool  type[ T ;; C ;; D ]   #isIn E) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"]) 
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"]) 
            requires S =/=String "par"
 
   rule type[ "par" ;; type[ S:String ;; A:Leaf ;; B:Leaf ] ;; type[ T:String ;; C:IntermediateType ;; D:IntermediateType ] ]
@@ -71,8 +71,8 @@ module IS-IN
        type[ "par" ;; E:IntermediateType ;; F:IntermediateType ]
        => (type[ S ;; A ;; B ] #isIn E  andBool  type[ T ;; C ;; D ]   #isIn F) orBool
           (type[ S ;; A ;; B ] #isIn F  andBool  type[ T ;; C ;; D ]   #isIn E) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
            requires T =/=String "par"
 
   rule type[ "par" ;; type[ S:String ;; A:Leaf ;; B:Leaf ] ;; type[ T:String ;; C:Leaf ;; D:Leaf ] ]
@@ -80,8 +80,8 @@ module IS-IN
        type[ "par" ;; E:IntermediateType ;; F:IntermediateType ]
        => (type[ S ;; A ;; B ] #isIn E  andBool  type[ T ;; C ;; D ]   #isIn F) orBool
           (type[ S ;; A ;; B ] #isIn F  andBool  type[ T ;; C ;; D ]   #isIn E) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
-	        (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn E  andBool F ==K type[ "leaf" ;; "nil" ;; "Nil"]) orBool
+          (type[ "par" ;; type[ S ;; A ;; B ] ;; type[ T ;; C ;; D ] ] #isIn F  andBool E ==K type[ "leaf" ;; "nil" ;; "Nil"])
 
 // Par Recursion - several pars
   rule type[ "par" ;; type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] ;; C:IntermediateType ]
@@ -234,7 +234,7 @@ module IS-IN
           (S ==String "match"    andBool A #isIn Process                         ) orBool  // Match is in Process
           (S ==String "method"   andBool A #isIn Process                         ) orBool  // MethodProc is in Process
           (S ==String "par"      andBool A #isIn Process andBool B #isIn Process ) orBool  // Par is in Process
-	        (S ==String "send"     andBool A #isIn Name    andBool B #isIn Process ) orBool  // Send is in Process
+          (S ==String "send"     andBool A #isIn Name    andBool B #isIn Process ) orBool  // Send is in Process
           (S ==String "else"     andBool A #isIn Process andBool B #isIn Process ) orBool  // if...then Proc else Proc is in Process
           (S ==String "receive"  andBool                         B #isIn Process ) orBool  // Receive is in Process
           (S ==String "contract" andBool                         B #isIn Process ) orBool  // Contract is in Process
