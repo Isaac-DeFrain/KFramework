@@ -342,8 +342,7 @@ module GRHO
      <who>   .K => P   </who>                                          // 
      <what>  .K => Q  </what>                                          // 
      <where> .K => Y </where>                                          // 
-   </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
-                                                                [comm] //tagged "comm" for tracking nondeterminism
+   </reaction>                                                  [comm] //spawn single <thread/> holding fully substituted continuation
 
   rule                                                                 //consume single send, single receive
   (<rec>                                                               //consume single receive
@@ -363,8 +362,7 @@ module GRHO
      <who>   .K => P   </who>                                          // 
      <what>  .K => Q  </what>                                          // 
      <where> .K => Y </where>                                          // 
-   </reaction>                                                         //spawn single <thread/> holding fully substituted continuation
-                                                                [comm] //tagged "comm" for tracking nondeterminism
+   </reaction>                                                  [comm] //spawn single <thread/> holding fully substituted continuation
 
 // Persistent listen, linear send
   rule                                                                 //consume single send, keep persistent receive
@@ -503,9 +501,9 @@ module GRHO
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
-  rule   @ * N:Name => N                                   [anywhere]
+  rule   @ * N:Name => N                         [anywhere,structural] //
 
 // INVERSES
-  rule   * @ P:Proc => P                                   [anywhere]
+  rule   * @ P:Proc => P                         [anywhere,structural] //
 
 endmodule
