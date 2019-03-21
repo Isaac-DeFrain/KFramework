@@ -25,36 +25,36 @@ module JOIN
     <T color="purple">                                               // obligatory top cell
       <threads color="red">                                          //**process threads** (concurrent activity)
         <thread multiplicity="*">                                    // 
-          <k> $PGM:Proc </k>                                         // programs and computations are process-based; initial program parses as a Proc
+          <k> $PGM:Proc </k>                                         // programs and computations are process-based
         </thread>                                                    //
       </threads>                                                     //**tuplespace**
       <tuplespace color="blue">                                      // stores sends and receives
         <sends>                                                      //**sends**
-          <send color="cyan" multiplicity="*">                       // send cell contains:
-            <schan> .K </schan>                                      //  - sending channel
-            <msg>   .K   </msg>                                      //  - sent message
-            <tuple> .K </tuple>                                      //  - number of processes being sent
-            <stype> .K </stype>                                      //  - send type: 0 for single send (consumable), 1 for persistent send (unconsumable)
-            <sid>   .K   </sid>                                      //  - send id
-            <mlid> .Set </mlid>                                      //  - set of matching listen ids; for consumable sends, these listens will need to forget the send id when the send is consumed
+          <send color="cyan" multiplicity="*">                       //
+            <schan> .K </schan>                                      // sending channel (many messages on same channel)
+            <msg>   .K   </msg>                                      // sent message
+            <tuple> .K </tuple>                                      // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
+            <stype> .K </stype>                                      // 0 for single send (consumed), 1 for persistent send (not consumed)
+            <sid>   .K   </sid>                                      // send id
+            <mlid> .Set </mlid>                                      // set of matching listen ids; for consumable sends, these listens will need to forget the send id when it is consumed
           </send>                                                    //
         </sends>                                                     //
-        <receives>                                                   // **receives**
-          <rec color="yellow" multiplicity="*">                      // each receive cell contains:
-            <id>     .K     </id>                                    //  - id: makes it so only listens from the same receive (join) are packaged together and reaction info only comes from one receive at a time
-            <length> .K </length>                                    //  - number of listens in receive
-            <cont>   .K   </cont>                                    //  - continuation
-            <state>  .K  </state>                                    //  - state: "load" if initializing, "" if matching, "matched" if all listens have been matched and we're ready to move everything to <reaction/>, "collection" if currently moving info to <reaction/>
-            <match>  .K  </match>                                    //  - number of matches made: ensures that nothing is consumed prematurely
-            <type>   .K   </type>                                    //  - receieve type: 0 = linear (consumable), 1 = persistent (unconsumable), 2 = peek (consumable)
-            <nomo>  .Set  </nomo>                                    //  - set of send ids not to match with (because they are consumable and have already been matched by a listen in this receive)
-            <listens>                                                //  - bag of listens
-              <listen multiplicity="*">                              //    each listen contains:
-                <chan>  .K  </chan>                                  //     - receiving channel
-                <vars>  .K  </vars>                                  //     - binding varible(s) in continuation
-                <num>   .K   </num>                                  //     - number of variables to bind
-                <lid>   .K   </lid>                                  //     - listen id
-                <msid>  .K  </msid>                                  //     - id of matched send
+        <receives>                                                   //
+          <rec color="yellow" multiplicity="*">                      // each receive is a bag of listens and a continuation
+            <id>     .K     </id>                                    // receive id - ensures that only listens from the same receive are packaged together and reaction info only comes from one receive at a time
+            <length> .K </length>                                    // number of listens in receive
+            <cont>   .K   </cont>                                    // continuation
+            <state>  .K  </state>                                    // "load" if initializing, "" if matching, "matched" if all listens have been matched and we're ready to move everything to <reaction/>, "collection" if currently moving info to <reaction/>
+            <match>  .K  </match>                                    // number of matches made
+            <type>   .K   </type>                                    // 0 = linear (consumable), 1 = persistent (consumable), 2 = peek (consumable)
+            <nomo>  .Set  </nomo>                                    // set of send ids not to match further with (because they are consumable and have already been matched by a listen in the receive)
+            <listens>                                                // 
+              <listen multiplicity="*">                              // bag of listens
+                <chan>  .K  </chan>                                  // receiving channel (many messages on same channel)
+                <vars>  .K  </vars>                                  // binding varible(s) in continuation
+                <num>   .K   </num>                                  // number of bindings
+                <lid>   .K   </lid>                                  // listen id
+                <msid>  .K  </msid>                                  // id of matched send
               </listen>                                              // 
             </listens>                                               // 
           </rec>                                                     // 
@@ -67,11 +67,11 @@ module JOIN
         <rid>   .K      </rid>                                       // receive id; which receive is info being collected from
         <rnum>  .K     </rnum>                                       // reaction count
         <react> .K    </react>                                       // "collect" = collect relevant info from send(s) and receive, "forget" = forget send ids, "react" = substitute (allows multiple sends to be collected for joins)
-        <forg>  .K     </forg>                                       // set of listen ids which need to forget a consumed send id
+        <forg>  .K     </forg>                                       // set of listen ids which need to forget the consumed send id
       </reaction>                                                    // once a comm is identified, all components are move here and all relevant cells are dissolved
-    </T>                                                             //
+    </T>                                                             // 
 
-  syntax KResult ::= Ground | Eval                                   // 
+  syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] //
@@ -558,7 +558,7 @@ module JOIN
         <cont>        _            </cont>                           // 
         <state>       _           </state>                           // 
         <match> M:Int => M -Int 1 </match>                           // decrease match count
-        <type>  N:Set => N -Set SetItem(I) </type>                   // forget send id from nomo set
+        <type>        _            </type>                           // 
         <nomo>        _            </nomo>                           // 
         <listens>...                                                 // 
           <listen>                                                   // 
@@ -658,10 +658,9 @@ module JOIN
 //----------------------
 //--- Comm Semantics ---
 //----------------------
+// Initialize reaction cell
 
-//--------------------------------
-//--- Initialize reaction cell ---
-//--------------------------------
+// First...
 // Consumable sends (send id forgotten by all other listens, if there are any)
 // Linear listens
 // 1-tuple message
@@ -753,10 +752,10 @@ module JOIN
       <cont>     P:Proc     </cont>                                  // 
       <state> "collection" </state>                                  // 
       <match>    L         </match>                                  // 
-      <type>     1          </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <type>     1          </type>                                  // 
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
-         <listen>                                                    // 
+         <listen>                                                    // repeated
            <chan> X:Name      </chan>                                // 
            <vars> Y:Name      </vars>                                // 
            <num>  1            </num>                                // 
@@ -794,7 +793,7 @@ module JOIN
       <state> "collection" </state>                                  // 
       <match>    L         </match>                                  // 
       <type>     1          </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // only dissolve consumable listens, T =/= 1
           <chan> X:Name      </chan>                                 // 
@@ -988,11 +987,9 @@ module JOIN
       <forg>     .Set    </forg>                                     // send will not be consumed
     </reaction>                                         [initialize] // 
 
-/////////////////////////////////////////////////////////////////////
-//////////                                                 //////////
-////////// COLLECTION - after reaction cell is initialized //////////
-//////////                                                 //////////
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// COLLECTION - after reaction is initialized
+// 
 // Linear Receives & Consumable Sends
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
@@ -1157,9 +1154,7 @@ module JOIN
     </reaction>                                                      // 
     requires L >Int U                                      [collect] // 
 
-//----------------------------------------------
-//--- Persistent Receives & Consumable Sends ---
-//----------------------------------------------
+// Persistent Receives & Consumable Sends
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
   rule
@@ -1170,7 +1165,7 @@ module JOIN
       <state> "collection" </state>                                  // "collection" receives populate <reaction/>
       <match>    L         </match>                                  // 
       <type>     1          </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name      </chan>                                 // 
@@ -1210,7 +1205,7 @@ module JOIN
       <state> "collection" </state>                                  // "collection" receives populate <reaction/>
       <match>    L         </match>                                  // 
       <type>     1          </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name      </chan>                                 // 
@@ -1250,7 +1245,7 @@ module JOIN
       <state> "collection" </state>                                  // "collection" receives populate <reaction/>
       <match>    L         </match>                                  // 
       <type>     1          </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <nomo>     _          </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name      </chan>                                 // 
@@ -1291,7 +1286,7 @@ module JOIN
       <state> "collection" </state>                                  // "collecting" receives populate <reaction/>
       <match>     L        </match>                                  // 
       <type>      1         </type>                                  // repeated
-      <nomo> N:Set => N -Set SetItme(I) </nomo>                      // nomo set forgets send id
+      <nomo>      _         </nomo>                                  // 
       <listens>...                                                   // 
         <listen>                                                     // 
           <chan> X:Name      </chan>                                 // 
@@ -1322,10 +1317,8 @@ module JOIN
       <forg>       .Set => S -Set SetItem(V) </forg>                 // these listen ids will forget I
     </reaction>                                                      // 
     requires L >Int U                                      [collect] // 
-
-//------------------------------------
-//--- Peeking Receives & any Sends ---
-//------------------------------------
+    
+// Peeking Receives & any Sends
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
   rule
@@ -1488,10 +1481,8 @@ module JOIN
       <forg>         .Set              </forg>                       // send is not consumed so no listens need to forget
     </reaction>                                                      // 
     requires L >Int U                                      [collect] // 
-
-//---------------------------------------------------------
-//--- Unconsumable Sends & Receives with Linear Listens ---
-//---------------------------------------------------------
+    
+// Unconsumable Sends & Receives with Linear Listens
 // single name and proc currently in <reaction/>
 // adding single name and proc (consumable listen)
   rule

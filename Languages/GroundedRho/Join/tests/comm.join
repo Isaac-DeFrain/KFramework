@@ -1,6 +1,6 @@
 // Join - only listening for 1- and 2-tuples
 
-  x!(1,1,1) | x!(2,2,2) | y!("a") | y!("b") | z!(true) | z!(false) | for( a1,b1,e1 <- x ; c1 <- y ; d1 <- z ){ ( *a1 , *b1 , *c1 , *d1 , *e1 ) } | for( a2,b2,e2 <= x ; c2 <= y ; d2 <= z ){ [*a2 , *b2 , *c2 , *d2 , *e2 ] }
+  x!(1,1,1) | x!(2,2,2) | y!("b") | y!("a") | z!(true) | z!(false) | for( a1,b1,e1 <- x ; c1 <- y ; d1 <- z ){ ( *a1 , *b1 , *c1 , *d1 , *e1 ) } | for( a2,b2,e2 <= x ; c2 <= y ; d2 <= z ){ [*a2 , *b2 , *c2 , *d2 , *e2 ] }
   
 /*
   Output:
@@ -11,11 +11,131 @@ $ krun tests/comm.join --search-final
     <threads>
       <thread>
         <k>
-          ( 1 , 1 , "b" , false , 1 )
+          ( 1 , 1 , "b" , true , 1 )
         </k>
       </thread> <thread>
         <k>
-          [ 2 , 2 , "a" , true , 2 ]
+          [ 2 , 2 , "a" , false , 2 ]
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        .SendCellBag
+      </sends>
+      <receives>
+        <rec>
+          <id>
+            1
+          </id>
+          <length>
+            3
+          </length>
+          <cont>
+            [ * a2 , * b2 , * c2 , * d2 , * e2 ]
+          </cont>
+          <state>
+            ""
+          </state>
+          <match>
+            0
+          </match>
+          <type>
+            1
+          </type>
+          <nomo>
+            SetItem ( 13 )
+            SetItem ( 15 )
+            SetItem ( 16 )
+          </nomo>
+          <listens>
+            <listen>
+              <chan>
+                x
+              </chan>
+              <vars>
+                a2 , b2 , e2
+              </vars>
+              <num>
+                3
+              </num>
+              <lid>
+                3
+              </lid>
+              <msid>
+                ""
+              </msid>
+            </listen> <listen>
+              <chan>
+                y
+              </chan>
+              <vars>
+                c2
+              </vars>
+              <num>
+                1
+              </num>
+              <lid>
+                4
+              </lid>
+              <msid>
+                ""
+              </msid>
+            </listen> <listen>
+              <chan>
+                z
+              </chan>
+              <vars>
+                d2
+              </vars>
+              <num>
+                1
+              </num>
+              <lid>
+                5
+              </lid>
+              <msid>
+                ""
+              </msid>
+            </listen>
+          </listens>
+        </rec>
+      </receives>
+    </tuplespace>
+    <reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <rid>
+        .
+      </rid>
+      <rnum>
+        .
+      </rnum>
+      <react>
+        .
+      </react>
+      <forg>
+        .
+      </forg>
+    </reaction>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          ( 2 , 2 , "a" , false , 2 )
+        </k>
+      </thread> <thread>
+        <k>
+          [ 1 , 1 , "b" , true , 1 ]
         </k>
       </thread>
     </threads>
@@ -119,9 +239,9 @@ $ krun tests/comm.join --search-final
       <react>
         .
       </react>
-      <reat>
+      <forg>
         .
-      </reat>
+      </forg>
     </reaction>
   </T>
 #Or
@@ -129,131 +249,11 @@ $ krun tests/comm.join --search-final
     <threads>
       <thread>
         <k>
-          ( 2 , 2 , "a" , true , 2 )
+          [ 1 , 1 , "b" , true , 1 ]
         </k>
       </thread> <thread>
         <k>
-          [ 1 , 1 , "b" , false , 1 ]
-        </k>
-      </thread>
-    </threads>
-    <tuplespace>
-      <sends>
-        .SendCellBag
-      </sends>
-      <receives>
-        <rec>
-          <id>
-            1
-          </id>
-          <length>
-            3
-          </length>
-          <cont>
-            [ * a2 , * b2 , * c2 , * d2 , * e2 ]
-          </cont>
-          <state>
-            ""
-          </state>
-          <match>
-            0
-          </match>
-          <type>
-            1
-          </type>
-          <nomo>
-            SetItem ( 12 )
-            SetItem ( 14 )
-            SetItem ( 19 )
-          </nomo>
-          <listens>
-            <listen>
-              <chan>
-                x
-              </chan>
-              <vars>
-                a2 , b2 , e2
-              </vars>
-              <num>
-                3
-              </num>
-              <lid>
-                3
-              </lid>
-              <msid>
-                ""
-              </msid>
-            </listen> <listen>
-              <chan>
-                y
-              </chan>
-              <vars>
-                c2
-              </vars>
-              <num>
-                1
-              </num>
-              <lid>
-                4
-              </lid>
-              <msid>
-                ""
-              </msid>
-            </listen> <listen>
-              <chan>
-                z
-              </chan>
-              <vars>
-                d2
-              </vars>
-              <num>
-                1
-              </num>
-              <lid>
-                5
-              </lid>
-              <msid>
-                ""
-              </msid>
-            </listen>
-          </listens>
-        </rec>
-      </receives>
-    </tuplespace>
-    <reaction>
-      <who>
-        .
-      </who>
-      <what>
-        .
-      </what>
-      <where>
-        .
-      </where>
-      <rid>
-        .
-      </rid>
-      <rnum>
-        .
-      </rnum>
-      <react>
-        .
-      </react>
-      <reat>
-        .
-      </reat>
-    </reaction>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      <thread>
-        <k>
-          [ 1 , 1 , "b" , false , 1 ]
-        </k>
-      </thread> <thread>
-        <k>
-          [ 2 , 2 , "a" , true , 2 ]
+          [ 2 , 2 , "a" , false , 2 ]
         </k>
       </thread>
     </threads>
@@ -355,12 +355,12 @@ $ krun tests/comm.join --search-final
             0
           </type>
           <nomo>
-            SetItem ( 11 )
             SetItem ( 12 )
             SetItem ( 13 )
             SetItem ( 14 )
             SetItem ( 15 )
-            SetItem ( 19 )
+            SetItem ( 16 )
+            SetItem ( 18 )
           </nomo>
           <listens>
             <listen>
@@ -374,7 +374,7 @@ $ krun tests/comm.join --search-final
                 3
               </num>
               <lid>
-                7
+                9
               </lid>
               <msid>
                 ""
@@ -390,7 +390,7 @@ $ krun tests/comm.join --search-final
                 1
               </num>
               <lid>
-                9
+                10
               </lid>
               <msid>
                 ""
@@ -406,7 +406,7 @@ $ krun tests/comm.join --search-final
                 1
               </num>
               <lid>
-                10
+                11
               </lid>
               <msid>
                 ""
@@ -435,9 +435,9 @@ $ krun tests/comm.join --search-final
       <react>
         .
       </react>
-      <reat>
+      <forg>
         .
-      </reat>
+      </forg>
     </reaction>
   </T>
 */
