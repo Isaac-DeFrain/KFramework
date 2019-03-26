@@ -39,6 +39,7 @@ module KSYNTAX-SYNTAX
 
   syntax  Cell ::= "function1(" Int ")"   [function]  // 
 
+  syntax   Set ::= "Meta" "(" Exp ")"     [function]  // metavariables
 
 endmodule
 
@@ -53,15 +54,6 @@ module KSYNTAX
     <b>
       <k multiplicity="*"> $PGM:K </k>
     </b>
-    <c>
-      <d>
-        <e>
-          <f multplicity="*"> .K </f>
-        </e>
-	<g> .K </g>
-	<h> .K </h>
-      </d>
-    </c>
   </T>
 
 // Arithmetic Expressions
@@ -88,9 +80,6 @@ module KSYNTAX
 
   rule false implies _:Bool => true
   rule true  implies B:Bool => B
-
-// Other Expressions
-  rule X:Other + Y:Other => X:List Y:List
 
 // Conditional
   rule if true  then X:Exp else _:Exp fi => X
