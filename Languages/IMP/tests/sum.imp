@@ -1,0 +1,1 @@
+int s , n ; n = 100 ; while (n) { s = s + n ; n = n - 1 ; }
