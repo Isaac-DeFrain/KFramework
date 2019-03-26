@@ -14,26 +14,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             1 , 2
@@ -55,16 +36,151 @@ $ krun tests/comm2.join --search-final
             x
           </schan>
           <msg>
-            3 , 2 , 1
+            1 , 1
           </msg>
           <tuple>
-            3
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
+          </sid>
+          <mlid>
+            SetItem ( 3 )
+          </mlid>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <id>
+            4
+          </id>
+          <length>
+            1
+          </length>
+          <cont>
+            peek ! ( * a , * b )
+          </cont>
+          <state>
+            "collection"
+          </state>
+          <match>
+            1
+          </match>
+          <type>
+            2
+          </type>
+          <nomo>
+            SetItem ( 21 )
+          </nomo>
+          <listens>
+            <listen>
+              <chan>
+                x
+              </chan>
+              <vars>
+                a , b
+              </vars>
+              <num>
+                2
+              </num>
+              <lid>
+                3
+              </lid>
+              <msid>
+                21
+              </msid>
+            </listen>
+          </listens>
+        </rec>
+      </receives>
+    </tuplespace>
+    <reaction>
+      <who>
+        peek ! ( * a , * b )
+      </who>
+      <what>
+        ""
+      </what>
+      <where>
+        ""
+      </where>
+      <rid>
+        4
+      </rid>
+      <rnum>
+        0
+      </rnum>
+      <react>
+        "collect"
+      </react>
+      <forg>
+        .Set
+      </forg>
+    </reaction>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      .ThreadCellBag
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            linear
+          </schan>
+          <msg>
+            1 , 2
+          </msg>
+          <tuple>
+            2
           </tuple>
           <stype>
             0
           </stype>
           <sid>
-            38
+            34
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
+        </send> <send>
+          <schan>
+            peek
+          </schan>
+          <msg>
+            2 , 2
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+          <sid>
+            26
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
+        </send> <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            1 , 1
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
           </sid>
           <mlid>
             .Set
@@ -108,26 +224,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             1 , 2
@@ -146,19 +243,38 @@ $ krun tests/comm2.join --search-final
           </mlid>
         </send> <send>
           <schan>
-            x
+            peek
           </schan>
           <msg>
-            4 , 2 , 2
+            2 , 2
           </msg>
           <tuple>
-            3
+            2
           </tuple>
           <stype>
             0
           </stype>
           <sid>
-            26
+            28
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
+        </send> <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            1 , 1
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
           </sid>
           <mlid>
             .Set
@@ -202,26 +318,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             1 , 2
@@ -240,107 +337,13 @@ $ krun tests/comm2.join --search-final
           </mlid>
         </send> <send>
           <schan>
-            x
+            peek
           </schan>
           <msg>
-            4 , 2 , 2
-          </msg>
-          <tuple>
-            3
-          </tuple>
-          <stype>
-            0
-          </stype>
-          <sid>
-            28
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send>
-      </sends>
-      <receives>
-        .RecCellBag
-      </receives>
-    </tuplespace>
-    <reaction>
-      <who>
-        .
-      </who>
-      <what>
-        .
-      </what>
-      <where>
-        .
-      </where>
-      <rid>
-        .
-      </rid>
-      <rnum>
-        .
-      </rnum>
-      <react>
-        .
-      </react>
-      <forg>
-        .
-      </forg>
-    </reaction>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      .ThreadCellBag
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
+            2 , 2
           </msg>
           <tuple>
             2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            1 , 2
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            0
-          </stype>
-          <sid>
-            39
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            4 , 2 , 2
-          </msg>
-          <tuple>
-            3
           </tuple>
           <stype>
             0
@@ -351,6 +354,25 @@ $ krun tests/comm2.join --search-final
           <mlid>
             .Set
           </mlid>
+        </send> <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            1 , 1
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
         </send>
       </sends>
       <receives>
@@ -390,26 +412,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             2 , 1
@@ -431,62 +434,6 @@ $ krun tests/comm2.join --search-final
             x
           </schan>
           <msg>
-            3 , 1 , 2
-          </msg>
-          <tuple>
-            3
-          </tuple>
-          <stype>
-            0
-          </stype>
-          <sid>
-            33
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send>
-      </sends>
-      <receives>
-        .RecCellBag
-      </receives>
-    </tuplespace>
-    <reaction>
-      <who>
-        .
-      </who>
-      <what>
-        .
-      </what>
-      <where>
-        .
-      </where>
-      <rid>
-        .
-      </rid>
-      <rnum>
-        .
-      </rnum>
-      <react>
-        .
-      </react>
-      <forg>
-        .
-      </forg>
-    </reaction>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      .ThreadCellBag
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
             1 , 1
           </msg>
           <tuple>
@@ -499,11 +446,89 @@ $ krun tests/comm2.join --search-final
             21
           </sid>
           <mlid>
-            .Set
+            SetItem ( 3 )
           </mlid>
-        </send> <send>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <id>
+            4
+          </id>
+          <length>
+            1
+          </length>
+          <cont>
+            peek ! ( * a , * b )
+          </cont>
+          <state>
+            "collection"
+          </state>
+          <match>
+            1
+          </match>
+          <type>
+            2
+          </type>
+          <nomo>
+            SetItem ( 21 )
+          </nomo>
+          <listens>
+            <listen>
+              <chan>
+                x
+              </chan>
+              <vars>
+                a , b
+              </vars>
+              <num>
+                2
+              </num>
+              <lid>
+                3
+              </lid>
+              <msid>
+                21
+              </msid>
+            </listen>
+          </listens>
+        </rec>
+      </receives>
+    </tuplespace>
+    <reaction>
+      <who>
+        peek ! ( * a , * b )
+      </who>
+      <what>
+        ""
+      </what>
+      <where>
+        ""
+      </where>
+      <rid>
+        4
+      </rid>
+      <rnum>
+        0
+      </rnum>
+      <react>
+        "collect"
+      </react>
+      <forg>
+        .Set
+      </forg>
+    </reaction>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      .ThreadCellBag
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
           <schan>
-            x
+            linear
           </schan>
           <msg>
             2 , 1
@@ -515,7 +540,26 @@ $ krun tests/comm2.join --search-final
             0
           </stype>
           <sid>
-            34
+            33
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
+        </send> <send>
+          <schan>
+            peek
+          </schan>
+          <msg>
+            2 , 2
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+          <sid>
+            26
           </sid>
           <mlid>
             .Set
@@ -525,16 +569,16 @@ $ krun tests/comm2.join --search-final
             x
           </schan>
           <msg>
-            4 , 2 , 2
+            1 , 1
           </msg>
           <tuple>
-            3
+            2
           </tuple>
           <stype>
-            0
+            1
           </stype>
           <sid>
-            27
+            21
           </sid>
           <mlid>
             .Set
@@ -578,26 +622,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             2 , 1
@@ -616,19 +641,38 @@ $ krun tests/comm2.join --search-final
           </mlid>
         </send> <send>
           <schan>
-            x
+            peek
           </schan>
           <msg>
-            4 , 2 , 2
+            2 , 2
           </msg>
           <tuple>
-            3
+            2
           </tuple>
           <stype>
             0
           </stype>
           <sid>
-            26
+            27
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
+        </send> <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            1 , 1
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
           </sid>
           <mlid>
             .Set
@@ -672,26 +716,7 @@ $ krun tests/comm2.join --search-final
       <sends>
         <send>
           <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send> <send>
-          <schan>
-            x
+            linear
           </schan>
           <msg>
             2 , 1
@@ -703,20 +728,20 @@ $ krun tests/comm2.join --search-final
             0
           </stype>
           <sid>
-            40
+            38
           </sid>
           <mlid>
             .Set
           </mlid>
         </send> <send>
           <schan>
-            x
+            peek
           </schan>
           <msg>
-            4 , 2 , 2
+            2 , 2
           </msg>
           <tuple>
-            3
+            2
           </tuple>
           <stype>
             0
@@ -727,6 +752,25 @@ $ krun tests/comm2.join --search-final
           <mlid>
             .Set
           </mlid>
+        </send> <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            1 , 1
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            1
+          </stype>
+          <sid>
+            21
+          </sid>
+          <mlid>
+            .Set
+          </mlid>
         </send>
       </sends>
       <receives>
@@ -814,7 +858,7 @@ $ krun tests/comm2.join --search-final
             1
           </length>
           <cont>
-            x ! ( * a + * b , * b , * a )
+            peek ! ( * a , * b )
           </cont>
           <state>
             "collection"
@@ -855,7 +899,7 @@ $ krun tests/comm2.join --search-final
             2
           </length>
           <cont>
-            x ! ( * a , * c )
+            linear ! ( * a , * c )
           </cont>
           <state>
             ""
@@ -909,7 +953,7 @@ $ krun tests/comm2.join --search-final
     </tuplespace>
     <reaction>
       <who>
-        x ! ( * a + * b , * b , * a )
+        peek ! ( * a , * b )
       </who>
       <what>
         ""
@@ -988,7 +1032,7 @@ $ krun tests/comm2.join --search-final
             1
           </length>
           <cont>
-            x ! ( * a + * b , * b , * a )
+            peek ! ( * a , * b )
           </cont>
           <state>
             "collection"
@@ -1029,7 +1073,7 @@ $ krun tests/comm2.join --search-final
             2
           </length>
           <cont>
-            x ! ( * a , * c )
+            linear ! ( * a , * c )
           </cont>
           <state>
             ""
@@ -1083,239 +1127,7 @@ $ krun tests/comm2.join --search-final
     </tuplespace>
     <reaction>
       <who>
-        x ! ( * a + * b , * b , * a )
-      </who>
-      <what>
-        ""
-      </what>
-      <where>
-        ""
-      </where>
-      <rid>
-        4
-      </rid>
-      <rnum>
-        0
-      </rnum>
-      <react>
-        "collect"
-      </react>
-      <forg>
-        .Set
-      </forg>
-    </reaction>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      .ThreadCellBag
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            SetItem ( 3 )
-          </mlid>
-        </send> <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            1 , 2
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            0
-          </stype>
-          <sid>
-            32
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send>
-      </sends>
-      <receives>
-        <rec>
-          <id>
-            4
-          </id>
-          <length>
-            1
-          </length>
-          <cont>
-            x ! ( * a + * b , * b , * a )
-          </cont>
-          <state>
-            "collection"
-          </state>
-          <match>
-            1
-          </match>
-          <type>
-            2
-          </type>
-          <nomo>
-            SetItem ( 21 )
-          </nomo>
-          <listens>
-            <listen>
-              <chan>
-                x
-              </chan>
-              <vars>
-                a , b
-              </vars>
-              <num>
-                2
-              </num>
-              <lid>
-                3
-              </lid>
-              <msid>
-                21
-              </msid>
-            </listen>
-          </listens>
-        </rec>
-      </receives>
-    </tuplespace>
-    <reaction>
-      <who>
-        x ! ( * a + * b , * b , * a )
-      </who>
-      <what>
-        ""
-      </what>
-      <where>
-        ""
-      </where>
-      <rid>
-        4
-      </rid>
-      <rnum>
-        0
-      </rnum>
-      <react>
-        "collect"
-      </react>
-      <forg>
-        .Set
-      </forg>
-    </reaction>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      .ThreadCellBag
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            1 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            1
-          </stype>
-          <sid>
-            21
-          </sid>
-          <mlid>
-            SetItem ( 3 )
-          </mlid>
-        </send> <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            2 , 1
-          </msg>
-          <tuple>
-            2
-          </tuple>
-          <stype>
-            0
-          </stype>
-          <sid>
-            31
-          </sid>
-          <mlid>
-            .Set
-          </mlid>
-        </send>
-      </sends>
-      <receives>
-        <rec>
-          <id>
-            4
-          </id>
-          <length>
-            1
-          </length>
-          <cont>
-            x ! ( * a + * b , * b , * a )
-          </cont>
-          <state>
-            "collection"
-          </state>
-          <match>
-            1
-          </match>
-          <type>
-            2
-          </type>
-          <nomo>
-            SetItem ( 21 )
-          </nomo>
-          <listens>
-            <listen>
-              <chan>
-                x
-              </chan>
-              <vars>
-                a , b
-              </vars>
-              <num>
-                2
-              </num>
-              <lid>
-                3
-              </lid>
-              <msid>
-                21
-              </msid>
-            </listen>
-          </listens>
-        </rec>
-      </receives>
-    </tuplespace>
-    <reaction>
-      <who>
-        x ! ( * a + * b , * b , * a )
+        peek ! ( * a , * b )
       </who>
       <what>
         ""
@@ -1393,7 +1205,7 @@ $ krun tests/comm2.join --search-final
             1
           </length>
           <cont>
-            x ! ( * a + * b , * b , * a )
+            peek ! ( * a , * b )
           </cont>
           <state>
             "collection"
@@ -1434,7 +1246,7 @@ $ krun tests/comm2.join --search-final
             2
           </length>
           <cont>
-            x ! ( * a , * c )
+            linear ! ( * a , * c )
           </cont>
           <state>
             ""
@@ -1488,7 +1300,7 @@ $ krun tests/comm2.join --search-final
     </tuplespace>
     <reaction>
       <who>
-        x ! ( * a + * b , * b , * a )
+        peek ! ( * a , * b )
       </who>
       <what>
         ""
@@ -1566,7 +1378,7 @@ $ krun tests/comm2.join --search-final
             1
           </length>
           <cont>
-            x ! ( * a + * b , * b , * a )
+            peek ! ( * a , * b )
           </cont>
           <state>
             "collection"
@@ -1607,7 +1419,7 @@ $ krun tests/comm2.join --search-final
             2
           </length>
           <cont>
-            x ! ( * a , * c )
+            linear ! ( * a , * c )
           </cont>
           <state>
             ""
@@ -1661,7 +1473,7 @@ $ krun tests/comm2.join --search-final
     </tuplespace>
     <reaction>
       <who>
-        x ! ( * a + * b , * b , * a )
+        peek ! ( * a , * b )
       </who>
       <what>
         ""
@@ -1739,7 +1551,7 @@ $ krun tests/comm2.join --search-final
             1
           </length>
           <cont>
-            x ! ( * a + * b , * b , * a )
+            peek ! ( * a , * b )
           </cont>
           <state>
             "collection"
@@ -1780,7 +1592,7 @@ $ krun tests/comm2.join --search-final
             2
           </length>
           <cont>
-            x ! ( * a , * c )
+            linear ! ( * a , * c )
           </cont>
           <state>
             ""
@@ -1834,7 +1646,7 @@ $ krun tests/comm2.join --search-final
     </tuplespace>
     <reaction>
       <who>
-        x ! ( * a + * b , * b , * a )
+        peek ! ( * a , * b )
       </who>
       <what>
         ""

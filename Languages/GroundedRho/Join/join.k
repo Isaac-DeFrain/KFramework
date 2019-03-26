@@ -31,26 +31,26 @@ module JOIN
       <tuplespace color="blue">                                      // stores sends and receives
         <sends>                                                      //**sends**
           <send color="cyan" multiplicity="*">                       //
-            <schan> .K </schan>                                      // sending channel (many messages on same channel)
+            <schan> .K </schan>                                      // sending channel
             <msg>   .K   </msg>                                      // sent message
-            <tuple> .K </tuple>                                      // equals N if N-tuple (Proc is "0-tuple") - this will ensure matching with the right pattern
+            <tuple> .K </tuple>                                      // equals N if N-tuple (Proc is 1-tuple) - ensures matching with the right listen pattern
             <stype> .K </stype>                                      // 0 for single send (consumed), 1 for persistent send (not consumed)
             <sid>   .K   </sid>                                      // send id
             <mlid> .Set </mlid>                                      // set of matching listen ids; for consumable sends, these listens will need to forget the send id when it is consumed
           </send>                                                    //
         </sends>                                                     //
-        <receives>                                                   //
-          <rec color="yellow" multiplicity="*">                      // each receive is a bag of listens and a continuation
+        <receives>                                                   //**receives**
+          <rec color="yellow" multiplicity="*">                      // *receive*
             <id>     .K     </id>                                    // receive id - ensures that only listens from the same receive are packaged together and reaction info only comes from one receive at a time
             <length> .K </length>                                    // number of listens in receive
             <cont>   .K   </cont>                                    // continuation
             <state>  .K  </state>                                    // "load" if initializing, "" if matching, "matched" if all listens have been matched and we're ready to move everything to <reaction/>, "collection" if currently moving info to <reaction/>
             <match>  .K  </match>                                    // number of matches made
-            <type>   .K   </type>                                    // 0 = linear (consumable), 1 = persistent (consumable), 2 = peek (consumable)
-            <nomo>  .Set  </nomo>                                    // set of send ids not to match further with (because they are consumable and have already been matched by a listen in the receive)
-            <listens>                                                // 
+            <type>   .K   </type>                                    // 0 = linear (consumable), 1 = persistent (unconsumable), 2 = peek (consumable)
+            <nomo>  .Set  </nomo>                                    // set of send ids not to match further with because they have already been matched by a listen in the receive
+            <listens>                                                // *listens*
               <listen color="green" multiplicity="*">                // bag of listens
-                <chan>  .K  </chan>                                  // receiving channel (many messages on same channel)
+                <chan>  .K  </chan>                                  // receiving channel
                 <vars>  .K  </vars>                                  // binding varible(s) in continuation
                 <num>   .K   </num>                                  // number of bindings
                 <lid>   .K   </lid>                                  // listen id
@@ -134,7 +134,6 @@ module JOIN
                     </listen>                                        // 
                   </listens>                                         // 
                 </rec>)                                       [load] // 
-
 /* 
    --- Joins (Multiple Listen Receives) are immediately id wrapped ---
    For joins, we initialize a rec cell containing a fresh rec id, number of listens, continuation, loading comm status, match count of 0, 
@@ -315,13 +314,14 @@ module JOIN
 //----------------------------------
 //--- Send/Listen Matching Rules ---
 //----------------------------------
-/* When a listen matches a send, three things happen simultaneously:
+/* When a listen matches a send, four things happen simultaneously:
    1. The match count is increased.
    2. If the send is consumable, the send id is added to nomo set (so it cannot also be matched by another listen in this join). 
       If the send is unconsumable, the id is NOT added to the nomo set (so it can be matched again by another listen in this join).
    3. The matched listen has the matching send id written in its <msid/> (so it doesn't match another send).
+   4. The matched send adds the matching listen id to <mlid/>
 */
-// Consumable sends (add id to nomo set)
+// Consumable sends
 // 1-tuple
   rule
     <rec>...                                                         // 
@@ -349,7 +349,7 @@ module JOIN
       <sid>   I:Int   </sid>                                         // 
       <mlid>... .Set => SetItem(J) </mlid>                           // 
     </send>                                                          // 
-    <reaction>                                                       // reaction cell must be empty
+    <reaction>                                                       // reaction cell must be empty for matching to occur
       <who>   .K   </who>                                            // 
       <what>  .K  </what>                                            // 
       <where> .K </where>                                            // 
@@ -387,7 +387,7 @@ module JOIN
       <sid>   I:Int   </sid>                                         // 
       <mlid>... .Set => SetItem(J) </mlid>                           // 
     </send>                                                          // 
-    <reaction>                                                       // reaction cell must be empty
+    <reaction>                                                       // reaction cell must be empty for matching to occur
       <who>   .K   </who>                                            // 
       <what>  .K  </what>                                            // 
       <where> .K </where>                                            // 
@@ -447,15 +447,10 @@ module JOIN
       <length>    L:Int   </length>                                  // 
       <cont>        _       </cont>                                  // 
       <state> "collection" </state>                                  // 
-      <match>       _      </match>                                  // 
-      <type>        _       </type>                                  // 
-      <nomo>        _       </nomo>                                  // 
-      <listens>     _    </listens>                                  // 
+      ...                                                            // 
     </rec>                                                           // 
     <reaction>                                                       // 
-      <who>            _              </who>                         // 
-      <what>           _             </what>                         // 
-      <where>          _            </where>                         // 
+      ...                                                            // 
       <rid>          J:Int            </rid>                         // 
       <rnum>         R:Int           </rnum>                         // 
       <react> "forget" => "collect" </react>                         // no listens need to forget the send id -> resume collection
@@ -465,29 +460,19 @@ module JOIN
 
 // Other matching listens forget consumed send id recursively during forget phase
   rule
-    <reaction>                                                       // 
-      <who>               _              </who>                      // 
-      <what>              _             </what>                      // 
-      <where>             _            </where>                      // 
-      <rid>               _              </rid>                      // 
-      <rnum>              _             </rnum>                      // 
+    <reaction>...                                                    // 
       <react>          "forget"        </react>                      // in forget phase, each matching listen forgets the consumed send id
       <forg> S:Set => S -Set SetItem(J) </forg>                      // for each element in <forg/>, the matching listen is located within a receive, the send id is forgotten and match count adjusted
     </reaction>                                                      // 
     <receives>...                                                    // 
       <rec>                                                          // 
-        <id>          _              </id>                           // 
-        <length>      _          </length>                           // 
-        <cont>        _            </cont>                           // 
-        <state>       _           </state>                           // 
+        ...                                                          // 
         <match> M:Int => M -Int 1 </match>                           // decrease match count
         <type>        _            </type>                           // 
         <nomo>        _            </nomo>                           // 
         <listens>...                                                 // 
           <listen>                                                   // 
-            <chan>   _         </chan>                               // 
-            <vars>   _         </vars>                               // 
-            <num>    _          </num>                               // 
+            ...                                                      // 
             <lid>  J:Int        </lid>                               // listen id which needs to forget
             <msid> I:Int => "" </msid>                               // forget consumed send id
           </listen>                                                  // 
@@ -505,10 +490,7 @@ module JOIN
       <length>    L:Int      </length>                               // 
       <cont>      P:Proc       </cont>                               // 
       <state> "" => "matched" </state>                               // once match count is equal to listen length: matched
-      <match>     L           </match>                               // 
-      <type>      _            </type>                               // 
-      <nomo>      _            </nomo>                               // 
-      <listens>   _         </listens>                               // 
+      ...
     </rec>                                                 [matched] // 
 
 // exit matched state during another receives reaction phase (in case multiple match states occur simultaneously)
@@ -517,21 +499,11 @@ module JOIN
       <id>        J:Int          </id>                               // 
       <length>    L:Int      </length>                               // 
       <cont>      P:Proc       </cont>                               // 
-      <state> "matched" => "" </state>                               // if matched state is entered but there is another receive reacting
+      <state> "matched" => "" </state>                               // if matched state is entered but another receive is reacting
       <match>     M:Int       </match>                               // 
-      <type>      _            </type>                               // 
-      <nomo>      _            </nomo>                               // 
-      <listens>   _         </listens>                               // 
+      ...                                                            // 
     </rec>                                                           // 
-    <reaction>                                                       // 
-      <who>    _    </who>                                           // 
-      <what>   _   </what>                                           // 
-      <where>  _  </where>                                           // 
-      <rid>  R:Int  </rid>                                           // 
-      <rnum>   _   </rnum>                                           // 
-      <react>  _  </react>                                           // 
-      <forg>   _   </forg>                                           // 
-    </reaction>                                                      // 
+    <rid>  R:Int  </rid>                                             // 
     requires J =/=Int R                                     [demote] // 
 
 
@@ -542,10 +514,7 @@ module JOIN
       <length>          L:Int          </length>                     // 
       <cont>            P:Proc           </cont>                     // 
       <state> "matched" => "collection" </state>                     // match count is equal to listen length in matched state
-      <match>           L               </match>                     // 
-      <type>            _                </type>                     // 
-      <nomo>            _                </nomo>                     // 
-      <listens>         _             </listens>                     // 
+      ...
     </rec>                                                           //
     <reaction>                                                       // reaction cell must be empty for promotion to occur
       <who>   .K => P           </who>                               // 
@@ -566,13 +535,10 @@ module JOIN
       <state> "collection" </state>                                  // 
       <match>      _       </match>                                  // 
       <type>     T:Int      </type>                                  // 
-      <nomo>       _        </nomo>                                  // 
-      <listens>    _     </listens>                                  // 
+      ...
     </rec> => .Bag)                                                  // 
     <reaction>                                                       // 
-      <who>            _            </who>                           // 
-      <what>           _           </what>                           // 
-      <where>          _          </where>                           // 
+      ...
       <rid>            J            </rid>                           // 
       <rnum>           L           </rnum>                           // collection/forget phase completes when the reaction number matches the listen length
       <react> "forget" => "react" </react>                           // when collection is complete, react mode engages
@@ -1604,20 +1570,17 @@ module JOIN
       </listen> => .Bag)                                             // 
     </listens>                                          [structural] // 
 
-// Eliminate unnecessary Nils
-  rule    Nil | P:Proc => P                             [structural] // 
-  rule P:Proc | Nil    => P                             [structural] // 
-
 // Dissolve computationally meaningless threads
   rule <thread> <k> .K  </k> </thread> => .Bag          [structural] // empty threads
-  rule <thread> <k> Nil </k> </thread> => .Bag          [structural] // Nil threads
+  
+  rule Nil => .K                                        [structural] // Nil is the empty computation
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
-  rule   @ * N:Name => N                       [anywhere,structural] // 
+  rule   @ * N:Name => N                      [anywhere, structural] // 
 
 // INVERSES
-  rule   * @ P:Proc => P                       [anywhere,structural] // 
+  rule   * @ P:Proc => P                      [anywhere, structural] // 
 
 endmodule
