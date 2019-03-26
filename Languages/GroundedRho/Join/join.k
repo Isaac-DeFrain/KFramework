@@ -22,7 +22,7 @@ module JOIN
 //--- CONFIGURATION ---
 //---------------------
   configuration
-    <T color="purple">                                               // obligatory top cell
+    <T color="purple">                                               // obligatory top cell contains all other cells
       <threads color="red">                                          //**process threads** (concurrent activity)
         <thread multiplicity="*">                                    // 
           <k> $PGM:Proc </k>                                         // programs and computations are process-based
@@ -321,7 +321,7 @@ module JOIN
    3. The matched listen has the matching send id written in its <msid/> (so it doesn't match another send).
    4. The matched send adds the matching listen id to <mlid/>
 */
-// Consumable sends
+// Consumable send & any receive
 // 1-tuple
   rule
     <rec>...                                                         // 
@@ -345,7 +345,7 @@ module JOIN
       <schan> X     </schan>                                         // channel X
       <msg>   _:Proc  </msg>                                         // message
       <tuple> 1     </tuple>                                         // 1-tuple
-      <stype> _     </stype>                                         // consumable send
+      <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
       <mlid>... .Set => SetItem(J) </mlid>                           // 
     </send>                                                          // 
@@ -382,8 +382,8 @@ module JOIN
     <send>                                                           // matching send
       <schan> X     </schan>                                         // channel X
       <msg>   _:Procs </msg>                                         // messages
-      <tuple> N     </tuple>                                         // 1-tuple
-      <stype> _     </stype>                                         // consumable send
+      <tuple> N     </tuple>                                         // N-tuple
+      <stype> 0     </stype>                                         // consumable send
       <sid>   I:Int   </sid>                                         // 
       <mlid>... .Set => SetItem(J) </mlid>                           // 
     </send>                                                          // 
@@ -397,6 +397,83 @@ module JOIN
       <forg>  .K  </forg>                                            // 
     </reaction>                                                      // 
     requires notBool (I in S) andBool (L >Int M)             [match] // 
+
+// Unconsumable sends & consumable receive
+// 1-tuple
+  rule
+    <rec>...                                                         // 
+      <length>      L:Int         </length>                          // L listen receive
+      <cont>        _:Proc          </cont>                          // 
+      <state>       ""             </state>                          // matching
+      <match> M:Int => M +Int 1    </match>                          // increase match count
+      <type>        T:Int           </type>                          // consumable receive type, T =/= 1
+      <nomo>  S:Set => S SetItem(I) </nomo>                          // add send id to nomo set so it is not matched again
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> _:Name  </vars>                                     // variable binding in continuation
+          <num>  1        </num>                                     // 1 variable to bind
+          <lid>  J:Int    </lid>                                     // 
+          <msid> "" => I </msid>                                     // id of send mactching the listen
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           //
+    <send>                                                           // matching send
+      <schan> X     </schan>                                         // channel X
+      <msg>   _:Proc  </msg>                                         // message
+      <tuple> 1     </tuple>                                         // 1-tuple
+      <stype> 1     </stype>                                         // unconsumable send
+      <sid>   I:Int   </sid>                                         // 
+      <mlid>... .Set => SetItem(J) </mlid>                           // 
+    </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty for matching to occur
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <forg>  .K  </forg>                                            // 
+    </reaction>                                                      // 
+    requires notBool (I in S) andBool (L >Int M) andBool (T =/=Int 1) [match] // 
+
+// N-tuple, N > 1
+  rule
+    <rec>...                                                         // 
+      <length>      L:Int         </length>                          // L listen receive
+      <cont>        _:Proc          </cont>                          // 
+      <state>       ""             </state>                          // matching
+      <match> M:Int => M +Int 1    </match>                          // increase match count
+      <type>        T:Int           </type>                          // consumable receive type, T =/= 1
+      <nomo>  S:Set => S SetItem(I) </nomo>                          // add send id to nomo set so it is not matched again
+      <listens>...                                                   // 
+        <listen>                                                     // 
+          <chan> X:Name  </chan>                                     // receiving channel X
+          <vars> _:Names </vars>                                     // variables binding in continuation
+          <num>  N:Int    </num>                                     // N variables to bind
+          <lid>  J:Int    </lid>                                     // listen id
+          <msid> "" => I </msid>                                     // id of send mactching the listen
+        </listen>                                                    // 
+      </listens>                                                     // 
+    </rec>                                                           //
+    <send>                                                           // matching send
+      <schan> X     </schan>                                         // channel X
+      <msg>   _:Procs </msg>                                         // messages
+      <tuple> N     </tuple>                                         // N-tuple
+      <stype> 1     </stype>                                         // unconsumable send
+      <sid>   I:Int   </sid>                                         // 
+      <mlid>... .Set => SetItem(J) </mlid>                           // 
+    </send>                                                          // 
+    <reaction>                                                       // reaction cell must be empty for matching to occur
+      <who>   .K   </who>                                            // 
+      <what>  .K  </what>                                            // 
+      <where> .K </where>                                            // 
+      <rid>   .K   </rid>                                            // 
+      <rnum>  .K  </rnum>                                            // 
+      <react> .K </react>                                            // 
+      <forg>  .K  </forg>                                            // 
+    </reaction>                                                      // 
+    requires notBool (I in S) andBool (L >Int M) andBool (T =/=Int 1) [match] //
 
 //-------------------
 //--- COMM EVENTS ---
@@ -486,26 +563,38 @@ module JOIN
 // enter matched state
   rule
     <rec>                                                            // 
-      <id>        J:Int          </id>                               // 
+      <id>        _:Int          </id>                               // 
       <length>    L:Int      </length>                               // 
-      <cont>      P:Proc       </cont>                               // 
+      <cont>      _:Proc       </cont>                               // 
       <state> "" => "matched" </state>                               // once match count is equal to listen length: matched
+      <match>     L           </match>                               // 
       ...
     </rec>                                                 [matched] // 
 
-// exit matched state during another receives reaction phase (in case multiple match states occur simultaneously)
+// exit matched state during another receives reaction phase (in case multiple matched states occur simultaneously)
   rule
     <rec>                                                            // 
       <id>        J:Int          </id>                               // 
       <length>    L:Int      </length>                               // 
-      <cont>      P:Proc       </cont>                               // 
+      <cont>      _:Proc       </cont>                               // 
       <state> "matched" => "" </state>                               // if matched state is entered but another receive is reacting
-      <match>     M:Int       </match>                               // 
+      <match>     L           </match>                               // 
       ...                                                            // 
     </rec>                                                           // 
     <rid>  R:Int  </rid>                                             // 
     requires J =/=Int R                                     [demote] // 
 
+// revert from matched to matching if a matched send is consumed
+  rule
+    <rec>                                                            // 
+      <id>        _:Int          </id>                               // 
+      <length>    L:Int      </length>                               // 
+      <cont>      _:Proc       </cont>                               // 
+      <state> "matched" => "" </state>                               // if matched state is entered but another receive consumes a matched send
+      <match>     M:Int       </match>                               // 
+      ...                                                            // 
+    </rec>                                                           // 
+    requires L >Int M                                       [demote] // 
 
 // after matched, move to collection phase
   rule
@@ -513,7 +602,8 @@ module JOIN
       <id>              J:Int              </id>                     // 
       <length>          L:Int          </length>                     // 
       <cont>            P:Proc           </cont>                     // 
-      <state> "matched" => "collection" </state>                     // match count is equal to listen length in matched state
+      <state> "matched" => "collection" </state>                     // promote to collection state
+      <match>           L               </match>                     // match count is equal to listen length in matched state
       ...
     </rec>                                                           //
     <reaction>                                                       // reaction cell must be empty for promotion to occur
