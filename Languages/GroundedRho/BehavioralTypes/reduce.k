@@ -72,7 +72,7 @@ module REDUCE
        (.Bag => <Send>                                                 //
                   <schan>      X     </schan>                          //sending channel X
                   <msg>        P       </msg>                          //sending messages P, two or more
-                  <tuple> #length (P)  </tuple>                          //length of tuple - how many messages
+                  <tuple> #length(P) </tuple>                          //length of tuple - how many messages
                   <sper>       0      </sper>                          //single send => consumed in comm
                 </Send>)                                               //
 
@@ -175,11 +175,11 @@ module REDUCE
       <who>   .   </who>                                               // The continuation from the comm event will
       <what>  .  </what>                                               // always be present in a Thread cell so we
       <where> . </where>                                               // use that as the reaction catalyst.
-      <how> N:Int </how>                                               // The fact that this is N means N comm events occured!
+      <how> M:Int </how>                                               // The fact that this is N means N comm events occured!
     </Reaction>                                                        //
    (<Thread> <k> A:Proc </k> </Thread> => .Bag)                        //
    (<Repar> .K => A </Repar>)                                          // Now there is a Proc in the Repar cell
-    requires N =/=Int 0
+    requires M =/=Int 0
 
 // Reparring reamains Threads
   rule 
@@ -187,11 +187,11 @@ module REDUCE
       <who>   .   </who>                                               // Threads, Receives, & Sends cells in the Repar cell.
       <what>  .  </what>                                               //
       <where> . </where>                                               //
-      <how> N:Int </how>                                               //
+      <how> M:Int </how>                                               //
     </Reaction>                                                        //
    (<Thread> <k> A:Proc </k> </Thread> => .Bag)                        // Threads being reparred
    (<Repar> P:Proc => P | A </Repar>)                                  // Par contents of Repar cell with the contents of all the Thread cells
-    requires N =/=Int 0
+    requires M =/=Int 0
 
 // Reparring remaining Receives
 // Listen on 1 name
@@ -218,7 +218,7 @@ module REDUCE
       <who>   .   </who>                                               //
       <what>  .  </what>                                               //
       <where> . </where>                                               //
-      <how> N:Int </how>                                               //
+      <how> M:Int </how>                                               //
     </Reaction>                                                        //
    (<Rec>                                                              // Receives being reparred
       <rchan> X:Name  </rchan>                                         //
@@ -228,7 +228,7 @@ module REDUCE
       <cont>  Q:Proc   </cont>                                         //
     </Rec> => .Bag)                                                    //
    (<Repar> P:Proc => P | for( Y <- X ){ Q } </Repar>)                 // Par contents of Repar cell with the contents of all the Receive cells                                              // 
-    requires N =/=Int 0
+    requires M =/=Int 0
 
 // Reparring remaining Sends
 // 1-tuple
@@ -237,7 +237,7 @@ module REDUCE
       <who>   .   </who>                                               //
       <what>  .  </what>                                               //
       <where> . </where>                                               //
-      <how> N:Int </how>                                               //
+      <how> M:Int </how>                                               //
     </Reaction>                                                        //
    (<Send>                                                             // Sends being reparred
       <schan> X:Name </schan>                                          //
@@ -246,7 +246,7 @@ module REDUCE
       <sper>  0       </sper>                                          //
     </Send> => .Bag)                                                   //
    (<Repar> P:Proc => P | X!(Q) </Repar>)                              // Par contents of Repar cell with the contents of all the Send cells
-    requires N =/=Int 0
+    requires M =/=Int 0
 
 // N-tuple, N > 1
   rule
@@ -254,7 +254,7 @@ module REDUCE
       <who>   .   </who>                                               //
       <what>  .  </what>                                               //
       <where> . </where>                                               //
-      <how> N:Int </how>                                               //
+      <how> M:Int </how>                                               //
     </Reaction>                                                        //
    (<Send>                                                             // Sends being reparred
       <schan> X:Name </schan>                                          //
@@ -263,7 +263,7 @@ module REDUCE
       <sper>  0       </sper>                                          //
     </Send> => .Bag)                                                   //
    (<Repar> P:Proc => P | X!(Q) </Repar>)                              // Par contents of Repar cell with the contents of all the Send cells                                                // 
-    requires N =/=Int 0
+    requires M =/=Int 0
 
 // Inverses
   rule   @ * N:Name => N                                    [anywhere] 
