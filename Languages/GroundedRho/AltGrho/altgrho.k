@@ -26,7 +26,7 @@ module ALTGRHO-SYNTAX
                      | NameVar                                       //                NameVar < Name
                      | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
 
-  syntax     Names ::= List{Name,","}                [klabel(names)] // comma-separated name list
+  syntax     Names ::= NeList{Name,","}           [klabel(nameList)] // nonempty comma-separated name list
 
 //-----------------
 //--- PROCESSES ---
@@ -57,15 +57,15 @@ module ALTGRHO-SYNTAX
 
   syntax     Lbind ::= Names "<-" Name                               // for( y1,...,yN <- x ){ P }, explicit
 
-  syntax    Lbinds ::= List{Lbind,";"}              [klabel(lbinds)] // linear bind list
+  syntax    Lbinds ::= NeList{Lbind,";"}            [klabel(lbinds)] // linear bind list
 
   syntax     Pbind ::= Names "<!" Name                               // for( y1,...,yN <! x ){ P }, explicit
 
-  syntax    Pbinds ::= List{Pbind,";"}              [klabel(pbinds)] // peek bind list
+  syntax    Pbinds ::= NeList{Pbind,";"}            [klabel(pbinds)] // peek bind list
 
   syntax     Rbind ::= Names "<=" Name                               // for( y1,...,yN <= x ){ P }, explicit
 
-  syntax    Rbinds ::= List{Rbind,";"}              [klabel(rbinds)] // repeated bind list
+  syntax    Rbinds ::= NeList{Rbind,";"}            [klabel(rbinds)] // repeated bind list
 
   syntax      Bind ::= Lbind                                         // single linear listen, implicit
                      | Pbind                                         // single peek, implicit
@@ -89,7 +89,7 @@ module ALTGRHO-SYNTAX
   syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
 
 // Several Processes
-  syntax     Procs ::= List{Proc,","}                [klabel(procs)] // process list
+  syntax     Procs ::= NeList{Proc,","}           [klabel(proclist)] // nonempty process list
 
 // New
   syntax       New ::= "new" Names  "in" "{" Proc "}"       [binder] // create unforgeable name
@@ -110,7 +110,7 @@ module ALTGRHO-SYNTAX
   syntax RhoKVPair ::= Proc ":" Proc                                 // _:_: Proc x Proc ----------------> RhoKVPair
   
   syntax
-        RhoKVPairs ::= List{RhoKVPair,","}                           // 
+        RhoKVPairs ::= NeList{RhoKVPair,","}                         // nonempty key-value pair list
 
 // Process sets
   syntax    RhoSet ::= "Set" "(" Procs ")"                           // Set(_): Procs ----> RhoSet
@@ -165,8 +165,6 @@ module ALTGRHO-SYNTAX
   syntax      Proc ::= ChanLen                                       // for
                      | BindOcc                                       // auxfun
                      | JoinList                                      // definitions
-
-  syntax      List ::= Names | Procs | Binds
 
   syntax KVariable ::= Names | Name
 
