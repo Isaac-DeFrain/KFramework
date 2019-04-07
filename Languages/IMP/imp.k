@@ -1,5 +1,4 @@
-// RHO CALCULUS with Bool, Int, String ground terms and tuple messages in a monadic style
-// No patterns, only name variables
+// Simple Imperative Language
 
 require "domains.k"
 
@@ -7,7 +6,8 @@ require "domains.k"
 module IMP-SYNTAX
   import DOMAINS-SYNTAX
 
-  syntax   Exp ::= Id | Int
+  syntax   Exp ::= Id 
+                 | Int
                  | Exp "+" Exp               [left, strict]
                  | Exp "-" Exp               [left, strict]
                  | "(" Exp ")"                    [bracket]
