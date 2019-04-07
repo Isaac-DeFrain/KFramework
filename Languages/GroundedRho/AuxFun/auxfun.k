@@ -221,12 +221,13 @@ module AUXFUN
 //--- #chan ---
 //-------------
 // Bind
+  rule #chan (       # <- N:Name ) => N
   rule #chan ( _:Name  <- N:Name ) => N
   rule #chan ( _:Names <- N:Name ) => N
-
+  rule #chan (       # <= N:Name ) => N
   rule #chan ( _:Name  <= N:Name ) => N
   rule #chan ( _:Names <= N:Name ) => N
-
+  rule #chan (       # <! N:Name ) => N
   rule #chan ( _:Name  <! N:Name ) => N
   rule #chan ( _:Names <! N:Name ) => N
 
@@ -244,10 +245,13 @@ module AUXFUN
 //--- #bnum ---
 //-------------
 // number of binding variables in a listen
+  rule #bnum (       # <- N:Name ) => 0
   rule #bnum ( _:Name  <- _:Name ) => 1
   rule #bnum ( N:Names <- _:Name ) => #length(N)
+  rule #bnum (       # <= N:Name ) => 0
   rule #bnum ( _:Name  <= _:Name ) => 1
   rule #bnum ( N:Names <= _:Name ) => #length(N)
+  rule #bnum (       # <! N:Name ) => 0
   rule #bnum ( _:Name  <! _:Name ) => 1
   rule #bnum ( N:Names <! _:Name ) => #length(N)
 
@@ -255,10 +259,13 @@ module AUXFUN
 //--- #bvar ---
 //-------------
 // binding variables
+  rule #bvar (       # <- N:Name ) => Empty
   rule #bvar ( N:Name  <- _:Name ) => N
   rule #bvar ( N:Names <- _:Name ) => N
+  rule #bvar (       # <= N:Name ) => Empty
   rule #bvar ( N:Name  <= _:Name ) => N
   rule #bvar ( N:Names <= _:Name ) => N
+  rule #bvar (       # <! N:Name ) => Empty
   rule #bvar ( N:Name  <! _:Name ) => N
   rule #bvar ( N:Names <! _:Name ) => N
 
