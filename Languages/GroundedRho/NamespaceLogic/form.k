@@ -6,7 +6,7 @@ module FORM-SYNTAX
   import GRHO
 
   syntax  PForm ::= "{" PForm "}"                     [bracket]  // 
-                  | Bool                                         // verity
+                  > "True"                                       // verity
                   | "Zero"                                       // nullity
                   | "not" PForm                                  // negation
                   | PForm "&" PForm                      [left]  // conjunction
@@ -24,6 +24,8 @@ module FORM-SYNTAX
                   | Name                                         // ...
 
   syntax   Prop ::= Id                           [klabel(prop)]  // propositional variables
+
+// Needs a notion of valuation to instantiate each propositional variable with a true/false value
 
 endmodule
 
