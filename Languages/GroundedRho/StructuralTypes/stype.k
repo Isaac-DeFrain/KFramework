@@ -129,7 +129,7 @@ module STYPE-SYNTAX
                             | String                                                 // String < Ground
                             | Uri                                                    //    Uri < Ground
 
-  syntax              Uri ::= "uri(" String      ")"                                 // uri(_): String ---> Uri
+  syntax              Uri ::= "uri(" String ")"                                      // uri(_): String ---> Uri
 
 // Collections
   syntax       Collection ::= RhoList                                                // process list
@@ -181,21 +181,21 @@ module STYPE-SYNTAX
   syntax    MethodAndArgs ::= Method "(" MethodArgs ")"                              // _(_): Method x MethodArgs ------> MethodAndArgs
 
   syntax           Method ::= "nth"                                                  // nth element in list, tuple?, set
-	                          | "toByteArray"                                          // input? -> bytearray
-	                          | "hexToBytes"                                           // hex -> bytes
-	                          | "union"                                                // list?, map, set union
-	                          | "diff"                                                 // map, set difference?
-	                          | "add"                                                  // concat list?
-	                          | "delete"                                               // delete element from 
-	                          | "contains"                                             // contains predicate -> applied to what?
-	                          | "get"                                                  // get?
-	                          | "getOrElse"                                            // getOrElse?
-	                          | "set"                                                  // set?
-	                          | "keys"                                                 // return set of keys of a map
-	                          | "size"                                                 // number of elements in list, map, set, tuple
-	                          | "length"                                               // length of list, tuple - different from size?
-	                          | "slice"                                                // slice of list, map, or set
-	                          | "confine"                                              // still not in interpreter? semantics?
+                            | "toByteArray"                                          // input? -> bytearray
+                            | "hexToBytes"                                           // hex -> bytes
+                            | "union"                                                // list?, map, set union
+                            | "diff"                                                 // map, set difference?
+                            | "add"                                                  // concat list?
+                            | "delete"                                               // delete element from 
+                            | "contains"                                             // contains predicate -> applied to what?
+                            | "get"                                                  // get?
+                            | "getOrElse"                                            // getOrElse?
+                            | "set"                                                  // set?
+                            | "keys"                                                 // return set of keys of a map
+                            | "size"                                                 // number of elements in list, map, set, tuple
+                            | "length"                                               // length of list, tuple - different from size?
+                            | "slice"                                                // slice of list, map, or set
+                            | "confine"                                              // still not in interpreter? semantics?
 
   syntax       MethodArgs ::= ""                                                     // 0 arguments
                             | Proc                                                   // 1 argument
@@ -380,7 +380,7 @@ module STYPE-SYNTAX
 
 // Simple Types - types of ground terms
   syntax       SimpleType ::= "Bool"                                                 //        "Bool" < SimpleType
-	                          | "ByteArray"                                            //   "ByteArray" < SimpleType
+                            | "ByteArray"                                            //   "ByteArray" < SimpleType
                             | "Int"                                                  //         "Int" < SimpleType
                             | "List"                                                 //        "List" < SimpleType
                             | "Map"                                                  //         "Map" < SimpleType
@@ -423,7 +423,7 @@ module STYPE-SYNTAX
 
 // corresponds to the leaves in the structural binary tree - type[_;;_;;_]: String x Leaf x Leaf ---> LeafType
   syntax         LeafType ::= "type[" String ";;" Leaf             ";;" Leaf             "]"
-	                          | "type[" Truncate  "]"                                  // truncate
+                            | "type[" Truncate  "]"                                  // truncate
 
 //--- toString function ---
   syntax           String ::= "toString(" OrPat ")"                                  // toString(_): OrPat ---> String
@@ -488,43 +488,43 @@ module STYPE
   rule type[ ST:SimpleType               ] => type[ "simpletype" ;; type[toString(ST)] ;; type[#truncate] ]  // Bool, Int, String types
 
 // Quote
-  rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]    ;; type[#truncate] ]  // quoted process
-  rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]    ;; type[#truncate] ]  // quoted process pattern
+  rule type[ @ P:Proc                    ] => type[ "quote"      ;; type[P]   ;; type[#truncate] ]  // quoted process
+  rule type[ @ P:ProcPat                 ] => type[ "quote"      ;; type[P]   ;; type[#truncate] ]  // quoted process pattern
 
 // EvalOrPat
-  rule type[ * N:Name                    ] => type[ "eval"       ;; type[N]    ;; type[#truncate] ]  // Eval
-  rule type[ * N:NamePat                 ] => type[ "eval"       ;; type[N]    ;; type[#truncate] ]  // Eval pattern
+  rule type[ * N:Name                    ] => type[ "eval"       ;; type[N]   ;; type[#truncate] ]  // Eval
+  rule type[ * N:NamePat                 ] => type[ "eval"       ;; type[N]   ;; type[#truncate] ]  // Eval pattern
 
 // SendOrPat
-  rule type[ N:Name    !  R:RhoTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send
-  rule type[ N:Name    !  R:PatTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !  R:RhoTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !  R:PatTuple     ] => type[ "send"       ;; type[N]            ;; type[R] ]  // Send pattern
-  rule type[ N:Name    !! R:RhoTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send
-  rule type[ N:Name    !! R:PatTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !! R:RhoTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
-  rule type[ N:NamePat !! R:PatTuple     ] => type[ "psend"      ;; type[N]            ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !  R:RhoTuple     ] => type[ "send"       ;; type[N]           ;; type[R] ]  // Send
+  rule type[ N:Name    !  R:PatTuple     ] => type[ "send"       ;; type[N]           ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !  R:RhoTuple     ] => type[ "send"       ;; type[N]           ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !  R:PatTuple     ] => type[ "send"       ;; type[N]           ;; type[R] ]  // Send pattern
+  rule type[ N:Name    !! R:RhoTuple     ] => type[ "psend"      ;; type[N]           ;; type[R] ]  // Send
+  rule type[ N:Name    !! R:PatTuple     ] => type[ "psend"      ;; type[N]           ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !! R:RhoTuple     ] => type[ "psend"      ;; type[N]           ;; type[R] ]  // Send pattern
+  rule type[ N:NamePat !! R:PatTuple     ] => type[ "psend"      ;; type[N]           ;; type[R] ]  // Send pattern
 
 // ReceiveOrPat/Bind(s)
-  rule type[ B:BindNamePat  <- N:Name    ] => type[ "lbind"      ;; type[B]            ;; type[N] ]  // Linear bind
-  rule type[ B:BindNamePats <- N:Name    ] => type[ "lbind"      ;; type[B]            ;; type[N] ]  // Linear bind
-  rule type[ A:Lbind ; B:Lbind           ] => type[ "lbinds"     ;; type[A]            ;; type[B] ]  // 2 linear binds
-  rule type[ A:Lbind ; B:Lbinds          ] => type[ "lbinds"     ;; type[A]            ;; type[B] ]  // N linear binds, N > 2
+  rule type[ B:BindNamePat  <- N:Name    ] => type[ "lbind"      ;; type[B]           ;; type[N] ]  // Linear bind
+  rule type[ B:BindNamePats <- N:Name    ] => type[ "lbind"      ;; type[B]           ;; type[N] ]  // Linear bind
+  rule type[ A:Lbind ; B:Lbind           ] => type[ "lbinds"     ;; type[A]           ;; type[B] ]  // 2 linear binds
+  rule type[ A:Lbind ; B:Lbinds          ] => type[ "lbinds"     ;; type[A]           ;; type[B] ]  // N linear binds, N > 2
 
-  rule type[ B:BindNamePat  <! N:Name    ] => type[ "peek"       ;; type[B]            ;; type[N] ]  // Peek bind
-  rule type[ B:BindNamePats <! N:Name    ] => type[ "peek"       ;; type[B]            ;; type[N] ]  // Peek bind
-  rule type[ A:Pbind ; B:Pbind           ] => type[ "peeks"      ;; type[A]            ;; type[B] ]  // 2 peek binds
-  rule type[ A:Pbind ; B:Pbinds          ] => type[ "peeks"      ;; type[A]            ;; type[B] ]  // N peek binds, N > 2
+  rule type[ B:BindNamePat  <! N:Name    ] => type[ "peek"       ;; type[B]           ;; type[N] ]  // Peek bind
+  rule type[ B:BindNamePats <! N:Name    ] => type[ "peek"       ;; type[B]           ;; type[N] ]  // Peek bind
+  rule type[ A:Pbind ; B:Pbind           ] => type[ "peeks"      ;; type[A]           ;; type[B] ]  // 2 peek binds
+  rule type[ A:Pbind ; B:Pbinds          ] => type[ "peeks"      ;; type[A]           ;; type[B] ]  // N peek binds, N > 2
 
-  rule type[ B:BindNamePat  <= N:Name    ] => type[ "pbind"      ;; type[B]            ;; type[N] ]  // Persistent bind
-  rule type[ B:BindNamePats <= N:Name    ] => type[ "pbind"      ;; type[B]            ;; type[N] ]  // Persistent bind
-  rule type[ A:Rbind ; B:Rbind           ] => type[ "pbinds"     ;; type[A]            ;; type[B] ]  // 2 persistent binds
-  rule type[ A:Rbind ; B:Rbinds          ] => type[ "pbinds"     ;; type[A]            ;; type[B] ]  // N persistent binds, N > 2
+  rule type[ B:BindNamePat  <= N:Name    ] => type[ "pbind"      ;; type[B]           ;; type[N] ]  // Persistent bind
+  rule type[ B:BindNamePats <= N:Name    ] => type[ "pbind"      ;; type[B]           ;; type[N] ]  // Persistent bind
+  rule type[ A:Rbind ; B:Rbind           ] => type[ "pbinds"     ;; type[A]           ;; type[B] ]  // 2 persistent binds
+  rule type[ A:Rbind ; B:Rbinds          ] => type[ "pbinds"     ;; type[A]           ;; type[B] ]  // N persistent binds, N > 2
 
-  rule type[ for( B:Bind  ){ P:Proc    } ] => type[ "receive"    ;; type[B]            ;; type[P] ]  // Receive
-  rule type[ for( B:Bind  ){ P:ProcPat } ] => type[ "receive"    ;; type[B]            ;; type[P] ]  // Receive pattern
-  rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive
-  rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives"   ;; type[B]            ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Bind  ){ P:Proc    } ] => type[ "receive"    ;; type[B]           ;; type[P] ]  // Receive
+  rule type[ for( B:Bind  ){ P:ProcPat } ] => type[ "receive"    ;; type[B]           ;; type[P] ]  // Receive pattern
+  rule type[ for( B:Binds ){ P:Proc    } ] => type[ "receives"   ;; type[B]           ;; type[P] ]  // Receive
+  rule type[ for( B:Binds ){ P:ProcPat } ] => type[ "receives"   ;; type[B]           ;; type[P] ]  // Receive pattern
 
 // Contract and Pattern
   rule type[ contract X:Name ( Y:BindNamePat  ) = { P:Proc    } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]  // contract, 1 name declared
