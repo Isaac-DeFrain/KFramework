@@ -68,28 +68,35 @@ module GRHO-SYNTAX
 
   syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"              // for(_){_}: Binds x Proc ---> MultiRec; several listens
 
-  syntax            Lbind ::= NameListOrEmpty "<-" Name         [strict(2)] // for( y1,...,yN <- x ){ P }, explicit
+  syntax            Lbind ::= NameListOrEmpty "<-" Name         [strict(2)] // for( y1,...,yN <- x ){ P } (explicit)
 
   syntax           Lbinds ::= Lbind ";" Lbind                               // 2 linear listens 
                             | Lbind ";" Lbinds                              // N liner listens, N > 2
 
-  syntax            Pbind ::= NameListOrEmpty "<!" Name         [strict(2)] // for( y1,...,yN <! x ){ P }, explicit
+  syntax            Pbind ::= NameListOrEmpty "<!" Name         [strict(2)] // for( y1,...,yN <! x ){ P } (explicit)
 
   syntax           Pbinds ::= Pbind ";" Pbind                               // 2 peeks
                             | Pbind ";" Pbinds                              // N peeks, N > 2
 
-  syntax            Rbind ::= NameListOrEmpty "<=" Name         [strict(2)] // for( y1,...,yN <= x ){ P }, explicit
+  syntax            Rbind ::= NameListOrEmpty "<=" Name         [strict(2)] // for( y1,...,yN <= x ){ P } (explicit)
 
   syntax           Rbinds ::= Rbind ";" Rbind                               // 2 repeated listens
                             | Rbind ";" Rbinds                              // N repeated listens, N > 2
 
-  syntax             Bind ::= Lbind                                         // single linear listen, implicit
-                            | Pbind                                         // single peek, implicit
-                            | Rbind                                         // single repated listen, implicit
+  syntax            Sbind ::= NameListOrEmpty "<<" Name         [strict(2)] // for( y1,...,yN << x ){ P } (explicit)
 
-  syntax            Binds ::= Lbinds                                        // linear binds --- for( y1 <- x1 ; ... ; yN <- xN ){ P }, implicit
-                            | Pbinds                                        // peek binds ----- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
-                            | Rbinds                                        // repeated binds - for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
+  syntax           Sbinds ::= Sbind ";" Sbind                               // 2 sequential listens
+                            | Sbind ";" Sbinds                              // N sequential listens, N > 2
+
+  syntax             Bind ::= Lbind                                         // single linear listen (implicit)
+                            | Pbind                                         // single peek listen (implicit)
+                            | Rbind                                         // single repated listen (implicit)
+	        | Sbind                                         // single sequential listen (implict)
+
+  syntax            Binds ::= Lbinds                                        // linear binds ----- for( y1 <- x1 ; ... ; yN <- xN ){ P }, implicit
+                            | Pbinds                                        // peek binds ------- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
+                            | Rbinds                                        // repeated binds --- for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
+	        | Sbinds                                        // sequential binds - for( y1 << x1 ; ... ; yN << xN ){ P }, implicit
 
   syntax        LbindList ::= Lbind                                         // single linear listen, implicit
                             | Lbinds                                        // multiple linear listens, implicit
@@ -100,16 +107,19 @@ module GRHO-SYNTAX
   syntax        RbindList ::= Rbind                                         // single repeated listen, implicit
                             | Rbinds                                        // multiple repeated listens, implicit
 
+  syntax        SbindList ::= Sbind                                         // single sequential listen, implicit
+                            | Sbinds                                        // several sequential listens, implicit
+
   syntax         BindList ::= Bind                                          // one listen
-                            | Binds                                         // multiple listens
+                            | Binds                                         // several listens
 
 // Send
-  syntax             Send ::= ConsumableSend
-                            | UnconsumableSend
+  syntax             Send ::= ConsumableSend                                //   ConsumableSend < Send
+                            | UnconsumableSend                              // UnconsumableSend < Send
 
-  syntax   ConsumableSend ::= Name "!"  RhoTuple                   [strict] //  _!_: Name x RhoTuple ---> Send, single send
+  syntax   ConsumableSend ::= Name "!"  "(" ProcListOrEmpty ")"    [strict] //  _!(_): Name x ProcListOrEmpty ---> ConsumableSend
 
-  syntax UnconsumableSend ::= Name "!!" RhoTuple                   [strict] // _!!_: Name x RhoTuple ---> Send, repeated send
+  syntax UnconsumableSend ::= Name "!!" "(" ProcListOrEmpty ")"    [strict] // _!!(_): Name x ProcListOrEmpty ---> UnconsumableSend
 
 // Eval
   syntax             Eval ::= "*" Name                                      // *_: Name ---> Eval 
@@ -172,7 +182,7 @@ module GRHO-SYNTAX
   syntax             Else ::= IfThen "else" Proc                            // if ... then ... else ...
 
 // Contract
-  syntax         Contract ::= "contract" Name "(" NameList ")" "=" "{" Proc "}"  // syntactic sugar => for( NameList <= Name ){ Proc }
+  syntax         Contract ::= "contract" Name "(" NameListOrEmpty ")" "=" "{" Proc "}"  // syntactic sugar => for( NameList <= Name ){ Proc }
 
 // Contract Invocation
   syntax       Invocation ::= Name RhoTuple                                 // _ _: Name x RhoTuple
@@ -310,7 +320,6 @@ module GRHO
         <where>   .K   </where>                                      // binding variable(s)
         <update> .Map </update>                                      // updated variable binding(s)
       </reaction>                                                    // all comms are processed here
-      <genv>     .Map     </genv>                                    // global environment
     </T>                                                             // 
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
@@ -329,20 +338,9 @@ module GRHO
   rule false and _ => false                               [anywhere] //
 
 // New Operator Semantics
-  rule <thread>
-         <k> new N:Name           in { P:Proc } => P   ...</k>       // 
-         <lenv> B:Map => B[ N <- unforgeable(!I:Int) ] </lenv>       // 
-       </thread>                                                     // 
-
-  rule <thread>
-         <k> new M:Name , N:Name  in { P:Proc } => new N in { P } ...</k>  //
-         <lenv>  B:Map => B[ M <- unforgeable(!I:Int) ]           </lenv>  // 
-       </thread>                                                           // 
-
-  rule <thread>
-         <k> new M:Name , N:Names in { P:Proc } => new N in { P } ...</k>  // 
-         <lenv>  B:Map => B[ M <- unforgeable(!I:Int) ]           </lenv>  // 
-       </thread>                                                           // 
+  rule new N:Name           in { P:Proc } => P[ unforgeable(!I:Int) / N ] // 
+  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } //                                                            // 
+  rule new M:Name , N:Names in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } // 
 
 // Par Operator Semantics
   rule <thread>
