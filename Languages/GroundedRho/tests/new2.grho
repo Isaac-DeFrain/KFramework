@@ -1,0 +1,68 @@
+// New
+// need normalization for par ordering
+// compare with new1.grho - processes are alpha equivalent but not rewriting to syntactically equivalent
+
+  new x , y in { y!(1) | x!(2) }
+
+/*
+  Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          unforgeable( 1 )
+        </schan>
+        <msg>
+          2
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+        <sbind>
+          .Map
+        </sbind>
+      </send> <send>
+        <schan>
+          unforgeable( 2 )
+        </schan>
+        <msg>
+          1
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+        <sbind>
+          .Map
+        </sbind>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+</T>
+*/
