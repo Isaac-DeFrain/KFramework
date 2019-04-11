@@ -1,0 +1,3 @@
+// comm string
+
+  x!("a") | for( y <- x ){ *y } | for( z <- x ){ *z } | COMM(1|[]) | U(@<[],true>) | *@<[],2> | *@<a!([]),3>
