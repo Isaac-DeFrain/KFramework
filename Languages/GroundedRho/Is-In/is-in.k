@@ -1,5 +1,5 @@
 // The #isIn predicate - checks for type inclusion
-// Normalizer needed for par structural inclusion?
+// Normalizer needed for par structural inclusion
 
 require "domains.k"
 require "../StructuralTypes/stype.k"
