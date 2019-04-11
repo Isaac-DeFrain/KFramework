@@ -1,11 +1,25 @@
 // Alpha Equivalence for Grounded Rho Calculus
 
-require "../StructuralTypes/stype.k"
+require "../grho.k"
 
 module ALPHA-SYNTAX
-  import STYPE
+  import GRHO-SYNTAX
+  
+  syntax   ProcOrName ::= Proc | Name
+  
+  syntax         Proc ::= "#bound(" Int ";" Proc ")"   [function]
 
-  syntax    Bool ::= Type "#alpha" Type  [function,strict]
+  syntax         Name ::= "#bound(" Int ";" Name ")"   [function]
+
+  syntax    BoundName ::= "bound(" Int ")"
+  
+  syntax     FreeName ::= "free("  Int ")"
+  
+  syntax         Name ::= BoundName | FreeName
+  
+  syntax         Bool ::= Proc "#alpha" Proc
+  
+  syntax       String ::= "toString(" Proc ")"
 
 endmodule
 
@@ -13,22 +27,28 @@ module ALPHA
   import ALPHA-SYNTAX
 
   configuration
-  <k> $PGM:Bool </k>
+  <T color="purple">
+    <k> #bound( 0 ; $PGM:Proc ) </k>
+  </T>
 
-// Reflexitivity
-  rule T:Type #alpha T => true
+  syntax KResult ::= Proc | Name
+  
+  rule #bound( _:Int ; G:Ground ) => G
+  rule #bound( _:Int ; Nil ) => Nil
 
-// Top-level constructor not equal => not alpha equivalent
-  rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #alpha type[ T:String ;; C:IntermediateType ;; D:IntermediateType ]
-       => false requires S =/=String T
+  rule #bound( I:Int ; P:Proc | Q:Proc ) => #bound( I ; P ) | #bound( I ; Q )
 
-// Recursive step
-  rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #alpha type[ S ;; C:IntermediateType ;; D:IntermediateType ]
-       => A #alpha C andBool B #alpha D requires S =/=String "leaf" andBool S =/=String "par"
+  rule #bound( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ) => for( bound(I) <- X ){ #bound( I +Int 1 ; P[ bound(I) / Y] ) }
 
-  rule type[ "par" ;; A:IntermediateType ;; B:IntermediateType ] #alpha type[ "par" ;; C:IntermediateType ;; D:IntermediateType ]
-       => (A #alpha C andBool B #alpha D) orBool (A #alpha D andBool B #alpha C)
-
-  rule type[ "leaf" ;; "procvar" ;; _:ProcVar ] #alpha type[ "leaf" ;; "procvar" ;; _:ProcVar ] => true
+  rule #bound( I:Int ; X:Name ! ( P:Proc ) ) => X ! ( #bound( I ; P ) )
+  
+  rule #bound( I:Int ; * X:Name ) => * #bound( I ; X )
+  
+  rule #bound( _:Int ; N:FreeName  ) => N
+  rule #bound( _:Int ; N:BoundName ) => N
+  rule #bound( I:Int ; X:NameVar   ) => free(I)
+  rule #bound( I:Int ; @ P:Proc ) => @ #bound( I ; P )
+  
+  rule #bound( 0 ; P:Proc #alpha Q:Proc ) => toString( #bound(0;P) ) ==String toString( #bound(0;Q) )
 
 endmodule

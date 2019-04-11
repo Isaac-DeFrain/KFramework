@@ -1,5 +1,3 @@
 // Alpha equivalence - send - @x!(Nil) #alpha @y!(Nil)
 
-  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
-  #alpha
-  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ "leaf" ;; "truncate" ;; #truncate] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] 
+  x!(for( y <- @1 ){ *y })

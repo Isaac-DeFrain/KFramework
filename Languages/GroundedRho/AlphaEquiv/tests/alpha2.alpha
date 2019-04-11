@@ -1,0 +1,5 @@
+// Alpha equivalence
+
+  {*a | *b} #alpha {*b | *a}
+  
+// Output: false

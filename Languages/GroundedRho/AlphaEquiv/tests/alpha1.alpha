@@ -1,0 +1,5 @@
+// Alpha equivalence
+
+  {*a | for( b <- c ){*b}} #alpha {for( b <- c ){*b} | *a}
+  
+// Output: false
