@@ -11,9 +11,9 @@ In this lesson, we see more examples of semantic (i.e. non-syntactic) computatio
 ### Environment-Based `callcc`
 Let us first fix `callcc`.  As discussed in Lesson 4, the problem that we noticed there was that we only recovered the computation, but not the environment, when a value was passed to the current continuation.  This is quite easy to fix: we modify `cc` to take both an environment and a computation, and its rules to take a snapshot of the current environment with it, and to recover it at invocation time:
 ```
-	syntax Val ::= cc(Map,K)
-	rule <k> (callcc V:Val => V cc(Rho,K)) ~> K </k> <env> Rho </env>
-	rule <k> cc(Rho,K) V:Val ~> _ =>  V ~> K </k> <env> _ => Rho </env>
+    syntax Val ::= cc(Map,K)
+    rule <k> (callcc V:Val => V cc(Rho,K)) ~> K </k> <env> Rho </env>
+    rule <k> cc(Rho,K) V:Val ~> _ =>  V ~> K </k> <env> _ => Rho </env>
 ```
 
 Let us kompile and make sure it works with the `callcc-env2.lambda` program, which should evaluate to `3`, not `4`.
