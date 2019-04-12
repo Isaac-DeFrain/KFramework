@@ -32,7 +32,7 @@ module GRHO-SYNTAX
   syntax         NameList ::= Name                                          //  Name < NameList
                             | Names                                         // Names < NameList
 
-  syntax  NameListOrEmpty ::= "#"                                           //  #: -----> NameListOrEmpty
+  syntax  NameListOrEmpty ::= "#"                       [klabel(emptyName)] //  #: -----> NameListOrEmpty
 	        | NameList                                      // NameList < NameListOrEmpty
 
 //-----------------
@@ -60,13 +60,23 @@ module GRHO-SYNTAX
 // Parallel
   syntax              Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
 
-// Receives - no mixed linear/peek/repeated
+// Receives - no mixed linear/peek/repeated/sequential
+// TODO: Input guards - e.g. for( y <- x if x > 0 ){ ... }
+
   syntax          Receive ::= SingleRec                                     // SingleRec < Receive, single listen receive
                             | MultiRec                                      //  MultiRec < Receive, multi-listen receive = join
 
   syntax        SingleRec ::= "for" "(" Bind  ")" "{" Proc "}"              // for(_){_}: Bind x Proc ----> SingleRec; one listen
+                            | GuardedSingleRec                              // GuardedSingleRec < SingleRec
+
+  syntax GuardedSingleRec ::= "for" "(" Bind Guard ")" "{" Proc "}"         // for(_){_}: Bind x Proc ----> SingleRec; one listen
 
   syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"              // for(_){_}: Binds x Proc ---> MultiRec; several listens
+                            | GuardedMultiRec                               // GuardedMultiRec < MultiRec
+
+  syntax  GuardedMultiRec ::= "for" "(" Binds Guard ")" "{" Proc "}"        // for(_){_}: Binds x Proc ---> MultiRec; several listens
+  
+  syntax            Guard ::= "if" BExp                                     // conditional
 
   syntax            Lbind ::= NameListOrEmpty "<-" Name         [strict(2)] // for( y1,...,yN <- x ){ P } (explicit)
 
@@ -131,7 +141,7 @@ module GRHO-SYNTAX
   syntax         ProcList ::= Proc                                          //  Proc < ProcList
                             | Procs                                         // Procs < ProcList
 
-  syntax  ProcListOrEmpty ::= "#"                                           //        # < ProcListOrEmpty; 0 processes
+  syntax  ProcListOrEmpty ::= "#"                       [klabel(emptyProc)] //        # < ProcListOrEmpty; 0 processes
                             | ProcList                                      // ProcList < ProcListOrEmpty; 1 or more processes
 
 // New
@@ -153,25 +163,25 @@ module GRHO-SYNTAX
 
   syntax    MethodAndArgs ::= Method "(" ProcListOrEmpty ")"                // _(_): Method x MethodArgs ------> MethodAndArgs
 
-  syntax           Method ::= "nth"                                         // nth element in list, set, (tuple?)
-                            | "toByteArray"                                 // input format proc? -> bytearray
+  syntax           Method ::= "nth"                                         // nth element in list, tuple // syntax: Thing.nth(Int, ack) 
+                            | "toByteArray"                                 // bytearray
                             | "hexToBytes"                                  // hex -> bytes
-                            | "union"                                       // list?, map, set union
-                            | "diff"                                        // map, set difference?
+                            | "union"                                       // map, set union
+                            | "diff"                                        // map, set difference
                             | "add"                                         // concat list?
                             | "delete"                                      // delete element from 
-                            | "contains"                                    // contains predicate -> applied to what?
-                            | "get"                                         // get
-                            | "getOrElse"                                   // getOrElse
-                            | "set"                                         // set
+                            | "contains"                                    // contains predicate
+                            | "get"                                         // get - get element or Nil
+                            | "getOrElse"                                   // getOrElse - get element or side condition
+                            | "set"                                         // set - substitution?
                             | "keys"                                        // return set of keys of a map
                             | "size"                                        // number of elements in list, map, set, tuple
                             | "length"                                      // length of list, tuple - different from size?
                             | "slice"                                       // slice of list, map, or set
-                            | "confine"                                     // still not in interpreter? semantics?
+                            | "confine"                                     // semantics?
 
 // Variable Reference
-  syntax           VarRef ::= NameVar "=" NameVar                           // _=_: NameVar x NameVar ---> VarRef
+  syntax           VarRef ::= "=" "*" NameVar                               // =*_: NameVar ---> VarRef
 
 // Conditional
   syntax      Conditional ::= IfThen                                        // if ... then ...
@@ -203,14 +213,14 @@ module GRHO-SYNTAX
                             | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
 
   syntax
-        RhoKVPairsOrEmpty ::= "#"                                           //            < RhoKVPairsOrEmpty; empty map
+        RhoKVPairsOrEmpty ::= "#"                         [klabel(emptyKV)] //            < RhoKVPairsOrEmpty; empty map
                             | RhoKVPairs                                    // RhoKVPairs < RhoKVPairsOrEmpty; 1 or more key-value pairs
 
 // Process sets
   syntax           RhoSet ::= "Set" "(" ProcListOrEmpty ")"                 // Set(_): ProcList ----> RhoSet
 
 // Process tuples
-  syntax         RhoTuple ::= "(" ProcList ")"              [klabel(tuple)] // (_): ProcList ----> RhoTuple
+  syntax         RhoTuple ::= "(" ProcListOrEmpty ")"       [klabel(tuple)] // (_): ProcList ----> RhoTuple
 
 // Ground terms
   syntax           Ground ::= Bool                                          //   Bool < Ground
@@ -225,21 +235,29 @@ module GRHO-SYNTAX
   syntax             AExp ::= "{" AExp "}"                                  //     (_): AExp ------> AExp
                             > Int                                           //    Int < AExp
                             | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
-                            | String                                        // String < AExp (S1 + S2 => S1 +String S2)
                             > AExp "*" AExp                        [strict] // _*_: AExp x AExp ---> AExp
 	        | AExp "/" AExp                        [strict] // _/_: AExp x AExp ---> AExp
                             > AExp "+" AExp                        [strict] // _+_: AExp x AExp ---> AExp
                             | AExp "-" AExp                        [strict] // _-_: AExp x AExp ---> AExp
+	       // AExp "%" AExp                        [strict] // _%_: AExp x AExp ---> AExp
+  
+  syntax           String ::= String "++" String                            // _++_: String x String ---> String (concatenation)
+            // Interpolation: "${key}..." %% { key:value } => "value" ++ "..."
+            // Slice:         "abcdefgh".slice(2,5) => "cde"
+            // hexToBytes: interpret input as hex => bytes
 
 // Boolean
   syntax             BExp ::= "{" BExp "}"                                  //  (_): BExp ----------> BExp
                             > Bool                                          //   Bool < BExp
                             | Eval                                          //   Eval < BExp
                             | String                                        // String < BExp
-                            | AExp  "<=" AExp                   [seqstrict] // _<=_: AExp x AExp ---> BExp
-	        | Proc "matches" Proc                           // _matches_: Proc x Proc ---> BExp
-	        | Name "==" Name                                // _==_: Name x Name ---> BExp (name equivalence)
-	        | Proc "==" Proc                                // _==_: Proc x Proc ---> BExp (sturtural equivalence)
+                            | AExp "<=" AExp                    [seqstrict] // _<=_: AExp x AExp ---> BExp
+	        | AExp "<"  AExp                    [seqstrict] // 
+	        | AExp ">=" AExp                    [seqstrict] // 
+	        | AExp ">"  AExp                    [seqstrict] // 
+	        | Proc "matches" Proc                           // _matches_: Proc x Proc ---> BExp // P matches Q is syntactic sugar for: match P { Q :=> true _ :=> false }
+	        | Name "==" Name                                // _==_: Name x Name ---> BExp (name equivalence) // currently in progress
+	        | Proc "==" Proc                                // _==_: Proc x Proc ---> BExp (sturtural equivalence) // currently in progress
                             > "not" BExp                           [strict] // not_: BExp ----------> BExp
                             > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
                             > BExp  "or" BExp                      [strict] //   or: BExp ----------> BExp
@@ -308,7 +326,7 @@ module GRHO
             <rchan>  .K  </rchan>                                    // receiving channel (many messages on same channel)
             <bvars>  .K  </bvars>                                    // binding varible(s) in continuation
             <bnum>   .K   </bnum>                                    // number of bindings
-            <rtype>  .K  </rtype>                                    // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
+            <rtype>  .K  </rtype>                                    // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek, (3 for sequential?)
             <cont>   .K   </cont>                                    // continuation
             <rbind> .Map </rbind>                                    // 
           </rec>                                                     // 
@@ -329,17 +347,23 @@ module GRHO
   rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] //
   rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] //
   
-  rule S1:String + S2:String => S1 +String S2             [anywhere] //
+  rule S1:String ++ S2:String => S1 +String S2            [anywhere] //
 
 // Boolean
   rule I1:Int <= I2:Int => I1 <=Int I2                    [anywhere] //
+  rule I1:Int <  I2:Int => I1  <Int I2                    [anywhere] //
+  rule I1:Int >= I2:Int => I1 >=Int I2                    [anywhere] //
+  rule I1:Int >  I2:Int => I1  >Int I2                    [anywhere] //
   rule not B:Bool => notBool B                            [anywhere] //
-  rule true and B:Bool => B                               [anywhere] //
-  rule false and _ => false                               [anywhere] //
+  rule A:Bool and B:Bool => A andBool B                   [anywhere] //
+
+// Conditionals
+  rule if ( B:Bool ) then P:Proc             => #if B #then P #else Nil #fi
+  rule if ( B:Bool ) then P:Proc else Q:Proc => #if B #then P #else Q   #fi
 
 // New Operator Semantics
   rule new N:Name           in { P:Proc } => P[ unforgeable(!I:Int) / N ] // 
-  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } //                                                            // 
+  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } // 
   rule new M:Name , N:Names in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } // 
 
 // Par Operator Semantics
@@ -353,19 +377,13 @@ module GRHO
 // Contract
   rule contract X:Name ( Y:NameList ) = { P:Proc } => for ( Y <= X ){ P }  [macro]  // syntactic sugar
 
-// Variable Reference
-  rule <thread>
-         <k> X:NameVar = Y:NameVar    ...</k>
-         <lenv> B:Map => B X |-> B[Y] </lenv>
-       </thread>
-
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
 // TODO: handle variable reference/assignment before sending to tuplespace
   rule <thread>
          <k> S:Send => . ...</k>                                     // dissolve send in <threads/> and spawn <send/>
-         <lenv> B:Map </lenv>                                      // 
+         <lenv>  B:Map  </lenv>                                      // 
        </thread>                                                     // 
        (.Bag => <send>                                               //
                   <schan>        #chan(S)  </schan>                  // sending channel
@@ -378,9 +396,10 @@ module GRHO
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
+//TODO: sequential listen
   rule <thread>
          <k> R:SingleRec => . ...</k>                                // dissolve Rec in <threads/> and spawn <rec/>
-         <lenv> B:Map </lenv>                                      // 
+         <lenv>  B:Map  </lenv>                                      // 
        </thread>                                                     // 
        (.Bag => <rec>                                                // 
                   <rchan>  #chan(R) </rchan>                         // receiving channel
@@ -394,7 +413,7 @@ module GRHO
 // Joins
   rule <thread>
          <k> R:MultiRec => . ...</k>                                 //
-         <lenv> B:Map </lenv>                                      // 
+         <lenv>  B:Map  </lenv>                                      // 
        </thread>                                                     // 
        (.Bag => <rec>                                                // 
                   <rchan>  #chan(R) </rchan>                         // receiving channel
@@ -629,7 +648,23 @@ module GRHO
    </reaction>                                                  [comm] // 
 
 // Join semantics seem to be much more complicated...
-// moved progress to join.k and altjoin.k
+// moved progress to join.k
+
+// Methods
+// nth
+  // List
+  rule [ # ].nth( _:ProcListOrEmpty ) => Nil
+  rule _:RhoList .nth( # ) => Nil
+  rule [ P:Proc ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else Nil #fi
+  rule [ P:Proc , Q:Proc  ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else [ Q ].nth( I -Int 1 , A ) #fi
+  rule [ P:Proc , Q:Procs ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else [ Q ].nth( I -Int 1 , A ) #fi
+  
+  // Tuple
+  rule (#):RhoTuple .nth( _:ProcListOrEmpty ) => Nil
+  rule _:RhoTuple .nth( # ) => Nil
+  rule ( P:Proc ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else Nil #fi
+  rule ( P:Proc , Q:Proc  ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else tuple( Q ).nth( I -Int 1 , A ) #fi
+  rule ( P:Proc , Q:Procs ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else tuple( Q ).nth( I -Int 1 , A ) #fi
 
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P                               [structural]
