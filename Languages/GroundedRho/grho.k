@@ -161,7 +161,8 @@ module GRHO-SYNTAX
 // Methods
   syntax       MethodProc ::= Proc "." MethodAndArgs                        // _._(_): Proc x MethodAndArgs ---> MethodProc
 
-  syntax    MethodAndArgs ::= Method "(" ProcListOrEmpty ")"                // _(_): Method x MethodArgs ------> MethodAndArgs
+  syntax    MethodAndArgs ::= Method "(" ProcList ")"                // _(_): Method x MethodArgs ------> MethodAndArgs
+                            | Method "("")"
 
   syntax           Method ::= "nth"                                         // nth element in list, tuple // syntax: Thing.nth(Int, ack) 
                             | "toByteArray"                                 // bytearray
@@ -178,6 +179,7 @@ module GRHO-SYNTAX
                             | "size"                                        // number of elements in list, map, set, tuple
                             | "length"                                      // length of list, tuple - different from size?
                             | "slice"                                       // slice of list, map, or set
+	        | "iterate"
                             | "confine"                                     // semantics?
 
 // Variable Reference
@@ -204,23 +206,27 @@ module GRHO-SYNTAX
                             | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax          RhoList ::= "[" ProcListOrEmpty "]"                       // [_]: ProcListOrEmpty ----> RhoList
+  syntax          RhoList ::= "[" ProcList "]"                       // [_]: ProcListOrEmpty ----> RhoList
+                            | "[""]"
 
 // Process maps
-  syntax           RhoMap ::= "{" RhoKVPairsOrEmpty "}"                     // {_}: RhoKVPairsOrEmpty ---> RhoMap
+  syntax           RhoMap ::= "{" RhoKVPairs "}"                     // {_}: RhoKVPairsOrEmpty ---> RhoMap
+                            | "{""}"
 
   syntax       RhoKVPairs ::= Proc ":" Proc                                 //   _:_: Proc x Proc ----------------> RhoKVPairs, single key-value pair
                             | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
-
+/*
   syntax
         RhoKVPairsOrEmpty ::= "#"                         [klabel(emptyKV)] //            < RhoKVPairsOrEmpty; empty map
                             | RhoKVPairs                                    // RhoKVPairs < RhoKVPairsOrEmpty; 1 or more key-value pairs
-
+*/
 // Process sets
-  syntax           RhoSet ::= "Set" "(" ProcListOrEmpty ")"                 // Set(_): ProcList ----> RhoSet
+  syntax           RhoSet ::= "Set" "(" ProcList ")"                 // Set(_): ProcList ----> RhoSet
+                            | "Set" "("")"
 
 // Process tuples
-  syntax         RhoTuple ::= "(" ProcListOrEmpty ")"       [klabel(tuple)] // (_): ProcList ----> RhoTuple
+  syntax         RhoTuple ::= "(" ProcList ")"       [klabel(tuple)] // (_): ProcList ----> RhoTuple
+                            | "("")"
 
 // Ground terms
   syntax           Ground ::= Bool                                          //   Bool < Ground
@@ -235,16 +241,14 @@ module GRHO-SYNTAX
   syntax             AExp ::= "{" AExp "}"                                  //     (_): AExp ------> AExp
                             > Int                                           //    Int < AExp
                             | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
-                            > AExp "*" AExp                        [strict] // _*_: AExp x AExp ---> AExp
-	        | AExp "/" AExp                        [strict] // _/_: AExp x AExp ---> AExp
-                            > AExp "+" AExp                        [strict] // _+_: AExp x AExp ---> AExp
-                            | AExp "-" AExp                        [strict] // _-_: AExp x AExp ---> AExp
-	       // AExp "%" AExp                        [strict] // _%_: AExp x AExp ---> AExp
-  
-  syntax           String ::= String "++" String                            // _++_: String x String ---> String (concatenation)
-            // Interpolation: "${key}..." %% { key:value } => "value" ++ "..."
-            // Slice:         "abcdefgh".slice(2,5) => "cde"
-            // hexToBytes: interpret input as hex => bytes
+	        | String                                        // String < AExp
+	        | AExp "++" AExp                                // _++_: AExp x AExp ---> AExp (string concatenation)
+                            > AExp "*"  AExp                       [strict] // _*_: AExp x AExp ----> AExp
+	        | AExp "/"  AExp                       [strict] // _/_: AExp x AExp ----> AExp
+                            > AExp "+"  AExp                       [strict] // _+_: AExp x AExp ----> AExp
+                            | AExp "-"  AExp                       [strict] // _-_: AExp x AExp ----> AExp
+	       // AExp "%"  AExp                       [strict] // _%_: AExp x AExp ----> AExp
+                           // String interpolation: "${key}..." %% { key:value } => "value" ++ "..."
 
 // Boolean
   syntax             BExp ::= "{" BExp "}"                                  //  (_): BExp ----------> BExp
@@ -258,15 +262,15 @@ module GRHO-SYNTAX
 	        | Proc "matches" Proc                           // _matches_: Proc x Proc ---> BExp // P matches Q is syntactic sugar for: match P { Q :=> true _ :=> false }
 	        | Name "==" Name                                // _==_: Name x Name ---> BExp (name equivalence) // currently in progress
 	        | Proc "==" Proc                                // _==_: Proc x Proc ---> BExp (sturtural equivalence) // currently in progress
-                            > "not" BExp                           [strict] // not_: BExp ----------> BExp
-                            > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
-                            > BExp  "or" BExp                      [strict] //   or: BExp ----------> BExp
+                            > "not" BExp                                    // not_: BExp ----------> BExp
+                            > BExp "and" BExp                               //  and: BExp ----------> BExp
+                            > BExp  "or" BExp                               //   or: BExp ----------> BExp
 
 // Bundles
-  syntax           Bundle ::= "bundle+" "{" Proc "}"                        // write-only
-                            | "bundle-" "{" Proc "}"                        // read-only
-                            | "bundle0" "{" Proc "}"                        // neither read/write
-                            | "bundle"  "{" Proc "}"                        // both read/write
+  syntax           Bundle ::= "bundle+" "{" Proc "}"                        // write-only - can data send to channel
+                            | "bundle-" "{" Proc "}"                        // read-only  - can receive data from channel
+                            | "bundle0" "{" Proc "}"                        // neither read/write - how is the useful?
+                            | "bundle"  "{" Proc "}"                        // both read/write    - like an ordinary process?
 
 // For handling joins in configuration
   syntax         JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
@@ -653,15 +657,15 @@ module GRHO
 // Methods
 // nth
   // List
-  rule [ # ].nth( _:ProcListOrEmpty ) => Nil
-  rule _:RhoList .nth( # ) => Nil
+  rule [ ].nth( _:ProcList ) => Nil
+  rule _:RhoList .nth( ) => Nil
   rule [ P:Proc ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else Nil #fi
   rule [ P:Proc , Q:Proc  ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else [ Q ].nth( I -Int 1 , A ) #fi
   rule [ P:Proc , Q:Procs ].nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else [ Q ].nth( I -Int 1 , A ) #fi
   
   // Tuple
-  rule (#):RhoTuple .nth( _:ProcListOrEmpty ) => Nil
-  rule _:RhoTuple .nth( # ) => Nil
+  rule ( ):RhoTuple .nth( _:ProcList ) => Nil
+  rule _:RhoTuple .nth( ) => Nil
   rule ( P:Proc ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else Nil #fi
   rule ( P:Proc , Q:Proc  ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else tuple( Q ).nth( I -Int 1 , A ) #fi
   rule ( P:Proc , Q:Procs ):RhoTuple .nth( I:Int , A:Proc ) => #if I ==Int 0 #then @A!(P) #else tuple( Q ).nth( I -Int 1 , A ) #fi
