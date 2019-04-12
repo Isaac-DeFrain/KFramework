@@ -1,0 +1,5 @@
+// Alpha equivalence
+
+  new chan1, chan2, chan3 in {
+    for( @1 <- chan1 ){ Nil } | chan2!("a") | *chan3
+  }

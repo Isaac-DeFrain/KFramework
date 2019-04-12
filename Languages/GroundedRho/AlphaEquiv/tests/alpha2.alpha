@@ -2,4 +2,4 @@
 
   {*a | *b} #alpha {*b | *a}
   
-// Output: false
+// Output: true

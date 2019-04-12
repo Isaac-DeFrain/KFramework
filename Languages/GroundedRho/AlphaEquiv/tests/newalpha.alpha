@@ -1,0 +1,13 @@
+// Alpha equivalence
+
+  new chan1 in {
+    for( @1 <- chan1 ){ Nil } | chan1!(2)
+  }
+  
+  #alpha
+  
+  new chan2 in {
+    for( @1 <- chan2 ){ Nil } | chan2!(2)
+  }
+  
+// Output: true
