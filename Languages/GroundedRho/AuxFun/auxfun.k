@@ -189,10 +189,10 @@ module AUXFUN
 //-------------
 //--- #size ---
 //-------------
-  rule #size Set( # ) => 0
+  rule #size Set( ) => 0
   rule #size Set( P:ProcList ) => #length(P)
   
-  rule #size { # } => 0
+  rule #size { }:RhoMap => 0
   rule #size { _:Proc : _:Proc } => 1
   rule #size { _:Proc : _:Proc , _:Proc : _:Proc } => 2
   rule #size { _:Proc : _:Proc , R:RhoKVPairs    } => 1 +Int #size {R}
@@ -200,7 +200,7 @@ module AUXFUN
 //-------------
 //--- #keys ---
 //-------------
-  rule #keys { # } => .Set
+  rule #keys { }:RhoMap => .Set
   rule #keys { A:Proc : _:Proc } => SetItem(A)
   rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => SetItem(A) SetItem(B)
   rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
@@ -211,13 +211,13 @@ module AUXFUN
 //--- #length ---
 //---------------
 // RhoTuple
-  rule #length ( # ) => 0
+  rule #length ( ):RhoTuple => 0
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
 
 // RhoList
-  rule #length [ # ] => 0
+  rule #length [ ]:RhoList => 0
   rule #length [ P:ProcList ] => #length(P)
 
 // Name(s)
