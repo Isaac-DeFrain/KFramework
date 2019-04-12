@@ -11,34 +11,39 @@ module STRHO-SYNTAX
 //-------------
 //--- NAMES ---
 //-------------
-  syntax             Name ::= Chan                                          // 
-                            | NameVar                                       // 
+  syntax             Name ::= Chan                                            // 
+                            | NameVar                                         // 
 
-  syntax             Chan ::= "@" "<" Context "," Proc ">"                  //  
+  syntax             Chan ::= "@" "<" Context "," Proc ">"                    //  
 
-  syntax          NameVar ::= Id                                            // 
+  syntax          NameVar ::= Id                                              // 
 
 //-----------------
 //--- PROCESSES ---
 //-----------------  
   syntax           Ground ::= Bool | Int | String
-  
-  syntax             Proc ::= "{" Proc "}"                               [bracket]
+
+// Usual suspects
+  syntax          RhoProc ::= "{" Proc "}"                         [bracket]
                             > "Nil"
 	        | Ground
-                            | "U(" Name ")"
                             | Receive
 	        | Send
 	        | Eval
-	        | "COMM(" Context ")"
-	        > Proc "|" Proc                              [assoc, comm]
+	        > Proc "|" Proc                        [left]
+
+  syntax             Proc ::= RhoProc
+
+// Spactime Calc specific productions
+  syntax             Proc ::= "U(" Name ")"                                   // location update
+                            | "COMM(" Context ")"                             // comm catalyst
 
   syntax             Proc ::= Context "[" Proc "]"
-                            | "#sub(" Proc ";" Name "/" Name ")"         [function]
+                            | "#sub(" Proc ";" Name "/" Name ")"   [function] // for semantic substitution
   
-  syntax          Receive ::= InputGuard "{" Proc "}"
+  syntax          Receive ::= Input "{" Proc "}"
   
-  syntax       InputGuard ::= "for" "(" Name ListenType Name ")"
+  syntax            Input ::= "for" "(" Name ListenType Name ")"
   
   syntax       ListenType ::= "<-" //| "<=" | "<!"
   
@@ -54,9 +59,9 @@ module STRHO-SYNTAX
   syntax      Placeholder ::= "[]"
 
   syntax          Context ::= Placeholder
-                            | InputGuard "{" Context "}"
+                            | Input "{" Context "}"
 	        | Name SendType "(" Context ")"
-	        > Proc "|" Context                           [assoc, comm]
+	        > Proc "|" Context                           [left]
 
   syntax        KVariable ::= Name | Placeholder
 
@@ -188,7 +193,7 @@ module STRHO
            </thread>)                                         [comm] //spawn single <thread/> holding fully substituted continuation
 
 // Semantic Substituion
-  rule #sub( (* X):Eval ; @ < C:Context , P:Proc > / X ) => C[P]
+  rule #sub( (* X):Eval ; @ < C:Context , P:Proc > / X ) => C[P]     // semantic substitution
   rule #sub( P:Proc ; A:Name / B:Name ) => P[A/B] requires #sort(P) =/=String "Eval" orBool #sort(A) =/=String "Chan"
 
   rule C:Context [ P:Proc ] => C[ P / [] ]        [anywhere, structural]
