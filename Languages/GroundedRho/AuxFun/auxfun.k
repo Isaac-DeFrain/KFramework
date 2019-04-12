@@ -9,9 +9,12 @@ module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
   syntax    Int ::= "#length"        RhoTuple                [function]  // #length: RhoTuple ------------------> Int
+                  | "#length"        RhoList                 [function]  // #length: RhoList -------------------> Int
                   | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
                   | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
                   | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#size"          RhoMap                  [function]  // #size: RhoMap ----------------------> Int
+                  | "#size"          RhoSet                  [function]  // #size: RhoSet ----------------------> Int
                   | "#bnum"      "(" Bind  ")"               [function]  // #bnum(_): Bind ---------------------> Int
                   | "#bnum"    "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
                   | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
@@ -24,7 +27,9 @@ module AUXFUN-SYNTAX
                   | "#rtype"  "(" Binds    ")"               [function]  // #rtype(_): Bind --------------------> Int
                   | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
 
-  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
+  syntax    Set ::= "#keys"         RhoMap                   [function]  // 
+                  | "#values"       RhoMap                   [function]  // does this make sense as a set?
+                  | "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
                   | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
                   | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
                   | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
@@ -64,7 +69,8 @@ module AUXFUN-SYNTAX
                   | "#append"  "(" Name  ";" Names ")"       [function]  //     #bvar(_): Name  x Names ------> Names
                   | "#append"  "(" Names ";" Names ")"       [function]  //     #bvar(_): Names x Names ------> Names
 
-  syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
+  syntax   Bool ::= "#key_in(" Proc ";" RhoMap ")"           [function]  // 
+                  | Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
                   | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  ------> Bool
                   | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names ------> Bool
                   | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind ------> Bool
@@ -179,14 +185,40 @@ module AUXFUN
   rule A:Bind  #ine ( B:Bind  ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Bind  #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Binds #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
+  
+//-------------
+//--- #size ---
+//-------------
+  rule #size Set( # ) => 0
+  rule #size Set( P:ProcList ) => #length(P)
+  
+  rule #size { # } => 0
+  rule #size { _:Proc : _:Proc } => 1
+  rule #size { _:Proc : _:Proc , _:Proc : _:Proc } => 2
+  rule #size { _:Proc : _:Proc , R:RhoKVPairs    } => 1 +Int #size {R}
+  
+//-------------
+//--- #keys ---
+//-------------
+  rule #keys { # } => .Set
+  rule #keys { A:Proc : _:Proc } => SetItem(A)
+  rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => SetItem(A) SetItem(B)
+  rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
+  
+  rule #key_in( Key:Proc ; R:RhoMap ) => Key in #keys R
 
 //---------------
 //--- #length ---
 //---------------
 // RhoTuple
+  rule #length ( # ) => 0
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
+
+// RhoList
+  rule #length [ # ] => 0
+  rule #length [ P:ProcList ] => #length(P)
 
 // Name(s)
   rule #length ( _:Name           ) => 1
