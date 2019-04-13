@@ -1,0 +1,11 @@
+// union - map
+
+  Set( *a , *b ).union( Set( 1 , 2 , *a ) )
+
+/*
+Output:
+        SetItem ( 1 )
+        SetItem ( 2 )
+        SetItem ( * a )
+        SetItem ( * b )
+*/
