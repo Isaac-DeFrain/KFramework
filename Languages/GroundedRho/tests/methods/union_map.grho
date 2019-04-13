@@ -1,11 +1,12 @@
 // union - map
 
-  Set( *a , *b ).union( Set( 1 , 2 , *a ) )
+  { *a:1 , *b:2 }.union( { 1:1 , 2:Nil , *c:2 }  )
 
 /*
 Output:
-        SetItem ( 1 )
-        SetItem ( 2 )
-        SetItem ( * a )
-        SetItem ( * b )
+        * a |-> 1
+        * b |-> 2
+        * c |-> 2
+        1 |-> 1
+        2 |-> Nil
 */
