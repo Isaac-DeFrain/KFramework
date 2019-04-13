@@ -278,12 +278,13 @@ module GRHO-SYNTAX
 
 // Relation to built-ins
   syntax             List ::= RhoList                            [function] // RhoList < List
-
+  
   syntax              Map ::= RhoMap                             [function] // RhoMap < Map
 
   syntax              Set ::= RhoSet                             [function] // RhoSet < Set
                             > Set ".union" "(" Set ")"
                             | RhoMap ".keys" "(" ")"
+	        | Map ".union" "(" Map ")"
 
   syntax             Proc ::= List | Map | Set
 
@@ -395,7 +396,7 @@ module GRHO
   rule { }:RhoMap => .Map                                       [anywhere] // 
   rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere] // 
   rule { P:Proc : Q:Proc , R:Proc : S:Proc } => P |-> Q R |-> S [anywhere] // 
-  rule { P:Proc : Q:Proc , R:RhoKVPairs } => P |-> Q {R}        [anywhere] // 
+  rule { P:Proc : Q:Proc , R:RhoKVPairs    } => P |-> Q {R}     [anywhere] // 
 
   rule Set( ) => .Set                                     [anywhere] // 
   rule Set( P:Proc ) => SetItem(P)                        [anywhere] // 
@@ -729,24 +730,14 @@ module GRHO
   rule { P:Proc : Q:Proc , R:RhoKVPairs }.getOrElse( A:Proc , Else:Proc ) => #if P ==K A #then Q #else { R }.getOrElse( A , Else ) #fi
 
 // keys
-  rule R:RhoMap .keys( ) => #keys R
+//  rule R:RhoMap .keys( ) => keys( R )
 
 // slice
   // string
   rule S:String .slice( A:Int , B:Int ) => substrString( S , A , B )
 
 // union
-  // maps
-  
-
-  // sets
-  rule Set( ).union( Set( ) ) => Set( )
-  rule Set( ).union( Set( P:ProcList ) ) => Set( P )
-  rule Set( P:ProcList ).union( Set( ) ) => Set( P )
-  rule Set( P:Proc  ).union( Set( Q:Proc  ) ) => Set( P , Q ) [anywhere]
-  rule Set( P:Proc  ).union( Set( Q:Procs ) ) => Set( P , Q ) [anywhere]
-  rule Set( P:Procs ).union( Set( Q:Proc  ) ) => Set( #append( P ; Q ) ) [anywhere]
-  rule Set( P:Procs ).union( Set( Q:Procs ) ) => Set( #append( P ; Q ) ) [anywhere]
+  rule A:Map .union( B:Map ) => A B [structural]
   rule A:Set .union( B:Set ) => A B [structural]
 
 // Eliminate unnecessary Nils
