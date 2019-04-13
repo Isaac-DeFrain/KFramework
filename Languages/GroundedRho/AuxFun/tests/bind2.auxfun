@@ -1,0 +1,7 @@
+// Bind of receive
+
+  #bind ( for( a,b,c,d <! x if *a < 1 or *b > 2 ){ Nil } )
+
+/*
+  Output: a,b,c,d <! x
+*/
