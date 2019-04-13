@@ -1,0 +1,5 @@
+// isProc
+
+  #isProc( y!(Nil | "3") )
+
+// Output: true

@@ -1,0 +1,5 @@
+// isName
+
+  #isName( @{ y!(1) | x!(2) }!(Nil) )
+
+// Output: false
