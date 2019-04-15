@@ -1,5 +1,12 @@
 // RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a monadic style
-// No patterns, only name variables
+/*
+TODO:
+ - Par
+ - Process variables (Variable type from context?)
+ - Matching (Add patterns)
+ - Environments
+ - Finish methods
+*/
 
 require "domains.k"
 require "substitution.k"
@@ -7,13 +14,13 @@ require "AuxFun/auxfun.k"
 
 // SYNTAX MODULE
 module GRHO-SYNTAX
-  import ARRAY
   import DOMAINS
   import SUBSTITUTION
 
 //-------------
 //--- NAMES ---
 //-------------
+// TODO: move Unforgeables to semantic module?
   syntax             Name ::= Chan                                          //    Chan < Name
                             | NameVar                                       // NaveVar < Name
 	        | "Empty"                                       //   Empty < Name // for listening for empty messages
@@ -55,8 +62,9 @@ module GRHO-SYNTAX
                             > Conditional                                   // Conditional < Proc
                             > Par                                           //         Par < Proc
 
-// Parallel
-  syntax              Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
+// Parallel composition
+// Pars should be like a multiset of processes...
+  syntax              Par ::= Proc "|" Proc                                 // _|_: Proc x Proc ---> Par
 
 // Receives - no mixed linear/peek/repeated/sequential
 // TODO: Input guards - e.g. for( y <- x if x > 0 ){ ... }
@@ -111,6 +119,9 @@ module GRHO-SYNTAX
                             | Rbinds                                        // repeated binds --- for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
 	        | Sbinds                                        // sequential binds - for( y1 << x1 ; ... ; yN << xN ){ P }, implicit
 
+  syntax         BindList ::= Bind
+                            | Binds
+
   syntax      GuardedBind ::= Bind Guard
   
   syntax     GuardedBinds ::= Binds Guard
@@ -124,9 +135,9 @@ module GRHO-SYNTAX
   syntax             Send ::= ConsumableSend                                //   ConsumableSend < Send
                             | UnconsumableSend                              // UnconsumableSend < Send
 
-  syntax   ConsumableSend ::= Name "!"  RhoTuple                            //  _!(_): Name x ProcListOrEmpty ---> ConsumableSend
+  syntax   ConsumableSend ::= Name "!"  RhoTuple                            //  _!(_): Name x ProcList ---> ConsumableSend
 
-  syntax UnconsumableSend ::= Name "!!" RhoTuple                            // _!!(_): Name x ProcListOrEmpty ---> UnconsumableSend
+  syntax UnconsumableSend ::= Name "!!" RhoTuple                            // _!!(_): Name x ProcList ---> UnconsumableSend
 
 // Eval
   syntax             Eval ::= "*" Name                             [strict] // *_: Name ---> Eval 
@@ -160,7 +171,7 @@ module GRHO-SYNTAX
 
   syntax           Method ::= "nth"                                         // nth element in list, string, tuple // syntax: Thing.nth( Int, ack(?) ) 
                             | "toByteArray"                                 // transform to bytearray - Thing.toByteArray( ack )
-                            | "hexToBytes"                                  // hex -> bytes
+                            | "hexToBytes"                                  // hex string -> bytes
                             | "union"                                       // map, set union - Map.union( Map ) , Set.union( Set )
                             | "diff"                                        // map, set difference?
                             | "add"                                         // add proc/ like single element concat? - list, set
@@ -194,7 +205,7 @@ module GRHO-SYNTAX
                             | "contract" Name "(" ")" "=" "{" Proc "}"      // empty name declaration list
 
 // Contract Invocation
-  syntax       Invocation ::= Name RhoTuple                                 // _ _: Name x RhoTuple
+  syntax       Invocation ::= Name RhoTuple                                 // _ _: Name x RhoTuple ---> Invocation
 
 // Collections
   syntax       Collection ::= RhoList                                       //  RhoList < Collection
@@ -240,7 +251,8 @@ module GRHO-SYNTAX
                             > Int                                           //    Int < AExp
                             | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
 	        | String                                        // String < AExp
-	        | AExp "++" AExp                     [function] // _++_: AExp x AExp ---> AExp (string concatenation)
+	        | String "++" String                 [function] // _++_: String x String ---> AExp (string concatenation)
+	        > "-" AExp                             [strict] //  -_: AExp -----------> AExp (negation)
                             > AExp "*"  AExp                       [strict] // _*_: AExp x AExp ----> AExp (multiplication)
 	        | AExp "/"  AExp                       [strict] // _/_: AExp x AExp ----> AExp (division)
                             > AExp "+"  AExp                       [strict] // _+_: AExp x AExp ----> AExp (addition)
@@ -262,11 +274,12 @@ module GRHO-SYNTAX
 	        | Name "!=" Name                                // _!=_: Name x Name ---> BExp (name equivalence) // currently in progress
 	        | Proc "==" Proc                                // _==_: Proc x Proc ---> BExp (sturtural equivalence) // currently in progress
 	        | Proc "!=" Proc                                // _==_: Proc x Proc ---> BExp (sturtural equivalence) // currently in progress
-                            > "not" BExp                                    // not_: BExp ----------> BExp
-                            > BExp "and" BExp                               //  and: BExp ----------> BExp
-                            > BExp  "or" BExp                               //   or: BExp ----------> BExp
+                            > "not" BExp                           [strict] // not_: BExp ----------> BExp
+                            > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
+                            > BExp "or"  BExp                   [strict(1)] //   or: BExp ----------> BExp
 
 // Bundles
+  // TODO: is the syntax bundle{ name } or bundle{ proc }?
   syntax           Bundle ::= "bundle+" "{" Proc "}"                        // write-only - can data send to channel
                             | "bundle-" "{" Proc "}"                        // read-only  - can receive data from channel
                             | "bundle0" "{" Proc "}"                        // neither read/write - how is the useful?
@@ -286,10 +299,8 @@ module GRHO-SYNTAX
                             | RhoMap ".keys" "(" ")"
 	        | Map ".union" "(" Map ")"
 
+// TODO: eliminate built-ins (or figure out what the hooks are for)
   syntax             Proc ::= List | Map | Set
-
-// Array
-  syntax             Proc ::= Array
 
 // For handling joins in configuration
   syntax         JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
@@ -309,7 +320,7 @@ module GRHO-SYNTAX
 
   syntax        KVariable ::= Name | Int
 
-  syntax            KItem ::= Name | Names | Proc | Procs | Set | IdNum | "free"
+  syntax            KItem ::= Name | Names | Proc | Procs | Set | IdNum | "undefined"
   
 /* TODO: add contract invocation(?): Name "(" ProcList ")"
              process field(?) -- like records?
@@ -356,7 +367,7 @@ module GRHO
           </rec>                                                     // 
         </receives>                                                  // 
       </tuplespace>                                                  // 
-      <reaction>                                                     //**where the magic happens**
+      <reaction color="green">                                       //**where the magic happens**
         <who>     .K     </who>                                      // continuation process
         <what>    .K    </what>                                      // msg process(es)
         <where>   .K   </where>                                      // binding variable(s)
@@ -367,13 +378,14 @@ module GRHO
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
 // Arithmetic
-  rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // 
-  rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] // 
-  rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] // 
-  rule I1:Int / I2:Int => I1 /Int I2                      [anywhere] // 
-  rule I1:Int % I2:Int => I1 %Int I2                      [anywhere] // modular reduction
+  rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
+  rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] // subtraction
+  rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] // multiplication
+  rule I1:Int / I2:Int => I1 /Int I2 requires I2 =/=Int 0 [anywhere] // division
+  rule I1:Int % I2:Int => I1 %Int I2 requires I2 =/=Int 0 [anywhere] // modular reduction
+  rule - I:Int => 0 -Int I                                [anywhere] // negation
   
-  rule S1:String ++ S2:String => S1 +String S2            [anywhere] // 
+  rule S1:String ++ S2:String => S1 +String S2            [anywhere] // string concatenation
 
 // Boolean
   rule I1:Int <= I2:Int => I1 <=Int I2                    [anywhere] // 
@@ -381,55 +393,71 @@ module GRHO
   rule I1:Int >= I2:Int => I1 >=Int I2                    [anywhere] // 
   rule I1:Int >  I2:Int => I1  >Int I2                    [anywhere] // 
   rule not B:Bool => notBool B                            [anywhere] // 
-  rule A:Bool and B:Bool => A andBool B                   [anywhere] // 
-  rule A:Bool or  B:Bool => A orBool  B                   [anywhere] // 
+  rule true  and B:Bool => B                              [anywhere] // short-circuited 
+  rule false and _:Bool => false                          [anywhere] // short-circuited 
+  rule true  or  _:Bool => true                           [anywhere] // short-circuited 
+  rule false or  B:Bool => B                              [anywhere] // short-circuited 
   
-  rule S1:String == S2:String => S1 ==String  S2          [anywhere] // 
-  rule S1:String != S2:String => S1 =/=String S2          [anywhere] // 
+  rule A:Ground == B:Ground => A ==K  B                   [anywhere] // equality of ground terms
+  rule A:Ground != B:Ground => A =/=K B                   [anywhere] // inequality of ground terms
 
 // Collections
-  rule [ ]:RhoList => .List                               [anywhere] // 
-  rule [ P:Proc ] => ListItem(P)                          [anywhere] // 
-  rule [ P:Proc , Q:Proc  ] => ListItem(P) ListItem(Q)    [anywhere] // 
-  rule [ P:Proc , Q:Procs ] => ListItem(P) [Q]            [anywhere] // 
+  // RhoLists are interpreted as built-in Lists
+  rule [ ]:RhoList => .List                               [anywhere]
+  rule [ P:Proc ] => ListItem(P)                          [anywhere]
+  rule [ P:Proc , Q:Proc  ] => ListItem(P) ListItem(Q)    [anywhere]
+  rule [ P:Proc , Q:Procs ] => ListItem(P) [Q]            [anywhere]
 
-  rule { }:RhoMap => .Map                                       [anywhere] // 
-  rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere] // 
-  rule { P:Proc : Q:Proc , R:Proc : S:Proc } => P |-> Q R |-> S [anywhere] // 
-  rule { P:Proc : Q:Proc , R:RhoKVPairs    } => P |-> Q {R}     [anywhere] // 
+  // RhoMaps are interpreted as built-in Maps
+  rule { }:RhoMap => .Map                                       [anywhere]
+  rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere]
+  rule { P:Proc : Q:Proc , R:Proc : S:Proc } => P |-> Q R |-> S [anywhere]
+  rule { P:Proc : Q:Proc , R:RhoKVPairs    } => P |-> Q {R}     [anywhere]
 
-  rule Set( ) => .Set                                     [anywhere] // 
-  rule Set( P:Proc ) => SetItem(P)                        [anywhere] // 
-  rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q)   [anywhere] // 
-  rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)       [anywhere] // 
+  // RhoSets are interpreted as built-in Sets
+  rule Set( ) => .Set                                     [anywhere]
+  rule Set( P:Proc ) => SetItem(P)                        [anywhere]
+  rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q)   [anywhere]
+  rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)       [anywhere]
 
-// Conditionals
+// Conditionals - desugar into built-in conditionals
   rule if ( B:Bool ) then P:Proc             => #if B #then P #else Nil #fi
   rule if ( B:Bool ) then P:Proc else Q:Proc => #if B #then P #else Q   #fi
 
 // Matching
-  rule P:Proc matches Q:Proc => P ==K Q
+  // matches binop desugars into match statement
+  rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }
   
   rule match P:Proc { Q:Proc :=> R:Proc } => #if P ==K Q #then R #else Nil #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCase  } => #if P ==K Q #then R #else match P { M } #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCases } => #if P ==K Q #then R #else match P { M } #fi
 
 // New Operator Semantics
-  rule new N:Name           in { P:Proc } => P[ unforgeable(!I:Int) / N ] // 
-  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } // 
-  rule new M:Name , N:Names in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] } // 
+  rule new N:Name           in { P:Proc } => P[ unforgeable(!I:Int) / N ]
+  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] }
+  rule new M:Name , N:Names in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] }
 
-// Par Operator Semantics
+// Some syntactic sugar
+// Contract - desugars into unconsumable receive
+  rule contract X:Name ( Y:NameList ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
+  rule contract X:Name (  ) = { P:Proc }           => for (   <= X ){ P }  [anywhere, structural]
+
+  rule for( @ tuple( A:Proc  ) <- X:Name ){ P:Proc } => for( @A <- X ){ P }         [anywhere, structural]
+  rule for( @ tuple( A:Proc  ) <= X:Name ){ P:Proc } => for( @A <= X ){ P }         [anywhere, structural]
+  rule for( @ tuple( A:Proc  ) <! X:Name ){ P:Proc } => for( @A <! X ){ P }         [anywhere, structural]
+  rule for( @ tuple( A:Proc  ) << X:Name ){ P:Proc } => for( @A << X ){ P }         [anywhere, structural]
+  rule for( @ tuple( A:Procs ) <- X:Name ){ P:Proc } => for( #quotes(A) <- X ){ P } [anywhere, structural]
+  rule for( @ tuple( A:Procs ) <= X:Name ){ P:Proc } => for( #quotes(A) <= X ){ P } [anywhere, structural]
+  rule for( @ tuple( A:Procs ) <! X:Name ){ P:Proc } => for( #quotes(A) <! X ){ P } [anywhere, structural]
+  rule for( @ tuple( A:Procs ) << X:Name ){ P:Proc } => for( #quotes(A) << X ){ P } [anywhere, structural]
+
+// Par Operator Semantics - concurrent execution of processes
   rule <thread>
-         <k> P:Proc | Q:Proc => . ...</k>                                  // 
-         <lenv>       B:Map       </lenv>                                  // 
-       </thread>                                                           // 
-       (.Bag => <thread> <k> P </k> <lenv> B </lenv> </thread>)            // 
-       (.Bag => <thread> <k> Q </k> <lenv> B </lenv> </thread>)  [unravel] // 
-
-// Contract
-  rule contract X:Name ( Y:NameList ) = { P:Proc } => for ( Y <= X ){ P }  [structural]  // syntactic sugar
-  rule contract X:Name (  ) = { P:Proc }           => for (  <= X ){ P }   [structural]  // syntactic sugar
+         <k> P:Proc | Q:Proc => . ...</k>
+         <lenv>       B:Map       </lenv>
+       </thread>
+       (.Bag => <thread> <k> P </k> <lenv> B </lenv> </thread>)
+       (.Bag => <thread> <k> Q </k> <lenv> B </lenv> </thread>)  [unravel]
 
 //-------------------------------
 //--- Send Operator Semantics ---
@@ -472,7 +500,7 @@ module GRHO
        (.Bag => <rec>                                                // 
                   <rchan>  #chan(R) </rchan>                         // receiving channel
                   <bvars>  #bvar(R) </bvars>                         // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)  </bnum>                         // 
+                  <bnum>   #bnum(R)  </bnum>                         // number of variables to bind
                   <rtype> #rtype(R) </rtype>                         // receive type
                   <cont>   #cont(R)  </cont>                         // continuation
                   <rbind>        B  </rbind>                         // 
@@ -481,7 +509,7 @@ module GRHO
 //-------------------
 //--- COMM EVENTS ---
 //-------------------
-// x!(Q) | y(z){P} and x equivN y => P[@Q / y]
+// x!(Q) | y(z){P} /\ x equivN y => P[@Q / y]
 
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
@@ -730,7 +758,8 @@ module GRHO
   rule { P:Proc : Q:Proc , R:RhoKVPairs }.getOrElse( A:Proc , Else:Proc ) => #if P ==K A #then Q #else { R }.getOrElse( A , Else ) #fi
 
 // keys
-//  rule R:RhoMap .keys( ) => keys( R )
+//  context HOLE:RhoMap .keys( )
+  rule R:RhoMap .keys( ) => #keys( R )
 
 // slice
   // string
