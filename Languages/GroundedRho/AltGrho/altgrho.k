@@ -33,7 +33,7 @@ module ALTGRHO-SYNTAX
 //-----------------
   syntax      Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --------> Proc
 	 > New                                           //        New < Proc
-                     > "Nil"                                         // Nil: -------------> Proc
+                     > "Nil"                           [klabel(Nil)] // Nil: -------------> Proc
                      | Collection                                    // Collection < Proc
                      | Ground                                        //     Ground < Proc
                      > AExp                                          //       AExp < Proc
@@ -42,10 +42,10 @@ module ALTGRHO-SYNTAX
                      | Receive                                       //    Receive < Proc
                      | Send                                          //       Send < Proc
                      | Bundle                                        //     Bundle < Proc
-                     > Par                                           //        Par < Proc
+                    // > Par                                           //        Par < Proc
 
 // Parallel
-  syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
+  syntax       Par ::= List{Proc, "|"}                               // _|_: Proc x Proc ---> Par
 
 // Receives - no mixed linear/peek/repeated
   syntax   Receive ::= SingleRec                                     // SingleRec < Receive, single listen receive
@@ -185,7 +185,7 @@ module ALTGRHO
     <T color="purple">                                               //
       <threads color="red">                                          //**activity threads**
         <thread multiplicity="*">                                    // collection of threads (concurrent activity)
-          <k> $PGM:Proc </k>                                         // programs and computations are process-based
+          <k> $PGM:Par </k>                                          // programs and computations are process-based
         </thread>                                                    //
       </threads>                                                     //**tuplespace**
       <tuplespace color="blue">                                      // stores sends and receives
