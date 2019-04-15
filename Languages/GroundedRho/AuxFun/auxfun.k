@@ -25,7 +25,7 @@ module AUXFUN-SYNTAX
                   | "#rtype"  "(" AnyBinds ")"               [function]  // #rtype(_): Bind --------------------> Int
                   | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
 
-  syntax    Set ::= "#keys"         RhoMap                   [function]  // 
+  syntax    Set ::= "#keys"         RhoMap                   [function]
                   | "#values"       RhoMap                   [function]  // does this make sense as a set?
                   | "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
                   | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
@@ -64,6 +64,7 @@ module AUXFUN-SYNTAX
                   | "#chan"    "(" Receive  ")"              [function]  //     #chan(_): Receive ----> Names
                   | "#bvar"    "(" AnyBinds ")"              [function]  //     #bvar(_): Binds ------> Names
                   | "#bvar"    "(" Receive  ")"              [function]  //     #bvar(_): Receive ----> Names
+                  | "#quotes"  "(" Procs    ")"              [function]  //   #quotes(_): Procs ------> Names
                   | "#append"  "(" Name  ";" Name  ")"       [function]  //     #bvar(_): Name  x Name -------> Names
                   | "#append"  "(" Names ";" Name  ")"       [function]  //     #bvar(_): Names x Name -------> Names
                   | "#append"  "(" Name  ";" Names ")"       [function]  //     #bvar(_): Name  x Names ------> Names
@@ -84,11 +85,6 @@ module AUXFUN-SYNTAX
                   | Bind  "#ine" "(" Bind  ")"               [function]  // _#ine_: Bind x Bind ------> Bool
                   | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds -----> Bool
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
-
-  syntax String ::= "toString("      Proc  ")"                           // toString(_): Proc --------> String
-                  | "toString("      Name  ")"                           // toString(_): Name --------> String
-                  | "toString("      Bind  ")"                           // toString(_): Bind --------> String
-                  | "toString("      Binds ")"                           // toString(_): Binds -------> String
 
 endmodule
 
@@ -208,9 +204,9 @@ module AUXFUN
   rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in  (C)
 
 // Name #in NameTuple
-  rule A:Name #in ( B:Name           ) => toString(A) ==String toString(B)
-  rule A:Name #in ( B:Name , C:Name  ) => toString(A) ==String toString(B) orBool toString(A) ==String toString(C)
-  rule A:Name #in ( B:Name , C:Names ) => toString(A) ==String toString(B) orBool A #in (C)
+  rule A:Name #in ( B:Name           ) => A ==K B
+  rule A:Name #in ( B:Name , C:Name  ) => A ==K B orBool A ==K C
+  rule A:Name #in ( B:Name , C:Names ) => A ==K B orBool A #in (C)
 
 // Bind(s) #in BindTuple
 // checks binding occurence set inclusion
@@ -358,6 +354,12 @@ module AUXFUN
   rule #bvar ( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvar(C)
   
   rule #bvar ( B:Binds _:Guard ) => #bvar (B)
+  
+//---------------
+//--- #quotes ---  
+//---------------
+  rule #quotes ( A:Proc , B:Proc  ) => @A , @B
+  rule #quotes ( A:Proc , B:Procs ) => @A , #quotes( B )
 
 //----------------
 //--- #chanlen ---
