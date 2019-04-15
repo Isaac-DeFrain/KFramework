@@ -32,9 +32,9 @@ module ALPHA
 
   syntax KResult ::= Proc | Name
   
-  rule #bound( I:Int ; new N:Name           in { P:Proc } ) => #bound( I +Int 1 ; P[ unforgeable(I) / N ] )
-  rule #bound( I:Int ; new M:Name , N:Name  in { P:Proc } ) => #bound( I +Int 1 ; new N in { P[ unforgeable(I) / M ] } )
-  rule #bound( I:Int ; new M:Name , N:Names in { P:Proc } ) => #bound( I +Int 1 ; new N in { P[ unforgeable(I) / M ] } )
+  rule #bound( I:Int ; new N:Name           in { P:Proc } ) => #bound( I ; P[ bound(I) / N ] )
+  rule #bound( I:Int ; new M:Name , N:Name  in { P:Proc } ) => #bound( I ; new N in { P[ bound(I) / M ] } )
+  rule #bound( I:Int ; new M:Name , N:Names in { P:Proc } ) => #bound( I ; new N in { P[ bound(I) / M ] } )
   
   rule #bound( _:Int ; G:Ground ) => G
   rule #bound( _:Int ; Nil ) => Nil
@@ -44,17 +44,17 @@ module ALPHA
   rule #bound( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ) => for(    bound(I) <- #bound(I;X) ){ #bound( I +Int 1 ; P[ bound(I) / Y] ) }
   rule #bound( I:Int ; for( Y:Chan    <- X:Name ){ P:Proc } ) => for( #bound(I;Y) <- #bound(I;X) ){ #bound( I ; P ) }
 
-  rule #bound( I:Int ; X:Name ! ( P:Proc ) ) => X ! ( #bound( I ; P ) )
+  rule #bound( I:Int ; X:Name ! ( P:Proc ) ) => #bound(I;X) ! ( #bound( I ; P ) )
   
   rule #bound( I:Int ; * X:Name ) => * #bound( I ; X )
-  
-  rule #bound( _:Int ; N:FreeName    ) => N
+
   rule #bound( _:Int ; N:BoundName   ) => N
-  rule #bound( _:Int ; U:Unforgeable ) => U
+  rule #bound( I:Int ; _:Unforgeable ) => bound(I)
   rule #bound( I:Int ; X:NameVar     ) => free(I)
   rule #bound( I:Int ; @ P:Proc      ) => @ #bound( I ; P )
   
 // Alpha Equivalence Predicate
+// TODO: commutativity/normalization of pars
   rule #bound( 0 ; P:Proc #alpha Q:Proc ) => #bound(0;P) ==K #bound(0;Q)
 
 endmodule
