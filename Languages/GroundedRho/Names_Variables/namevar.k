@@ -7,9 +7,9 @@ module NAMEVAR-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
 
-  syntax     Arg ::= NameListOrEmpty
-                   | ProcListOrEmpty
-                   | RhoKVPairsOrEmpty
+  syntax     Arg ::= NameList
+                   | ProcList
+                   | RhoKVPairList
                    | BindList
                    | MatchCaseList
                    | MethodAndArgs
@@ -49,7 +49,6 @@ syntax KResult ::= Ground | Eval | Set
 // Ground Terms
 rule N(   Nil     ) => .Set
 rule N( _:Ground  ) => .Set
-rule N(   #       ) => .Set
 
 // NameList
 rule N( X:NameVar     ) => SetItem(X)
@@ -63,11 +62,11 @@ rule N( A:Name , B:Names ) => SetItem(A) N(B)
 rule N( for( B:Bind  ) { P:Proc } ) => N(B) N(P)
 rule N( for( B:Binds ) { P:Proc } ) => N(B) N(P)
 rule N( _:NameList <- X:Name ) => SetItem(X)
-rule N(          # <- X:Name ) => SetItem(X)
+rule N(            <- X:Name ) => SetItem(X)
 rule N( _:NameList <! X:Name ) => SetItem(X)
-rule N(          # <! X:Name ) => SetItem(X)
+rule N(            <! X:Name ) => SetItem(X)
 rule N( _:NameList <= X:Name ) => SetItem(X)
-rule N(          # <= X:Name ) => SetItem(X)
+rule N(            <= X:Name ) => SetItem(X)
 rule N( A:Lbind ; B:Lbind  ) => N(A) N(B)
 rule N( A:Lbind ; B:Lbinds ) => N(A) N(B)
 rule N( A:Pbind ; B:Pbind  ) => N(A) N(B)
@@ -75,6 +74,7 @@ rule N( A:Pbind ; B:Pbinds ) => N(A) N(B)
 rule N( A:Rbind ; B:Rbind  ) => N(A) N(B)
 rule N( A:Rbind ; B:Rbinds ) => N(A) N(B)
 rule N( contract X:Name ( Y:NameList ) = { P:Proc } ) => N( for( Y <= X ){ P } )
+rule N( contract X:Name (  ) = { P:Proc } ) => N( for(  <= X ){ P } )
 
 // Sends
 rule N( X:Name !  ( P:Proc ) ) => SetItem(X) N(P)
@@ -95,14 +95,14 @@ rule N( tuple( P:ProcList ) ) => N(P)
 
 // RhoList
 rule N( [ P:ProcList ] ) => N(P)
-rule N( [ # ] ) => .Set
+rule N( [  ] ) => .Set
 
 // RhoSet
 rule N( Set( P:ProcList ) ) => N(P)
-rule N( Set( # ) ) => .Set
+rule N( Set(  ) ) => .Set
 
 // RhoMap
-rule N( { # } ) => .Set
+rule N( {  } ) => .Set
 rule N( { R:RhoKVPairs } ) => N(R)
 rule N( P:Proc : Q:Proc  ) => N(P) N(Q)
 rule N( P:Proc : Q:Proc , R:RhoKVPairs ) => N(P:Q) N(R)
@@ -141,10 +141,11 @@ rule N( A:MatchCase B:MatchCases ) => N(A) N(B)
 
 // Method
 rule N( P:Proc . M:MethodAndArgs ) => N(P) N(M)
-rule N( _:Method ( A:ProcListOrEmpty )) => N(A)
+rule N( _:Method ( A:ProcList )) => N(A)
+rule N( _:Method ( ) ) => .Set
 
 // Variable Reference
-rule N( X:NameVar = Y:NameVar ) => SetItem(X) SetItem(Y)
+rule N( =* X:NameVar ) => SetItem(X)
 
 // Resolving brackets
 rule N( { P:Proc } ) => N(P)
@@ -155,7 +156,6 @@ rule N( { P:Proc } ) => N(P)
 
 rule FV(   Nil         ) => .Set
 rule FV( _:Ground      ) => .Set
-rule FV(   #           ) => .Set
 rule FV( _:Unforgeable ) => .Set
 
 rule FV( X:NameVar ) => SetItem(X)
@@ -168,17 +168,18 @@ rule FV( P:Proc , Q:Proc  ) => FV(P) FV(Q)
 rule FV( P:Proc , Q:Procs ) => FV(P) FV(Q)
 
 rule FV( for( Y:NameList <- X:Name ) { P:Proc } ) => SetItem(X) ( FV(P) -Set FV(Y) )
-rule FV( for(          # <- X:Name ) { P:Proc } ) => SetItem(X) FV(P)
+rule FV( for(            <- X:Name ) { P:Proc } ) => SetItem(X) FV(P)
 rule FV( for( Y:NameList <= X:Name ) { P:Proc } ) => SetItem(X) ( FV(P) -Set FV(Y) )
-rule FV( for(          # <= X:Name ) { P:Proc } ) => SetItem(X) FV(P)
+rule FV( for(            <= X:Name ) { P:Proc } ) => SetItem(X) FV(P)
 rule FV( for( Y:NameList <! X:Name ) { P:Proc } ) => SetItem(X) ( FV(P) -Set FV(Y) )
-rule FV( for(          # <! X:Name ) { P:Proc } ) => SetItem(X) FV(P)
+rule FV( for(            <! X:Name ) { P:Proc } ) => SetItem(X) FV(P)
 rule FV( for( Y:NameList << X:Name ) { P:Proc } ) => SetItem(X) ( FV(P) -Set FV(Y) )
-rule FV( for(          # << X:Name ) { P:Proc } ) => SetItem(X) FV(P)
-rule FV( contract X:Name ( Y:NameListOrEmpty ) = { P:Proc } ) => SetItem(X) ( FV(P) -Set FV(Y) )
+rule FV( for(            << X:Name ) { P:Proc } ) => SetItem(X) FV(P)
+rule FV( contract X:Name ( Y:NameList ) = { P:Proc } ) => FV(X) ( FV(P) -Set FV(Y) )
+rule FV( contract X:Name (  ) = { P:Proc } ) => FV(X) FV(P)
 
-rule FV( X:Name ! ( P:Proc ) ) => FV(X) FV(P)
-rule FV( X:Name !!( P:Proc ) ) => FV(X) FV(P)
+rule FV( X:Name ! ( P:ProcList ) ) => FV(X) FV(P)
+rule FV( X:Name !!( P:ProcList ) ) => FV(X) FV(P)
 
 rule FV( P:Proc | Q:Proc ) => FV(P) FV(Q)
 
@@ -219,21 +220,21 @@ rule BV( P:ProcPat   ) => intersectSet( BN(P) , V(P) )
 // Receive Names
 rule RN( { P:Proc } ) => RN(P)
 
-rule RN( for( _:NameListOrEmpty <- X:Name ) { _:Proc } ) => SetItem(X)
-rule RN( for( _:NameListOrEmpty <= X:Name ) { _:Proc } ) => SetItem(X)
-rule RN( for( _:NameListOrEmpty <! X:Name ) { _:Proc } ) => SetItem(X)
-rule RN( for( _:NameListOrEmpty << X:Name ) { _:Proc } ) => SetItem(X)
+rule RN( for( _:NameList <- X:Name ) { _:Proc } ) => SetItem(X)
+rule RN( for( _:NameList <= X:Name ) { _:Proc } ) => SetItem(X)
+rule RN( for( _:NameList <! X:Name ) { _:Proc } ) => SetItem(X)
+rule RN( for( _:NameList << X:Name ) { _:Proc } ) => SetItem(X)
 
-rule RN( for( _:NameListOrEmpty <- X:Name ; A:Lbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty <- X:Name ; A:Lbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty <= X:Name ; A:Rbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty <= X:Name ; A:Rbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty <! X:Name ; A:Pbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty <! X:Name ; A:Pbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty << X:Name ; A:Sbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
-rule RN( for( _:NameListOrEmpty << X:Name ; A:Sbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <- X:Name ; A:Lbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <- X:Name ; A:Lbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <= X:Name ; A:Rbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <= X:Name ; A:Rbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <! X:Name ; A:Pbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList <! X:Name ; A:Pbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList << X:Name ; A:Sbind  ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
+rule RN( for( _:NameList << X:Name ; A:Sbinds ){ P:Proc } ) => SetItem(X) RN( for( A ){ P:Proc } )
 
-rule RN( _:Name ! ( P:Proc ) ) => .Set
+rule RN( _:Send ) => .Set
 
 rule RN( P:Proc | Q:Proc ) => RN(P) RN(Q)
 
@@ -244,7 +245,7 @@ rule SN( { P:Proc } ) => SN(P)
 
 rule SN( _:Receive )  => .Set
 
-rule SN( X:Name ! ( _:Proc ) ) => SetItem(X)
+rule SN( X:Name ! ( _:ProcList ) ) => SetItem(X)
 
 rule SN( P:Proc | Q:Proc ) => SN(P) SN(Q)
 
