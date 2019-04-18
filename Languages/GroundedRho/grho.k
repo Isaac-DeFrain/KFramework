@@ -181,7 +181,7 @@ module GRHO-SYNTAX
                             | "getOrElse"                                   // getOrElse - map - get or side condition
                             | "set"                                         // set
 	        | "contains"                                    // contains predicate - 
-                            | "keys"                                        // set of keys of a map - map.keys( )
+                            | "mapkeys"                                     // set of keys of a map - map.mapkeys( )
 	        | "values"                                      // list of values of a map - map.values( )
                             | "size"                                        // number of elements in list, map, set, tuple
                             | "length"                                      // length of list, tuple - List.length() , Tuple.length()
@@ -296,7 +296,7 @@ module GRHO-SYNTAX
 
   syntax              Set ::= RhoSet                             [function] // RhoSet < Set
                             > Set ".union" "(" Set ")"
-                            | RhoMap ".keys" "(" ")"
+                            | Map ".mapkeys" "(" ")"
 	        | Map ".union" "(" Map ")"
 
 
@@ -759,8 +759,7 @@ module GRHO
   rule { P:Proc : Q:Proc , R:RhoKVPairs }.getOrElse( A:Proc , Else:Proc ) => #if P ==K A #then Q #else { R }.getOrElse( A , Else ) #fi
 
 // keys
-//  context HOLE:RhoMap .keys( )
-  rule R:RhoMap .keys( ) => #keys( R )
+  rule R:Map .mapkeys( ) => keys( R )
 
 // slice
   // string
@@ -771,8 +770,8 @@ module GRHO
   rule A:Set .union( B:Set ) => A B [structural]
 
 // Eliminate unnecessary Nils
-  rule    Nil | P:Proc => P                               [anywhere, structural]
-  rule P:Proc | Nil    => P                               [anywhere, structural]
+  rule    Nil | P:Proc => P  [anywhere, structural]
+  rule P:Proc | Nil    => P  [anywhere, structural]
 
 // Dissolve computationally meaningless threads
   rule <thread> <k> .K  </k> <env> .Map </env> </thread> => .Bag  [structural] //empty threads
