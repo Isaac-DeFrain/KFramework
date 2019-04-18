@@ -1,0 +1,41 @@
+// getOrElse method
+
+  { 2:*a , *a:"yup" }.get( *a )
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        "yup"
+      </k>
+      <env>
+        .Map
+      </env>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+</T>
+*/
