@@ -5,7 +5,9 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length"        RhoTuple                [function]  // #length: RhoTuple ------------------> Int
+  syntax    Int ::= "#length"    "(" ProcList ")"            [function]  // #length(_): ProcList ---------------> Int
+                  | "#length"    "("          ")"            [function]  // #length( ):  -----------------------> Int
+                  | "#length"        RhoTuple                [function]  // #length( ): RhoTuple ---------------> Int
                   | "#length"        RhoList                 [function]  // #length: RhoList -------------------> Int
                   | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
                   | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
@@ -25,9 +27,7 @@ module AUXFUN-SYNTAX
                   | "#rtype"  "(" AnyBinds ")"               [function]  // #rtype(_): Bind --------------------> Int
                   | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
 
-  syntax    Set ::= "#keys"         RhoMap                   [function]
-                  | "#values"       RhoMap                   [function]  // does this make sense as a set?
-                  | "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
+  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
                   | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
                   | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
                   | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
@@ -75,8 +75,7 @@ module AUXFUN-SYNTAX
   
   syntax   BExp ::= "#guard" "(" Receive ")"                 [function]  // #guard(_): Receive -------> BExp
 
-  syntax   Bool ::= "#key_in(" Proc ";" RhoMap ")"           [function]  // 
-                  | Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
+  syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
                   | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  ------> Bool
                   | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names ------> Bool
                   | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind ------> Bool
@@ -85,6 +84,11 @@ module AUXFUN-SYNTAX
                   | Bind  "#ine" "(" Bind  ")"               [function]  // _#ine_: Bind x Bind ------> Bool
                   | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds -----> Bool
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
+                  | Proc "#in_keys" RhoMap                   [function]
+                  | Proc "#in_set" RhoSet                    [function]
+
+  syntax RhoSet ::= "#keys"         RhoMap                   [function]
+                  | RhoSet "#union" RhoSet                   [function]
 
 endmodule
 
@@ -199,9 +203,9 @@ module AUXFUN
 //--- #in ---
 //-----------
 // Int #in RhoTuple
-  rule A:Int #in ( B:Int           ) => A ==Int B
-  rule A:Int #in ( B:Int , C:Int   ) => A ==Int B orBool A ==Int C
-  rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in  (C)
+  rule A:Int #in ( B:Int           ,) => A ==Int B
+  rule A:Int #in ( B:Int , C:Int   ,) => A ==Int B orBool A ==Int C
+  rule A:Int #in ( B:Int , C:Procs ,) => A ==Int B orBool A #in  (C ,)
 
 // Name #in NameTuple
   rule A:Name #in ( B:Name           ) => A ==K B
@@ -233,25 +237,35 @@ module AUXFUN
 //-------------
 //--- #keys ---
 //-------------
-  rule #keys { }:RhoMap => .Set
-  rule #keys { A:Proc : _:Proc } => SetItem(A)
-  rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => SetItem(A) SetItem(B)
+/*  rule #keys { }:RhoMap => Set( )
+  rule #keys { A:Proc : _:Proc } => Set( A )
+  rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => Set( A , B )
   rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
-  
-  rule #key_in( Key:Proc ; R:RhoMap ) => Key in #keys R
+*/
+//--------------
+//--- #union ---
+//--------------
+  rule Set( ) #union S:RhoSet => S
+  rule S:RhoSet #union Set( ) => S
+  rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
+//  rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 
 //---------------
 //--- #length ---
 //---------------
-// RhoTuple
-  rule #length ( ):RhoTuple => 0
+// ProcList
+  rule #length ( ) => 0
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
 
 // RhoList
-  rule #length [ ]:RhoList => 0
-  rule #length [ P:ProcList ] => #length(P)
+  rule #length [ ,] => 0
+  rule #length [ P:ProcList ,] => #length(P)
+  
+// RhoTuple
+  rule #length ( ,) => 0
+  rule #length ( P:ProcList ,) => #length(P)
 
 // Name(s)
   rule #length ( _:Name           ) => 1
@@ -360,6 +374,21 @@ module AUXFUN
 //---------------
   rule #quotes ( A:Proc , B:Proc  ) => @A , @B
   rule #quotes ( A:Proc , B:Procs ) => @A , #quotes( B )
+
+//------------------
+//--- Predicates ---
+//------------------
+// Maps
+  rule _:Proc #in_keys { }:RhoMap => false
+  rule A:Proc #in_keys { Key:Proc : Val:Proc } => A ==K Key
+  rule A:Proc #in_keys { Key:Proc : Val:Proc , KV:RhoKVPair   } => A ==K Key orBool A #in_keys { KV  }
+  rule A:Proc #in_keys { Key:Proc : Val:Proc , KVs:RhoKVPairs } => A ==K Key orBool A #in_keys { KVs }
+  
+// Sets
+  rule _:Proc #in_set Set( ) => false
+  rule A:Proc #in_set Set( Elm:Proc ) => A ==K Elm
+  rule A:Proc #in_set Set( Elm1:Proc , Elm2:Proc  ) => A ==K Elm1 orBool A ==K Elm2
+  rule A:Proc #in_set Set( Elm1:Proc , Rest:Procs ) => A ==K Elm1 orBool A #in_set Set( Rest )
 
 //----------------
 //--- #chanlen ---
