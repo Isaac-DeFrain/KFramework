@@ -1,0 +1,5 @@
+// Alpha equivalence
+
+  new a in {*a | *a} #alpha new a,b in {*a | *b}
+  
+// Output: false

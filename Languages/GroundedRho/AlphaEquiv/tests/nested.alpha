@@ -1,0 +1,3 @@
+// Nested pattern
+
+  for( @x!(new y in { *y } ) <- @Nil ){ *x }
