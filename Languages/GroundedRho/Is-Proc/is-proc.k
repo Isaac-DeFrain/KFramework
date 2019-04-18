@@ -2,34 +2,28 @@
 require "../Names_Variables/namevar.k"
 
 module IS-PROC-SYNTAX
-  import NAMEVAR
-// the #isProc predicate
-// currently checks to see if a ProcOrPat corresponds to a process
-// will ultimately check to see if the type corresponds to a process, i.e. only has one inhabitant.
+  import DOMAINS
+  import NAMEVAR-SYNTAX
+// the #Proc? predicate checks to see if input corresponds to a process
+// the #Pat? predicate checks to see if input corresponds to a process with free variables
 
-// Why is the type needed here instead of using the process/pattern directly?
-
-  syntax BExp ::= "#isProc" ProcOrPat     [function]
-         //    | "#isProc" Type       [function]
+  syntax Bool ::= "#Proc?(" K ")"
+                | "#Pat?("  K ")"
 
 endmodule
 
 module IS-PROC
   import IS-PROC-SYNTAX
-  import SET
-  import BOOL
+  import NAMEVAR
 
   configuration
   <T>
-    <k> #isProc $PGM:ProcOrPat </k>
+    <k> $PGM:K </k>
   </T>
 
-  syntax KResult ::= Bool
+  syntax KResult ::= Bool | Set
 
-  rule #isProc P:Proc    => V( P ) <=Set .Set [strict]
-  rule #isProc P:ProcPat => V( P ) <=Set .Set [strict]
-
-// Semantics
-// StrProc =/=String "quote" and not a pattern
+  rule #Proc?( P:Proc ) => FV( P ) <=Set .Set
+  rule #Pat?(  P:Proc ) => notBool( FV( P ) <=Set .Set )
 
 endmodule
