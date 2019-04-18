@@ -1,8 +1,8 @@
 // Grounded rho - comm with tuple message
 
-  x!(1,2,3,bundle+{Nil}) | for( a,b,c,d <- x ){ (*d,*b,*a,*c) }
+  x!(1,2,3,bundle+{Nil}) | for( a,b,c,d <- x ){ (*d,*b,*a,*c,) }
 
 /*
-  ( bundle+{Nil} , 2 , 1 , 3 )
+  ( bundle+{Nil} , 2 , 1 , 3 , )
   Whoop whoop! YAY!
 */

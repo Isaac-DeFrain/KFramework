@@ -1,0 +1,41 @@
+// New - nested
+
+  new x in { new x in { *x } }
+
+/*
+  Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        * unforgeable( 3 )
+      </k>
+      <env>
+        .Map
+      </env>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+</T>
+*/
