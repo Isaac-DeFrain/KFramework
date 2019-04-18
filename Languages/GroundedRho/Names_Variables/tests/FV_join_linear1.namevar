@@ -1,0 +1,12 @@
+// Free variables
+
+  FV( for( @Nil <- @true ; y <- u ; u <- @1 ){ *y | *u | for( x <- y ){ *x } } )
+
+/*
+Output:
+<T>
+  <k>
+    SetItem ( u )
+  </k>
+</T>
+*/

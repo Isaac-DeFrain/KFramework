@@ -1,0 +1,11 @@
+
+  FV( for( x , y <- @1 ){ *x | y!(*z) } )
+
+ /*
+Output: // set of free variables
+<T>
+  <k>
+    SetItem ( z )
+  </k>
+</T>
+ */

@@ -1,3 +1,3 @@
-// Name variables - send
+// Free variables
 
   NV( @"a"!(x!(*z) | for( y <- u ){ for( @u <- a ){ u } } ) )
