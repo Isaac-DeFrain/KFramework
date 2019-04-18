@@ -260,8 +260,8 @@ module AUXFUN
   rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
 
 // RhoList
-  rule #length [ ,] => 0
-  rule #length [ P:ProcList ,] => #length(P)
+  rule #length [ ] => 0
+  rule #length [ P:ProcList ] => #length(P)
   
 // RhoTuple
   rule #length ( ,) => 0
