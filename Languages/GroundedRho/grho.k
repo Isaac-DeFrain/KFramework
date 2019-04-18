@@ -217,8 +217,8 @@ module GRHO-SYNTAX
                             | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax          RhoList ::= "[" ProcList ",]"                             // [_]: ProcList ----> RhoList
-                            | "[" ",]"                                      // empty list
+  syntax          RhoList ::= "[" ProcList "]"                              // [_]: ProcList ----> RhoList
+                            | "[" "]"                                       // empty list
 
 // Process maps
   syntax           RhoMap ::= "{" RhoKVPairList "}"                         // {_}: RhoKVPairList ---> RhoMap
@@ -292,7 +292,7 @@ module GRHO-SYNTAX
                             | "#isName(" K ")"                              // #isName(_): K ---> Bool
 
 // Relation to built-ins
-  syntax             List ::= RhoList                            [function] // RhoList < List
+//syntax             List ::= RhoList                            [function] // RhoList < List
   
   syntax              Map ::= RhoMap                             [function] // RhoMap < Map
 
@@ -396,13 +396,12 @@ module GRHO
   rule A:Ground != B:Ground => A =/=K B                   [anywhere] // inequality of ground terms
 
 // Collections
-// TODO: Lists don't seem to work nicely, consider keeping lists native
-  // RhoLists are interpreted as built-in Lists
-  rule [ ,]:RhoList => .List                             [anywhere, structural]
-  rule [ P:Proc ,] => ListItem(P)                        [anywhere, structural]
-  rule [ P:Proc , Q:Proc  ,] => ListItem(P) ListItem(Q)  [anywhere, structural]
-  rule [ P:Proc , Q:Procs ,] => ListItem(P) [Q ,]        [anywhere, structural]
-
+// TODO: Keep lists native
+/*rule [ ]:RhoList => .List                             [anywhere, structural]
+  rule [ P:Proc ] => ListItem(P)                        [anywhere, structural]
+  rule [ P:Proc , Q:Proc  ] => ListItem(P) ListItem(Q)  [anywhere, structural]
+  rule [ P:Proc , Q:Procs ] => ListItem(P) [Q ]         [anywhere, structural]
+*/
   // RhoMaps are interpreted as built-in Maps
   rule { }:RhoMap => .Map                                       [anywhere, structural]
   rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere, structural]
@@ -749,16 +748,18 @@ module GRHO
   rule M:Map .getOrElse( Key:Proc , Else:Proc ) => #if ( Key in_keys(M) ) #then M[Key] #else Else #fi
   
   // legnth (list & tuple)
-  rule L:List .length( ) => size(L)
+  rule L:RhoList  .length( ) => #length L
   rule T:RhoTuple .length( ) => #length T
 
   // mapkeys (maps)
   rule M:Map .keys( ) => keys( M )
   
   // nth (lists & tuples)
-  rule L:List .nth( A:Int ) => L[A]
-  rule [ ,] .nth( _ ) => Nil
-  
+  rule [ ] .nth( _ ) => Nil
+  rule [ A:Proc ] .nth( I:Int ) => #if I ==Int 0 #then A #else Nil #fi
+  rule [ A:Proc , B:Proc  ].nth( I:Int ) => #if I ==Int 0 #then A #else [ B ].nth( I -Int 1 ) #fi
+  rule [ A:Proc , B:Procs ].nth( I:Int ) => #if I ==Int 0 #then A #else [ B ].nth( I -Int 1 ) #fi
+
   rule ( ,) .nth( _ ) => Nil
   rule ( P:Proc ,).nth( I:Int ) => #if I ==Int 0 #then P #else Nil #fi
   rule ( P:Proc , Q:Proc  ,).nth( I:Int ) => #if I ==Int 0 #then P #else ( Q ,).nth( I -Int 1 ) #fi
@@ -772,8 +773,9 @@ module GRHO
   rule S:Set .size( ) => size(S)
 
   // slice (lists & strings)
-  rule L:List .slice( A:Int , B:Int ) => range( L , A , B )
-  rule S:String .slice( A:Int , B:Int ) => substrString( S , A , B )
+  // TODO
+  //rule L:RhoList .slice( A:Int , B:Int ) => range( L , A , B )
+  rule S:String  .slice( A:Int , B:Int ) => substrString( S , A , B )
 
   // union (maps & sets)
   rule M1:Map .union( M2:Map ) => M1 M2
