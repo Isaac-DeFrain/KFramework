@@ -6,4 +6,4 @@
   
   new x,y in { *y }
   
-// Output: true
+// Output: false

@@ -3,9 +3,9 @@
   new chan1, chan2, chan3 in { for( @1 <- chan1 ){ Nil } | chan2!("a") | *chan3 }
 
 /*
-Output: (new a,b in {...} implemented as new a in { new b in {...} })
+Output:
 
-    new bound( 0 ) in { new bound( 1 ) in { new bound( 2 ) in { for ( @ 1 <- bound( 0 ) ) { Nil } | bound( 1 ) ! ( "a" ) | * bound( 2 ) } } }
+    new bound( 0 ) , bound( 1 ) , bound( 2 ) in { for ( @ 1 <- bound( 0 ) ) { Nil } | bound( 1 ) ! ( "a" ) | * bound( 2 ) }
     
 From RNode:
     

@@ -2,7 +2,6 @@
 
 /*
 TODO:
- - new declarations of several names should not be nested
  - how to handle several name listens & joins?
 */
 
@@ -13,6 +12,8 @@ module ALPHA-SYNTAX
   
   syntax         Proc ::= "#deBruijn(" Int ";" Proc  ")"  [function, klabel(deBruijnP)]
 	    | Proc "#alpha" Proc              [klabel(alpha)]
+	    | "#deBruijn(" Int ";" Name  ";" Proc ")"
+	    | "#deBruijn(" Int ";" Names ";" Proc ")"
 
   syntax         Name ::= "#deBruijn(" Int ";" Name  ")"  [function, klabel(deBruijnN)]
 //                      | "#deBruijn(" Int "," Int ";" Name ")"  [function, klabel(deBruijnN)]
@@ -35,6 +36,7 @@ endmodule
 
 module ALPHA
   import ALPHA-SYNTAX
+  import AUXFUN
 
   configuration
   <T color="purple">
@@ -43,11 +45,18 @@ module ALPHA
 
   syntax KResult ::= Proc | Name | Bool
 
-// Declarations of several new names implemented as nested declarations
-// this makes it so that new x,y in { P } is alpha equivalent with new x in { new y in { P } }
+// New Name Declarations
   rule #deBruijn( I:Int ; new N:Name           in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / N ] ) }
-  rule #deBruijn( I:Int ; new M:Name , N:Name  in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; new N in { P[ bound(I) / M ] } ) }
-  rule #deBruijn( I:Int ; new M:Name , N:Names in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; new N in { P[ bound(I) / M ] } ) }
+  rule #deBruijn( I:Int ; new M:Name , N:Name  in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
+  rule #deBruijn( I:Int ; new M:Name , N:Names in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
+  
+  rule new A:Name in { #deBruijn( I:Int ; M:Name ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / M ] ) }
+  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Name  ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
+  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
+  
+  rule new A:Names in { #deBruijn( I:Int ; M:Name ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; P[ bound(I) / M ] ) }
+  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Name  ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
+  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
 
 // Ground Terms
   rule #deBruijn( _:Int ; G:Ground ) => G
@@ -74,8 +83,8 @@ module ALPHA
 
 // Sends
 // index constant on name and proc
-  rule #deBruijn( I:Int ; X:Name !  ( P:Proc ) ) => #deBruijn(I;X) ! ( #deBruijn( I ; P ) )
-  rule #deBruijn( I:Int ; X:Name !! ( P:Proc ) ) => #deBruijn(I;X) ! ( #deBruijn( I ; P ) )
+  rule #deBruijn( I:Int ; X:Name !  ( P:Proc ) ) => #deBruijn(I;X) !  ( #deBruijn( I ; P ) )
+  rule #deBruijn( I:Int ; X:Name !! ( P:Proc ) ) => #deBruijn(I;X) !! ( #deBruijn( I ; P ) )
 
 // Evals
 // index is constant
