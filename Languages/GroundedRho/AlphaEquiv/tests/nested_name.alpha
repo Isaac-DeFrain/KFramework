@@ -1,15 +1,14 @@
-// Nested name pattern
+// De Bruijn levels - nested name pattern
 
   for( @{x!( Nil )} <- @Nil ){ for( @{x!( Nil )} <- @Nil ){ *x } }
   
 /*
 Output:
-<T>
-  <k>
+
     for ( @ ( free( 1 ) ! ( Nil ) ) <- @ Nil ) { for ( @ ( free( 2 ) ! ( Nil ) ) <- @ Nil ) { * free( 2 ) } }
-  </k>
-</T>
 
 From RNode: 
-for( @{@{x0}!(Nil)} <- @{Nil} ) { for( @{@{x1}!(Nil)} <- @{Nil} ) { x } }
+
+    for( @{@{x0}!(Nil)} <- @{Nil} ) { for( @{@{x1}!(Nil)} <- @{Nil} ) { x } }
+
 */

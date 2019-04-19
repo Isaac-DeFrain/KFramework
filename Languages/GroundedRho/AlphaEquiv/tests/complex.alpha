@@ -1,3 +1,18 @@
-// Alpha equivalence
+// De Bruijn levels
 
   x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b)
+  
+/* Output: 
+   
+   free( 0 ) ! ( for ( bound( 0 ) <- @ 1 ) { 
+   
+     * bound( 0 ) | * free( 1 ) | for ( bound( 1 ) <- free( 1 ) ) { 
+     
+       for ( bound( 2 ) <- bound( 1 ) ) { 
+       
+         * bound( 1 ) | * bound( 2 ) 
+       } 
+     } 
+   } ) | free( 0 ) ! ( * free( 0 ) )
+
+*/

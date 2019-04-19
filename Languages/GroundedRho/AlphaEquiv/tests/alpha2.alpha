@@ -1,4 +1,5 @@
 // Alpha equivalence
+// structurally equiv, not alpha equiv
 
   new a,b in {*a | *b} #alpha new a,b in {*b | *a}
   

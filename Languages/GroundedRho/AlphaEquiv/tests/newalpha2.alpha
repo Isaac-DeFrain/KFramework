@@ -1,0 +1,9 @@
+// Alpha equivalence
+
+  new x in { new y in { *y } }
+  
+  #alpha
+  
+  new y in { new x in { *x } }
+  
+// Output: true

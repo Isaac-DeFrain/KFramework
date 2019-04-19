@@ -1,11 +1,9 @@
 // Alpha equivalence
 
-  new chan1, chan2 in {
-    for( @1 <- chan1 ){ Nil } | chan2!(2)
-  }
+  new x, y in { for( @1 <- x ){ Nil } | y!(Nil) }
   
   #alpha
   
-  {for( @1 <- unforgeable(0) ){ Nil } | unforgeable(1)!(2)}
+  new bound(0) in { new bound(1) in { for( @1 <- bound(0) ){ Nil } | bound(1)!(Nil) } }
   
 // Output: true

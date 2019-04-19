@@ -1,9 +1,9 @@
 // Alpha equivalence
 
-  new a,b in {*b | *a}
+  new x in { new y in { *y } }
   
   #alpha
   
-  new b,a in {*a | *b}
+  new x,y in { *y }
   
 // Output: true

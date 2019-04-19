@@ -1,3 +1,14 @@
-// Nested pattern
+// De Bruijn levels - nested pattern
 
   for( @x!(new y in { *y } ) <- @Nil ){ *x }
+  
+/*
+Output:
+
+    for ( @ ( free( 1 ) ! ( new bound( 1 ) in { * bound( 1 ) } ) ) <- @ Nil ) { * free( 1 ) }
+    
+From RNode:
+    
+    
+
+*/

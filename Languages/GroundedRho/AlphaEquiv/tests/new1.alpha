@@ -1,0 +1,5 @@
+// De Bruijn Levels
+
+  new x in { new x in { *x } }
+  
+// Output: new bound( 0 ) in { new bound( 1 ) in { * bound( 1 ) } }

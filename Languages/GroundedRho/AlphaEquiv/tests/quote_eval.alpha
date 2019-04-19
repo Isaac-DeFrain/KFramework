@@ -1,0 +1,14 @@
+// De Bruijn levels
+
+  new x in { x!( * @ 1 ) }
+
+/*
+Output: 
+
+    new bound( 0 ) in { bound( 0 ) ! ( * ( @ 1 ) ) }
+    
+From RNode:
+    
+    
+
+*/

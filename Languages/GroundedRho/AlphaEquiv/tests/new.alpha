@@ -1,5 +1,14 @@
-// Alpha equivalence
+// De Bruijn levels
 
-  new chan1, chan2, chan3 in {
-    for( @1 <- chan1 ){ Nil } | chan2!("a") | *chan3
-  }
+  new chan1, chan2, chan3 in { for( @1 <- chan1 ){ Nil } | chan2!("a") | *chan3 }
+
+/*
+Output: (new a,b in {...} implemented as new a in { new b in {...} })
+
+    new bound( 0 ) in { new bound( 1 ) in { new bound( 2 ) in { for ( @ 1 <- bound( 0 ) ) { Nil } | bound( 1 ) ! ( "a" ) | * bound( 2 ) } } }
+    
+From RNode:
+    
+    new x0, x1, x2 in { x1!("a") | for( @{1} <- x0 ) { Nil } | *x2 }
+
+*/

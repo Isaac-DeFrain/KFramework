@@ -1,3 +1,0 @@
-// Alpha equivalence
-
-  @Nil!(for( @1 <- x ){ Nil } ) 
