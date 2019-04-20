@@ -3,6 +3,7 @@
 /*
 TODO:
  - how to handle several name listens & joins?
+ - more tests for substitutions in continuations for listens on chan
 */
 
 require "../grho.k"
@@ -10,27 +11,27 @@ require "../grho.k"
 module ALPHA-SYNTAX
   import GRHO-SYNTAX
   
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc  ")"  [function, klabel(deBruijnP)]
-	    | Proc "#alpha" Proc              [klabel(alpha)]
-	    | "#deBruijn(" Int ";" Name  ";" Proc ")"
-	    | "#deBruijn(" Int ";" Names ";" Proc ")"
-
-  syntax         Name ::= "#deBruijn(" Int ";" Name  ")"  [function, klabel(deBruijnN)]
-//                      | "#deBruijn(" Int "," Int ";" Name ")"  [function, klabel(deBruijnN)]
+  syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ")" [function]
+                        | "#deBruijn(" Int ";" Names ";" Proc ")" [function]
   
+  syntax         Proc ::= "#deBruijn(" Int ";" Proc   ")"  [function]
+                        | "new" Name  "in" "{" DBProc "}"  [function]
+                        | "new" Names "in" "{" DBProc "}"  [function]
+                        | Proc "#alpha" Proc
+
+  syntax         Name ::= "#deBruijn(" Int ";" Name  ")"   [function]
+                        | BoundName
+                        | FreeName
+//                      | "#deBruijn(" Int "," Int ";" Name ")"  [function, klabel(deBruijnN)]
+
 //syntax        Names ::= "#deBruijn(" Int ";" Names ")"  [function, klabel(deBruijnNs)]
 //                      | "#deBruijn(" Int "," Int ";" Names ")"  [function, klabel(deBruijnNs)]
 
   syntax    BoundName ::= "bound(" Int ")"
 //                      | "bound(" Int "," Int ")"          // for several name listens
-//	    | "bound(" Int "," Int "," Int ")"  // for several listen joins
+//                      | "bound(" Int "," Int "," Int ")"  // for several listen joins
   
   syntax     FreeName ::= "free("  Int ")"  // this is only used for analyzing fragments of programs
-  
-  syntax         Name ::= BoundName | FreeName
-
-// Syntax priorities impose rule priorities
-  syntax priorities deBruijnN deBruijnP > alpha
 
 endmodule
 
@@ -77,9 +78,9 @@ module ALPHA
   rule #deBruijn( I:Int ; for(           <! X:Name ){ P:Proc } ) => for(          <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
   
   // TODO: more tests for substitution in P
-  rule #deBruijn( I:Int ; for( Y:Chan <- X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
-  rule #deBruijn( I:Int ; for( Y:Chan <= X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
-  rule #deBruijn( I:Int ; for( Y:Chan <! X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  rule #deBruijn( I:Int ; for( Y:Quote <- X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  rule #deBruijn( I:Int ; for( Y:Quote <= X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  rule #deBruijn( I:Int ; for( Y:Quote <! X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
 
 // Sends
 // index constant on name and proc

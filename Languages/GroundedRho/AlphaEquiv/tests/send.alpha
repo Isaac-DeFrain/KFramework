@@ -6,9 +6,5 @@
 Output:
 
     free( 0 ) ! ( for ( bound( 0 ) <- @ 1 ) { * bound( 0 ) } )
-    
-From RNode: (similar code except x is a new bound name so it appears as unforgeable when printed to stdout)
-    
-    @{Unforgeable(0x4c28a925385173a6f71063b708560daf23d7f10af97aede053f18b7d0b4faa3f)}!(for( @{x0} <- @{1} ) { x0 } )
 
 */

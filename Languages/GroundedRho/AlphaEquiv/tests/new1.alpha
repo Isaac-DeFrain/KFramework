@@ -1,4 +1,5 @@
 // De Bruijn Levels
+// inside x shadows the outside x
 
   new x in { new x in { *x } }
   
