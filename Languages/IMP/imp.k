@@ -8,7 +8,9 @@ module IMP-SYNTAX
 
   syntax   Exp ::= Id 
                  | Int
-                 | Exp "+" Exp               [left, strict]
+                 | Exp "*" Exp               [left, strict]
+                 | Exp "/" Exp               [left, strict]
+                 > Exp "+" Exp               [left, strict]
                  | Exp "-" Exp               [left, strict]
                  | "(" Exp ")"                    [bracket]
 
@@ -36,7 +38,7 @@ module IMP
 //--- CONFIGURATION ---
 //---------------------
   configuration
-    <T color="purple">                                               //
+    <T color="purple">
       <k> $PGM:Pgm </k>
       <state> .Map </state>
     </T>
@@ -44,6 +46,8 @@ module IMP
   rule <k> X:Id => I ...</k>
        <state>... X |-> I ...</state>
   
+  rule A:Int * B:Int => A *Int B
+  rule A:Int / B:Int => A /Int B requires B =/=Int 0
   rule A:Int + B:Int => A +Int B
   rule A:Int - B:Int => A -Int B
   
@@ -58,8 +62,9 @@ module IMP
   rule while (B) S => if (B) {S while(B) S} { }   [structural]
   
   rule { } => .
-  
-  rule <k> int (X , Xs => Xs) ; S </k>
+
+// initialize unassigned variables with value 0
+  rule <k> int (X , Xs => Xs) ; S    </k>
        <state>... (. => X |-> 0) </state>         [structural]
   
   rule int .Ids ; S => S                          [structural]
