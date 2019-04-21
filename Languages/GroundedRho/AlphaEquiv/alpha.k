@@ -2,6 +2,8 @@
 
 /*
 TODO:
+ - add environment, store, and nextLoc cells
+   - maybe memory of variables seen is all that's needed
  - how to handle several name listens & joins?
  - more tests for substitutions in continuations for listens on chan
 */
@@ -11,15 +13,15 @@ require "../grho.k"
 module ALPHA-SYNTAX
   import GRHO-SYNTAX
   
-  syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ")" [function]
-                        | "#deBruijn(" Int ";" Names ";" Proc ")" [function]
+  syntax       DBProc ::= "#deBruijn(" Name  ";" Proc ")" [function]
+                        | "#deBruijn(" Names ";" Proc ")" [function]
   
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc   ")"  [function]
+  syntax         Proc ::= "#deBruijn(" Proc ")"            [function]
                         | "new" Name  "in" "{" DBProc "}"  [function]
                         | "new" Names "in" "{" DBProc "}"  [function]
                         | Proc "#alpha" Proc
 
-  syntax         Name ::= "#deBruijn(" Int ";" Name  ")"   [function]
+  syntax         Name ::= "#deBruijn(" Name ")"            [function]
                         | BoundName
                         | FreeName
 //                      | "#deBruijn(" Int "," Int ";" Name ")"  [function, klabel(deBruijnN)]
@@ -28,8 +30,8 @@ module ALPHA-SYNTAX
 //                      | "#deBruijn(" Int "," Int ";" Names ")"  [function, klabel(deBruijnNs)]
 
   syntax    BoundName ::= "bound(" Int ")"
-//                      | "bound(" Int "," Int ")"          // for several name listens
-//                      | "bound(" Int "," Int "," Int ")"  // for several listen joins
+                        | "bound(" Int "," Int ")"          // for several name listens?
+                        | "bound(" Int "," Int "," Int ")"  // for several listen joins?
   
   syntax     FreeName ::= "free("  Int ")"  // this is only used for analyzing fragments of programs
 
@@ -41,31 +43,108 @@ module ALPHA
 
   configuration
   <T color="purple">
-    <k> #deBruijn( 0 ; $PGM:Proc ) </k>
+    <threads color="blue">
+      <thread color="cyan" multiplicity="*">
+        <k> #deBruijn( $PGM:Proc ) ~> sub </k>
+        <env> .Map  </env>
+        <index> 0 </index>
+        <count> 0 </count>
+      </thread>
+    </threads>
+    <store color="pink"> .Map  </store>
+    <nextLoc color="gray"> 0 </nextLoc>
   </T>
 
   syntax KResult ::= Proc | Name | Bool
 
+  syntax   KItem ::= "sub"
+
 // New Name Declarations
-  rule #deBruijn( I:Int ; new N:Name           in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / N ] ) }
-  rule #deBruijn( I:Int ; new M:Name , N:Name  in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
-  rule #deBruijn( I:Int ; new M:Name , N:Names in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
+  rule <k> #deBruijn( new M:NameVar in { P:Proc } ) => new M in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule new A:Name in { #deBruijn( I:Int ; M:Name ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / M ] ) }
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Name  ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
-  
-  rule new A:Names in { #deBruijn( I:Int ; M:Name ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; P[ bound(I) / M ] ) }
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Name  ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ) } => new #append(A ; bound(I)) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
+  rule <k> #deBruijn( new M:NameVar , N:NameVar in { P:Proc } ) => new M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+       
+  rule <k> #deBruijn( new M:NameVar , N:Names in { P:Proc } ) => new M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Name in { #deBruijn( M:Name ; P:Proc ) } => new A , M in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Name in { #deBruijn( M:Name , N:Name ; P:Proc ) } => new A , M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Name in { #deBruijn( M:Name , N:Names ; P:Proc ) } => new A , M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Names in { #deBruijn( M:Name ; P:Proc ) } => new #append(A ; M) in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Names in { #deBruijn( M:Name , N:Name ; P:Proc ) } => new #append(A ; M) in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Names in { #deBruijn( M:Name , N:Names ; P:Proc ) } => new #append(A ; M) in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
 // Ground Terms
-  rule #deBruijn( _:Int ; G:Ground ) => G
-  rule #deBruijn( _:Int ; Nil ) => Nil
+// index is constant and no storage allocation
+  rule #deBruijn( G:Ground ) => G
+  rule #deBruijn( Nil ) => Nil
 
 // Parallel Composition
-  rule #deBruijn( I:Int ; P:Proc | Q:Proc ) => #deBruijn( I ; P ) | #deBruijn( I ; Q )
+  rule #deBruijn( P:Proc | Q:Proc ) => #deBruijn( P ) | #deBruijn( Q )
 
+// Sends
+// index constant on name and proc
+  rule #deBruijn( X:Name !  ( P:Proc ) ) => #deBruijn( X ) !  ( #deBruijn( P ) )
+  rule #deBruijn( X:Name !! ( P:Proc ) ) => #deBruijn( X ) !! ( #deBruijn( P ) )
+
+// Evals
+// index is constant
+  rule #deBruijn( * X:Name ) => * #deBruijn( X )
+
+// Names
+  // Bound names do not change
+  rule #deBruijn( N:BoundName ) => N
+
+/*
 // Receives
   // variables become bound with the appropriate index
   rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ) => for( bound(I) <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P[ bound(I) / Y] ) }
@@ -82,26 +161,21 @@ module ALPHA
   rule #deBruijn( I:Int ; for( Y:Quote <= X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
   rule #deBruijn( I:Int ; for( Y:Quote <! X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
 
-// Sends
-// index constant on name and proc
-  rule #deBruijn( I:Int ; X:Name !  ( P:Proc ) ) => #deBruijn(I;X) !  ( #deBruijn( I ; P ) )
-  rule #deBruijn( I:Int ; X:Name !! ( P:Proc ) ) => #deBruijn(I;X) !! ( #deBruijn( I ; P ) )
-
-// Evals
-// index is constant
-  rule #deBruijn( I:Int ; * X:Name ) => * #deBruijn( I ; X )
-
-// Names
-  // Bound names do not change
-  rule #deBruijn( _:Int ; N:BoundName ) => N
-
   // Free variables are distinguised from bound ones - only pertains to fragments of programs
-  rule #deBruijn( I:Int ; _:NameVar   ) => free(I)
+  rule #deBruijn( I:Int ; _:NameVar ) => free(I)
 
   // Quotes
   // index increases - is this what we want?
   // TODO: more tests
   rule #deBruijn( I:Int ; @ P:Proc ) => @ #deBruijn( I +Int 1 ; P )
+*/
+
+// Resetting the environment
+  syntax KItem ::= setEnv(Map)
+  rule <k> setEnv(Env) => . ...</k> <env> _ => Env </env>  [structural]
+  
+  // if there are multiple sequential Env resets
+  rule (setEnv(_) => .) ~> setEnv(_)  [structural]
 
 // Several Names
   // want to do something like #deBruijn(I;Y,Z) => #deBruijn(I;Y) , #deBruijn(I;Z) for several names
@@ -109,6 +183,10 @@ module ALPHA
   
 // Alpha Equivalence Predicate
   // checks synactic equality of De Bruijn index substituted terms
-  rule #deBruijn( 0 ; P:Proc #alpha Q:Proc ) => #deBruijn(0;P) ==K #deBruijn(0;Q)
+//  rule #deBruijn( I:Int ; P:Proc #alpha Q:Proc ) => #deBruijn( I ; P ) ==K #deBruijn( I ; Q )
+
+// This rule says that if #deBruijn( 0 ; $PGM ) evaluates to a Bool (i.e. if we evaluate the #alpha predicate), then forget about the post substitution.
+// That's not quite what I want... maybe alpha equivalence needs to be moved to a completely different module?
+//  rule <k> _:Bool ~> (sub => .) </k>
 
 endmodule

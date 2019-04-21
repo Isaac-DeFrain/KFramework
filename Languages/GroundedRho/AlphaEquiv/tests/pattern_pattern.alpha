@@ -1,0 +1,14 @@
+// Pattern within pattern
+
+  new x in { for( @{@{y!(Nil)}!(Nil) } <- x ){ *y } }
+  
+/*
+Output: 
+
+    new bound( 0 ) in { for ( @ ( ( @ ( free( 3 ) ! ( Nil ) ) ) ! ( Nil ) ) <- bound( 0 ) ) { * free( 2 ) } }
+
+RNode:
+
+    new x0 in { for( @{@{@{x1}!(Nil)}!(Nil)} <- x0 ) { x1 } }
+
+*/
