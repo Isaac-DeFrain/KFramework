@@ -1,0 +1,9 @@
+// Alpha equivalence
+
+  new x, y in { for( @1 <- x ){ Nil } | y!(Nil) }
+  
+  #alpha
+  
+  new bound(0) , bound(1) in { for( @1 <- bound(0) ){ Nil } | bound(1)!(Nil) }
+  
+// Output: true

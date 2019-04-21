@@ -1,0 +1,9 @@
+// Alpha equivalence
+
+  new x in { for( @1 <- x ){ Nil } | x!(Nil) }
+  
+  #alpha
+  
+  new y in { for( @1 <- y ){ Nil } | y!(Nil) }
+  
+// Output: true

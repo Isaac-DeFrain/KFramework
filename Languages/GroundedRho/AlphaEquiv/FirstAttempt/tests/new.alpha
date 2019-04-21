@@ -1,0 +1,14 @@
+// De Bruijn levels
+
+  new chan1, chan2, chan3 in { for( @1 <- chan1 ){ Nil } | chan2!("a") | *chan3 }
+
+/*
+Output:
+
+    new bound( 0 ) , bound( 1 ) , bound( 2 ) in { for ( @ 1 <- bound( 0 ) ) { Nil } | bound( 1 ) ! ( "a" ) | * bound( 2 ) }
+    
+From RNode:
+    
+    new x0, x1, x2 in { x1!("a") | for( @{1} <- x0 ) { Nil } | *x2 }
+
+*/

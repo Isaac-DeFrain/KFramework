@@ -1,0 +1,10 @@
+// De Bruijn levels
+
+  x!(for( y <- @1 ){ *y })
+
+/*
+Output:
+
+    free( 0 ) ! ( for ( bound( 0 ) <- @ 1 ) { * bound( 0 ) } )
+
+*/

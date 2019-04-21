@@ -1,0 +1,6 @@
+// De Bruijn Levels
+// inside x shadows the outside x
+
+  new x in { new x in { *x } }
+  
+// Output: new bound( 0 ) in { new bound( 1 ) in { * bound( 1 ) } }
