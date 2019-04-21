@@ -2,6 +2,7 @@
 
 /*
 TODO:
+ - add memory for new declarations: <mem> M:NameVar |-> bound(I) </mem>
  - how to handle several name listens & joins?
  - more tests for substitutions in continuations for listens on chan
 */
@@ -47,9 +48,9 @@ module ALPHA
   syntax KResult ::= Proc | Name | Bool
 
 // New Name Declarations
-  rule #deBruijn( I:Int ; new N:NameVar             in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / N ] ) }
-  rule #deBruijn( I:Int ; new M:NameVar , N:NameVar in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
-  rule #deBruijn( I:Int ; new M:NameVar , N:Names   in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
+  rule #deBruijn( I:Int ; new N:NameVar           in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / N ] ) }
+  rule #deBruijn( I:Int ; new M:NameVar , N:Name  in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
+  rule #deBruijn( I:Int ; new M:NameVar , N:Names in { P:Proc } ) => new bound(I) in { #deBruijn( I +Int 1 ; N ; P[ bound(I) / M ] ) }
   
   rule new A:Name in { #deBruijn( I:Int ; M:Name ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; P[ bound(I) / M ] ) }
   rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Name  ; P:Proc ) } => new A , bound(I) in { #deBruijn( I +Int 1 ; N ; { P[ bound(I) / M ] } ) }
@@ -96,7 +97,7 @@ module ALPHA
   rule #deBruijn( _:Int ; N:BoundName ) => N
 
   // Free variables are distinguised from bound ones - should only pertain to fragments of programs...
-  rule #deBruijn( I:Int ; _:NameVar   ) => free(I)
+  rule #deBruijn( I:Int ; _:NameVar ) => free(I)
 
   // Quotes
   // index increases - this is not the desired semantics...
