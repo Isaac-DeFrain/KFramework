@@ -1,0 +1,7 @@
+// Read from stdin
+
+  print("Which number would like to add 2 to? ") ;
+
+    read() + 2 ;
+    
+  print("done!")
