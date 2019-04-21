@@ -90,6 +90,9 @@ module AUXFUN-SYNTAX
   syntax RhoSet ::= "#keys"         RhoMap                   [function]
                   | RhoSet "#union" RhoSet                   [function]
 
+  syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")"   [function]
+                   | "#truncate(" RhoList "," Int ")"        [function]
+
 endmodule
 
 module AUXFUN
@@ -234,6 +237,16 @@ module AUXFUN
   rule #size { _:Proc : _:Proc , _:Proc : _:Proc } => 2
   rule #size { _:Proc : _:Proc , R:RhoKVPairs    } => 1 +Int #size {R}
   
+//--------------
+//--- #slice ---
+//--------------
+  rule #truncate( R:RhoList , Fin:Int ) => R requires (Fin >=Int #length R)
+  rule #truncate( [ A:Proc ] , Fin:Int ) => #if Fin <=Int 0 #then [ ] #else [A] #fi
+
+  rule #slice( [ ] , _ , _ ) => [ ]
+  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
+  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
+  
 //-------------
 //--- #keys ---
 //-------------
@@ -245,9 +258,9 @@ module AUXFUN
 //--------------
 //--- #union ---
 //--------------
-  rule Set( ) #union S:RhoSet => S
-  rule S:RhoSet #union Set( ) => S
-  rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
+//  rule Set( ) #union S:RhoSet => S
+//  rule S:RhoSet #union Set( ) => S
+//  rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
 //  rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 
 //---------------
