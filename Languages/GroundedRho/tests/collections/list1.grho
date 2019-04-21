@@ -1,0 +1,8 @@
+// RhoList
+
+  [ ]
+
+/*
+Output:
+.List ~> #freezer#SemanticCastToRhoList0_ ( )
+*/

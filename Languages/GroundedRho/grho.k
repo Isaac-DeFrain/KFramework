@@ -167,32 +167,6 @@ module GRHO-SYNTAX
   syntax    MatchCaseList ::= MatchCase                                     //  MatchCase < MatchCaseList
                             | MatchCases                                    // MatchCases < MatchCaseList
 
-// Methods
-  syntax       MethodProc ::= Proc "." Method "(" MethodArgs ")"            // _._(_): Proc x Method x MethodArgs ---> MethodProc
-
-  syntax       MethodArgs ::= ProcList
-                            | ""
-
-  syntax           Method ::= "nth"                                         // nth element in list, string, tuple // syntax: Thing.nth( Int, ack(?) ) 
-                            | "toByteArray"                                 // transform to bytearray - Thing.toByteArray( ack )
-                            | "hexToBytes"                                  // hex string -> bytes
-                            | "union"                                       // map, set union - Map.union( Map ) , Set.union( Set )
-                            | "diff"                                        // map, set difference?
-                            | "add"                                         // add proc/ like single element concat? - list, set
-                            | "delete"                                      // delete element? - list, map, set
-                            | "contains"                                    // contains predicate
-                            | "get"                                         // get - map - get value corresponding to key or Nil
-                            | "getOrElse"                                   // getOrElse - map - get or side condition
-                            | "set"                                         // set - map.set( Key , Value )
-	        | "contains"                                    // contains predicate - 
-                            | "keys"                                        // set of keys of a map - map.keys( )
-	        | "values"                                      // list of values of a map - map.values( )
-                            | "size"                                        // number of elements in unordered structures - Map.size(), Set.size()
-                            | "length"                                      // length of list, tuple - List.length() , Tuple.length()
-                            | "slice"                                       // slice of list, string - List.slice(I1,I2) , String.slice(I1,I2)
-	        | "iterate"                                     // semantics? - list
-                            | "confine"                                     // semantics?
-
 // Variable Reference
   syntax           VarRef ::= "=" "*" NameVar                               // =*_: NameVar ---> VarRef
 
@@ -219,8 +193,8 @@ module GRHO-SYNTAX
                             | RhoTuple                                      // RhoTuple < Collection
 
 // Process lists
-  syntax          RhoList ::= "[" ProcList "]"                              // [_]: ProcList ----> RhoList
-                            | "[" "]"                                       // empty list
+  syntax          RhoList ::= "[" ProcList ",]"                              // [_]: ProcList ----> RhoList
+                            | "[" ",]"                                       // empty list
 
 // Process maps
   syntax           RhoMap ::= "{" RhoKVPairList "}"                         // {_}: RhoKVPairList ---> RhoMap
@@ -293,15 +267,36 @@ module GRHO-SYNTAX
   syntax             Bool ::= "#isProc(" K ")"                              // #isProc(_): K ---> Bool
                             | "#isName(" K ")"                              // #isName(_): K ---> Bool
 
-// Relation to built-ins
-//syntax             List ::= RhoList                            [function] // RhoList < List
-  
-  syntax              Map ::= RhoMap                             [function] // RhoMap < Map
+// Methods
+  syntax       MethodProc ::= Proc "." Method "(" MethodArgs ")" [strict(1)]// _._(_): Proc x Method x MethodArgs ---> MethodProc
 
-  syntax              Set ::= RhoSet                             [function] // RhoSet < Set
+  syntax       MethodArgs ::= ProcList
+                            | ""
+
+  syntax           Method ::= "nth"                                         // nth element in list, string, tuple // syntax: Thing.nth( Int ) 
+                            | "toByteArray"                                 // transform to bytearray - Thing.toByteArray( )
+                            | "hexToBytes"                                  // hex string -> bytes
+                            | "union"                                       // map, set union - Map.union( Map ) , Set.union( Set )
+                            | "diff"                                        // map, set difference?
+                            | "add"                                         // add proc/ like single element concat? - list, set?
+                            | "delete"                                      // delete element? - list, map, set
+                            | "contains"                                    // contains predicate
+                            | "get"                                         // get - map - get value corresponding to key or Nil
+                            | "getOrElse"                                   // getOrElse - map - get or side condition
+                            | "set"                                         // set - map.set( Key , Value )
+	        | "contains"                                    // contains predicate - 
+                            | "keys"                                        // set of keys of a map - map.keys( )
+	        | "values"                                      // list of values of a map - map.values( )
+                            | "size"                                        // number of elements in unordered structures - Map.size(), Set.size()
+                            | "length"                                      // length of list, tuple - List.length() , Tuple.length()
+                            | "slice"                                       // slice of list, string - List.slice(I1,I2) , String.slice(I1,I2)
+	        | "iterate"                                     // semantics? - list
+                            | "confine"                                     // semantics?
 
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
+  syntax              Map ::= RhoMap
+  syntax              Set ::= RhoSet
 
 // For handling joins in configuration
   syntax         JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
@@ -373,7 +368,10 @@ module GRHO
       <nextLoc color="gray"> 0 </nextLoc>                            // 
     </T>                                                             // 
 
-  syntax KResult ::= Ground | Eval                                   // final output of strict operations
+  syntax KResult ::= Ground | Eval | List | Map | Set                // final output of strict operations
+
+// Relation to built-ins
+  syntax List ::= "#makeList(" RhoList ")"    [function]
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
@@ -395,36 +393,42 @@ module GRHO
   rule false and _:Bool => false                          [anywhere] // short-circuited 
   rule true  or  _:Bool => true                           [anywhere] // short-circuited 
   rule false or  B:Bool => B                              [anywhere] // short-circuited 
-  
+
+// Syntactic equality
   rule A:Ground == B:Ground => A ==K  B                   [anywhere] // equality of ground terms
   rule A:Ground != B:Ground => A =/=K B                   [anywhere] // inequality of ground terms
 
 // Collections
-// TODO: what is going on with builtin lists?
-/*rule [ ]:RhoList => .List                             [anywhere, structural]
-  rule [ P:Proc ] => ListItem(P)                        [anywhere, structural]
-  rule [ P:Proc , Q:Proc  ] => ListItem(P) ListItem(Q)  [anywhere, structural]
-  rule [ P:Proc , Q:Procs ] => ListItem(P) [Q ]         [anywhere, structural]
-*/
+  //context (HOLE:RhoList => #makeList(HOLE)) . _:Method ( _:MethodArgs )
+  rule L:RhoList => #makeList(L)
+  rule #makeList([ ]) => .List
+  rule #makeList([ P:Proc ]) => ListItem(P)
+  rule #makeList([ P:Proc , Q:Proc  ]) => ListItem(P) ListItem(Q)
+  rule #makeList([ P:Proc , Q:Procs ]) => ListItem(P) #makeList([Q,])
+
   // RhoMaps are interpreted as built-in Maps
+  //  context HOLE:RhoMap => #makeMap(HOLE)
   rule { }:RhoMap => .Map                                       [anywhere, structural]
   rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere, structural]
   rule { P:Proc : Q:Proc , R:Proc : S:Proc } => P |-> Q R |-> S [anywhere, structural]
   rule { P:Proc : Q:Proc , R:RhoKVPairs    } => P |-> Q {R}     [anywhere, structural]
 
   // RhoSets are interpreted as built-in Sets
-  rule Set( ) => .Set                                     [anywhere, structural]
-  rule Set( P:Proc ) => SetItem(P)                        [anywhere, structural]
-  rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q)   [anywhere, structural]
-  rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)       [anywhere, structural]
+  //  context HOLE:RhoSet => #makeSet(HOLE)
+  rule Set( ) => .Set                                   [anywhere, structural]
+  rule Set( P:Proc ) => SetItem(P)                      [anywhere, structural]
+  rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q) [anywhere, structural]
+  rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)     [anywhere, structural]
 
-// Conditionals - desugar into built-in conditionals
-  rule if ( B:Bool ) then P:Proc             => #if B #then P #else Nil #fi  [anywhere, structural]
-  rule if ( B:Bool ) then P:Proc else Q:Proc => #if B #then P #else Q   #fi  [anywhere, structural]
+// Conditionals - short-circuited
+  rule if ( true  ) then P:Proc => P              [structural]
+  rule if ( false ) then _:Proc => Nil            [structural]
+  rule if ( true  ) then P:Proc else _:Proc => P  [structural]
+  rule if ( false ) then _:Proc else Q:Proc => Q  [structural]
 
 // Matching
   // "matches" binop desugars into "match" statement
-  rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }  [anywhere, structural]
+  rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }  [anywhere]
   
   // TODO: replace ==K with structural equivalence
   rule match P:Proc { Q:Proc :=> R:Proc } => #if P ==K Q #then R #else Nil #fi
@@ -476,10 +480,10 @@ module GRHO
 // Par Operator Semantics - concurrent execution of processes
   rule <thread>
          <k> P:Proc | Q:Proc => . ...</k>
-         <env>       B:Map       </env>
+         <env> Env </env>
        </thread>
-       (.Bag => <thread> <k> P </k> <env> B </env> </thread>)
-       (.Bag => <thread> <k> Q </k> <env> B </env> </thread>)  [unravel]
+       (.Bag => <thread> <k> P </k> <env> Env </env> </thread>)
+       (.Bag => <thread> <k> Q </k> <env> Env </env> </thread>)
 
 //-------------------------------
 //--- Send Operator Semantics ---
@@ -785,19 +789,16 @@ module GRHO
   // iterate
 
   // legnth (list & tuple)
-  rule L:RhoList  .length( ) => #length L
+  rule L:List .length( ) => size(L)
   rule T:RhoTuple .length( ) => #length T
 
   // mapkeys (maps)
   rule M:Map .keys( ) => keys( M )
   
   // nth (lists & tuples)
-  rule [ ] .nth( _ ) => Nil
-  rule [ A:Proc ] .nth( I:Int ) => #if I ==Int 0 #then A #else Nil #fi
-  rule [ A:Proc , B:Proc  ].nth( I:Int ) => #if I ==Int 0 #then A #else [ B ].nth( I -Int 1 ) #fi
-  rule [ A:Proc , B:Procs ].nth( I:Int ) => #if I ==Int 0 #then A #else [ B ].nth( I -Int 1 ) #fi
+  rule L:List .nth( I:Int ) => L[I]
 
-  rule ( ,) .nth( _ ) => Nil
+  rule ( ,).nth( _ ) => Nil
   rule ( P:Proc ,).nth( I:Int ) => #if I ==Int 0 #then P #else Nil #fi
   rule ( P:Proc , Q:Proc  ,).nth( I:Int ) => #if I ==Int 0 #then P #else ( Q ,).nth( I -Int 1 ) #fi
   rule ( P:Proc , Q:Procs ,).nth( I:Int ) => #if I ==Int 0 #then P #else ( Q ,).nth( I -Int 1 ) #fi
@@ -810,10 +811,13 @@ module GRHO
   rule S:Set .size( ) => size(S)
 
   // slice (lists & strings)
-  rule S:String  .slice( A:Int , B:Int ) => substrString( S , A , B )
-  rule L:RhoList .slice( A:Int , B:Int ) => #slice( L , A , B )
+  rule S:String .slice( A:Int , B:Int ) => substrString( S , A , B )
+  rule L:List .slice( A:Int , B:Int ) => range( L , A , B )
 
   // toByteArray
+  
+  // values (maps)
+  rule M:Map .values( ) => values(M)
 
   // union (maps & sets)
   rule M1:Map .union( M2:Map ) => M1 M2

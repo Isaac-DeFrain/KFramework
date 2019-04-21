@@ -1,5 +1,5 @@
 // slice - list
 
-  [ "a" , "b" , "c" , "d" , "e" , "f" , "g" , "h" , "i" ,].slice(0,2)
+  [ "a" , "b" , "c" , "d" , "e" , "f" , "g" , "h" , "i" ].slice(0,2)
 
 // Output: 
