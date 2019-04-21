@@ -2,12 +2,14 @@
 /*
 TODO:
  - Par
- - Process variables
- - Matching (Add patterns)
- - Environments
+ - Unite process & name variables
+ - Matching (patterns & wildcard)
+ - Environments for new declarations, global store for location, & location counter cell
  - Finish methods
+ - handle variable reference before sending to tuplespace
  - add contract invocation(?): Name "(" ProcList ")" - syntactic sugar for cell pattern
- - move Unforgeables to semantic module?
+ - add sequential listen semantics
+ - move Unforgeables to semantics module?
 */
 
 require "domains.k"
@@ -181,14 +183,14 @@ module GRHO-SYNTAX
                             | "contains"                                    // contains predicate
                             | "get"                                         // get - map - get value corresponding to key or Nil
                             | "getOrElse"                                   // getOrElse - map - get or side condition
-                            | "set"                                         // set
+                            | "set"                                         // set - map.set( Key , Value )
 	        | "contains"                                    // contains predicate - 
                             | "keys"                                        // set of keys of a map - map.keys( )
 	        | "values"                                      // list of values of a map - map.values( )
                             | "size"                                        // number of elements in unordered structures - Map.size(), Set.size()
                             | "length"                                      // length of list, tuple - List.length() , Tuple.length()
                             | "slice"                                       // slice of list, string - List.slice(I1,I2) , String.slice(I1,I2)
-	        | "iterate"                                     // semantics? - list , 
+	        | "iterate"                                     // semantics? - list
                             | "confine"                                     // semantics?
 
 // Variable Reference
@@ -319,7 +321,7 @@ module GRHO-SYNTAX
 
   syntax        KVariable ::= Name | Int
 
-  syntax            KItem ::= Name | Names | Proc | Procs | IdNum | "undefined"
+  syntax            KItem ::= Name | Names | Proc | Procs | IdNum
 
 endmodule
 
@@ -361,12 +363,14 @@ module GRHO
           </rec>                                                     // 
         </receives>                                                  // 
       </tuplespace>                                                  // 
-      <reaction color="green">                                       //**where the magic happens**
+      <reaction color="violet">                                      //**comm events are processed here before being released back into the wild**
         <who>     .K     </who>                                      // continuation process
         <what>    .K    </what>                                      // msg process(es)
         <where>   .K   </where>                                      // binding variable(s)
         <update> .Map </update>                                      // updated variable binding(s)
       </reaction>                                                    // all comms are processed here
+      <store color="pink"> .Map  </store>                            // 
+      <nextLoc color="gray"> 0 </nextLoc>                            // 
     </T>                                                             // 
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
@@ -396,7 +400,7 @@ module GRHO
   rule A:Ground != B:Ground => A =/=K B                   [anywhere] // inequality of ground terms
 
 // Collections
-// TODO: Keep lists native
+// TODO: what is going on with builtin lists?
 /*rule [ ]:RhoList => .List                             [anywhere, structural]
   rule [ P:Proc ] => ListItem(P)                        [anywhere, structural]
   rule [ P:Proc , Q:Proc  ] => ListItem(P) ListItem(Q)  [anywhere, structural]
@@ -422,15 +426,37 @@ module GRHO
   // "matches" binop desugars into "match" statement
   rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }  [anywhere, structural]
   
+  // TODO: replace ==K with structural equivalence
   rule match P:Proc { Q:Proc :=> R:Proc } => #if P ==K Q #then R #else Nil #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCase  } => #if P ==K Q #then R #else match P { M } #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCases } => #if P ==K Q #then R #else match P { M } #fi
 
-// New Operator Semantics - like blocks with local variables in an imperative language
-// nested variable declarations shadow each other
-  rule new N:Name           in { P:Proc } => P[ unforgeable(!I:Int) / N ]
-  rule new M:Name , N:Name  in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] }
-  rule new M:Name , N:Names in { P:Proc } => new N in { P[ unforgeable(!I:Int) / M ] }
+// New Operator Semantics
+// like blocks with local variable declarations
+// nested variable declarations will shadow each other
+  syntax KItem ::= "undefined"  // declared as a variable, but not assigned a value yet
+
+  rule <k> new N:NameVar in { P:Proc } => P ~> setEnv(Env) ...</k>
+       <env> Env => Env[N <- L] </env>
+       <store>... .Map => L |-> undefined ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+  
+  rule <k> new M:NameVar , N:NameVar  in { P:Proc } => new N in { P } ...</k>
+       <env> Env => Env[M <- L] </env>
+       <store>... .Map => L |-> undefined ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+       
+  rule <k> new M:NameVar , N:Names in { P:Proc } => new N in { P } ...</k>
+       <env> Env => Env[M <- L] </env>
+       <store>... .Map => L |-> undefined ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+// Resetting the environment
+  syntax KItem ::= setEnv(Map)
+  rule <k> setEnv(Env) => . ...</k> <env> _ => Env </env>  [structural]
+  
+  // if there are multiple sequential Env resets
+  rule (setEnv(_) => .) ~> setEnv(_)  [structural]
 
 // Syntactic sugar - quoted tuple listens desugar into regular listen
 // included here (instead of in sytax module) because #quotes is defined in AUXFUN
@@ -458,7 +484,6 @@ module GRHO
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
-// TODO: handle variable reference/assignment before sending to tuplespace
   rule <thread>
          <k> S:Send => . ...</k>                                     // dissolve send in <threads/> and spawn <send/>
          <env>  B:Map  </env>                                        // 
@@ -474,7 +499,7 @@ module GRHO
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-//TODO: sequential listen
+//TODO: 
   rule <thread>
          <k> R:SingleRec => . ...</k>                                // dissolve Rec in <threads/> and spawn <rec/>
          <env>  B:Map  </env>                                        // 
@@ -507,24 +532,27 @@ module GRHO
 //-------------------
 // x!(Q) | y(z){P} /\ x equivN y => P[@Q / y]
 
+// TODO: what should be done with environment maps?
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
   rule 
     <reaction>
-      <who>    P:Proc => P[@ Q / Y]      </who>  // instead of directly substituting, update bindings(?)
-      <what>   Q:Proc , R:Procs => R    </what>
-      <where>  Y:Name , Z:Names => Z   </where>
-      <update> B:Map  => B[ Y <- @Q ] </update>
-    </reaction>                                      [react]
+      <who>    P:Proc => P[@ Q / Y]    </who>
+      <what>   Q:Proc , R:Procs => R  </what>
+      <where>  Y:Name , Z:Names => Z </where>
+      <update> M => M[ Y <-undef ]  </update>
+    </reaction>
+    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
 // 2 substitutions
   rule
     <reaction>
-      <who>    P:Proc => P[@ Q / Y]      </who>  // instead of directly substituting, update bindings(?)
-      <what>   Q:Proc , R:Proc => R     </what>
-      <where>  Y:Name , Z:Name => Z    </where>
-      <update> B:Map  => B[ Y <- @Q ] </update>
-    </reaction>                                      [react]
+      <who>    P:Proc => P[@ Q / Y]    </who>
+      <what>   Q:Proc , R:Proc => R   </what>
+      <where>  Y:Name , Z:Name => Z  </where>
+      <update> M => M[ Y <- undef ] </update>
+    </reaction>
+    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
 // Final substitution spawn in a new thread holding the fully substituted continuation
   rule
@@ -532,9 +560,10 @@ module GRHO
       <who>    P:Proc =>  .K     </who>
       <what>   Q:Proc =>  .K    </what>
       <where>  Y:Name =>  .K   </where>
-      <update> B:Map  => .Map </update>
+      <update> M:Map  => .Map </update>
     </reaction>
-   (.Bag => <thread> <k> P[@ Q / Y] </k> <env> B[ Y <- @Q ] </env> </thread>)  [react]  // instead of directly substituting, update bindings(?)
+    <store>... M[Y] |-> (_ => @Q) ...</store>
+   (.Bag => <thread> <k> P[@ Q / Y] </k> <env> M </env> </thread>)  [react]
 
 // Comm semantics
 // Linear listen, linear send
@@ -725,10 +754,14 @@ module GRHO
      <update> .Map => A B </update>                                    // 
    </reaction>                                                  [comm] // 
 
-// Join semantics seem to be much more complicated...
+// Join semantics seem to be much more complicated than single listens...
 // moved progress to join.k
 
 // Methods
+  // add
+
+  // confine
+
   // contains (maps & sets)
   rule M:Map .contains( Key:Proc ) => Key in_keys(M)
   rule S:Set .contains( Elm:Proc ) => Elm in S
@@ -736,7 +769,7 @@ module GRHO
   // delete (maps & sets)
   rule M:Map .delete( Key:Proc ) => M[ Key <- undef ]
   rule S:Set .delete( Elm:Proc ) => S -Set SetItem(Elm)
-  
+
   // diff (maps & sets)
   rule M1:Map .diff( M2:Map ) => removeAll( M1 , keys(M2) )
   rule S1:Set .diff( S2:Set ) => S1 -Set S2
@@ -746,7 +779,11 @@ module GRHO
 
   //getOrElse (maps)
   rule M:Map .getOrElse( Key:Proc , Else:Proc ) => #if ( Key in_keys(M) ) #then M[Key] #else Else #fi
-  
+
+  // hexToBtyes
+
+  // iterate
+
   // legnth (list & tuple)
   rule L:RhoList  .length( ) => #length L
   rule T:RhoTuple .length( ) => #length T
@@ -773,9 +810,10 @@ module GRHO
   rule S:Set .size( ) => size(S)
 
   // slice (lists & strings)
-  // TODO
-  //rule L:RhoList .slice( A:Int , B:Int ) => range( L , A , B )
   rule S:String  .slice( A:Int , B:Int ) => substrString( S , A , B )
+  rule L:RhoList .slice( A:Int , B:Int ) => #slice( L , A , B )
+
+  // toByteArray
 
   // union (maps & sets)
   rule M1:Map .union( M2:Map ) => M1 M2
@@ -786,8 +824,8 @@ module GRHO
   rule P:Proc | Nil    => P  [anywhere, structural]
 
 // Dissolve computationally meaningless threads
-  rule <thread> <k> .K  </k> <env> .Map </env> </thread> => .Bag  [structural] //empty threads
-  rule <thread> <k> Nil </k> <env> .Map </env> </thread> => .Bag  [structural] //Nil threads
+  rule <thread> <k> .K  </k> <env> _ </env> </thread> => .Bag  [structural] //empty threads
+  rule <thread> <k> Nil </k> <env> _ </env> </thread> => .Bag  [structural] //Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
