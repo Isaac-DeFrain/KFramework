@@ -2,21 +2,27 @@ require "../imp.k"
 
 module SUM_SPEC
   import IMP
+  
+// must use #UpperIds for #KVariables
 
   rule   // invariant spec
-      <k> while (n) { s = s + n ; n = n - 1 ; } => .K ...</k>
+      <k> while (M) { Z = Z + M ; M = M - 1 ; } => .K ...</k>
       <state>
-        n |-> (N:Int => 0)
-        s |-> (S:Int => S +Int N *Int (N +Int 1) /Int 2)
+        M |-> (N:Int => 0)
+        Z |-> (S:Int => S +Int N *Int (N +Int 1) /Int 2)
       </state>
       requires N >=Int  0
 
   rule   // main spec
-      <k> int n , s ; n = N:Int ;  while (n) { s = s + n ; n = n - 1 ; }  => .K </k>
+      <k> int M , Z ; M = N:Int ;  while (M) { Z = Z + M ; M = M - 1 ; }  => .K </k>
       <state> .Map => 
-        n |-> 0
-        s |-> ((N +Int 1) *Int N /Int 2)
+        M |-> 0
+        Z |-> ((N +Int 1) *Int N /Int 2)
       </state>
       requires N >=Int 0
 
 endmodule
+
+/*
+Output: #True
+*/
