@@ -3,5 +3,5 @@
   #lengths ( a <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; s,t <- x )
 
 /*
-  Output: 1 , 2 , 4 , 2 , 1 , 2
+  Output: 1 , 2 , 4 , 2 , 1 , 2 , .Ids
 */

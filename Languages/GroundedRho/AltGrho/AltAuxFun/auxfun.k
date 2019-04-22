@@ -8,24 +8,22 @@ requires "../altgrho.k"
 module AUXFUN-SYNTAX
   import ALTGRHO-SYNTAX
 
-  syntax    Int ::= "#length"     RhoTuple                   [function]  // #length: RhoTuple ------------------> Int
-                  | "#length" "(" Name     ")"               [function]  // #length(_): Name -------------------> Int
-                  | "#length" "(" Names    ")"               [function]  // #length(_): Names ------------------> Int
-                  | "#length" "(" Binds    ")"               [function]  // #length(_): Binds ------------------> Int
-                  | "#bnum"   "(" Bind     ")"               [function]  // #bnum(_): Bind ---------------------> Int
-                  | "#bnum"   "(" Receive  ")"               [function]  // #bnum(_): Receive ------------------> Int
-                  | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send --------------------> Int
-                  | "#rtype"  "(" Bind     ")"               [function]  // #rtype(_): Bind --------------------> Int
-                  | "#rtype"  "(" Binds    ")"               [function]  // #rtype(_): Bind --------------------> Int
-                  | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
+  syntax    Int ::= "#length" "(" Send    ")"               [function]  // #length: Send ----------------------> Int
+                  | "#length" "(" Procs   ")"               [function]  // #length(_): Procs ------------------> Int
+                  | "#length" "(" Names   ")"               [function]  // #length(_): Names ------------------> Int
+                  | "#length" "(" Binds   ")"               [function]  // #length(_): Binds ------------------> Int
+                  | "#bnum"   "(" Bind    ")"               [function]  // #bnum(_): Bind ---------------------> Int
+                  | "#bnum"   "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
+                  | "#stype"  "(" Send    ")"               [function]  // #stype(_): Send --------------------> Int
+                  | "#rtype"  "(" Bind    ")"               [function]  // #rtype(_): Bind --------------------> Int
+                  | "#rtype"  "(" Binds   ")"               [function]  // #rtype(_): Bind --------------------> Int
+                  | "#rtype"  "(" Receive ")"               [function]  // #rtype(_): Receive -----------------> Int
 
   syntax   Bind ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Bind
-                  | "#bind"    "(" BindOcc ")"               [function]  // #bind(_): BindOcc --------> Bind
 
   syntax  Binds ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Binds
 
   syntax   Proc ::= "#cont"    "(" Receive ")"               [function]  // #cont(_): Receive --------> Proc
-                  | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Proc
 
   syntax  Procs ::= "#lengths" "("   Binds ")"               [function]  // #length(_): Binds --------> Procs
                   | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Procs
@@ -42,17 +40,12 @@ module AUXFUN-SYNTAX
                   | "#bvar"    "("   Bind  ")"               [function]  //     #bvar(_): Bind -------> Names
                   | "#bvar"    "(" Receive ")"               [function]  //     #bvar(_): Receive ----> Names
 
-  syntax String ::= "toString("      Proc  ")"                           // toString(_): Proc --------> String
-                  | "toString("      Name  ")"                           // toString(_): Name --------> String
-                  | "toString("      Bind  ")"                           // toString(_): Bind --------> String
-                  | "toString("      Binds ")"                           // toString(_): Binds -------> String
-
 endmodule
 
 module AUXFUN
   import AUXFUN-SYNTAX
 
-  syntax KResult ::= Int | Name
+  syntax KResult ::= Proc | Procs | Name | Names
 
 // Sends
   rule #chan  ( N:Name !  ( _:Procs ) ) => N
@@ -61,8 +54,11 @@ module AUXFUN
   rule #msg   ( _:Name !  ( P:Procs ) ) => P
   rule #msg   ( _:Name !! ( P:Procs ) ) => P
 
-  rule #stype ( _:Name !  ( _:Procs ) ) => 0
-  rule #stype ( _:Name !! ( _:Procs ) ) => 1
+  rule #stype ( _:CSend ) => 0
+  rule #stype ( _:USend ) => 1
+  
+  rule #length( _:Name !  ( P:Procs ) ) => #length(P)
+  rule #length( _:Name !! ( P:Procs ) ) => #length(P)
 
 // Receives
   rule #bind  ( for ( B:Bind   ){ _:Proc } ) => B
@@ -97,15 +93,15 @@ module AUXFUN
 //---------------
 //--- #length ---
 //---------------
-// RhoTuple
-  rule #length (  .Procs            ) => 0
-  rule #length ( _:Proc             ) => 1
-  rule #length ( _:Proc , P:Procs   ) => 1 +Int #length(P)
+// Procs
+  rule #length (  .Procs          ) => 0
+  rule #length ( _:Proc , .Procs  ) => 1
+  rule #length ( _:Proc , P:Procs ) => 1 +Int #length(P)
 
-// Name(s)
-  rule #length (  .Names            ) => 0
-  rule #length ( _:Name             ) => 1
-  rule #length ( _:Name , N:Names   ) => 1 +Int #length(N)
+// Names
+  rule #length (  .Names          ) => 0
+  rule #length ( _:Name , .Names  ) => 1
+  rule #length ( _:Name , N:Names ) => 1 +Int #length(N)
 
 //--- Binds ---
   rule #length (  .Lbinds           ) => 0
