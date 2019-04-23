@@ -1,7 +1,8 @@
 // RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a monadic style
 /*
 TODO:
- - Par
+ - Keep store map?
+ - Par as multiset
  - Unite process & name variables
  - Matching (patterns & wildcard)
  - Environments for new declarations, global store for location, & location counter cell
@@ -9,7 +10,6 @@ TODO:
  - handle variable reference before sending to tuplespace
  - add contract invocation(?): Name "(" ProcList ")" - syntactic sugar for cell pattern
  - add sequential listen semantics
- - move Unforgeables to semantics module?
 */
 
 require "domains.k"
@@ -21,277 +21,253 @@ module GRHO-SYNTAX
   import DOMAINS
   import SUBSTITUTION
 
+// Variables
+  syntax             Var ::= Id
+
 //-------------
 //--- NAMES ---
 //-------------
-  syntax             Name ::= Chan                                          //    Chan < Name
-                            | NameVar                                       // NaveVar < Name
-	        | "Empty"                                       //   Empty < Name // for listening for empty messages
+  syntax             Name ::= Quote
+                            | NorQVar
+	        | "EmptyMsg"     // listening for empty messages
+  syntax          NameVar ::= Var            // name variable
+  syntax            Quote ::= "@" Proc
+  syntax         QuoteVar ::= "@" ProcVar  [klabel(qv)]
+  syntax          NorQVar ::= NameVar | QuoteVar
 
-  syntax          NameVar ::= Id                                            // Id < NameVar
+// Several Names
+  syntax            Names ::= Name "," Name
+                            | Name "," Names
 
-  syntax             Chan ::= Quote                                         //       Quote < Name
-                            | Unforgeable                                   // Unforgeable < Name
+  syntax         NameVars ::= NameVar "," NameVar   [klabel(nv)]
+                            | NameVar "," NameVars  [klabel(nv)]
 
-  syntax            Quote ::= "@" Proc                                      // @_: Proc ---> Quote
+  syntax         NorQVars ::= NorQVar "," NorQVar   [klabel(nqv)]
+                            | NorQVar "," NorQVars  [klabel(nqv)]
 
-  syntax      Unforgeable ::= "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Unforgeable
-
-  syntax            Names ::= Name "," Name                                 // _,_: Name x Name ------> Names
-                            | Name "," Names                                // _,_: Name x Names -----> Names
-
-  syntax         NameList ::= Name                                          //  Name < NameList
-                            | Names                                         // Names < NameList
+  syntax         NameList ::= Name | Names | NameVarList | NorQVarList
+  syntax      NameVarList ::= NameVar | NameVars
+  syntax      NorQVarList ::= NorQVar | NorQVars
 
 //-----------------
 //--- PROCESSES ---
 //-----------------
-  syntax             Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --> Proc
-                            > New                                           //         New < Proc
-                            > "Nil"                                         // Nil: -------> Proc
-                            | Collection                                    //  Collection < Proc
-                            | Ground                                        //      Ground < Proc
-	        > VarRef                                        //      VarRef < Proc
-                            > Eval                                          //        Eval < Proc
-                            > MethodProc                                    //  MethodProc < Proc
-                            > AExp                                          //        AExp < Proc
-                            > BExp                                          //        BExp < Proc
-                            > Match                                         //       Match < Proc
-                            > Receive                                       //     Receive < Proc
-                            | Contract                                      //    Contract < Proc
-	        | Invocation                                    //  Invocation < Proc
-                            | Send                                          //        Send < Proc
-                            | Bundle                                        //      Bundle < Proc
-                            > Conditional                                   // Conditional < Proc
-                            > Par                                           //         Par < Proc
+  syntax             Proc ::= "{" Proc "}"    [bracket]
+                            > New             // New name declaration(s)
+                            > "Nil"           // Stopped process
+                            | Collection      // Data structures - List, Map, Set, Tuple
+                            | Ground          // Ground terms - Bool, Int, String, Uri
+                            | ProcVar         // Process variable
+                            | EvalVar         // Process variable
+                            > VarRef          // Variable references - Name/Process variable shadowing
+                            > Eval            // Evaluation
+                            > MethodProc      // Methods
+                            > AExp            // Arithmetic expressions
+                            > BExp            // Boolean expressions
+                            > Match           // Process matching
+                            > Receive         // Receive messages
+                            | Contract        // Contract
+                            | Invocation      // Contract invocation
+                            | Send            // Send messages
+                            | Bundle          // Process bundle
+                            > Conditional     // If...then(...else)
+                            > Par             // Parallel composition
+
+// Process Variables
+  syntax          ProcVar ::= Var
+  syntax         ProcVars ::= ProcVar "," ProcVar   [klabel(pv)]
+                            | ProcVar "," ProcVars  [klabel(pv)]
+
+  syntax      ProcVarList ::= ProcVar | ProcVars
+
+// Several Processes
+  syntax            Procs ::= Proc "," Proc   [strict]
+                            | Proc "," Procs  [strict]
+                            | ProcVars
+
+  syntax         ProcList ::= Proc | Procs | ProcVarList
 
 // Parallel composition
 // Pars should be like a multiset of processes...
-  syntax              Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
+  syntax              Par ::= Proc "|" Proc  [left]
 
 // Receives - no mixed linear/peek/repeated/sequential
-// TODO: Input guards - e.g. for( y <- x if x > 0 ){ ... }
+// TODO: Input guards - e.g. for( y <- x if *y > 0 ){ ... }
+  syntax          Receive ::= SingleRec | MultiRec
 
-  syntax          Receive ::= SingleRec                                     // SingleRec < Receive, single listen receive
-                            | MultiRec                                      //  MultiRec < Receive, multi-listen receive = join
+  // Single listen receives
+  syntax        SingleRec ::= "for" "(" Bind  ")" "{" Proc "}"
+                            | GuardedSingleRec
+  syntax GuardedSingleRec ::= "for" "(" GuardedBind ")" "{" Proc "}"
+  syntax            Guard ::= "if" BExp           [strict]
+  // Linear listen
+  syntax            Lbind ::= NameList "<-" Name  [strict(2)]
+                            |          "<-" Name  [strict]
+  // Peek listen
+  syntax            Pbind ::= NameList "<!" Name  [strict(2)]
+                            |          "<!" Name  [strict]
+  // Repeated/Persistent listen
+  syntax            Rbind ::= NameList "<=" Name  [strict(2)]
+                            |          "<=" Name  [strict]
+  // Sequential listen
+  syntax            Sbind ::= NameList "<<" Name  [strict(2)]
+                            |          "<<" Name  [strict]
 
-  syntax        SingleRec ::= "for" "(" Bind  ")" "{" Proc "}"              // for(_){_}: Bind x Proc ----> SingleRec; one listen
-                            | GuardedSingleRec                              // GuardedSingleRec < SingleRec
+  syntax             Bind ::= Lbind | Pbind | Rbind | Sbind
 
-  syntax GuardedSingleRec ::= "for" "(" GuardedBind ")" "{" Proc "}"        // for(_){_}: Bind x Proc ----> SingleRec; one listen
+  // Multiple listen receives
+  syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"
+                            | GuardedMultiRec
+  syntax  GuardedMultiRec ::= "for" "(" GuardedBinds ")" "{" Proc "}"
 
-  syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"              // for(_){_}: Binds x Proc ---> MultiRec; several listens
-                            | GuardedMultiRec                               // GuardedMultiRec < MultiRec
+  syntax           Lbinds ::= Lbind ";" Lbind
+                            | Lbind ";" Lbinds
+  syntax           Pbinds ::= Pbind ";" Pbind
+                            | Pbind ";" Pbinds
+  syntax           Rbinds ::= Rbind ";" Rbind
+                            | Rbind ";" Rbinds
+  syntax           Sbinds ::= Sbind ";" Sbind
+                            | Sbind ";" Sbinds
 
-  syntax  GuardedMultiRec ::= "for" "(" GuardedBinds ")" "{" Proc "}"       // for(_){_}: Binds x Proc ---> MultiRec; several listens
-  
-  syntax            Guard ::= "if" BExp                                     // conditional
-
-  syntax            Lbind ::= NameList "<-" Name                [strict(2)] // for( y1,...,yN <- x ){ P } (explicit)
-                            |          "<-" Name                   [strict] // for(  <- x ){ P } (explicit)
-
-  syntax           Lbinds ::= Lbind ";" Lbind                               // 2 linear listens 
-                            | Lbind ";" Lbinds                              // N liner listens, N > 2
-
-  syntax            Pbind ::= NameList "<!" Name                [strict(2)] // for( y1,...,yN <! x ){ P } (explicit)
-                            |          "<!" Name                   [strict] // for( y1,...,yN <! x ){ P } (explicit)
-
-  syntax           Pbinds ::= Pbind ";" Pbind                               // 2 peeks
-                            | Pbind ";" Pbinds                              // N peeks, N > 2
-
-  syntax            Rbind ::= NameList "<=" Name                [strict(2)] // for( y1,...,yN <= x ){ P } (explicit)
-                            |          "<=" Name                   [strict] // for( y1,...,yN <= x ){ P } (explicit)
-
-  syntax           Rbinds ::= Rbind ";" Rbind                               // 2 repeated listens
-                            | Rbind ";" Rbinds                              // N repeated listens, N > 2
-
-  syntax            Sbind ::= NameList "<<" Name                [strict(2)] // for( y1,...,yN << x ){ P } (explicit)
-                            |          "<<" Name                   [strict] // for( y1,...,yN << x ){ P } (explicit)
-
-  syntax           Sbinds ::= Sbind ";" Sbind                               // 2 sequential listens
-                            | Sbind ";" Sbinds                              // N sequential listens, N > 2
-
-  syntax             Bind ::= Lbind                                         // single linear listen (implicit)
-                            | Pbind                                         // single peek listen (implicit)
-                            | Rbind                                         // single repated listen (implicit)
-	        | Sbind                                         // single sequential listen (implict)
-
-  syntax            Binds ::= Lbinds                                        // linear binds ----- for( y1 <- x1 ; ... ; yN <- xN ){ P }, implicit
-                            | Pbinds                                        // peek binds ------- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
-                            | Rbinds                                        // repeated binds --- for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
-	        | Sbinds                                        // sequential binds - for( y1 << x1 ; ... ; yN << xN ){ P }, implicit
-
-  syntax         BindList ::= Bind
-                            | Binds
-
+  syntax            Binds ::= Lbinds | Pbinds | Rbinds | Sbinds
+  syntax         BindList ::= Bind | Binds
   syntax      GuardedBind ::= Bind Guard
-  
   syntax     GuardedBinds ::= Binds Guard
-  
-  syntax         AnyBinds ::= Bind
-                            | Binds
-	        | GuardedBind
-	        | GuardedBinds
+  syntax         AnyBinds ::= Bind | Binds | GuardedBind | GuardedBinds
 
-// Send
-  syntax             Send ::= ConsumableSend                                //   ConsumableSend < Send
-                            | UnconsumableSend                              // UnconsumableSend < Send
-
-  syntax   ConsumableSend ::= Name "!"  "(" ProcList ")"                    //  _!(_): Name x ProcList ---> ConsumableSend
+// Sends
+  syntax             Send ::= ConsumableSend | UnconsumableSend
+  syntax   ConsumableSend ::= Name "!"  "(" ProcList ")"
                             | Name "!"  "(" ")"
-
-  syntax UnconsumableSend ::= Name "!!" "(" ProcList ")"                    // _!!(_): Name x ProcList ---> UnconsumableSend
+  syntax UnconsumableSend ::= Name "!!" "(" ProcList ")"
                             | Name "!!" "(" ")"
 
 // Eval
-  syntax             Eval ::= "*" Name                             [strict] // *_: Name ---> Eval 
+  syntax             Eval ::= "*" Name     [strict]
+  syntax          EvalVar ::= "*" NameVar  [klabel(ev)]
 
-// Several Processes
-  syntax            Procs ::= Proc "," Proc                        [strict] // _,_: Proc x Proc ----> Procs
-                            | Proc "," Procs                       [strict] // _,_: Proc x Procs ---> Procs
-
-  syntax         ProcList ::= Proc                                          //  Proc < ProcList
-                            | Procs                                         // Procs < ProcList
-
-// New
-  syntax              New ::= "new" NameList "in" "{" Proc "}"     [binder] // new _ in {_}: NameList x Proc ---> New; creates unforgeable names
+// New - creates unforgeable names
+  syntax              New ::= "new" NameVarList "in" "{" Proc "}"  [binder]
 
 // Match
-  syntax            Match ::= "match" Proc "{" MatchCaseList "}"            // match_{_}: Proc x MatchCaseList ---> Match
+  syntax            Match ::= "match" Proc "{" MatchCaseList "}"
+  syntax        MatchCase ::= Proc ":=>" Proc       [strict(2)]
+  syntax       MatchCases ::= MatchCase MatchCase
+                            | MatchCase MatchCases
+  syntax    MatchCaseList ::= MatchCase | MatchCases
 
-  syntax        MatchCase ::= Proc ":=>" Proc                   [strict(2)] // _:=>_: Proc x Proc -------------> MatchCase
-
-  syntax       MatchCases ::= MatchCase MatchCase                           // _ _: MatchCase x MatchCase -----> MatchCases
-                            | MatchCase MatchCases                          // _ _: MatchCase x MatchCases ----> MatchCases
-
-  syntax    MatchCaseList ::= MatchCase                                     //  MatchCase < MatchCaseList
-                            | MatchCases                                    // MatchCases < MatchCaseList
-
-// Variable Reference
-  syntax           VarRef ::= "=" "*" NameVar                               // =*_: NameVar ---> VarRef
+// Variable Reference - allows for shadowing
+  syntax           VarRef ::= "=" "*" NameVar
+                            | "=" ProcVar
 
 // Conditional
-  syntax      Conditional ::= IfThen                                        // if ... then ...
-                            | Else                                          // if ... then ... else
+  syntax      Conditional ::= IfThen | Else
 
-  syntax           IfThen ::= "if" "(" BExp ")" "then" Proc    [strict(1)]  // if ... then ...
- 
-  syntax             Else ::= IfThen "else" Proc                            // if ... then ... else ...
+  syntax           IfThen ::= "if" "(" BExp ")" "then" Proc  [strict(1)]
+  syntax             Else ::= IfThen "else" Proc
 
 // Contract
-  syntax         Contract ::= "contract" Name "(" NameList ")" "=" "{" Proc "}"  // syntactic sugar => for( NameList <= Name ){ Proc }
-                            | "contract" Name "(" ")" "=" "{" Proc "}"      // empty name declaration list
+  syntax         Contract ::= "contract" Name "(" NameList ")" "=" "{" Proc "}"  // sugar for persistent receive
+                            | "contract" Name "(" ")" "=" "{" Proc "}"
 
 // Contract Invocation
-  syntax       Invocation ::= Name "(" ProcList ")"                         // _(_): Name x ProcList ---> Invocation
+  syntax       Invocation ::= Name "(" ProcList ")"
                             | Name "(" ")"
 
-// Collections
-  syntax       Collection ::= RhoList                                       //  RhoList < Collection
-                            | RhoMap                                        //   RhoMap < Collection
-                            | RhoSet                                        //   RhoMap < Collection
-                            | RhoTuple                                      // RhoTuple < Collection
+// Collections - data structures
+  syntax       Collection ::= RhoList | RhoMap | RhoSet | RhoTuple
 
-// Process lists
-  syntax          RhoList ::= "[" ProcList ",]"                              // [_]: ProcList ----> RhoList
-                            | "[" ",]"                                       // empty list
+  // Process lists
+  syntax          RhoList ::= "[" ProcList "]"
+                            | "[" "]"
 
-// Process maps
-  syntax           RhoMap ::= "{" RhoKVPairList "}"                         // {_}: RhoKVPairList ---> RhoMap
-                            | "{" "}"                                       // empty map
+  // Process maps
+  syntax           RhoMap ::= "{" RhoKVPairList "}"
+                            | "{" "}"
 
-  syntax        RhoKVPair ::= Proc ":" Proc                                 // _:_: Proc x Proc --------------> RhoKVPair
-  
-  syntax       RhoKVPairs ::= RhoKVPair "," RhoKVPair                       // _,_: RhoKVPair x RhoKVPair ----> RhoKVPairs, map size = 2
-                            | RhoKVPair "," RhoKVPairs                      // _,_: RhoKVPair x RhoKVPairs ---> RhoKVPairs, map size > 2
-  
-  syntax    RhoKVPairList ::= RhoKVPair                                     //  RhoKVPair < RhoKVPairList
-                            | RhoKVPairs                                    // RhoKVPairs < RhoKVPairList
+  syntax        RhoKVPair ::= Proc ":" Proc
+  syntax       RhoKVPairs ::= RhoKVPair "," RhoKVPair
+                            | RhoKVPair "," RhoKVPairs
+  syntax    RhoKVPairList ::= RhoKVPair | RhoKVPairs
 
-// Process sets
-  syntax           RhoSet ::= "Set" "(" ProcList ")"                        // Set(_): ProcList ----> RhoSet
-                            | "Set" "(" ")"                                 // empty set
+  // Process sets
+  syntax           RhoSet ::= "Set" "(" ProcList ")"
+                            | "Set" "(" ")"
 
-// Process tuples
-  syntax         RhoTuple ::= "(" ProcList ",)"                             // (_,): ProcList ----> RhoTuple
-                            | "(" ",)"                                      // empty tuple
+  // Process tuples
+  syntax         RhoTuple ::= "(" ProcList ")"  [klabel(tuple)]
+                            | "(" ")"           [klabel(tuple)]
 
 // Ground terms
-  syntax           Ground ::= Bool                                          //   Bool < Ground
-                            | Int                                           //    Int < Ground
-                            | String                                        // String < Ground
-                            | Uri                                           //    Uri < Ground
-
-  syntax              Uri ::= "uri(" String ")"                             // uri(_): String -----> Uri
+  syntax           Ground ::= Bool | Int | String | Uri
+  syntax              Uri ::= "uri(" String ")"
 
 // AExp & BExp resolve to ground terms
 // Arithmetic
-  syntax             AExp ::= "{" AExp "}"                                  //     (_): AExp ------> AExp
-                            > Int                                           //    Int < AExp
-                            | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
-	        | String                                        // String < AExp
-	        | AExp "++" AExp                                // _++_: AExp x AExp ---> AExp (string concatenation)
-	        > "-" AExp                             [strict] //  -_: AExp -----------> AExp (negation)
-                            > AExp "*"  AExp                       [strict] // _*_: AExp x AExp ----> AExp (multiplication)
-	        | AExp "/"  AExp                       [strict] // _/_: AExp x AExp ----> AExp (division)
-                            > AExp "+"  AExp                       [strict] // _+_: AExp x AExp ----> AExp (addition)
-                            | AExp "-"  AExp                       [strict] // _-_: AExp x AExp ----> AExp (subtraction)
-	        | AExp "%"  AExp                       [strict] // _%_: AExp x AExp ----> AExp (mod reduction)
-                           // String interpolation: "${key}..." %% { key:value } => "value" ++ "..."
+  syntax             AExp ::= "{" AExp "}"
+                            > Int
+                            | Eval            // for interesting message passing, e.g. for( y <- x ){ *y + 5 }
+                            | String
+                            | AExp "++" AExp  // string concatenation, e.g. for( y <- x1 ; z <- x2 ){ *y ++ *z }
+                            > "-" AExp        [strict]
+                            > AExp "*"  AExp  [strict]
+                            | AExp "/"  AExp  [strict]
+                            > AExp "+"  AExp  [strict]
+                            | AExp "-"  AExp  [strict]
+                            | AExp "%"  AExp  [strict] // mod reduction
+                           // String interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
 
 // Boolean
-  syntax             BExp ::= "{" BExp "}"                                  //  (_): BExp ----------> BExp
-                            > Bool                                          //   Bool < BExp
-                            | Eval                                          //   Eval < BExp
-                            | String                                        // String < BExp
-                            | AExp "<=" AExp                    [seqstrict] // _<=_: AExp x AExp ---> BExp
-	        | AExp "<"  AExp                    [seqstrict] // 
-	        | AExp ">=" AExp                    [seqstrict] // 
-	        | AExp ">"  AExp                    [seqstrict] // 
-	        | Proc "matches" Proc                           // _matches_: Proc x Proc ---> BExp // P matches Q is syntactic sugar for: match P { Q :=> true _ :=> false }
-	        | Name "==" Name                                // _==_: Name x Name ---> BExp (name equivalence) // currently in progress
-	        | Name "!=" Name                                // _!=_: Name x Name ---> BExp (name equivalence) // currently in progress
-	        | Proc "==" Proc                                // _==_: Proc x Proc ---> BExp (structural equivalence) // currently in progress
-	        | Proc "!=" Proc                                // _==_: Proc x Proc ---> BExp (structural equivalence) // currently in progress
-                            > "not" BExp                           [strict] // not_: BExp ----------> BExp
-                            > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
-                            > BExp "or"  BExp                   [strict(1)] //   or: BExp ----------> BExp
+  syntax             BExp ::= "{" BExp "}"
+                            > Bool
+                            | Eval
+                            | String
+                            | AExp "<=" AExp        [seqstrict]
+                            | AExp "<"  AExp        [seqstrict]
+                            | AExp ">=" AExp        [seqstrict]
+                            | AExp ">"  AExp        [seqstrict]
+                            | Proc "matches" Proc   // P matches Q is syntactic sugar for: match P { Q :=> true _ :=> false }
+                            | Name "==" Name        // name equivalence
+                            | Name "!=" Name        // not ( Name == Name )
+                            | Proc "==" Proc        // structural equivalence
+                            | Proc "!=" Proc        // not ( Proc == Proc )
+                            > "not" BExp            [strict]
+                            > BExp "and" BExp       [strict(1)]
+                            > BExp "or"  BExp       [strict(1)]
 
 // Bundles
-  syntax           Bundle ::= "bundle+" "{" Proc "}"                        // write-only
-                            | "bundle-" "{" Proc "}"                        // read-only
-                            | "bundle0" "{" Proc "}"                        // neither read/write
-                            | "bundle"  "{" Proc "}"                        // both read/write
+  syntax           Bundle ::= "bundle+" "{" Proc "}"   // write-only
+                            | "bundle-" "{" Proc "}"   // read-only
+                            | "bundle0" "{" Proc "}"   // neither read/write
+                            | "bundle"  "{" Proc "}"   // both read/write
 
 // #isProc Predicate
-  syntax             Bool ::= "#isProc(" K ")"                              // #isProc(_): K ---> Bool
-                            | "#isName(" K ")"                              // #isName(_): K ---> Bool
+  syntax             Bool ::= "#isProc(" K ")"
+                            | "#isName(" K ")"
 
 // Methods
-  syntax       MethodProc ::= Proc "." Method "(" MethodArgs ")" [strict(1)]// _._(_): Proc x Method x MethodArgs ---> MethodProc
+  syntax       MethodProc ::= Proc "." Method "(" ProcList ")" [strict(1)]
+                            | Proc "." Method "(" ")"          [strict(1)]  
 
-  syntax       MethodArgs ::= ProcList
-                            | ""
-
-  syntax           Method ::= "nth"                                         // nth element in list, string, tuple // syntax: Thing.nth( Int ) 
-                            | "toByteArray"                                 // transform to bytearray - Thing.toByteArray( )
-                            | "hexToBytes"                                  // hex string -> bytes
-                            | "union"                                       // map, set union - Map.union( Map ) , Set.union( Set )
-                            | "diff"                                        // map, set difference?
-                            | "add"                                         // add proc/ like single element concat? - list, set?
-                            | "delete"                                      // delete element? - list, map, set
-                            | "contains"                                    // contains predicate
-                            | "get"                                         // get - map - get value corresponding to key or Nil
-                            | "getOrElse"                                   // getOrElse - map - get or side condition
-                            | "set"                                         // set - map.set( Key , Value )
-	        | "contains"                                    // contains predicate - 
-                            | "keys"                                        // set of keys of a map - map.keys( )
-	        | "values"                                      // list of values of a map - map.values( )
-                            | "size"                                        // number of elements in unordered structures - Map.size(), Set.size()
-                            | "length"                                      // length of list, tuple - List.length() , Tuple.length()
-                            | "slice"                                       // slice of list, string - List.slice(I1,I2) , String.slice(I1,I2)
-	        | "iterate"                                     // semantics? - list
-                            | "confine"                                     // semantics?
+  syntax           Method ::= "nth"          // nth element - list, string(?), tuple - Proc.nth( Int ) 
+                            | "toByteArray"  // transform to bytearray - Data.toByteArray( )
+                            | "hexToBytes"   // hex string -> bytes
+                            | "union"        // map, set union - Map.union( Map ) , Set.union( Set )
+                            | "diff"         // difference - map, set?
+                            | "add"          // add - like single element concat? - list, map, set?
+                            | "delete"       // delete element? - list, map, set
+                            | "contains"     // contains predicate
+                            | "get"          // get - get value corresponding to key - Map.get( Key )
+                            | "getOrElse"    // getOrElse - get or side condition - Map.getOrElse( Key , SideCondition )
+                            | "set"          // set - Map.set( Key , Value )
+                            | "contains"     // contains predicate - list, map, set?
+                            | "keys"         // set of keys of a map - map.keys( )
+                            | "values"       // list of values of a map - map.values( )
+                            | "size"         // number of elements in unordered structures - Map.size(), Set.size()
+                            | "length"       // length of list, tuple - List.length() , Tuple.length()
+                            | "slice"        // slice of list, string - List.slice(I1,I2) , String.slice(I1,I2)
+                            | "iterate"      // semantics? - list and tuple?
+                            | "confine"      // semantics?
 
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
@@ -299,22 +275,16 @@ module GRHO-SYNTAX
   syntax              Set ::= RhoSet
 
 // For handling joins in configuration
-  syntax         JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
+  syntax         JoinList ::= "{[" Proc ";" Int     "]}"     // for uniform join id
+  syntax          ChanLen ::= "("  Name ";" Int      ")"     // (listening channel ; number of variables to bind)
+  syntax         ChanList ::= "("  Name ";" NameList ")"     // (listening channel ; variable(s) to bind)
+  syntax            IdNum ::= Int ";" Int                    // _;_: Int x Int ------> IdNum < KItem
+  syntax          BindOcc ::= Name ";" Int       ";;" Int    // listening channel; number of variables to bind; number of occurences
+                            | Name ";" NameList  ";;" Int    // listening channel; variable(s) to bind; number of occurences
+  syntax             Proc ::= ChanLen | BindOcc | JoinList   // definitions
 
-  syntax          ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
-
-  syntax         ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
-  
-  syntax            IdNum ::= Int ";" Int                                   // _;_: Int x Int ------> IdNum < KItem
-
-  syntax          BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
-                            | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
-
-  syntax             Proc ::= ChanLen                                       // for
-                            | BindOcc                                       // auxfun
-                            | JoinList                                      // definitions
-
-  syntax        KVariable ::= Name | Int
+  syntax        KVariable ::= NameVar | ProcVar
+                            | Int  // for map substitutions
 
   syntax            KItem ::= Name | Names | Proc | Procs | IdNum
 
@@ -364,11 +334,14 @@ module GRHO
         <where>   .K   </where>                                      // binding variable(s)
         <update> .Map </update>                                      // updated variable binding(s)
       </reaction>                                                    // all comms are processed here
-      <store color="pink"> .Map  </store>                            // 
+      <store color="pink"> .Map </store>                             // global store map: location |-> value 
       <nextLoc color="gray"> 0 </nextLoc>                            // 
     </T>                                                             // 
 
   syntax KResult ::= Ground | Eval | List | Map | Set                // final output of strict operations
+
+  syntax      Ground ::= Unforgeable                                 // Unforgeable processes are not syntactically valid
+  syntax Unforgeable ::= "unforgeable(" Int ")"                      // unforgeable process
 
 // Relation to built-ins
   syntax List ::= "#makeList(" RhoList ")"    [function]
@@ -398,13 +371,14 @@ module GRHO
   rule A:Ground == B:Ground => A ==K  B                   [anywhere] // equality of ground terms
   rule A:Ground != B:Ground => A =/=K B                   [anywhere] // inequality of ground terms
 
+/*
 // Collections
   //context (HOLE:RhoList => #makeList(HOLE)) . _:Method ( _:MethodArgs )
   rule L:RhoList => #makeList(L)
   rule #makeList([ ]) => .List
   rule #makeList([ P:Proc ]) => ListItem(P)
   rule #makeList([ P:Proc , Q:Proc  ]) => ListItem(P) ListItem(Q)
-  rule #makeList([ P:Proc , Q:Procs ]) => ListItem(P) #makeList([Q,])
+  rule #makeList([ P:Proc , Q:Procs ]) => ListItem(P) #makeList([Q])
 
   // RhoMaps are interpreted as built-in Maps
   //  context HOLE:RhoMap => #makeMap(HOLE)
@@ -419,7 +393,7 @@ module GRHO
   rule Set( P:Proc ) => SetItem(P)                      [anywhere, structural]
   rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q) [anywhere, structural]
   rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)     [anywhere, structural]
-
+*/
 // Conditionals - short-circuited
   rule if ( true  ) then P:Proc => P              [structural]
   rule if ( false ) then _:Proc => Nil            [structural]
@@ -438,21 +412,21 @@ module GRHO
 // New Operator Semantics
 // like blocks with local variable declarations
 // nested variable declarations will shadow each other
-  syntax KItem ::= "undefined"  // declared as a variable, but not assigned a value yet
+//  syntax KItem ::= "undefined"  // declared as a variable, but not assigned a value yet
 
   rule <k> new N:NameVar in { P:Proc } => P ~> setEnv(Env) ...</k>
        <env> Env => Env[N <- L] </env>
-       <store>... .Map => L |-> undefined ...</store>
+       <store>... .Map => L |-> unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule <k> new M:NameVar , N:NameVar  in { P:Proc } => new N in { P } ...</k>
+  rule <k> new M:NameVar , N:NameVar in { P:Proc } => new N in { P } ...</k>
        <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> undefined ...</store>
+       <store>... .Map => L |-> unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
        
-  rule <k> new M:NameVar , N:Names in { P:Proc } => new N in { P } ...</k>
+  rule <k> new M:NameVar , N:NameVars in { P:Proc } => new N in { P } ...</k>
        <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> undefined ...</store>
+       <store>... .Map => L |-> unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
 
 // Resetting the environment
@@ -489,47 +463,50 @@ module GRHO
 //--- Send Operator Semantics ---
 //-------------------------------
   rule <thread>
-         <k> S:Send => . ...</k>                                     // dissolve send in <threads/> and spawn <send/>
-         <env>  B:Map  </env>                                        // 
-       </thread>                                                     // 
-       (.Bag => <send>                                               //
-                  <schan>        #chan(S)  </schan>                  // sending channel
-                  <msg>           #msg(S)    </msg>                  // sending message(s)
-                  <tuple> #length(#msg(S)) </tuple>                  // number of messages
-                  <stype>       #stype(S)  </stype>                  // send type
-                  <sbind>              B   </sbind>                  // 
-                </send>)                                             //
+         <k> S:Send => . ...</k>   // dissolve send in <threads/> and spawn <send/>
+         <env> B:Map </env>        // thread environment
+       </thread> 
+       <store> M:Map </store>      // global store
+       (.Bag => <send>
+                  <schan>   #chan(S)[B[M]] </schan>  // sending channel
+                  <msg>      #msg(S)[B[M]]   </msg>  // sending message(s)
+                  <tuple> #length(#msg(S)) </tuple>  // number of messages
+                  <stype>       #stype(S)  </stype>  // send type
+                  <sbind>              B   </sbind>
+                </send>)
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-//TODO: 
+//TODO: environments
   rule <thread>
-         <k> R:SingleRec => . ...</k>                                // dissolve Rec in <threads/> and spawn <rec/>
-         <env>  B:Map  </env>                                        // 
-       </thread>                                                     // 
-       (.Bag => <rec>                                                // 
-                  <rchan>  #chan(R) </rchan>                         // receiving channel
-                  <bvars>  #bvar(R) </bvars>                         // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)  </bnum>                         // 
-                  <rtype> #rtype(R) </rtype>                         // receive type
-                  <cont>   #cont(R)  </cont>                         // continuation
-                  <rbind>        B  </rbind>                         // 
-                </rec>)                                              //
+         <k> R:SingleRec => . ...</k>  // dissolve Rec in <threads/> and spawn <rec/>
+         <env>  B:Map  </env>
+       </thread>
+       <store> M:Map </store>
+       (.Bag => <rec>
+                  <rchan>  #chan(R)[B[M]] </rchan>  // receiving channel
+                  <bvars>  #bvar(R)[B[M]] </bvars>  // variable(s) to be substituted in continuation
+                  <bnum>   #bnum(R)        </bnum>  // 
+                  <rtype> #rtype(R)       </rtype>  // receive type
+                  <cont>   #cont(R)[B[M]]  </cont>  // continuation
+                  <rbind>        B        </rbind>
+                </rec>)
 
 // Joins
   rule <thread>
-         <k> R:MultiRec => . ...</k>                                 //
-         <env>  B:Map  </env>                                        // 
-       </thread>                                                     // 
-       (.Bag => <rec>                                                // 
-                  <rchan>  #chan(R) </rchan>                         // receiving channel
-                  <bvars>  #bvar(R) </bvars>                         // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)  </bnum>                         // number of variables to bind
-                  <rtype> #rtype(R) </rtype>                         // receive type
-                  <cont>   #cont(R)  </cont>                         // continuation
-                  <rbind>        B  </rbind>                         // 
-                </rec>)                                              //
+         <k> R:MultiRec => . ...</k>
+         <env>  B:Map  </env>
+       </thread>
+       <store> M:Map </store>
+       (.Bag => <rec>
+                  <rchan>  #chan(R)[B[M]] </rchan>  // receiving channel
+                  <bvars>  #bvar(R)[B[M]] </bvars>  // variable(s) to be substituted in continuation
+                  <bnum>   #bnum(R)        </bnum>  // number of variables to bind
+                  <rtype> #rtype(R)       </rtype>  // receive type
+                  <cont>   #cont(R)[B[M]]  </cont>  // continuation
+                  <rbind>        B        </rbind>
+                </rec>)
 
 //-------------------
 //--- COMM EVENTS ---
@@ -760,7 +737,7 @@ module GRHO
 
 // Join semantics seem to be much more complicated than single listens...
 // moved progress to join.k
-
+/*
 // Methods
   // add
 
@@ -790,7 +767,9 @@ module GRHO
 
   // legnth (list & tuple)
   rule L:List .length( ) => size(L)
-  rule T:RhoTuple .length( ) => #length T
+
+  rule ( ):RhoTuple .length( ) => 0
+  rule tuple( P:ProcList ) .length( ) => #length(P)
 
   // mapkeys (maps)
   rule M:Map .keys( ) => keys( M )
@@ -798,10 +777,10 @@ module GRHO
   // nth (lists & tuples)
   rule L:List .nth( I:Int ) => L[I]
 
-  rule ( ,).nth( _ ) => Nil
-  rule ( P:Proc ,).nth( I:Int ) => #if I ==Int 0 #then P #else Nil #fi
-  rule ( P:Proc , Q:Proc  ,).nth( I:Int ) => #if I ==Int 0 #then P #else ( Q ,).nth( I -Int 1 ) #fi
-  rule ( P:Proc , Q:Procs ,).nth( I:Int ) => #if I ==Int 0 #then P #else ( Q ,).nth( I -Int 1 ) #fi
+  rule ( ):RhoTuple.nth( _ ) => Nil
+  rule tuple( P:Proc ).nth( I:Int ) => #if I ==Int 0 #then P #else Nil #fi
+  rule tuple( P:Proc , Q:Proc  ).nth( I:Int ) => #if I ==Int 0 #then P #else tuple( Q ).nth( I -Int 1 ) #fi
+  rule tuple( P:Proc , Q:Procs ).nth( I:Int ) => #if I ==Int 0 #then P #else tuple( Q ).nth( I -Int 1 ) #fi
   
   // set (maps)
   rule M:Map .set( Key:Proc , Val:Proc ) => updateMap( M , Key |-> Val)
@@ -822,7 +801,7 @@ module GRHO
   // union (maps & sets)
   rule M1:Map .union( M2:Map ) => M1 M2
   rule S1:Set .union( S2:Set ) => S1 S2
-
+*/
 // Eliminate unnecessary Nils
   rule    Nil | P:Proc => P  [anywhere, structural]
   rule P:Proc | Nil    => P  [anywhere, structural]
