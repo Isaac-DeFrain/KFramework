@@ -5,75 +5,66 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length"    "(" ProcList ")"            [function]  // #length(_): ProcList ---------------> Int
-                  | "#length"    "("          ")"            [function]  // #length( ):  -----------------------> Int
-                  | "#length"        RhoTuple                [function]  // #length( ): RhoTuple ---------------> Int
-                  | "#length"        RhoList                 [function]  // #length: RhoList -------------------> Int
-                  | "#length"    "(" Name  ")"               [function]  // #length(_): Name -------------------> Int
-                  | "#length"    "(" Names ")"               [function]  // #length(_): Names ------------------> Int
-                  | "#length"    "(" Binds ")"               [function]  // #length(_): Binds ------------------> Int
-                  | "#length"    "(" GuardedBinds ")"        [function]  // #length(_): GuardedBinds -----------> Int
-                  | "#size"          RhoMap                  [function]  // #size: RhoMap ----------------------> Int
-                  | "#size"          RhoSet                  [function]  // #size: RhoSet ----------------------> Int
-                  | "#bnum"      "(" Bind  ")"               [function]  // #bnum(_): Bind ---------------------> Int
-                  | "#bnum"      "(" GuardedBind  ")"        [function]  // #bnum(_): GuardedBind --------------> Int
-                  | "#bnum"    "(" Receive ")"               [function]  // #bnum(_): Receive ------------------> Int
-                  | "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
-                  | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
-                  | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
-                  | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
-                  | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
-                  | "#stype"  "(" Send     ")"               [function]  // #stype(_): Send --------------------> Int
-                  | "#rtype"  "(" AnyBinds ")"               [function]  // #rtype(_): Bind --------------------> Int
-                  | "#rtype"  "(" Receive  ")"               [function]  // #rtype(_): Receive -----------------> Int
+  syntax    Int ::= "#length" "(" ProcList ")"     [function]  // #length(_): ProcList ---------------> Int
+                  | "#length" "("          ")"     [function]  // #length( ):  -----------------------> Int
+                  | "#length" "(" Name     ")"     [function]  // #length(_): Name -------------------> Int
+                  | "#length" "(" Names    ")"     [function]  // #length(_): Names ------------------> Int
+                  | "#length" "(" Binds    ")"     [function]  // #length(_): Binds ------------------> Int
+                  | "#length" "(" GuardedBinds ")" [function]  // #length(_): GuardedBinds -----------> Int
+                  | "#bnum"   "(" Bind     ")"     [function]  //   #bnum(_): Bind -------------------> Int
+                  | "#bnum"   "(" GuardedBind  ")" [function]  //   #bnum(_): GuardedBind ------------> Int
+                  | "#bnum"   "(" Receive ")"      [function]  //   #bnum(_): Receive ----------------> Int
+                  | "#stype"  "(" Send     ")"     [function]  //  #stype(_): Send -------------------> Int
+                  | "#rtype"  "(" AnyBinds ")"     [function]  //  #rtype(_): Bind -------------------> Int
+                  | "#rtype"  "(" Receive  ")"     [function]  //  #rtype(_): Receive ----------------> Int
 
-  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
-                  | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
-                  | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
-                  | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
-                  | "#bindocc"   "(" Bind  ")"               [function]  //  #bindocc(_): Bind -------> Set
-                  | "#bindocc"   "(" Binds ")"               [function]  //  #bindocc(_): Binds ------> Set
-                  | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
-                  | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
+  syntax    Int ::= "#size"   RhoMap               [function]  // #size: RhoMap ----------------------> Int
+                  | "#size"   RhoSet               [function]  // #size: RhoSet ----------------------> Int
+                  | "#length" RhoList              [function]  // #length: RhoList -------------------> Int
 
-  syntax   Bind ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Bind
-                  | "#bind"    "(" BindOcc ")"               [function]  // #bind(_): BindOcc --------> Bind
+  syntax   Bind ::= "#bind" "(" Receive ")"        [function]  // #bind(_): Receive --------> Bind
 
-  syntax  Binds ::= "#bind"    "(" Receive ")"               [function]  // #bind(_): Receive --------> Binds
+  syntax  Binds ::= "#bind" "(" Receive ")"        [function]  // #bind(_): Receive --------> Binds
 
-  syntax   Proc ::= "#cont"    "(" Receive ")"               [function]  // #cont(_): Receive --------> Proc
-                  | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Proc
+  syntax   Proc ::= "#cont" "(" Receive ")"        [function]  // #cont(_): Receive --------> Proc
+                  | "#msg"  "("   Send  ")"        [function]  // #msg(_): Send ------------> Proc
 
-  syntax  Procs ::= "#lengths" "("   Binds ")"               [function]  // #length(_): Binds --------> Procs
-                  | "#msg"     "("   Send  ")"               [function]  // #msg(_): Send ------------> Procs
-                  | "#append" "(" Proc  ";" Proc  ")"        [function]  // #append(_;_): Proc  x Proc ---------> Procs
-                  | "#append" "(" Procs ";" Proc  ")"        [function]  // #append(_;_): Procs x Proc ---------> Procs
-                  | "#append" "(" Proc  ";" Procs ")"        [function]  // #append(_;_): Proc  x Procs --------> Procs
-                  | "#append" "(" Procs ";" Procs ")"        [function]  // #append(_;_): Procs x Procs --------> Procs
+  syntax  Procs ::= "#lengths" "(" Binds ")"          [function]  // #length(_): Binds --------> Procs
+                  | "#msg"     "(" Send  ")"          [function]  // #msg(_): Send ------------> Procs
+                  | "#append" "(" Proc  ";" Proc  ")" [function]  // #append(_;_): Proc  x Proc ---------> Procs
+                  | "#append" "(" Procs ";" Proc  ")" [function]  // #append(_;_): Procs x Proc ---------> Procs
+                  | "#append" "(" Proc  ";" Procs ")" [function]  // #append(_;_): Proc  x Procs --------> Procs
+                  | "#append" "(" Procs ";" Procs ")" [function]  // #append(_;_): Procs x Procs --------> Procs
 
-  syntax   Name ::= "#chan"    "("   Send  ")"               [function]  //     #chan(_): Send -------> Name
-                  | "#chan"    "(" Receive ")"               [function]  //     #chan(_): Receive ----> Name
-                  | "#chan"    "("   Bind  ")"               [function]  //     #chan(_): Bind -------> Name
-                  | "#chan"    "(" GuardedBind ")"           [function]  //     #chan(_): Bind -------> Name
-                  | "#bvar"    "("   Bind  ")"               [function]  //     #bvar(_): Bind -------> Name
-                  | "#bvar"    "(" GuardedBind ")"           [function]  //     #bvar(_): Bind -------> Name
-                  | "#bvar"    "(" Receive ")"               [function]  //     #bvar(_): Receive ----> Name
+  syntax   Name ::= "#chan"   "("   Send  ")"         [function]  //     #chan(_): Send -------> Name
+                  | "#chan"   "(" Receive ")"         [function]  //     #chan(_): Receive ----> Name
+                  | "#chan"   "("   Bind  ")"         [function]  //     #chan(_): Bind -------> Name
+                  | "#chan"   "(" GuardedBind ")"     [function]  //     #chan(_): Bind -------> Name
+                  | "#bvar"   "("   Bind  ")"         [function]  //     #bvar(_): Bind -------> Name
+                  | "#bvar"   "(" GuardedBind ")"     [function]  //     #bvar(_): Bind -------> Name
+                  | "#bvar"   "(" Receive ")"         [function]  //     #bvar(_): Receive ----> Name
 
-  syntax  Names ::= "#chan"    "("   Binds ")"               [function]  //     #chan(_): Binds ------> Names
-                  | "#chan"    "(" GuardedBinds ")"          [function]  //     #chan(_): Binds ------> Names
-                  | "#chan"    "(" Receive  ")"              [function]  //     #chan(_): Receive ----> Names
-                  | "#bvar"    "(" AnyBinds ")"              [function]  //     #bvar(_): Binds ------> Names
-                  | "#bvar"    "(" Receive  ")"              [function]  //     #bvar(_): Receive ----> Names
-                  | "#quotes"  "(" Procs    ")"              [function]  //   #quotes(_): Procs ------> Names
-                  | "#append"  "(" Name  ";" Name  ")"       [function]  //     #bvar(_): Name  x Name -------> Names
-                  | "#append"  "(" Names ";" Name  ")"       [function]  //     #bvar(_): Names x Name -------> Names
-                  | "#append"  "(" Name  ";" Names ")"       [function]  //     #bvar(_): Name  x Names ------> Names
-                  | "#append"  "(" Names ";" Names ")"       [function]  //     #bvar(_): Names x Names ------> Names
+  syntax  Names ::= "#chan"   "("   Binds ")"         [function]  //     #chan(_): Binds ------> Names
+                  | "#chan"   "(" GuardedBinds ")"    [function]  //     #chan(_): Binds ------> Names
+                  | "#chan"   "(" Receive  ")"        [function]  //     #chan(_): Receive ----> Names
+                  | "#bvar"   "(" AnyBinds ")"        [function]  //     #bvar(_): Binds ------> Names
+                  | "#bvar"   "(" Receive  ")"        [function]  //     #bvar(_): Receive ----> Names
+                  | "#quotes" "(" Procs    ")"        [function]  //   #quotes(_): Procs ------> Names
+                  | "#append" "(" Name  ";" Name  ")" [function]  //     #bvar(_): Name  x Name -------> Names
+                  | "#append" "(" Names ";" Name  ")" [function]  //     #bvar(_): Names x Name -------> Names
+                  | "#append" "(" Name  ";" Names ")" [function]  //     #bvar(_): Name  x Names ------> Names
+                  | "#append" "(" Names ";" Names ")" [function]  //     #bvar(_): Names x Names ------> Names
   
-  syntax    Map ::= "#rbind" "(" Receive  ")"                [function]  // 
-                  | "#rbind" "(" AnyBinds ")"                [function]  // 
-  
-  syntax   BExp ::= "#guard" "(" Receive ")"                 [function]  // #guard(_): Receive -------> BExp
+  syntax   BExp ::= "#guard" "(" Receive ")"          [function]  // #guard(_): Receive -------> BExp
+
+  syntax    Map ::= "#rbind" "(" Receive  ")"         [function]
+                  | "#rbind" "(" AnyBinds ")"         [function]
+
+  syntax RhoSet ::= "#keys" RhoMap                    [function]
+                  | RhoSet "#union" RhoSet            [function]
+
+  syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")"   [function]
+                   | "#truncate(" RhoList "," Int ")"        [function]
 
   syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
                   | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  ------> Bool
@@ -85,13 +76,24 @@ module AUXFUN-SYNTAX
                   | Bind  "#ine" "(" Binds ")"               [function]  // _#ine_: Bind x Binds -----> Bool
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
                   | Proc "#in_keys" RhoMap                   [function]
-                  | Proc "#in_set" RhoSet                    [function]
+                  | Proc "#in_set"  RhoSet                   [function]
 
-  syntax RhoSet ::= "#keys"         RhoMap                   [function]
-                  | RhoSet "#union" RhoSet                   [function]
+  syntax    Int ::= "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
+                  | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
+                  | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
+                  | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
+                  | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
 
-  syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")"   [function]
-                   | "#truncate(" RhoList "," Int ")"        [function]
+  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
+                  | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
+                  | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
+                  | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
+                  | "#bindocc"   "(" Bind  ")"               [function]  //  #bindocc(_): Bind -------> Set
+                  | "#bindocc"   "(" Binds ")"               [function]  //  #bindocc(_): Binds ------> Set
+                  | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
+                  | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
+
+  syntax   Bind ::= "#bind" "(" BindOcc ")" [function]  // #bind(_): BindOcc --------> Bind
 
 endmodule
 
@@ -108,6 +110,8 @@ module AUXFUN
   rule #msg   ( _:Name !  ( P:Procs    ) ) => P
   rule #msg   ( _:Name !! ( P:Proc     ) ) => P
   rule #msg   ( _:Name !! ( P:Procs    ) ) => P
+  
+  rule #length( S:Send ) => #length(#msg(S))
 
   rule #stype ( _:Name !  ( _:ProcList ) ) => 0
   rule #stype ( _:Name !! ( _:ProcList ) ) => 1
@@ -206,9 +210,9 @@ module AUXFUN
 //--- #in ---
 //-----------
 // Int #in RhoTuple
-  rule A:Int #in ( B:Int           ,) => A ==Int B
-  rule A:Int #in ( B:Int , C:Int   ,) => A ==Int B orBool A ==Int C
-  rule A:Int #in ( B:Int , C:Procs ,) => A ==Int B orBool A #in  (C ,)
+  rule A:Int #in ( B:Int           ) => A ==Int B
+  rule A:Int #in ( B:Int , C:Int   ) => A ==Int B orBool A ==Int C
+  rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in  (C)
 
 // Name #in NameTuple
   rule A:Name #in ( B:Name           ) => A ==K B
@@ -236,7 +240,7 @@ module AUXFUN
   rule #size { _:Proc : _:Proc } => 1
   rule #size { _:Proc : _:Proc , _:Proc : _:Proc } => 2
   rule #size { _:Proc : _:Proc , R:RhoKVPairs    } => 1 +Int #size {R}
-  
+/*
 //--------------
 //--- #slice ---
 //--------------
@@ -250,7 +254,7 @@ module AUXFUN
 //-------------
 //--- #keys ---
 //-------------
-/*  rule #keys { }:RhoMap => Set( )
+  rule #keys { }:RhoMap => Set( )
   rule #keys { A:Proc : _:Proc } => Set( A )
   rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => Set( A , B )
   rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
@@ -266,7 +270,7 @@ module AUXFUN
 //---------------
 //--- #length ---
 //---------------
-// ProcList
+// RhoTuple/ProcList
   rule #length ( ) => 0
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
@@ -275,10 +279,6 @@ module AUXFUN
 // RhoList
   rule #length [ ] => 0
   rule #length [ P:ProcList ] => #length(P)
-  
-// RhoTuple
-  rule #length ( ,) => 0
-  rule #length ( P:ProcList ,) => #length(P)
 
 // Name(s)
   rule #length ( _:Name           ) => 1
@@ -359,17 +359,17 @@ module AUXFUN
 //--- #bvar ---
 //-------------
 // binding variables
-  rule #bvar (         <- N:Name ) => Empty
-  rule #bvar ( N:Name  <- _:Name ) => N
+  rule #bvar (         <- N:Name ) => EmptyMsg
+  rule #bvar ( N:NameVar  <- _:Name ) => N
   rule #bvar ( N:Names <- _:Name ) => N
-  rule #bvar (         <= N:Name ) => Empty
+  rule #bvar (         <= N:Name ) => EmptyMsg
   rule #bvar ( N:Name  <= _:Name ) => N
   rule #bvar ( N:Names <= _:Name ) => N
-  rule #bvar (         <! N:Name ) => Empty
+  rule #bvar (         <! N:Name ) => EmptyMsg
   rule #bvar ( N:Name  <! _:Name ) => N
   rule #bvar ( N:Names <! _:Name ) => N
   
-  rule #bvar ( B:Bind _:Guard ) => #bvar (B)
+  rule #bvar ( B:Bind _:Guard ) => #bvar(B)
 
   rule #bvar ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)
   rule #bvar ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvar(C)
