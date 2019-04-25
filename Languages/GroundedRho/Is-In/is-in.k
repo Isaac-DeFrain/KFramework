@@ -1,6 +1,6 @@
 // The #isIn predicate - checks for type inclusion
 // Normalizer needed for par structural inclusion
-
+// TODO: Figure out how to blend the #type (semantics live in STYPE) and #isIn (semantics live in IS-IN) functions
 require "domains.k"
 require "../StructuralTypes/stype.k"
 
@@ -9,10 +9,15 @@ module IS-IN-SYNTAX
   import STYPE-SYNTAX
 
 // The type inclusion predicate
-  syntax    Bool ::= Type "#isIn"   Type     [function]
-                   |      "#isName" Type     [function]
-                   |      "#isProc" Type     [function]
-                   |      "#isPat"  Type     [function]
+  syntax    Bool ::= Type "#isIn"   Type  [function]
+                   |      "#isName" Type  [function]
+                   |      "#isProc" Type  [function]
+                   |      "#isPat"  Type  [function]
+
+  syntax    Bool ::= ProcOrPat "#isIn" ProcOrPat
+                   | NameOrPat "#isIn" NameOrPat
+                   | Type      "#isIn" ProcOrPat
+                   | Type      "#isIn" NameOrPat
 
 // Name, Process, Pattern types for #isName, #isProc, #isPat predicates
   syntax    Type ::= "Name"
@@ -24,12 +29,24 @@ endmodule
 module IS-IN
   import IS-IN-SYNTAX
 
-  syntax KResult ::= Bool
+  syntax KResult ::= Bool | TerminalType
 
   configuration
     <T color="teal">
       <k color="purple"> $PGM:Bool </k>
     </T>
+
+// I don't know why these contexts don't work... I tried single-holed too with no luck
+//  context (HOLE:ProcOrPat => #type(HOLE)) #isIn (HOLE:ProcOrPat => #type(HOLE))
+//  context (HOLE:NameOrPat => #type(HOLE)) #isIn (HOLE:NameOrPat => #type(HOLE))
+
+  rule P:Proc    #isIn Q:Proc    => #type(P) #isIn #type(Q)
+  rule P:Proc    #isIn Q:ProcPat => #type(P) #isIn #type(Q)
+  rule P:ProcPat #isIn Q:ProcPat => #type(P) #isIn #type(Q)
+
+  rule M:Name    #isIn N:Name    => type[M] #isIn type[N]
+  rule M:Name    #isIn N:NamePat => type[M] #isIn type[N]
+  rule M:NamePat #isIn N:NamePat => type[M] #isIn type[N]
 
 //--------------------------------
 //--- Type Inclusion Semantics ---
@@ -39,7 +56,8 @@ module IS-IN
   rule T:Type #isIn T => true
 
 // Transitivity
-//  rule A:Type #isIn C:Type => #Forall ?B:Type . A #isIn B xorBool B #isIn C:Type
+// This line kompiles, but I'm not sure how to use it...
+//  rule A:Type #isIn C:Type => true when A #isIn ?B:Type andBool ?B #isIn C
 
 // Matching top-level constructors -> subtype inclusion (excluding Par & Leaf)
   rule type[ S:String ;; A:IntermediateType ;; B:IntermediateType ] #isIn type[ S ;; C:IntermediateType ;; D:IntermediateType ] 
@@ -95,8 +113,8 @@ module IS-IN
           (C #isIn E andBool type[ "par" ;; A ;; B ] #isIn D)
 
 // Nil in par is structurally vacuous: P | Nil <=> Nil | P <=> P
-  rule type[ "par" ;; A:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] #isIn B => A #isIn B
-  rule type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; A:IntermediateType ] #isIn B => A #isIn B
+  rule type[ "par" ;; A:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] #isIn B:Type => A #isIn B
+  rule type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; A:IntermediateType ] #isIn B:Type => A #isIn B
   rule A #isIn type[ "par" ;; B:IntermediateType ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] => A #isIn B
   rule A #isIn type[ "par" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; B:IntermediateType ] => A #isIn B
 
