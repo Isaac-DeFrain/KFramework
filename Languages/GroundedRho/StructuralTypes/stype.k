@@ -2,6 +2,7 @@
 // Type is a structural binary tree
 
 require "domains.k"
+require "../Is-In/is-in.k"
 
 module STYPE-SYNTAX
   import DOMAINS
@@ -369,14 +370,14 @@ module STYPE-SYNTAX
 //******************************
 //*** STRUCTURAL TYPE SYNTAX ***
 //******************************
-  syntax             Type ::= "#type(" Proc    ")"                                   // #type(_): Proc ------> Type
-                            | "#type(" ProcPat ")"                                   // #type(_): ProcPat ---> Type
-                            | "#type(" Name    ")"                                   // #type(_): Name ------> Type
-                            | "#type(" NamePat ")"                                   // #type(_): NamePat ---> Type
+  syntax             Type ::= "#type(" ProcOrPat ")"                        [function] // #type(_): Proc ------> Type
+//                            | "#type(" ProcPat ")"                        [function] // #type(_): ProcPat ---> Type
+                            | "#type(" NameOrPat ")"                        [function] // #type(_): Name ------> Type
+//                            | "#type(" NamePat ")"                        [function] // #type(_): NamePat ---> Type
                             | InitialType                                            //          InitialType < Type
                             | IntermediateType                                       //     IntermediateType < Type
                             | TerminalType                                           //         TerminalType < Type
-
+                            | Bool
 
 // Simple Types - types of ground terms
   syntax       SimpleType ::= "Bool"                                                 //        "Bool" < SimpleType
@@ -441,6 +442,7 @@ endmodule
 
 module STYPE
   import STYPE-SYNTAX
+//  import IS-IN
 
   configuration
     <T color="teal">
@@ -452,10 +454,8 @@ module STYPE
 //---------------------
 //--- Type function ---
 //---------------------
-  rule #type( P:Proc    ) => type[P]
-  rule #type( P:ProcPat ) => type[P]
-  rule #type( N:Name    ) => type[N]
-  rule #type( N:NamePat ) => type[N]
+  rule #type( P:ProcOrPat ) => type[P]
+  rule #type( N:NameOrPat ) => type[N]
 
 //*** Leaves ***
 // Ground

@@ -1,0 +1,5 @@
+// Structural type inclusion for pattern-matching - @true matches WildName
+
+   @Nil #isIn WildName
+
+// Output: true
