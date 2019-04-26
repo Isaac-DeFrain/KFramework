@@ -3,13 +3,192 @@
 
 require "domains.k"
 require "substitution.k"
-require "../AuxFun/auxfun.k"
-require "../grho.k"
+require "AuxFun/auxfun.k"
 
 module JOIN-SYNTAX
   import DOMAINS
-  import GRHO-SYNTAX
   import SUBSTITUTION
+
+//-------------
+//--- NAMES ---
+//-------------
+  syntax   NameVar ::= Id                                            //  Id < NameVar
+
+  syntax      Name ::= "@" Proc                                      //   @: Proc -------------> Name
+                     | NameVar                                       //                NameVar < Name
+                     | "unforgeable(" Int ")"                        // unforgeable(_): Int ---> Name
+
+  syntax     Names ::= Name "," Name                                 // _,_: Name x Name ------> Names
+                     | Name "," Names                                // _,_: Name x Names -----> Names
+
+  syntax  NameList ::= Name                                          //  Name < NameList
+                     | Names                                         // Names < NameList
+
+//-----------------
+//--- PROCESSES ---
+//-----------------
+  syntax      Proc ::= "{" Proc "}"                        [bracket] // {_}: Proc --------> Proc
+                     > New                                           //        New < Proc
+                     > "Nil"                                         // Nil: -------------> Proc
+                     | Collection                                    // Collection < Proc
+                     | Ground                                        //     Ground < Proc
+                     > AExp                                          //       AExp < Proc
+                     > BExp                                          //       BExp < Proc
+                     | Eval                                          //       Eval < Proc
+                     | Receive                                       //    Receive < Proc
+                     | Send                                          //       Send < Proc
+                     | Bundle                                        //     Bundle < Proc
+                     > Par                                           //        Par < Proc
+
+// Parallel
+  syntax       Par ::= Proc "|" Proc                          [left] // _|_: Proc x Proc ---> Par
+
+// Receives - no mixed linear/peek/repeated
+  syntax   Receive ::= SingleRec                                     // SingleRec < Receive, single listen receive
+                     | MultiRec                                      //  MultiRec < Receive, multi-listen receive = join
+
+  syntax SingleRec ::= "for" "(" Bind  ")" "{" Proc "}"              // for(_){_}: Bind x Proc ----> SingleRec
+
+  syntax  MultiRec ::= "for" "(" Binds ")" "{" Proc "}"              // for(_){_}: Binds x Proc ---> MultiRec
+
+  syntax     Lbind ::= NameList "<-" Name                            // for( y1,...,yN <- x ){ P }, explicit
+
+  syntax    Lbinds ::= Lbind ";" Lbind                               // 2 linear listens 
+                     | Lbind ";" Lbinds                              // N liner listens, N > 2
+
+  syntax     Pbind ::= NameList "<!" Name                            // for( y1,...,yN <! x ){ P }, explicit
+
+  syntax    Pbinds ::= Pbind ";" Pbind                               // 2 peeks
+                     | Pbind ";" Pbinds                              // N peeks, N > 2
+
+  syntax     Rbind ::= NameList "<=" Name                            // for( y1,...,yN <= x ){ P }, explicit
+
+  syntax    Rbinds ::= Rbind ";" Rbind                               // 2 repeated listens
+                     | Rbind ";" Rbinds                              // N repeated listens, N > 2
+
+  syntax      Bind ::= Lbind                                         // single linear listen, implicit
+                     | Pbind                                         // single peek, implicit
+                     | Rbind                                         // single repated listen, implicit
+
+  syntax     Binds ::= Lbinds                                        // linear binds --- for( y1 <- x1 ; ... ; yN <- xN ){ P }, implicit
+                     | Pbinds                                        // peek binds ----- for( y1 <! x1 ; ... ; yN <! xN ){ P }, implicit
+                     | Rbinds                                        // repeated binds - for( y1 <= x1 ; ... ; yN <= xN ){ P }, implicit
+
+  syntax LbindList ::= Lbind                                         // single linear listen, implicit
+                     | Lbinds                                        // multiple linear listens, implicit
+
+  syntax PbindList ::= Pbind                                         // single peek, implicit
+                     | Pbinds                                        // multiple peeks, implicit
+
+  syntax RbindList ::= Rbind                                         // single repeated listen, implicit
+                     | Rbinds                                        // multiple repeated listens, implicit
+
+  syntax  BindList ::= Bind                                          // one listen
+                     | Binds                                         // multiple listens
+
+// Send
+  syntax      Send ::= ConsumableSend
+                     | UnconsumableSend
+
+  syntax
+    ConsumableSend ::= Name "!"  "(" ProcList ")"                    //  _!_: Name x RhoTuple ---> Send, single send
+
+  syntax
+  UnconsumableSend ::= Name "!!" "(" ProcList ")"                    // _!!_: Name x RhoTuple ---> Send, repeated send
+
+// Eval
+  syntax      Eval ::= "*" Name                                      // *_: Name ---> Eval 
+
+// Several Processes
+  syntax     Procs ::= Proc "," Proc                                 // _,_: Proc x Proc ----> Procs
+                     | Proc "," Procs                                // _,_: Proc x Procs ---> Procs
+
+  syntax  ProcList ::= Proc
+                     | Procs
+
+// New
+  syntax       New ::= "new" NameList  "in" "{" Proc "}"    [binder] // create unforgeable name
+
+// Collections
+  syntax
+        Collection ::= RhoList                                       //  RhoList < Collection
+                     | RhoMap                                        //   RhoMap < Collection
+                     | RhoSet                                        //   RhoMap < Collection
+                     | RhoTuple                                      // RhoTuple < Collection
+
+// Process lists
+  syntax   RhoList ::= "[" ProcList   "]"                            // [_]: ProcList ----> RhoList
+                     | "[" "]"
+
+// Process maps
+  syntax    RhoMap ::= "{" RhoKVPairs "}"                            // {_}: RhoKVPairs ---> RhoMap
+                     | "{" "}"
+
+  syntax
+        RhoKVPairs ::= Proc ":" Proc                                 //   _:_: Proc x Proc ----------------> RhoKVPairs, single key-value pair
+                     | Proc ":" Proc "," RhoKVPairs                  // _:_,_: Proc x Proc x RhoKVPairs ---> RhoKVPairs, map size > 1
+
+// Process sets
+  syntax    RhoSet ::= "Set" "(" ProcList ")"                        // Set(_): ProcList ----> RhoSet
+                     | "Set" "(" ")"
+
+// Process tuples
+  syntax  RhoTuple ::= "(" ProcList ")"              [klabel(tuple)] // (_): ProcList ----> RhoTuple
+                     | "(" ")"                       [klabel(tuple)]
+
+// Ground terms
+  syntax    Ground ::= Bool                                          //   Bool < Ground
+                     | Int                                           //    Int < Ground
+                     | String                                        // String < Ground
+                     | Uri                                           //    Uri < Ground
+
+  syntax       Uri ::= "uri(" String ")"                             // uri(_): String -----> Uri
+
+// AExp & BExp resolve to ground terms
+// Arithmetic
+  syntax      AExp ::= "{" AExp "}"                                  //     (_): AExp ------> AExp
+                     > Int                                           //    Int < AExp
+                     | Eval                                          //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
+                     | String                                        // String < AExp (S1 + S2 => S1 +String S2)
+                     > AExp "*" AExp                        [strict] // _*_: AExp x AExp ---> AExp
+                     > AExp "+" AExp                        [strict] // _+_: AExp x AExp ---> AExp
+                     | AExp "-" AExp                        [strict] // _-_: AExp x AExp ---> AExp
+
+// Boolean
+  syntax      BExp ::= "{" BExp "}"                                  //  (_): BExp ----------> BExp
+                     > Bool                                          //   Bool < BExp
+                     | Eval                                          //   Eval < BExp
+                     | String                                        // String < BExp
+                     | AExp  "<=" AExp                   [seqstrict] // _<=_: AExp x AExp ---> BExp
+                     | "not" BExp                           [strict] // not_: BExp ----------> BExp
+                     > BExp "and" BExp                   [strict(1)] //  and: BExp ----------> BExp
+                     > BExp  "or" BExp                      [strict] //   or: BExp ----------> BExp
+
+// Bundles
+  syntax    Bundle ::= "bundle+" "{" Proc "}"                        // write-only
+                     | "bundle-" "{" Proc "}"                        // read-only
+                     | "bundle0" "{" Proc "}"                        // neither read/write
+                     | "bundle"  "{" Proc "}"                        // both read/write
+
+// For handling joins in configuration
+  syntax  JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
+
+  syntax   ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
+
+  syntax  ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
+  
+  syntax     IdNum ::= Int ";" Int                                   // _;_: Int x Int ------> IdNum < KItem
+
+  syntax   BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
+                     | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
+
+  syntax      Proc ::= ChanLen                                       // for
+                     | BindOcc                                       // auxfun
+                     | JoinList                                      // definitions
+
+  syntax KVariable ::= Names | Name | Int
+
+  syntax KItem ::= Name | Names | Proc | Procs | Set | IdNum
 
 endmodule
 
@@ -60,7 +239,7 @@ module JOIN
           </rec>                                                     // 
         </receives>                                                  // 
       </tuplespace>                                                  // 
-      <reaction>                                                     //**where the magic happens**
+      <reaction color="gray">                                        //**where the magic happens**
         <who>   .K      </who>                                       // continuation
         <what>  .K     </what>                                       // msg process(es)
         <where> .K    </where>                                       // binding variable(s)
@@ -74,72 +253,74 @@ module JOIN
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
 
 // Arithmetic
-  rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] //
-  rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] //
-  rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] //
+  rule I1:Int + I2:Int => I1 +Int I2           [anywhere]
+  rule I1:Int - I2:Int => I1 -Int I2           [anywhere]
+  rule I1:Int * I2:Int => I1 *Int I2           [anywhere]
 
 // Boolean
-  rule I1:Int <= I2:Int => I1 <=Int I2                    [anywhere] //
-  rule not B:Bool => notBool B                            [anywhere] //
-  rule true  and B:Bool => B                              [anywhere] //
-  rule false and _:Bool => false                          [anywhere] //
+  rule I1:Int <= I2:Int => I1 <=Int I2         [anywhere]
+  rule not B:Bool => notBool B                 [anywhere]
+  rule true  and B:Bool => B                   [anywhere]
+  rule false and _:Bool => false               [anywhere]
 
 // String
-  rule S1:String + S2:String => S1 +String S2             [anywhere] //
+  rule S1:String + S2:String => S1 +String S2  [anywhere]
 
 // New Operator Semantics
-  rule new N:Name in { P:Proc } => P[unforgeable(!I:Int) / N]        //
-  rule new M:Name , N:Name  in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  // 
-  rule new M:Name , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }  //
+  rule new N:NameVar in { P:Proc } => P[unforgeable(!I:Int) / N]
+  rule new M:NameVar , N:NameVar  in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }
+  rule new M:NameVar , N:Names in { P:Proc } => new N in { P[unforgeable(!I:Int) / M] }
 
 // Par Operator Semantics: par => bag of concurrently executing processes
-  rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>           // puts each parallel process
-       (.Bag => <thread> <k> P </k> </thread>)                       // in into its own k cell
-       (.Bag => <thread> <k> Q </k> </thread>)                [load] // 
+  rule <thread> <k> P:Proc | Q:Proc => . ...</k> </thread>   // put each parallel process
+       (.Bag => <thread> <k> P </k> </thread>)               // into its own <k/> cell
+       (.Bag => <thread> <k> Q </k> </thread>)      [load]
 
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
-  rule <k> S:Send => . ...</k>                                       // dissolve Send and spawn <send/>
-       (.Bag => <send>                                               //
-                  <schan>        #chan(S)  </schan>                  // sending channel X
-                  <msg>           #msg(S)    </msg>                  // message(s) P
-                  <tuple> #length(#msg(S)) </tuple>                  // length of tuple - how many messages
-                  <stype>       #stype(S)  </stype>                  // send type
-                  <sid>         !I:Int       </sid>                  // send id
-                  <mlid>         .Set       </mlid>                  // initially no matching listens
-                </send>)                                      [load] // 
+  rule <k> S:Send => . ...</k>                      // dissolve Send and spawn <send/>
+       (.Bag => <send>                              //
+                  <schan>   #chan(S) </schan>       // sending channel X
+                  <msg>      #msg(S)   </msg>       // message(s) P
+                  <tuple> #length(S) </tuple>       // length of tuple - how many messages
+                  <stype>  #stype(S) </stype>       // send type
+                  <sid>     !I:Int     </sid>       // send id
+                  <mlid>     .Set     </mlid>       // initially no matching listens
+                </send>)               [load] 
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
 
 // Single Listen Receive
-  rule <k> R:SingleRec => . ...</k>                                  // dissolve Rec and spawn <rec/>
-       (.Bag => <rec>                                                // 
-                  <id>       !I:Int    </id>                         // 
-                  <length>    1    </length>                         // 
-                  <cont>   #cont(R)  </cont>                         // continuation
-                  <state>     ""    </state>                         // matching is initiated immediately for single listen receives
-                  <match>     0     </match>                         // initialized with 0 matches
-                  <type>  #rtype(R)  </type>                         // receive type
-                  <nomo>     .Set    </nomo>                         // initialized with empty nomo set
-                  <listens>                                          // 
-                    <listen>                                         // add <listen/> to <listens/>
-                      <chan>  #chan(R) </chan>                       // receiving channel
-                      <vars>  #bvar(R) </vars>                       // variable Y binding in continuation
-                      <num>   #bnum(R)  </num>                       // number of variables to bind
-	  <lid>    !J:Int   </lid>                       // listen id
-                      <msid>     ""    </msid>                       // matched send id
-                    </listen>                                        // 
-                  </listens>                                         // 
-                </rec>)                                       [load] // 
+  rule <k> R:SingleRec => . ...</k>             // dissolve Rec and spawn <rec/>
+       (.Bag => <rec>                           // 
+                  <id>       !I:Int    </id>    // 
+                  <length>    1    </length>    // 
+                  <cont>   #cont(R)  </cont>    // continuation
+                  <state>     ""    </state>    // matching is initiated immediately for single listen receives
+                  <match>     0     </match>    // initialized with 0 matches
+                  <type>  #rtype(R)  </type>    // receive type
+                  <nomo>     .Set    </nomo>    // initialized with empty nomo set
+                  <listens>                     // 
+                    <listen>                    // add <listen/> to <listens/>
+                      <chan>  #chan(R) </chan>  // receiving channel
+                      <vars>  #bvar(R) </vars>  // variable Y binding in continuation
+                      <num>   #bnum(R)  </num>  // number of variables to bind
+	  <lid>    !J:Int   </lid>  // listen id
+                      <msid>     ""    </msid>  // matched send id
+                    </listen>
+                  </listens>
+                </rec>)                 [load]
 /* 
    --- Joins (Multiple Listen Receives) are immediately id wrapped ---
    For joins, we initialize a rec cell containing a fresh rec id, number of listens, continuation, loading comm status, match count of 0, 
    type of listens, an empty nomo (matching consumable send id) set, and an empty listen (needed to concretize <rec/>)
 */
-  rule <k> R:MultiRec => {[ R ; !I:Int ]} ...</k>                    // generate id & wrap join
+//  syntax KItem ::= "hold"
+
+  rule <k> R:MultiRec => {[ R ; !I:Int ]} ...</k>            // generate id & wrap join
        (.Bag => <rec>                                                // 
                   <id>        !I        </id>                        // 
                   <length> #bnum(R) </length>                        // number of listens in receive
@@ -161,7 +342,7 @@ module JOIN
 
 // Next, each listen is processed within the id wrapped join into the <listen/> in the <rec/> with appropriate id
 // Terminating case
-  rule <k> {[ R:SingleRec ; I:Int ]} => . ...</k>                    // intitialize matching once loading is complete
+  rule <k> {[ R:SingleRec ; I:Int ]} => . ...</k>            // intitialize matching once loading is complete
        <rec>                                                         // 
          <id>       I            </id>                               // 
          <length>   _:Int    </length>                               // 
