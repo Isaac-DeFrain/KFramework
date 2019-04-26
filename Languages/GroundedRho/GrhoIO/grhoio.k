@@ -49,12 +49,12 @@ module GRHOIO
         </receives>                                                  // 
       </tuplespace>                                                  // 
       <reaction color="green">                                       //**where the magic happens**
-        <who>     .K     </who>                                      // continuation process
-        <what>    .K    </what>                                      // msg process(es)
-        <where>   .K   </where>                                      // binding variable(s)
+        <who>   .K   </who>                                          // continuation process
+        <what>  .K  </what>                                          // msg process(es)
+        <where> .K </where>                                          // binding variable(s)
       </reaction>                                                    // all comms are processed here
-      <input color="magenta" stream="stdin"> .List </input>          //
-      <output color="brown" stream="stdout"> .List </output>         // 
+      <input color="magenta" stream="stdin"> .List </input>          // standard input
+      <output color="brown" stream="stdout"> .List </output>         // standard output
     </T>                                                             // 
 
   syntax KResult ::= Ground | Eval                                   // final output of strict operations
