@@ -15,10 +15,7 @@ module ALTGRHO-SYNTAX
 //-----------------
   syntax       Var ::= Id
   syntax       Ids ::= List{Id,","}
-  syntax      Vars ::= List{Var,","}
-                     | Ids
-//  syntax  ProcOrNameVar ::= ProcVar | NameVar
-//  syntax ProcOrNameVars ::= ProcVars | NameVars
+  syntax      Vars ::= List{Var,","} | Ids
 
 //-------------
 //--- NAMES ---
@@ -56,11 +53,10 @@ module ALTGRHO-SYNTAX
 // Process Variables
   syntax   ProcVar ::= Var
                      | EvalVar
-  syntax   EvalVar ::= "*" NameVar  [klabel(evalvar)]
+  syntax   EvalVar ::= "*" NameVar  [klabel(evar)]
 
 // Several Processes
-  syntax     Procs ::= List{Proc,","}
-                     | ProcVars
+  syntax     Procs ::= List{Proc,","} | ProcVars
   syntax  ProcVars ::= List{ProcVar,","} | Vars
 
 // Parallel Composition
@@ -164,7 +160,7 @@ module ALTGRHO
     <T color="purple">                                               //
       <threads color="red">                                          //**activity threads**
         <thread multiplicity="*">                                    // collection of threads (concurrent activity)
-          <k> $PGM:Par </k>                                          // programs and computations are process-based
+          <k> $PGM:Proc </k>                                         // programs and computations are process-based
         </thread>                                                    //
       </threads>                                                     //**tuplespace**
       <tuplespace color="blue">                                      // stores sends and receives
