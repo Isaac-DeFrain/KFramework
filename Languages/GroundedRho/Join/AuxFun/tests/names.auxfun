@@ -1,0 +1,3 @@
+// Length of name list
+
+  #length (@Nil , @5 , @"a" , x , @{@1!(true)})
