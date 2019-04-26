@@ -1,52 +1,23 @@
 // The #isIn predicate - checks for type inclusion
 // Normalizer needed for par structural inclusion
-// TODO: Figure out how to blend the #type (semantics live in STYPE) and #isIn (semantics live in IS-IN) functions
+
 require "domains.k"
 require "../StructuralTypes/stype.k"
 
 module IS-IN-SYNTAX
-  import DOMAINS
   import STYPE-SYNTAX
-
-// The type inclusion predicate
-  syntax    Bool ::= Type "#isIn"   Type  [function]
-                   |      "#isName" Type  [function]
-                   |      "#isProc" Type  [function]
-                   |      "#isPat"  Type  [function]
-
-  syntax    Bool ::= ProcOrPat "#isIn" ProcOrPat
-                   | NameOrPat "#isIn" NameOrPat
-                   | Type      "#isIn" ProcOrPat
-                   | Type      "#isIn" NameOrPat
-
-// Name, Process, Pattern types for #isName, #isProc, #isPat predicates
-  syntax    Type ::= "Name"
-                   | "Process"
-                   | "Pattern"
 
 endmodule
 
 module IS-IN
   import IS-IN-SYNTAX
 
-  syntax KResult ::= Bool | TerminalType
+  syntax KResult ::= Bool
 
   configuration
     <T color="teal">
       <k color="purple"> $PGM:Bool </k>
     </T>
-
-// I don't know why these contexts don't work... I tried single-holed too with no luck
-//  context (HOLE:ProcOrPat => #type(HOLE)) #isIn (HOLE:ProcOrPat => #type(HOLE))
-//  context (HOLE:NameOrPat => #type(HOLE)) #isIn (HOLE:NameOrPat => #type(HOLE))
-
-  rule P:Proc    #isIn Q:Proc    => #type(P) #isIn #type(Q)
-  rule P:Proc    #isIn Q:ProcPat => #type(P) #isIn #type(Q)
-  rule P:ProcPat #isIn Q:ProcPat => #type(P) #isIn #type(Q)
-
-  rule M:Name    #isIn N:Name    => type[M] #isIn type[N]
-  rule M:Name    #isIn N:NamePat => type[M] #isIn type[N]
-  rule M:NamePat #isIn N:NamePat => type[M] #isIn type[N]
 
 //--------------------------------
 //--- Type Inclusion Semantics ---
