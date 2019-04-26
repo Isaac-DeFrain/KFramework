@@ -370,10 +370,8 @@ module STYPE-SYNTAX
 //******************************
 //*** STRUCTURAL TYPE SYNTAX ***
 //******************************
-  syntax             Type ::= "#type(" ProcOrPat ")"                        [function] // #type(_): Proc ------> Type
-//                            | "#type(" ProcPat ")"                        [function] // #type(_): ProcPat ---> Type
-                            | "#type(" NameOrPat ")"                        [function] // #type(_): Name ------> Type
-//                            | "#type(" NamePat ")"                        [function] // #type(_): NamePat ---> Type
+  syntax             Type ::= "#type(" ProcOrPat ")"                      [function] // #type(_): ProcOrPat -> Type
+                            | "#type(" NameOrPat ")"                      [function] // #type(_): NameOrPat -> Type
                             | InitialType                                            //          InitialType < Type
                             | IntermediateType                                       //     IntermediateType < Type
                             | TerminalType                                           //         TerminalType < Type
@@ -437,12 +435,32 @@ module STYPE-SYNTAX
 
   syntax         Truncate ::= "#truncate"
 
+//----------------------
+//--- Type Inclusion ---
+//----------------------
+// The type inclusion predicate
+  syntax    Bool ::= Type "#isIn"   Type  [function]
+                   | Type "#isin"   Type  [strict(1,2)]
+                   |      "#isName" Type  [function]
+                   |      "#isProc" Type  [function]
+                   |      "#isPat"  Type  [function]
+
+  syntax    Bool ::= ProcOrPat "#isIn" ProcOrPat
+                   | NameOrPat "#isIn" NameOrPat
+                   | Type      "#isIn" ProcOrPat
+                   | Type      "#isIn" NameOrPat
+
+// Name, Process, Pattern types for #isName, #isProc, #isPat predicates
+  syntax    Type ::= "Name"
+                   | "Process"
+                   | "Pattern"
+
 endmodule
 
 
 module STYPE
   import STYPE-SYNTAX
-//  import IS-IN
+  import IS-IN
 
   configuration
     <T color="teal">
@@ -659,5 +677,21 @@ module STYPE
 
 // Resolving brackets
   rule type[ { P:ProcOrPat } ] => type[P]  // bracketed ProcOrPat type resolution
+
+//----------------------
+//--- Type Inclusion ---
+//----------------------
+// Relation to #isIn predicate
+  rule A:Type #isin B:Type => A #isIn B
+
+  rule P:Proc    #isIn Q:Proc    => #type(P) #isin #type(Q)
+  rule P:Proc    #isIn Q:ProcPat => #type(P) #isin #type(Q)
+  rule P:ProcPat #isIn Q:ProcPat => #type(P) #isin #type(Q)
+  rule _:ProcPat #isIn _:Proc    => false
+
+  rule M:Name    #isIn N:Name    => #type(M) #isin #type(N)
+  rule M:Name    #isIn N:NamePat => #type(M) #isin #type(N)
+  rule M:NamePat #isIn N:NamePat => #type(M) #isin #type(N)
+  rule _:NamePat #isIn _:Name    => false
 
 endmodule
