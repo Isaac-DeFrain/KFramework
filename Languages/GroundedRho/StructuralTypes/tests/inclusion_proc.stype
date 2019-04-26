@@ -1,5 +1,5 @@
-// Structural type inclusion for pattern-matching - @true matches WildName
+// Structural type inclusion for pattern-matching - Nil matches WildProc
 
-   @Nil #isIn WildName
+   Nil #isIn WildProc
 
 // Output: true
