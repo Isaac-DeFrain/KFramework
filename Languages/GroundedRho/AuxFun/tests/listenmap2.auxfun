@@ -1,0 +1,10 @@
+// Listen map - single listen receive
+
+  #listenmap( for(  <= @"chan" ){ Nil } )
+
+/*
+Output:
+
+    EmptyMsg |-> @ "chan"
+
+*/
