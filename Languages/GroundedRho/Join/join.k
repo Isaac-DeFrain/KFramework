@@ -172,16 +172,11 @@ module JOIN-SYNTAX
 
 // For handling joins in configuration
   syntax  JoinList ::= "{[" Proc ";" Int     "]}"                    // for uniform join id
-
   syntax   ChanLen ::= "("  Name ";" Int      ")"                    // (listening channel ; number of variables to bind)
-
   syntax  ChanList ::= "("  Name ";" NameList ")"                    // (listening channel ; variable(s) to bind)
-  
   syntax     IdNum ::= Int ";" Int                                   // _;_: Int x Int ------> IdNum < KItem
-
   syntax   BindOcc ::= Name ";" Int       ";;" Int                   // listening channel; number of variables to bind; number of occurences
                      | Name ";" NameList  ";;" Int                   // listening channel; variable(s) to bind; number of occurences
-
   syntax      Proc ::= ChanLen                                       // for
                      | BindOcc                                       // auxfun
                      | JoinList                                      // definitions
