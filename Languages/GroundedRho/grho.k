@@ -1,15 +1,16 @@
 // RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a monadic style
 /*
 TODO:
- - Keep store map?
- - Par as multiset
+ - Par as multiset - or - set with number of occurrences of each element 
  - Unite process & name variables
  - Matching (patterns & wildcard)
  - Environments for new declarations, global store for location, & location counter cell
  - Finish methods
- - handle variable reference before sending to tuplespace
  - add contract invocation(?): Name "(" ProcList ")" - syntactic sugar for cell pattern
  - add sequential listen semantics
+ - write functions to extract the list of variables requiring substitution from the listening list 
+   and the corresponding list of values to substitute, given the listening list (binding variables) 
+   and substitution values (messages)
 */
 
 require "domains.k"
@@ -28,26 +29,27 @@ module GRHO-SYNTAX
 //--- NAMES ---
 //-------------
   syntax             Name ::= Quote
-                            | NorQVar
-	        | "EmptyMsg"     // listening for empty messages
+                            | NameVar
+                            | "EmptyMsg"     // listening for empty messages
   syntax          NameVar ::= Var            // name variable
   syntax            Quote ::= "@" Proc
-  syntax         QuoteVar ::= "@" ProcVar  [klabel(qv)]
-  syntax          NorQVar ::= NameVar | QuoteVar
+//  syntax         QuoteVar ::= "@" ProcVar  [klabel(qv)]
+//  syntax          NorQVar ::= NameVar | QuoteVar
 
 // Several Names
   syntax            Names ::= Name "," Name
                             | Name "," Names
 
+  // for name declarations in new
   syntax         NameVars ::= NameVar "," NameVar   [klabel(nv)]
                             | NameVar "," NameVars  [klabel(nv)]
 
-  syntax         NorQVars ::= NorQVar "," NorQVar   [klabel(nqv)]
-                            | NorQVar "," NorQVars  [klabel(nqv)]
+//  syntax         NorQVars ::= NorQVar "," NorQVar   [klabel(nqv)]
+//                            | NorQVar "," NorQVars  [klabel(nqv)]
 
-  syntax         NameList ::= Name | Names | NameVarList | NorQVarList
+  syntax         NameList ::= Name | Names | NameVarList //| NorQVarList
   syntax      NameVarList ::= NameVar | NameVars
-  syntax      NorQVarList ::= NorQVar | NorQVars
+//  syntax      NorQVarList ::= NorQVar | NorQVars
 
 //-----------------
 //--- PROCESSES ---
@@ -58,7 +60,7 @@ module GRHO-SYNTAX
                             | Collection      // Data structures - List, Map, Set, Tuple
                             | Ground          // Ground terms - Bool, Int, String, Uri
                             | ProcVar         // Process variable
-                            | EvalVar         // Process variable
+//                            | EvalVar         // Process variable
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
@@ -75,17 +77,17 @@ module GRHO-SYNTAX
 
 // Process Variables
   syntax          ProcVar ::= Var
-  syntax         ProcVars ::= ProcVar "," ProcVar   [klabel(pv)]
-                            | ProcVar "," ProcVars  [klabel(pv)]
+//  syntax         ProcVars ::= ProcVar "," ProcVar   [klabel(pv)]
+//                            | ProcVar "," ProcVars  [klabel(pv)]
 
-  syntax      ProcVarList ::= ProcVar | ProcVars
+//  syntax      ProcVarList ::= ProcVar | ProcVars
 
 // Several Processes
   syntax            Procs ::= Proc "," Proc   [strict]
                             | Proc "," Procs  [strict]
-                            | ProcVars
+//                            | ProcVars
 
-  syntax         ProcList ::= Proc | Procs | ProcVarList
+  syntax         ProcList ::= Proc | Procs //| ProcVarList
 
 // Parallel composition
 // Pars should be like a multiset of processes...
@@ -143,8 +145,8 @@ module GRHO-SYNTAX
                             | Name "!!" "(" ")"
 
 // Eval
-  syntax             Eval ::= "*" Name     [strict]
-  syntax          EvalVar ::= "*" NameVar  [klabel(ev)]
+  syntax             Eval ::= "*" Name
+//  syntax          EvalVar ::= "*" NameVar  [klabel(ev)]
 
 // New - creates unforgeable names
   syntax              New ::= "new" NameVarList "in" "{" Proc "}"  [binder]
@@ -283,9 +285,8 @@ module GRHO-SYNTAX
                             | Name ";" NameList  ";;" Int    // listening channel; variable(s) to bind; number of occurences
   syntax             Proc ::= ChanLen | BindOcc | JoinList   // definitions
 
-  syntax        KVariable ::= NameVar | ProcVar
+  syntax        KVariable ::= NameVar | ProcVar | Var | Send | Receive | Quote | Eval | Par | Collection
                             | Int  // for map substitutions
-
   syntax            KItem ::= Name | Names | Proc | Procs | IdNum
 
 endmodule
@@ -514,14 +515,15 @@ module GRHO
 // x!(Q) | y(z){P} /\ x equivN y => P[@Q / y]
 
 // TODO: what should be done with environment maps?
+// TODO: how can we only substitute for variables and not values?
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
   rule 
     <reaction>
-      <who>    P:Proc => P[@ Q / Y]    </who>
-      <what>   Q:Proc , R:Procs => R  </what>
-      <where>  Y:Name , Z:Names => Z </where>
-      <update> M => M[ Y <-undef ]  </update>
+      <who>    P:Proc => P[@ Q / Y]    </who>  // substitute @Q for Y
+      <what>   Q:Proc , R:Procs => R  </what>  // delete Q from list of values to substitute
+      <where>  Y:Name , Z:Names => Z </where>  // delete Y from list of variables needing substitution
+      <update> M => M[ Y <-undef ]  </update>  // delete Y |-> M[Y] from the map
     </reaction>
     <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
@@ -531,11 +533,11 @@ module GRHO
       <who>    P:Proc => P[@ Q / Y]    </who>
       <what>   Q:Proc , R:Proc => R   </what>
       <where>  Y:Name , Z:Name => Z  </where>
-      <update> M => M[ Y <- undef ] </update>
+      <update> M => M[ Y <- undef ] </update>  // delete Y |-> M[Y] from the map
     </reaction>
     <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
-// Final substitution spawn in a new thread holding the fully substituted continuation
+// Final substitution: spawn in a new thread holding the fully substituted continuation
   rule
     <reaction>
       <who>    P:Proc =>  .K     </who>
