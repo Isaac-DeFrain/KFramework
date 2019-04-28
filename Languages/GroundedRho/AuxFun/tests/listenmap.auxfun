@@ -1,0 +1,12 @@
+// Listen map - single listen receive
+
+  #listenmap( for( a , b , @12 <= @"chan" ){ Nil } )
+
+/*
+Output:
+
+  ( @ 12 ) |-> ( @ "chan" )
+  a |-> ( @ "chan" )
+  b |-> @ "chan"
+
+*/
