@@ -50,15 +50,21 @@ module AUXFUN-SYNTAX
                   | "#bvar"   "(" AnyBinds ")"        [function]  //     #bvar(_): Binds ------> Names
                   | "#bvar"   "(" Receive  ")"        [function]  //     #bvar(_): Receive ----> Names
                   | "#quotes" "(" Procs    ")"        [function]  //   #quotes(_): Procs ------> Names
-                  | "#append" "(" Name  ";" Name  ")" [function]  //     #bvar(_): Name  x Name -------> Names
-                  | "#append" "(" Names ";" Name  ")" [function]  //     #bvar(_): Names x Name -------> Names
-                  | "#append" "(" Name  ";" Names ")" [function]  //     #bvar(_): Name  x Names ------> Names
-                  | "#append" "(" Names ";" Names ")" [function]  //     #bvar(_): Names x Names ------> Names
-  
-  syntax   BExp ::= "#guard" "(" Receive ")"          [function]  // #guard(_): Receive -------> BExp
+                  | "#append" "(" Name  ";" Name  ")" [function]
+                  | "#append" "(" Names ";" Name  ")" [function]
+                  | "#append" "(" Name  ";" Names ")" [function]
+                  | "#append" "(" Names ";" Names ")" [function]
 
-  syntax    Map ::= "#rbind" "(" Receive  ")"         [function]
-                  | "#rbind" "(" AnyBinds ")"         [function]
+  syntax    Map ::= "#listenmap" "(" SingleRec ")"    [function]
+                  | "#listenmap" "(" Bind      ")"    [function]
+                  | "#mapify(" Name  ";" Name  ")"    [function]
+                  | "#mapify(" Names ";" Name  ")"    [function]
+
+  syntax   Maps ::= "#listenmap" "(" MultiRec  ")"    [function]
+                  | "#listenmap" "(" Binds     ")"    [function]
+                  | "#mapify(" Names ";" Names ")"    [function]
+  
+  syntax   BExp ::= "#guard" "(" Receive ")"          [function]
 
   syntax RhoSet ::= "#keys" RhoMap                    [function]
                   | RhoSet "#union" RhoSet            [function]
@@ -175,8 +181,20 @@ module AUXFUN
   rule #guard ( for( _:Bind  if B:BExp ){ _:Proc } ) => B
   rule #guard ( for( _:Binds if B:BExp ){ _:Proc } ) => B
   
-// Variable Bindings
-  
+// Listen maps
+  rule #listenmap( R:SingleRec ) => #mapify( #bvar(R) ; #chan(R) )
+  rule #listenmap( B:Bind ) => #mapify( #bvar(B) ; #chan(B) )
+  rule #mapify( A:Name ; B:Name ) => A |-> B
+  rule #mapify( A:Name , B:Name  ; C:Name ) => A |-> C #mapify(B;C)
+  rule #mapify( A:Name , B:Names ; C:Name ) => A |-> C #mapify(B;C)
+
+  rule #listenmap( for( B:Binds ){ _:Proc } ) => #listenmap(B)
+  rule #listenmap( A:Lbind ; B:Lbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+  rule #listenmap( A:Lbind ; B:Lbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+  rule #listenmap( A:Pbind ; B:Pbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+  rule #listenmap( A:Pbind ; B:Pbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+  rule #listenmap( A:Rbind ; B:Rbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+  rule #listenmap( A:Rbind ; B:Rbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
 
 //---------------
 //--- #append ---
@@ -240,32 +258,6 @@ module AUXFUN
   rule #size { _:Proc : _:Proc } => 1
   rule #size { _:Proc : _:Proc , _:Proc : _:Proc } => 2
   rule #size { _:Proc : _:Proc , R:RhoKVPairs    } => 1 +Int #size {R}
-/*
-//--------------
-//--- #slice ---
-//--------------
-  rule #truncate( R:RhoList , Fin:Int ) => R requires (Fin >=Int #length R)
-  rule #truncate( [ A:Proc ] , Fin:Int ) => #if Fin <=Int 0 #then [ ] #else [A] #fi
-
-  rule #slice( [ ] , _ , _ ) => [ ]
-  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
-  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
-  
-//-------------
-//--- #keys ---
-//-------------
-  rule #keys { }:RhoMap => Set( )
-  rule #keys { A:Proc : _:Proc } => Set( A )
-  rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => Set( A , B )
-  rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
-*/
-//--------------
-//--- #union ---
-//--------------
-//  rule Set( ) #union S:RhoSet => S
-//  rule S:RhoSet #union Set( ) => S
-//  rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
-//  rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 
 //---------------
 //--- #length ---
@@ -402,6 +394,33 @@ module AUXFUN
   rule A:Proc #in_set Set( Elm:Proc ) => A ==K Elm
   rule A:Proc #in_set Set( Elm1:Proc , Elm2:Proc  ) => A ==K Elm1 orBool A ==K Elm2
   rule A:Proc #in_set Set( Elm1:Proc , Rest:Procs ) => A ==K Elm1 orBool A #in_set Set( Rest )
+
+/*
+//--------------
+//--- #slice ---
+//--------------
+  rule #truncate( R:RhoList , Fin:Int ) => R requires (Fin >=Int #length R)
+  rule #truncate( [ A:Proc ] , Fin:Int ) => #if Fin <=Int 0 #then [ ] #else [A] #fi
+
+  rule #slice( [ ] , _ , _ ) => [ ]
+  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
+  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
+  
+//-------------
+//--- #keys ---
+//-------------
+  rule #keys { }:RhoMap => Set( )
+  rule #keys { A:Proc : _:Proc } => Set( A )
+  rule #keys { A:Proc : _:Proc , B:Proc : _:Proc } => Set( A , B )
+  rule #keys { A:Proc : _:Proc , R:RhoKVPairs } => SetItem(A) #keys {R}
+
+//--------------
+//--- #union ---
+//--------------
+  rule Set( ) #union S:RhoSet => S
+  rule S:RhoSet #union Set( ) => S
+  rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
+  rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 
 //----------------
 //--- #chanlen ---
@@ -551,5 +570,5 @@ module AUXFUN
           #then SetItem( #chan(A) ; #bvar(A) ;; 1 +Int #chanmany((#chan(A);#bvar(A)):B) ) (#bindocce(B) -Set SetItem( #chan(A) ; #bvar(A) ;; #chanmany((#chan(A);#bvar(A)):B)))
           #else #bindocce(A) #bindocce(B)
           #fi
-
+*/
 endmodule
