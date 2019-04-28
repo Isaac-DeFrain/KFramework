@@ -1,0 +1,7 @@
+// Names in continuation
+
+  #subcont( x ; @y ; y )
+
+/*
+Output: * x
+*/

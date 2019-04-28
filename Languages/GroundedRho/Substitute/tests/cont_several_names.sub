@@ -1,10 +1,7 @@
-// Names
+// Names in continuation
 
-  #subcont( @2 , @z ; x , @y ; *x )
+  #subcont( @2 , @z ; x , @y ; *x | y )
 
 /*
-Output: 
-
-    
-
+Output:  2 | z
 */

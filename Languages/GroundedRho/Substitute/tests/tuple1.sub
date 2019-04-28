@@ -1,0 +1,10 @@
+// RhoTuple
+
+  #sub( (2 , z , 4 , true) ; (x , *y , 4) )
+
+/*
+Output: 
+
+    ( 2 , #sub( z , 4 , true ; * y , 4 ) )
+
+*/

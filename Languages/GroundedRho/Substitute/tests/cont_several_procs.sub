@@ -1,0 +1,7 @@
+// Procs in continuation
+
+  #subcont( 2 , *z , 5 ; x , *y , 5 ; x | y!("a") )
+
+/*
+Output:  2 | z ! ( "a" )
+*/
