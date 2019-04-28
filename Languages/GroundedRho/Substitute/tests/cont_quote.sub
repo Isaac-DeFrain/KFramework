@@ -1,0 +1,10 @@
+// Names
+
+  #subcont( @2 ; @y ; y )
+
+/*
+Output: 
+
+    2
+
+*/

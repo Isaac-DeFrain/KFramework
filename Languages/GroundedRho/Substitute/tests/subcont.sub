@@ -1,0 +1,10 @@
+// Send
+
+  #subcont( @2!( [ "a" , true , 1 ] ) ; @{x|*z}!(y) ; @"hello"!(@{x|*z}!(y) ) )
+
+/*
+Output:
+
+    ( @ "hello" ) ! ( ( @ 2 | #sub( 2 ; * z ) ) ! ( [ "a" , true , 1 ] ) )
+
+*/
