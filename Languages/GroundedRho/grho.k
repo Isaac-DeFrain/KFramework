@@ -83,8 +83,8 @@ module GRHO-SYNTAX
 //  syntax      ProcVarList ::= ProcVar | ProcVars
 
 // Several Processes
-  syntax            Procs ::= Proc "," Proc   [strict]
-                            | Proc "," Procs  [strict]
+  syntax            Procs ::= Proc "," Proc
+                            | Proc "," Procs
 //                            | ProcVars
 
   syntax         ProcList ::= Proc | Procs //| ProcVarList
@@ -101,19 +101,19 @@ module GRHO-SYNTAX
   syntax        SingleRec ::= "for" "(" Bind  ")" "{" Proc "}"
                             | GuardedSingleRec
   syntax GuardedSingleRec ::= "for" "(" GuardedBind ")" "{" Proc "}"
-  syntax            Guard ::= "if" BExp           [strict]
+  syntax            Guard ::= "if" BExp
   // Linear listen
-  syntax            Lbind ::= NameList "<-" Name  [strict(2)]
-                            |          "<-" Name  [strict]
+  syntax            Lbind ::= NameList "<-" Name
+                            |          "<-" Name
   // Peek listen
-  syntax            Pbind ::= NameList "<!" Name  [strict(2)]
-                            |          "<!" Name  [strict]
+  syntax            Pbind ::= NameList "<!" Name
+                            |          "<!" Name
   // Repeated/Persistent listen
-  syntax            Rbind ::= NameList "<=" Name  [strict(2)]
-                            |          "<=" Name  [strict]
+  syntax            Rbind ::= NameList "<=" Name
+                            |          "<=" Name
   // Sequential listen
-  syntax            Sbind ::= NameList "<<" Name  [strict(2)]
-                            |          "<<" Name  [strict]
+  syntax            Sbind ::= NameList "<<" Name
+                            |          "<<" Name
 
   syntax             Bind ::= Lbind | Pbind | Rbind | Sbind
 
@@ -153,7 +153,7 @@ module GRHO-SYNTAX
 
 // Match
   syntax            Match ::= "match" Proc "{" MatchCaseList "}"
-  syntax        MatchCase ::= Proc ":=>" Proc       [strict(2)]
+  syntax        MatchCase ::= Proc ":=>" Proc
   syntax       MatchCases ::= MatchCase MatchCase
                             | MatchCase MatchCases
   syntax    MatchCaseList ::= MatchCase | MatchCases
@@ -248,8 +248,8 @@ module GRHO-SYNTAX
                             | "#isName(" K ")"
 
 // Methods
-  syntax       MethodProc ::= Proc "." Method "(" ProcList ")" [strict(1)]
-                            | Proc "." Method "(" ")"          [strict(1)]  
+  syntax       MethodProc ::= Proc "." Method "(" ProcList ")"
+                            | Proc "." Method "(" ")"  
 
   syntax           Method ::= "nth"          // nth element - list, string(?), tuple - Proc.nth( Int ) 
                             | "toByteArray"  // transform to bytearray - Data.toByteArray( )
@@ -276,6 +276,9 @@ module GRHO-SYNTAX
   syntax              Map ::= RhoMap
   syntax              Set ::= RhoSet
 
+  syntax             Maps ::= Map "," Map  [klabel(maps)]
+                            | Map "," Maps [klabel(maps)]
+
 // For handling joins in configuration
   syntax         JoinList ::= "{[" Proc ";" Int     "]}"     // for uniform join id
   syntax          ChanLen ::= "("  Name ";" Int      ")"     // (listening channel ; number of variables to bind)
@@ -285,7 +288,8 @@ module GRHO-SYNTAX
                             | Name ";" NameList  ";;" Int    // listening channel; variable(s) to bind; number of occurences
   syntax             Proc ::= ChanLen | BindOcc | JoinList   // definitions
 
-  syntax        KVariable ::= NameVar | ProcVar | Var | Send | Receive | Quote | Eval | Par | Collection
+  syntax        KVariable ::= NameVar | ProcVar | Var 
+                            | Send | Receive | Quote | Eval | Par | Collection  // for deep pattern-matching
                             | Int  // for map substitutions
   syntax            KItem ::= Name | Names | Proc | Procs | IdNum
 
@@ -474,6 +478,18 @@ module GRHO
                   <tuple> #length(#msg(S)) </tuple>  // number of messages
                   <stype>       #stype(S)  </stype>  // send type
                   <sbind>              B   </sbind>
+                </send>) requires M =/=K .Map andBool B =/=K .Map
+
+  rule <thread>
+         <k> S:Send => . ...</k>   // dissolve send in <threads/> and spawn <send/>
+         <env> .Map </env>         // thread environment
+       </thread>
+       (.Bag => <send>
+                  <schan>   #chan(S) </schan>  // sending channel
+                  <msg>      #msg(S)   </msg>  // sending message(s)
+                  <tuple> #length(S) </tuple>  // number of messages
+                  <stype>  #stype(S) </stype>  // send type
+                  <sbind>    .Map    </sbind>
                 </send>)
 
 //----------------------------------
@@ -482,7 +498,7 @@ module GRHO
 //TODO: environments
   rule <thread>
          <k> R:SingleRec => . ...</k>  // dissolve Rec in <threads/> and spawn <rec/>
-         <env>  B:Map  </env>
+         <env> B:Map </env>
        </thread>
        <store> M:Map </store>
        (.Bag => <rec>
@@ -492,12 +508,25 @@ module GRHO
                   <rtype> #rtype(R)       </rtype>  // receive type
                   <cont>   #cont(R)[B[M]]  </cont>  // continuation
                   <rbind>        B        </rbind>
+                </rec>) requires M =/=K .Map andBool B =/=K .Map
+
+  rule <thread>
+         <k> R:SingleRec => . ...</k>  // dissolve Rec in <threads/> and spawn <rec/>
+         <env> .Map </env>
+       </thread>
+       (.Bag => <rec>
+                  <rchan>  #chan(R) </rchan>  // receiving channel
+                  <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
+                  <bnum>   #bnum(R)  </bnum>  // 
+                  <rtype> #rtype(R) </rtype>  // receive type
+                  <cont>   #cont(R)  </cont>  // continuation
+                  <rbind>    .Map   </rbind>
                 </rec>)
 
 // Joins
   rule <thread>
          <k> R:MultiRec => . ...</k>
-         <env>  B:Map  </env>
+         <env> B:Map </env>
        </thread>
        <store> M:Map </store>
        (.Bag => <rec>
@@ -507,6 +536,19 @@ module GRHO
                   <rtype> #rtype(R)       </rtype>  // receive type
                   <cont>   #cont(R)[B[M]]  </cont>  // continuation
                   <rbind>        B        </rbind>
+                </rec>) requires M =/=K .Map andBool B =/=K .Map
+
+  rule <thread>
+         <k> R:MultiRec => . ...</k>
+         <env> .Map </env>
+       </thread>
+       (.Bag => <rec>
+                  <rchan>  #chan(R) </rchan>  // receiving channel
+                  <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
+                  <bnum>   #bnum(R)  </bnum>  // number of variables to bind
+                  <rtype> #rtype(R) </rtype>  // receive type
+                  <cont>   #cont(R)  </cont>  // continuation
+                  <rbind>     .Map  </rbind>
                 </rec>)
 
 //-------------------
