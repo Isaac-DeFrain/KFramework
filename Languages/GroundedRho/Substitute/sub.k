@@ -7,6 +7,7 @@ TODO:
 
 require "domains.k"
 require "substitution.k"
+require "../AuxFun/auxfun.k"
 require "../grho.k"
 
 module SUB-SYNTAX
@@ -15,18 +16,23 @@ module SUB-SYNTAX
   import SUBSTITUTION
 
   syntax   Proc ::= "#sub(" Proc  ";" Proc  ")"   [function]
-                  | "#subcont(" Proc  ";" Proc  ";" Proc ")" [function]
-                  | "#subcont(" Procs ";" Procs ";" Proc ")" [function]
-                  | "#subcont(" Name  ";" Name  ";" Proc ")" [function]
-                  | "#subcont(" Names ";" Names ";" Proc ")" [function]
+                  | "#sub(" Proc  ";" Proc  ";" Proc ")" [function]
+                  | "#sub(" Procs ";" Procs ";" Proc ")" [function]
+                  | "#sub(" Name  ";" Name  ";" Proc ")" [function]
+                  | "#sub(" Names ";" Names ";" Proc ")" [function]
+  syntax   Name ::= "#sub(" Name  ";" Name  ";" Name ")" [function]
+                  | "#sub(" Names ";" Names ";" Name ")" [function]
+                  | "#sub(" Proc  ";" Proc  ";" Name ")" [function]
+                  | "#sub(" Procs ";" Procs ";" Name ")" [function]
+                  | "#sub(" Name  ";" Name  ")"   [function]
   syntax  Procs ::= "#sub(" Procs ";" Procs ")"   [function]
-  syntax   Name ::= "#sub(" Name  ";" Name  ")"   [function]
   syntax  Names ::= "#sub(" Names ";" Names ")"   [function]
 
 endmodule
 
 module SUB
   import SUB-SYNTAX
+  import AUXFUN
 
   syntax KResult ::= Name | Names | Proc | Procs
 
@@ -35,11 +41,8 @@ module SUB
       <k> $PGM:K </k>
     </T>
 
-  rule #sub( A:Name ; A ) => A
-  rule #sub( A:Name ; _:NameVar ) => A
-  rule #sub( A:Name ; @ _:ProcVar ) => A
-  rule #sub( @ A:Proc ; @ B:Proc ) => @ #sub(A;B)
-  rule #sub( A:Proc ; A ) => A
+// Process substitution
+  rule #sub( A:Proc ; B:Proc ) => A requires A ==K B
   rule #sub( A:Proc ; _:ProcVar ) => A
   rule #sub( A:Proc ; * _:NameVar ) => A
   rule #sub( * A:Name ; * B:Name ) => * #sub(A;B)
@@ -49,40 +52,73 @@ module SUB
   rule #sub( A:Name !! ( B:Proc  ) ; C:Name ! ( D:Proc  ) ) => #sub(A;C) !! ( #sub(B;D) )
   rule #sub( A:Name !! ( B:Procs ) ; C:Name ! ( D:Procs ) ) => #sub(A;C) !! ( #sub(B;D) )
 
-  rule #sub( for( Y <- A:Name ){ B:Proc } ; for( _ <- C:Name ){ D:Proc } ) => for( Y <- #sub(A;C) ){ #sub(B;D) }
+  rule #sub( for( _:Name  <- A:Name ){ B:Proc } ; for( Y:Name  <- C:Name ){ D:Proc } ) => for( Y <- #sub(A;C) ){ #sub(B;D) }
+  rule #sub( for( X:Names <- A:Name ){ B:Proc } ; for( Y:Names <- C:Name ){ D:Proc } ) => for( Y <- #sub(A;C) ){ #sub(B;D) } requires #length(X) ==Int #length(Y)
 
+// Par sub - intended to apply after normalization
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ) => #sub(A;C) | #sub(B;D)
-// not sure about these par rules...
-//  rule #sub( A:Proc ; B:Proc | C:Proc ) => #sub(A;B) | #sub(A;C)
-//  rule #sub( A:Proc | B:Proc ; C:Proc ) => #sub(A;C) | #sub(B;C)
 
+// Collection substitutions - empty structures are accomodated by the first rule
+  // RhoLists
   rule #sub( [ A:Proc  ] ; [ B:Proc  ] ) => [ #sub(A;B) ]
   rule #sub( [ A:Procs ] ; [ B:Procs ] ) => [ #sub(A;B) ]
 
+  // RhoMaps & RhoSets are unordered -> assume canonical ordering
+  rule #sub( { A:Proc : B:Proc } ; { C:Proc : D:Proc } ) => { #sub(A;C) : #sub(B;D) }
+//  rule #sub( { A:RhoKVPair , B:RhoKVPair  } ; { C:RhoKVPair , D:RhoKVPair  } ) => { #sub({A};{C}) , #sub({B};{D}) }
+//  rule #sub( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPair , D:RhoKVPairs } ) => { #sub({A};{C}) , #sub({B};{D}) }
+
+  rule #sub( Set( A:Proc  ) ; Set( B:Proc  ) ) => Set( #sub(A;B) )
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ) => Set( #sub(A;B) )
+
+  // RhoTuples
   rule #sub( tuple( A:Proc  ) ; tuple( B:Proc  ) ) => tuple( #sub(A;B) )
   rule #sub( tuple( A:Procs ) ; tuple( B:Procs ) ) => tuple( #sub(A;B) )
 
-  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ) => #sub(A;C) , #sub(B;D)
-  rule #sub( A:Name , B:Names ; C:Name , D:Names ) => #sub(A;C) , #sub(B;D)
+// Single Proc sub with continuation
+  rule #sub( A:Proc ; B:Proc ; P:Proc ) => P requires A ==K B
+  rule #sub( A:Proc ; B:ProcVar ; P:Proc ) => P[A/B]
+  rule #sub( A:Proc ; * B:NameVar ; P:Proc ) => P[@A/B]
+  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub( A ; C ; #sub(B;D;P) )
+  rule #sub( A:Name ! ( B:Proc ) ; C:Name ! ( D:Proc ) ; P:Proc ) => #sub( #sub(B;D) ; D ; #sub(A;C;P) )
+
+// Several Procs sub
   rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #sub(A;C) , #sub(B;D)
   rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ) => #sub(A;C) , #sub(B;D)
 
-  rule #subcont( A:Proc ; B:ProcVar ; P:Proc ) => P[A/B] // single proc sub in continuation
-  rule #subcont( A:Proc ; B:Ground  ; P:Proc ) => P requires A ==K B // single proc sub in continuation
-  rule #subcont( A:Proc ; * B:NameVar ; P:Proc ) => P[@A/B]
-  rule #subcont( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #subcont( A ; C ; #subcont(B;D;P) )
-  rule #subcont( A:Proc , B:Proc  ; C:Proc , D:Proc  ; P:Proc ) => #subcont( #sub(B;D) ; D ; #subcont(A;C;P) ) // two proc sub in continuation
-  rule #subcont( A:Proc , B:Procs ; C:Proc , D:Procs ; P:Proc ) => #subcont( #sub(B;D) ; D ; #subcont(A;C;P) ) // N proc sub, N > 2, in continuation
-  rule #subcont( A:Name ! ( B:Proc ) ; C:Name ! ( D:Proc ) ; P:Proc ) => #subcont( #sub(B;D) ; D ; #subcont(A;C;P) )
+// Several Procs sub with continuation
+  rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ; P:Proc ) => #sub( #sub(B;D) ; D ; #sub(A;C;P) )
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; P:Proc ) => #sub( #sub(B;D) ; D ; #sub(A;C;P) )
 
-  rule #subcont( A:Name ; A ; P:Proc ) => P
-  rule #subcont( A:Name ; B:NameVar ; P:Proc ) => P[A/B]
-  rule #subcont( A:Name ; @ B:ProcVar ; P:Proc ) => P[*A/B]
-  rule #subcont( @ A:Proc ; B:NameVar ; P:Proc ) => P[@A/B]
-  rule #subcont( @ A:Proc ; @ B:Proc ; P:Proc ) => #subcont(A;B;P)
-  rule #subcont( A:Name ; B:Name  ; P:Proc | Q:Proc ) => #subcont(A;B;P) | #subcont(A;B;Q)
-  rule #subcont( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #subcont( #sub(B;D) ; D ; #subcont(A;C;P) ) // two name sub in continuation
-  rule #subcont( A:Name , B:Names ; C:Name , D:Names ; P:Proc ) => #subcont( #sub(B;D) ; D ; #subcont(A;C;P) ) // N name sub, N > 2, in continuation
+// Name substitution
+  rule #sub( A:Name ; B:Name ) => A requires A ==K B
+  rule #sub( A:Name ; _:NameVar ) => A
+  rule #sub( A:Name ; @ _:ProcVar ) => A
+  rule #sub( @ A:Proc ; @ B:Proc ) => @ #sub(A;B)
+
+// Several Names sub with continuation
+  rule #sub( A:Name ; A ; N:Name ) => N
+  rule #sub( A:Name ; A ; P:Proc ) => P
+  rule #sub( A:Name ; B:NameVar ; P:Proc ) => P[A/B]
+  rule #sub( A:Name ; @ B:ProcVar ; P:Proc ) => P[*A/B]
+  rule #sub( @ A:Proc ; B:NameVar ; P:Proc ) => P[@A/B]
+  rule #sub( @ A:Proc ; @ B:Proc ; P:Proc ) => #sub(A;B;P)
+
+  rule #sub( A:Name ; B:Name ; for(         <- X:Name ){ P:Proc } ) => for(   <- #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Name  <- X:Name ){ P:Proc } ) => for( Y <- #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Names <- X:Name ){ P:Proc } ) => for( Y <- #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for(         <= X:Name ){ P:Proc } ) => for(   <= #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Name  <= X:Name ){ P:Proc } ) => for( Y <= #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Names <= X:Name ){ P:Proc } ) => for( Y <= #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for(         <! X:Name ){ P:Proc } ) => for(   <! #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Name  <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ #sub(A;B;P) }
+  rule #sub( A:Name ; B:Name ; for( Y:Names <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ #sub(A;B;P) }
+
+  rule #sub( A:Name ; B:Name  ; P:Proc | Q:Proc ) => #sub(A;B;P) | #sub(A;B;Q)
+
+// Several Names sub
+  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub( #sub(B;D) ; D ; #sub(A;C;P) ) // two name sub in continuation
+  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:Proc ) => #sub( #sub(B;D) ; D ; #sub(A;C;P) ) // N name sub, N > 2, in continuation
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
