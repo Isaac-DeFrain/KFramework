@@ -1,6 +1,6 @@
 // De Bruijn levels - nested pattern
 
-  for( @x!(new y in { *y } ) <- @Nil ){ *x }
+  new x in { for( @x!(new y in { *y } ) <- @Nil ){ *x } }
   
 /*
 Output:

@@ -1,0 +1,10 @@
+// Mapify
+
+    new x in { for( @y <- x ){ y | y } | x!( new x in { *x } ) }
+  
+/*
+Output:
+
+    new boundN( 0 ) in { for ( @ boundP( 1 ) <- boundN( 0 ) ) { boundP( 1 ) | boundP( 1 ) } | boundN( 0 ) ! ( new boundN( 1 ) in { * boundN( 1 ) } ) }
+
+*/
