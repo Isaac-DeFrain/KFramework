@@ -1,0 +1,10 @@
+// New - nested
+
+  #subNew( new x , y , z in { y!( *x | (\x, 1, true, *z) ) } )
+
+/*
+  Output:
+
+    ( @ unforgeable( 2 ) ) ! ( unforgeable( 1 ) | ( \ x , 1 , true , unforgeable( 3 ) ) )
+
+*/
