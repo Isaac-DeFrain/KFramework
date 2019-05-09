@@ -1,0 +1,14 @@
+// Receive scoping
+
+    new x,y,z in { for ( @\z <- x ){ \z | *y } }
+  
+/*
+Output: 
+
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { for ( @ boundP( 3 ) <- boundN( 0 ) ) { boundP( 3 ) | * boundN( 1 ) } }
+
+RNode:
+
+    new x0, x1, x2 in { for( @{x3} <- x0 ){ x3 | *x1 } }
+
+*/

@@ -1,0 +1,14 @@
+// Receive scoping
+
+    new x in { for( x <- x ){ *x } }
+  
+/*
+Output: 
+
+    new boundN( 0 ) in { for ( boundN( 1 ) <- boundN( 0 ) ) { * boundN( 1 ) } }
+
+RNode:
+
+    new x0 in { for( @{x1} <- x0 ) { x1 } }
+
+*/
