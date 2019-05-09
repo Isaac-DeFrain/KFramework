@@ -14,13 +14,14 @@ TODO:
 */
 
 require "domains.k"
-require "substitution.k"
+//require "substitution.k"
 require "AuxFun/auxfun.k"
+require "Substitute/sub.k"
 
 // SYNTAX MODULE
 module GRHO-SYNTAX
   import DOMAINS
-  import SUBSTITUTION
+//  import SUBSTITUTION
 
 // Variables
   syntax             Var ::= Id
@@ -29,27 +30,14 @@ module GRHO-SYNTAX
 //--- NAMES ---
 //-------------
   syntax             Name ::= Quote
-                            | NameVar
-                            | "EmptyMsg"     // listening for empty messages
-  syntax          NameVar ::= Var            // name variable
+                            | NameVar      // name variable
+                            | "EmptyMsg"   // listening for empty messages
   syntax            Quote ::= "@" Proc
-//  syntax         QuoteVar ::= "@" ProcVar  [klabel(qv)]
-//  syntax          NorQVar ::= NameVar | QuoteVar
+  syntax          NameVar ::= Var
 
 // Several Names
   syntax            Names ::= Name "," Name
                             | Name "," Names
-
-  // for name declarations in new
-  syntax         NameVars ::= NameVar "," NameVar   [klabel(nv)]
-                            | NameVar "," NameVars  [klabel(nv)]
-
-//  syntax         NorQVars ::= NorQVar "," NorQVar   [klabel(nqv)]
-//                            | NorQVar "," NorQVars  [klabel(nqv)]
-
-  syntax         NameList ::= Name | Names | NameVarList //| NorQVarList
-  syntax      NameVarList ::= NameVar | NameVars
-//  syntax      NorQVarList ::= NorQVar | NorQVars
 
 //-----------------
 //--- PROCESSES ---
@@ -60,7 +48,6 @@ module GRHO-SYNTAX
                             | Collection      // Data structures - List, Map, Set, Tuple
                             | Ground          // Ground terms - Bool, Int, String, Uri
                             | ProcVar         // Process variable
-//                            | EvalVar         // Process variable
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
@@ -75,19 +62,11 @@ module GRHO-SYNTAX
                             > Conditional     // If...then(...else)
                             > Par             // Parallel composition
 
-// Process Variables
-  syntax          ProcVar ::= Var
-//  syntax         ProcVars ::= ProcVar "," ProcVar   [klabel(pv)]
-//                            | ProcVar "," ProcVars  [klabel(pv)]
-
-//  syntax      ProcVarList ::= ProcVar | ProcVars
+  syntax          ProcVar ::= "\\" Var
 
 // Several Processes
   syntax            Procs ::= Proc "," Proc
                             | Proc "," Procs
-//                            | ProcVars
-
-  syntax         ProcList ::= Proc | Procs //| ProcVarList
 
 // Parallel composition
 // Pars should be like a multiset of processes...
@@ -103,19 +82,19 @@ module GRHO-SYNTAX
   syntax GuardedSingleRec ::= "for" "(" GuardedBind ")" "{" Proc "}"
   syntax            Guard ::= "if" BExp
   // Linear listen
-  syntax            Lbind ::= NameList "<-" Name
-                            |          "<-" Name
+  syntax            Lbind ::= Names "<-" Name
+                            | Name  "<-" Name
+                            |       "<-" Name
   // Peek listen
-  syntax            Pbind ::= NameList "<!" Name
-                            |          "<!" Name
+  syntax            Pbind ::= Names "<!" Name
+                            | Name  "<!" Name
+                            |       "<!" Name
   // Repeated/Persistent listen
-  syntax            Rbind ::= NameList "<=" Name
-                            |          "<=" Name
-  // Sequential listen
-  syntax            Sbind ::= NameList "<<" Name
-                            |          "<<" Name
+  syntax            Rbind ::= Names "<=" Name
+                            | Name  "<=" Name
+                            |       "<=" Name
 
-  syntax             Bind ::= Lbind | Pbind | Rbind | Sbind
+  syntax             Bind ::= Lbind | Pbind | Rbind
 
   // Multiple listen receives
   syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"
@@ -128,10 +107,8 @@ module GRHO-SYNTAX
                             | Pbind ";" Pbinds
   syntax           Rbinds ::= Rbind ";" Rbind
                             | Rbind ";" Rbinds
-  syntax           Sbinds ::= Sbind ";" Sbind
-                            | Sbind ";" Sbinds
 
-  syntax            Binds ::= Lbinds | Pbinds | Rbinds | Sbinds
+  syntax            Binds ::= Lbinds | Pbinds | Rbinds
   syntax         BindList ::= Bind | Binds
   syntax      GuardedBind ::= Bind Guard
   syntax     GuardedBinds ::= Binds Guard
@@ -139,24 +116,22 @@ module GRHO-SYNTAX
 
 // Sends
   syntax             Send ::= ConsumableSend | UnconsumableSend
-  syntax   ConsumableSend ::= Name "!"  "(" ProcList ")"
-                            | Name "!"  "(" ")"
-  syntax UnconsumableSend ::= Name "!!" "(" ProcList ")"
-                            | Name "!!" "(" ")"
+  syntax   ConsumableSend ::= Name "!"  RhoTuple
+  syntax UnconsumableSend ::= Name "!!" RhoTuple
 
 // Eval
   syntax             Eval ::= "*" Name
-//  syntax          EvalVar ::= "*" NameVar  [klabel(ev)]
 
 // New - creates unforgeable names
-  syntax              New ::= "new" NameVarList "in" "{" Proc "}"  [binder]
+  syntax              New ::= "new" Name  "in" "{" Proc "}" // [binder]
+                            | "new" Names "in" "{" Proc "}" // [binder]
 
 // Match
-  syntax            Match ::= "match" Proc "{" MatchCaseList "}"
+  syntax            Match ::= "match" Proc "{" MatchCases "}"
+                            | "match" Proc "{" MatchCase  "}"
   syntax        MatchCase ::= Proc ":=>" Proc
   syntax       MatchCases ::= MatchCase MatchCase
                             | MatchCase MatchCases
-  syntax    MatchCaseList ::= MatchCase | MatchCases
 
 // Variable Reference - allows for shadowing
   syntax           VarRef ::= "=" "*" NameVar
@@ -169,36 +144,37 @@ module GRHO-SYNTAX
   syntax             Else ::= IfThen "else" Proc
 
 // Contract
-  syntax         Contract ::= "contract" Name "(" NameList ")" "=" "{" Proc "}"  // sugar for persistent receive
+  syntax         Contract ::= "contract" Name "(" Names ")" "=" "{" Proc "}"  // sugar for persistent receive
+                            | "contract" Name "(" Name  ")" "=" "{" Proc "}"
                             | "contract" Name "(" ")" "=" "{" Proc "}"
 
 // Contract Invocation
-  syntax       Invocation ::= Name "(" ProcList ")"
-                            | Name "(" ")"
+  syntax       Invocation ::= Name RhoTuple
 
 // Collections - data structures
   syntax       Collection ::= RhoList | RhoMap | RhoSet | RhoTuple
 
   // Process lists
-  syntax          RhoList ::= "[" ProcList "]"
+  syntax          RhoList ::= "[" Procs "]"
+                            | "[" Proc  "]"
                             | "[" "]"
 
   // Process maps
-  syntax           RhoMap ::= "{" RhoKVPairList "}"
+  syntax           RhoMap ::= "{" RhoKVPairs "}"
+                            | "{" RhoKVPair  "}"
                             | "{" "}"
 
   syntax        RhoKVPair ::= Proc ":" Proc
   syntax       RhoKVPairs ::= RhoKVPair "," RhoKVPair
                             | RhoKVPair "," RhoKVPairs
-  syntax    RhoKVPairList ::= RhoKVPair | RhoKVPairs
 
   // Process sets
-  syntax           RhoSet ::= "Set" "(" ProcList ")"
-                            | "Set" "(" ")"
+  syntax           RhoSet ::= "Set" RhoTuple
 
   // Process tuples
-  syntax         RhoTuple ::= "(" ProcList ")"  [klabel(tuple)]
-                            | "(" ")"           [klabel(tuple)]
+  syntax         RhoTuple ::= "(" Procs ")"  [klabel(tuple)]
+                            | "(" Proc  ")"  [klabel(tuple)]
+                            | "(" ")"        [klabel(tuple)]
 
 // Ground terms
   syntax           Ground ::= Bool | Int | String | Uri
@@ -248,8 +224,7 @@ module GRHO-SYNTAX
                             | "#isName(" K ")"
 
 // Methods
-  syntax       MethodProc ::= Proc "." Method "(" ProcList ")"
-                            | Proc "." Method "(" ")"  
+  syntax       MethodProc ::= Proc "." Method RhoTuple  
 
   syntax           Method ::= "nth"          // nth element - list, string(?), tuple - Proc.nth( Int ) 
                             | "toByteArray"  // transform to bytearray - Data.toByteArray( )
@@ -275,7 +250,7 @@ module GRHO-SYNTAX
   syntax             Proc ::= List | Map | Set
   syntax              Map ::= RhoMap
   syntax              Set ::= RhoSet
-
+/*
   syntax             Maps ::= Map "," Map  [klabel(maps)]
                             | Map "," Maps [klabel(maps)]
 
@@ -287,11 +262,14 @@ module GRHO-SYNTAX
   syntax          BindOcc ::= Name ";" Int       ";;" Int    // listening channel; number of variables to bind; number of occurences
                             | Name ";" NameList  ";;" Int    // listening channel; variable(s) to bind; number of occurences
   syntax             Proc ::= ChanLen | BindOcc | JoinList   // definitions
+*/
+  syntax           Ground ::= Unforgeable
+  syntax      Unforgeable ::= "unforgeable(" Int ")"
 
-  syntax        KVariable ::= NameVar | ProcVar | Var 
+  syntax        KVariable ::= NameVar | ProcVar | Name | Proc
                             | Send | Receive | Quote | Eval | Par | Collection  // for deep pattern-matching
                             | Int  // for map substitutions
-  syntax            KItem ::= Name | Names | Proc | Procs | IdNum
+  syntax            KItem ::= Name | Names | Proc | Procs
 
 endmodule
 
@@ -299,6 +277,7 @@ endmodule
 module GRHO
   import GRHO-SYNTAX
   import AUXFUN
+  import SUB
 
 //---------------------
 //--- CONFIGURATION ---
@@ -345,11 +324,8 @@ module GRHO
 
   syntax KResult ::= Ground | Eval | List | Map | Set                // final output of strict operations
 
-  syntax      Ground ::= Unforgeable                                 // Unforgeable processes are not syntactically valid
-  syntax Unforgeable ::= "unforgeable(" Int ")"                      // unforgeable process
-
 // Relation to built-ins
-  syntax List ::= "#makeList(" RhoList ")"    [function]
+//  syntax List ::= "#makeList(" RhoList ")"    [function]
 
 // Arithmetic
   rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
@@ -419,19 +395,19 @@ module GRHO
 // nested variable declarations will shadow each other
 //  syntax KItem ::= "undefined"  // declared as a variable, but not assigned a value yet
 
-  rule <k> new N:NameVar in { P:Proc } => P ~> setEnv(Env) ...</k>
-       <env> Env => Env[N <- L] </env>
-       <store>... .Map => L |-> unforgeable(L) ...</store>
+  rule <k> new M:NameVar in { P:Proc } => #sub(@unforgeable(L);M;P) ~> setEnv(Env) ...</k>
+       <env> Env => Env[M <- L] </env>
+       <store>... .Map => L |-> @ unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule <k> new M:NameVar , N:NameVar in { P:Proc } => new N in { P } ...</k>
+  rule <k> new M:NameVar , N:Name in { P:Proc } => #sub(@unforgeable(L);M; new N in { P } ) ...</k>
        <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> unforgeable(L) ...</store>
+       <store>... .Map => L |-> @ unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
        
-  rule <k> new M:NameVar , N:NameVars in { P:Proc } => new N in { P } ...</k>
+  rule <k> new M:NameVar , N:Names in { P:Proc } => #sub(@unforgeable(L);M; new N in { P } ) ...</k>
        <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> unforgeable(L) ...</store>
+       <store>... .Map => L |-> @ unforgeable(L) ...</store>
        <nextLoc> L => L +Int 1 </nextLoc>
 
 // Resetting the environment
@@ -453,8 +429,9 @@ module GRHO
   rule for( @ ( A:Procs ,) << X:Name ){ P:Proc } => for( #quotes(A) << X ){ P } [anywhere, structural]
 */
 // Syntactic sugar - contract desugars into unconsumable receive
-  rule contract X:Name ( Y:NameList ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
-  rule contract X:Name (  ) = { P:Proc }           => for (   <= X ){ P }  [anywhere, structural]
+  rule contract X:Name ( Y:Names ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
+  rule contract X:Name ( Y:Name  ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
+  rule contract X:Name (  ) = { P:Proc }        => for (   <= X ){ P }  [anywhere, structural]
 
 // Par Operator Semantics - concurrent execution of processes
   rule <thread>
@@ -475,7 +452,7 @@ module GRHO
        (.Bag => <send>
                   <schan>   #chan(S)[B[M]] </schan>  // sending channel
                   <msg>      #msg(S)[B[M]]   </msg>  // sending message(s)
-                  <tuple> #length(#msg(S)) </tuple>  // number of messages
+                  <tuple> #length(S)       </tuple>  // number of messages
                   <stype>       #stype(S)  </stype>  // send type
                   <sbind>              B   </sbind>
                 </send>) requires M =/=K .Map andBool B =/=K .Map
