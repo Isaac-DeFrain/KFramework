@@ -4,6 +4,12 @@ TODO:
  - add remaining features
  - more testing
 */
+/*
+  This substitution function is needed to make distinct the notions of name variables and process variables.
+  The builtin substitution does not make this distinction.
+  E.g. we want the substitution (x!(\x))[@Nil / x] to result in @Nil!(\x) since we only substitute for x:NameVar, NOT \x:ProcVar
+    the definitions of NameVar ::= Var and ProcVar ::= "\\" Var don't allow for this with the the builtin substitution
+*/
 
 require "domains.k"
 require "substitution.k"
@@ -47,14 +53,9 @@ module SUB
   import AUXFUN
 
 // Remove before importing into GRHO
-  syntax Ground ::= "unforgeable(" Int ")"
+//  syntax Ground ::= "unforgeable(" Int ")"
 
   syntax KResult ::= Name | Names | Proc | Procs
-
-  configuration
-    <T color="purple">
-      <k> $PGM:K </k>
-    </T>
 
 // Process substitution
   rule #sub( A:Proc ; B:Proc ) => A requires A ==K B
@@ -96,7 +97,7 @@ module SUB
 // Single Proc sub with continuation
 //rule #sub( A:Proc ; B:Proc ; P:Proc ) => P requires A ==K B
   rule #sub( _:Proc ; _:ProcVar ; Nil ) => Nil
-  rule #sub( A:Proc ; B:ProcVar ; B ) => A
+  rule #sub( A:Proc ; B:ProcVar ; P:Proc ) => P[A / B]
   rule #sub( A:Proc ; B:ProcVar ; * C:Name ) => * #sub(A;B;C)
 
   rule #sub( A:Proc ; B:ProcVar ; C:Name !  ( D:Proc ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
@@ -131,15 +132,17 @@ module SUB
   rule #sub( A:Name ; A ; N:Name ) => N
   rule #sub( A:Name ; A ; P:Proc ) => P
   rule #sub( _:Name ; _:Var ; P:ProcVar ) => P
-  rule #sub( A:Name ; B:NameVar ; C:NameVar ) => A requires B ==K C
-  rule #sub( A:Name ; B:NameVar ; C:NameVar ) => C requires B =/=K C
-  rule #sub( A:Name ; B:NameVar ; *C ) => *A requires B ==K C
-  rule #sub( A:Name ; B:NameVar ; *C ) => *C requires B =/=K C
+  rule #sub( A:Name ; B:NameVar ;  C:NameVar ) =>  A requires B ==K C
+  rule #sub( A:Name ; B:NameVar ;  C:NameVar ) =>  C requires B =/=K C
+  rule #sub( A:Name ; B:NameVar ; *C:NameVar ) => *A requires B ==K C
+  rule #sub( A:Name ; B:NameVar ; *C:NameVar ) => *C requires B =/=K C
   rule #sub( _:Name ; _:Name ; G:Ground ) => G
   rule #sub( A:Name ; B:NameVar ; @ C:Proc ) => @ #sub(A;B;C)
 
+// These substitutions are NOT distinguish between NameVar and ProcVar
 //  rule #sub( A:Name ; @ B:ProcVar ; P:Proc ) => P[*A/B]
 //  rule #sub( @ A:Proc ; B:NameVar ; P:Proc ) => P[@A/B]
+
   rule #sub( @ A:Proc ; @ B:Proc  ; P:Proc ) => #sub(A;B;P)
 
   rule #sub( A:Name ; B:Name ; for(         <- X:Name ){ P:Proc } ) => for(   <- #sub(A;B;X) ){ #sub(A;B;P) }
@@ -161,7 +164,7 @@ module SUB
   rule #sub( A:Name ; B:Name ; tuple( C:Proc  ) ) => tuple( #sub(A;B;C) )
   rule #sub( A:Name ; B:Name ; tuple( C:Procs ) ) => tuple( #sub(A;B;C) )
 
-  rule #sub( _:Name ; _:Name ; N:New ) => #subNew(N)
+//  rule #sub( _:Name ; _:Name ; N:New ) => #subNew(N)
 
   rule #subNew( new A:Name in { P:Proc } ) => #sub(@unforgeable(!I:Int);A;P)
   rule #subNew( new A:Name , B:Name  in { P:Proc } ) => #subNew( new B in { #sub(@unforgeable(!I:Int);A;P) } )
