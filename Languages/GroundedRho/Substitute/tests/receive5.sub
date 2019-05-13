@@ -1,0 +1,10 @@
+// Receive - name sub
+
+  #sub( @2 ; x ; for( @3 , @\x <= x ){ *x | x!(Nil) } )
+
+/*
+Output:
+
+    for ( @ 3 , @ \ x <= @ 2 ) { 2 | ( @ 2 ) ! ( Nil ) }
+
+*/

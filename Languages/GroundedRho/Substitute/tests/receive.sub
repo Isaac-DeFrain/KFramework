@@ -1,0 +1,10 @@
+// Receive
+
+  #sub( 2 ; \x ; for( x <- @Nil){ \x | true } )
+
+/*
+Output:
+
+    for ( x <- @ Nil ) { 2 | true }
+
+*/

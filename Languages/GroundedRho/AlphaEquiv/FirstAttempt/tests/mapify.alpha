@@ -1,9 +1,17 @@
 // Mapify
 
-    new x in { for( @y <- x ){ y | y } | x!( new x in { *x } ) }
+    #mapify( new x in { for( @y <- x ){ y | y } | x!( new x in { *x } ) } )
   
 /*
 Output:
+
+[Error] Critical: failed to concatenate maps with common keys:
+[(Id(#"x"),boundN(_)_ALPHA-SYNTAX(Int(#"0")),boundN(_)_ALPHA-SYNTAX(Int(#"1")))]
+  while evaluating function _Map_
+  while evaluating function #mapify(_;_;_)_ALPHA-SYNTAX
+  while evaluating function #deBruijn(_;_;_)_ALPHA-SYNTAX
+  while evaluating function initKCell
+  while evaluating function initTCell
 
     new boundN( 0 ) in { for ( @ boundP( 1 ) <- boundN( 0 ) ) { boundP( 1 ) | boundP( 1 ) } | boundN( 0 ) ! ( new boundN( 1 ) in { * boundN( 1 ) } ) }
 
