@@ -1,5 +1,5 @@
 // #in nametuple predicate
 
-  @Nil #in ( @1 , @"Nil" )
+  @Nil #in @1 , @"Nil" , @Nil
 
-// Output: false
+// Output: true
