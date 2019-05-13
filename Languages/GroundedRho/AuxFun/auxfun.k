@@ -5,10 +5,9 @@ requires "../grho.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length" "(" ProcList ")"     [function]  // #length(_): ProcList ---------------> Int
-                  | "#length" "("          ")"     [function]  // #length( ):  -----------------------> Int
-                  | "#length" "(" Name     ")"     [function]  // #length(_): Name -------------------> Int
-                  | "#length" "(" Names    ")"     [function]  // #length(_): Names ------------------> Int
+  syntax    Int ::= "#length"     RhoTuple         [function]  //    #length: RhoTuple ---------------> Int
+                  | "#length"     Name             [function]  //    #length: Name -------------------> Int
+                  | "#length"     Names            [function]  //    #length: Names ------------------> Int
                   | "#length" "(" Binds    ")"     [function]  // #length(_): Binds ------------------> Int
                   | "#length" "(" GuardedBinds ")" [function]  // #length(_): GuardedBinds -----------> Int
                   | "#bnum"   "(" Bind     ")"     [function]  //   #bnum(_): Bind -------------------> Int
@@ -43,6 +42,8 @@ module AUXFUN-SYNTAX
                   | "#bvar"   "("   Bind  ")"         [function]  //     #bvar(_): Bind -------> Name
                   | "#bvar"   "(" GuardedBind ")"     [function]  //     #bvar(_): Bind -------> Name
                   | "#bvar"   "(" Receive ")"         [function]  //     #bvar(_): Receive ----> Name
+                  | "#msg"    "(" Send    ")"         [function]  // #msg(_): Send ------------> Name
+                  | "#dec"    "(" New     ")"         [function]
 
   syntax  Names ::= "#chan"   "("   Binds ")"         [function]  //     #chan(_): Binds ------> Names
                   | "#chan"   "(" GuardedBinds ")"    [function]  //     #chan(_): Binds ------> Names
@@ -54,6 +55,7 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Name  ")" [function]
                   | "#append" "(" Name  ";" Names ")" [function]
                   | "#append" "(" Names ";" Names ")" [function]
+                  | "#dec"    "(" New     ")"         [function]
 
   syntax    Map ::= "#listenmap" "(" SingleRec ")"    [function]
                   | "#listenmap" "(" Bind      ")"    [function]
@@ -73,8 +75,8 @@ module AUXFUN-SYNTAX
                    | "#truncate(" RhoList "," Int ")"        [function]
 
   syntax   Bool ::= Int   "#in"      RhoTuple                [function]  // _#in_: Int x RhoTuple ----> Bool
-                  | Name  "#in"  "(" Name  ")"               [function]  // _#in_: Name x Name  ------> Bool
-                  | Name  "#in"  "(" Names ")"               [function]  // _#in_: Name x Names ------> Bool
+                  | Name  "#in" Name                         [function]  // _#in_: Name x Name  ------> Bool
+                  | Name  "#in" Names                        [function]  // _#in_: Name x Names ------> Bool
                   | Bind  "#in"  "(" Bind  ")"               [function]  // _#in_: Bind  x Bind ------> Bool
                   | Bind  "#in"  "(" Binds ")"               [function]  // _#in_: Bind  x Binds -----> Bool
                   | Binds "#in"  "(" Binds ")"               [function]  // _#in_: Binds x Binds -----> Bool
@@ -83,7 +85,7 @@ module AUXFUN-SYNTAX
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
                   | Proc "#in_keys" RhoMap                   [function]
                   | Proc "#in_set"  RhoSet                   [function]
-
+/*
   syntax    Int ::= "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
                   | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
                   | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
@@ -100,7 +102,7 @@ module AUXFUN-SYNTAX
                   | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
 
   syntax   Bind ::= "#bind" "(" BindOcc ")" [function]  // #bind(_): BindOcc --------> Bind
-
+*/
 endmodule
 
 module AUXFUN
@@ -109,18 +111,20 @@ module AUXFUN
   syntax KResult ::= Int | Name
 
 // Sends
-  rule #chan  ( N:Name !  ( _:ProcList ) ) => N
-  rule #chan  ( N:Name !! ( _:ProcList ) ) => N
+  rule #chan  ( N:Name !  _:RhoTuple ) => N
+  rule #chan  ( N:Name !! _:RhoTuple ) => N
 
+  rule #msg   ( _:Name !  ( ) ) => EmptyMsg
   rule #msg   ( _:Name !  ( P:Proc     ) ) => P
   rule #msg   ( _:Name !  ( P:Procs    ) ) => P
+  rule #msg   ( _:Name !! ( ) ) => EmptyMsg
   rule #msg   ( _:Name !! ( P:Proc     ) ) => P
   rule #msg   ( _:Name !! ( P:Procs    ) ) => P
   
-  rule #length( S:Send ) => #length(#msg(S))
+  rule #length( S:Send ) => #length tuple(#msg(S)) requires #msg(S) =/=K EmptyMsg
 
-  rule #stype ( _:Name !  ( _:ProcList ) ) => 0
-  rule #stype ( _:Name !! ( _:ProcList ) ) => 1
+  rule #stype ( _:Name !  _:RhoTuple ) => 0
+  rule #stype ( _:Name !! _:RhoTuple ) => 1
 
 // Receives
   rule #bind  ( for ( B:Bind  ){ _:Proc } ) => B
@@ -180,7 +184,7 @@ module AUXFUN
   rule #guard ( for( _:Binds ){ _:Proc } ) => true
   rule #guard ( for( _:Bind  if B:BExp ){ _:Proc } ) => B
   rule #guard ( for( _:Binds if B:BExp ){ _:Proc } ) => B
-  
+/*
 // Listen maps
   rule #listenmap( R:SingleRec ) => #mapify( #bvar(R) ; #chan(R) )
   rule #listenmap( B:Bind ) => #mapify( #bvar(B) ; #chan(B) )
@@ -195,7 +199,7 @@ module AUXFUN
   rule #listenmap( A:Pbind ; B:Pbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
   rule #listenmap( A:Rbind ; B:Rbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
   rule #listenmap( A:Rbind ; B:Rbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-
+*/
 //---------------
 //--- #append ---
 //---------------
@@ -217,13 +221,13 @@ module AUXFUN
 //--- #bind ---
 //-------------
 // Reconstruct listen from listen info
-  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
+/*  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
   rule #bind ( A:Name ; B:Names ;; 0 ) => B <- A
   rule #bind ( A:Name ; B:Name  ;; 1 ) => B <= A
   rule #bind ( A:Name ; B:Names ;; 1 ) => B <= A
   rule #bind ( A:Name ; B:Name  ;; 2 ) => B <! A
   rule #bind ( A:Name ; B:Names ;; 2 ) => B <! A
-
+*/
 //-----------
 //--- #in ---
 //-----------
@@ -233,10 +237,11 @@ module AUXFUN
   rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in  (C)
 
 // Name #in NameTuple
-  rule A:Name #in ( B:Name           ) => A ==K B
-  rule A:Name #in ( B:Name , C:Name  ) => A ==K B orBool A ==K C
-  rule A:Name #in ( B:Name , C:Names ) => A ==K B orBool A #in (C)
-
+  rule _:Name #in EmptyMsg => false
+  rule A:Name #in B:Name           => A ==K B requires B =/=K EmptyMsg
+  rule A:Name #in B:Name , C:Name  => A ==K B orBool A ==K C
+  rule A:Name #in B:Name , C:Names => A ==K B orBool A #in C
+/*
 // Bind(s) #in BindTuple
 // checks binding occurence set inclusion
   rule A:Bind  #in  ( B:Bind  ) => #bindocc(A) <=Set #bindocc(B)
@@ -247,12 +252,20 @@ module AUXFUN
   rule A:Bind  #ine ( B:Bind  ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Bind  #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
   rule A:Binds #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
-  
+*/
+//----------------
+//--- #dec ---
+//----------------
+  rule #dec( new A:Name  in { _:Proc } ) => A
+  rule #dec( new A:Names in { _:Proc } ) => A
+
+
 //-------------
 //--- #size ---
 //-------------
   rule #size Set( ) => 0
-  rule #size Set( P:ProcList ) => #length(P)
+  rule #size Set( P:Proc  ) => #length (P)
+  rule #size Set( P:Procs ) => #length (P)
   
   rule #size { }:RhoMap => 0
   rule #size { _:Proc : _:Proc } => 1
@@ -270,12 +283,14 @@ module AUXFUN
 
 // RhoList
   rule #length [ ] => 0
-  rule #length [ P:ProcList ] => #length(P)
+  rule #length [ P:Proc  ] => #length(P)
+  rule #length [ P:Procs ] => #length(P)
 
 // Name(s)
-  rule #length ( _:Name           ) => 1
-  rule #length ( _:Name , _:Name  ) => 2
-  rule #length ( _:Name , N:Names ) => 1 +Int #length (N)
+  rule #length EmptyMsg => 0
+  rule #length A:Name           => 1 requires A =/=K EmptyMsg
+  rule #length _:Name , _:Name  => 2
+  rule #length _:Name , N:Names => 1 +Int #length N
 
 //--- Binds ---
 // Binds - number of listens in a join
@@ -352,7 +367,7 @@ module AUXFUN
 //-------------
 // binding variables
   rule #bvar (         <- N:Name ) => EmptyMsg
-  rule #bvar ( N:NameVar  <- _:Name ) => N
+  rule #bvar ( N:Name  <- _:Name ) => N
   rule #bvar ( N:Names <- _:Name ) => N
   rule #bvar (         <= N:Name ) => EmptyMsg
   rule #bvar ( N:Name  <= _:Name ) => N
