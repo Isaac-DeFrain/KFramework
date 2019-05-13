@@ -44,9 +44,8 @@ module GRHO-SYNTAX
 //-----------------
   syntax             Proc ::= "{" Proc "}"    [bracket]
                             > New             // New name declaration(s)
-                            > "Nil"           // Stopped process
+                            > Ground          // Ground terms - Bool, Int, Nil, String, Uri
                             | Collection      // Data structures - List, Map, Set, Tuple
-                            | Ground          // Ground terms - Bool, Int, String, Uri
                             | ProcVar         // Process variable
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
@@ -169,7 +168,9 @@ module GRHO-SYNTAX
                             | RhoKVPair "," RhoKVPairs
 
   // Process sets
-  syntax           RhoSet ::= "Set" RhoTuple
+  syntax           RhoSet ::= "Set" "(" Procs ")"
+                            | "Set" "(" Proc  ")"
+                            | "Set" "(" ")"
 
   // Process tuples
   syntax         RhoTuple ::= "(" Procs ")"  [klabel(tuple)]
@@ -177,7 +178,10 @@ module GRHO-SYNTAX
                             | "(" ")"        [klabel(tuple)]
 
 // Ground terms
-  syntax           Ground ::= Bool | Int | String | Uri
+  syntax           Ground ::= Bool | Int | String // built-in
+                            | "Nil"        // stopped process
+                            | Unforgeable | Uri
+  syntax      Unforgeable ::= "unforgeable(" Int ")"
   syntax              Uri ::= "uri(" String ")"
 
 // AExp & BExp resolve to ground terms
@@ -263,9 +267,6 @@ module GRHO-SYNTAX
                             | Name ";" NameList  ";;" Int    // listening channel; variable(s) to bind; number of occurences
   syntax             Proc ::= ChanLen | BindOcc | JoinList   // definitions
 */
-  syntax           Ground ::= Unforgeable
-  syntax      Unforgeable ::= "unforgeable(" Int ")"
-
   syntax        KVariable ::= NameVar | ProcVar | Name | Proc
                             | Send | Receive | Quote | Eval | Par | Collection  // for deep pattern-matching
                             | Int  // for map substitutions
