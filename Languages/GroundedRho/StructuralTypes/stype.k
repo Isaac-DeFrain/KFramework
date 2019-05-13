@@ -1,5 +1,5 @@
 // Structural type system for Grounded RHO-CALCULUS
-// Type is a structural binary tree
+// A structural type is a structural binary tree
 
 require "domains.k"
 require "../Is-In/is-in.k"
@@ -7,9 +7,11 @@ require "../Is-In/is-in.k"
 module STYPE-SYNTAX
   import DOMAINS
 
-//***************************************************
-//*** Grounded Rho-Calculus with Process Patterns ***
-//***************************************************
+//*******************************************
+//*** Grounded Rho-Calculus with Patterns ***
+//*******************************************
+
+  syntax Var ::= Id
 
 //-------------
 //--- NAMES ---
@@ -18,8 +20,11 @@ module STYPE-SYNTAX
 // Names
   syntax             Name ::= "{" Name "}"                                [bracket]
                             > "@" Proc                               [klabel(name)]  // @: Proc -----> Name
+                            | NameVar
                             | Unforgeable                                            //  Unforgeable < Name
                             | "@" ProcVar "(" Uri ")"                                // @_(_): ProcVar x Uri ---> Name
+
+  syntax NameVar ::= Var
 
 // Unforgeable name
   syntax      Unforgeable ::= "unforgeable(" Int ")"                                 // unforgeable(_): Int ---> Name
@@ -27,7 +32,7 @@ module STYPE-SYNTAX
 // Name Patterns
   syntax          NamePat ::= "{" NamePat "}"                             [bracket]
                             > "@" ProcPat                         [klabel(namepat)]  // @: ProcPat ---> NamePat
-                            | "WildName"                                             //      WildName < NamePat
+                            | "#N"                                                   //      #N < NamePat
 
 // Name or Name Pattern
   syntax        NameOrPat ::= "{" NameOrPat "}"                           [bracket]
@@ -54,7 +59,7 @@ module STYPE-SYNTAX
 //-----------------
 
 // Process Variable
-  syntax          ProcVar ::= Id                                                     // Id < ProcVar
+  syntax          ProcVar ::= "\\" Var                                                    // Id < ProcVar
 
 // Processes
   syntax             Proc ::= "{" Proc "}"                                [bracket]  // {_}: Proc -> Proc
@@ -205,6 +210,7 @@ module STYPE-SYNTAX
 // Expressions
   syntax             AExp ::= "(" AExp ")"                                [bracket]  //     (_): AExp ------> AExp
                             > Int                                                    //    Int < AExp
+                            | ProcVar
                             | Eval                                                   //   Eval < AExp , for interesting message passing, e.g. for( y <- x ){ *y + 5 }
                             | String                                                 // String < AExp (S1 + S2 => S1 +String S2)
                             > AExp "*" AExp                                [strict]  // _*_: AExp x AExp ---> AExp
@@ -213,6 +219,7 @@ module STYPE-SYNTAX
 
   syntax             BExp ::= "(" BExp ")"                                [bracket]  //  (_): BExp ----------> BExp
                             > Bool                                                   //   Bool < BExp
+                            | ProcVar
                             | Eval                                                   //   Eval < BExp
                             | String                                                 // String < BExp
                             | AExp  "<=" AExp                              [strict]  // _<=_: AExp x AExp ---> BExp
@@ -279,7 +286,7 @@ module STYPE-SYNTAX
 // Process Pattern
   syntax          ProcPat ::= "{" ProcPat "}"                                        // {_}: ProcPat --------------> ProcPat
                             > NewPat                                                 //        NewPat < ProcPat
-                            > "WildProc"                                             //      WildProc < ProcPat
+                            > "#P"                                             //      #P < ProcPat
                             | SimpleType                                             //     SimplType < ProcPat
                             | CollectionPat                                          // CollectionPat < ProcPat
                             > EvalPat                                                //       EvalPat < ProcPat
@@ -430,6 +437,7 @@ module STYPE-SYNTAX
 
 // Leaves
   syntax             Leaf ::= Ground                                                 //     Ground < Leaf
+                            | NameVar
                             | ProcVar                                                //    ProcVar < Leaf
                             | Method                                                 //     Method < Leaf
 
@@ -489,6 +497,7 @@ module STYPE
   rule type[ Nil                         ] => type[ "leaf"  ;; "nil"         ;; "Nil"   ]  // Nil ==================> Leaf
 
 // Process Variable
+  rule type[ V:NameVar                   ] => type[ "leaf"  ;; "namevar"     ;; V       ]  // ProcVar ==============> Leaf
   rule type[ V:ProcVar                   ] => type[ "leaf"  ;; "procvar"     ;; V       ]  // ProcVar ==============> Leaf
 
 // Unforgeable Integers
@@ -498,8 +507,8 @@ module STYPE
   rule type[ uri( S:String )             ] => type[ "leaf"  ;; "uri"         ;; S       ]  // Uri ==================> Leaf
 
 // Wildcards
-  rule type[ WildProc                    ] => type[ "leaf"  ;; "wildcard"    ;; "proc"  ]  // WildProc =============> Leaf
-  rule type[ WildName                    ] => type[ "leaf"  ;; "wildcard"    ;; "name"  ]  // WildName =============> Leaf
+  rule type[ #P ] => type[ "leaf" ;; "wildcard" ;; "proc" ]  // #P ===> Leaf
+  rule type[ #N ] => type[ "leaf" ;; "wildcard" ;; "name" ]  // #N ===> Leaf
 
 //*** Nodes ***
 // SimpleType
