@@ -1,6 +1,6 @@
 // Names in continuation
 
-  #subcont( @2 ; @y ; y )
+  #sub( @2 ; @\y ; \y )
 
 /*
 Output: 
