@@ -1,6 +1,6 @@
 // Names in continuation
 
-  #subcont( @2 , u , @"a" , @5 ; x , @y , z , @5 ; *x | y | *z | 4 )
+  #sub( @2 , u , @"a" , @5 ; x , @\y , z , @5 ; *x | \y | *z | 4 )
 
 /*
 Output: 2 | * u | "a" | 4

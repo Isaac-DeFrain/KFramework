@@ -1,7 +1,10 @@
 // Names in continuation
 
-  #subcont( @2 , @z ; x , @y ; *x | y )
+  #sub( @2 , @\z ; x , @\y ; *x | \y )
 
 /*
-Output:  2 | z
+Output:  
+
+    2 | \z
+
 */

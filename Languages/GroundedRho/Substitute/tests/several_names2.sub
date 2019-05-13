@@ -1,6 +1,6 @@
 // Names
 
-  #sub( @2 , u , @"a" ; x , @y , z )
+  #sub( @2 , u , @"a" ; x , @\y , z )
 
 /*
 Output: 

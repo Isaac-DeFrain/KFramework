@@ -1,9 +1,9 @@
 // RhoTuple
 
-  #sub( (2 , z , 4 , true) ; (x , *y , 4) )
+  #sub( (2 , \z , 4 , true) ; (\x , *y , 4) )
 
 /*
-Output: 
+Output: (lengths don't match)
 
     ( 2 , #sub( z , 4 , true ; * y , 4 ) )
 

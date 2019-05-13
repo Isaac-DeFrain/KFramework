@@ -1,6 +1,6 @@
 // Send
 
-  #subcont( @{2|3}!( [ "a" , true , 1 ] ) ; @x!(y) ; @"hello"!(@y!(x) ) )
+  #sub( @{2|3}!( [ "a" , true , 1 ] ) ; @\x!(\y) ; @"hello"!(@\y!(\x) ) )
 
 /*
 Output:

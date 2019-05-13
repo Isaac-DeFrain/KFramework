@@ -1,8 +1,10 @@
 // Par
 
-  #sub( a|2 ; x|3 )
+  #sub( \a|2 ; \x|2 )
 
 /*
-Output: a | #sub( 2 ; 3 )
+Output:
+
+    \ a | 2
 
 */

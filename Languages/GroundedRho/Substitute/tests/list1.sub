@@ -1,6 +1,6 @@
 // RhoList
 
-  #sub( [2 , z , 4] ; [x , *y , 5] )
+  #sub( [2 , \z , 4] ; [\x , *y , 5] )
 
 /*
 Output: 

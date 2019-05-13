@@ -1,10 +1,10 @@
 // Par
 
-  #subcont( a|2 , @true!(Nil) ; x|*y , z ; y!(x|z) )
+  #sub( \a|2 , @true!(Nil) ; \x|*y , \z ; y!(\x | \z) )
 
 /*
 Output:
 
-    ( @ 2 ) ! ( a | ( @ true ) ! ( Nil ) )
+    ( @ 2 ) ! ( \ a | ( @ true ) ! ( Nil ) )
 
 */

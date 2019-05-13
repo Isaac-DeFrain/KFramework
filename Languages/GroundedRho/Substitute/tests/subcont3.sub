@@ -1,6 +1,6 @@
-// Par - weird shadowing
+// Par - strange shadowing
 
-  #subcont( a|2 , @true!(Nil) ; x|*y , a ; y!(x|a) )
+  #sub( \a|2 , @true!(Nil) ; \x|*y , \a ; y!(\x|\a) )
 
 /*
 Output:

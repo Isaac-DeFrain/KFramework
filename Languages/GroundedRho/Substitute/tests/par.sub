@@ -1,10 +1,10 @@
 // Par
 
-  #sub( @{2|3}!( [ "a" , true , 1 ] ) ; @{x|*z}!(y) )
+  #sub( @{2|3}!( [ "a" , true , 1 ] ) ; @{\x|*z}!(\y) )
 
 /*
-Output: ( we substitute 2|3 for x|*z by doing x[2|3 / x] | *z[@{2|3} / z] )
+Output: ( we substitute 2|3 for \x|*z by doing \x[2 / \x] | *z[@3 / z] )
 
-    ( @ 2 | 3 | { 2 | 3 } ) ! ( [ "a" , true , 1 ] )
+    ( @ 2 | 3 ) ! ( [ "a" , true , 1 ] )
 
 */
