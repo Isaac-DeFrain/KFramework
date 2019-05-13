@@ -535,7 +535,7 @@ module GRHO
 // x!(Q) | y(z){P} /\ x equivN y => P[@Q / y]
 
 // TODO: what should be done with environment maps?
-// TODO: how can we only substitute for variables and not values?
+// TODO: replace builtin substitution for #sub
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
   rule 
@@ -545,7 +545,7 @@ module GRHO
       <where>  Y:Name , Z:Names => Z </where>  // delete Y from list of variables needing substitution
       <update> M => M[ Y <-undef ]  </update>  // delete Y |-> M[Y] from the map
     </reaction>
-    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
+//    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
 // 2 substitutions
   rule
@@ -555,7 +555,7 @@ module GRHO
       <where>  Y:Name , Z:Name => Z  </where>
       <update> M => M[ Y <- undef ] </update>  // delete Y |-> M[Y] from the map
     </reaction>
-    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
+//    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
 
 // Final substitution: spawn in a new thread holding the fully substituted continuation
   rule
@@ -565,7 +565,7 @@ module GRHO
       <where>  Y:Name =>  .K   </where>
       <update> M:Map  => .Map </update>
     </reaction>
-    <store>... M[Y] |-> (_ => @Q) ...</store>
+//    <store>... M[Y] |-> (_ => @Q) ...</store>
    (.Bag => <thread> <k> P[@ Q / Y] </k> <env> M </env> </thread>)  [react]
 
 // Comm semantics
