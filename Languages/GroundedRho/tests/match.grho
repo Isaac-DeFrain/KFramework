@@ -1,0 +1,12 @@
+// Match
+
+  match @Nil!("Hello") {
+    x!("Hello") :=> 1
+    @Nil!(\x) :=> 2
+    @Nil!("hello") :=> 3
+  }
+
+/*
+Output: Nil
+  (output should be 1 but structural type inclusion is not yet defined for grho)
+*/
