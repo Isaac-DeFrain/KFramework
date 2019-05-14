@@ -1,0 +1,10 @@
+// Type - new uri
+
+  type[ x( uri("abc") ) ]
+
+/*
+Output:
+
+  type[ "newuri" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "uri" ;; "abc" ] ]
+
+*/

@@ -1,0 +1,13 @@
+// Type - single rec
+
+ type[ for( @\z <= @Nil ){ Set ( \z ) } ]
+
+/*
+Output:
+  
+  type[ "singleRec" ;; 
+    type[ "pbind" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ z ] ;; unit ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; unit ] ] ;; 
+    type[ "set" ;; type[ "leaf" ;; "procvar" ;; \ z ] ;; unit ] 
+  ]
+
+*/

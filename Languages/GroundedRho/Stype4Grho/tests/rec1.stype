@@ -1,0 +1,16 @@
+// Type - multi rec
+
+ type[ for( x <! @Nil ; @2 , @\y <! chan ){ *x + \y  } ]
+
+/*
+Output:
+  
+  type[ "multiRec" ;; 
+    type[ "peeks" ;; 
+      type[ "peek" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; unit ] ] ;; 
+      type[ "peek" ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 2 ] ;; unit ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ y ] ;; unit ] ] ;; type[ "leaf" ;; "namevar" ;; chan ] ] 
+    ] ;; 
+    type[ "plus" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; unit ] ;; type[ "leaf" ;; "procvar" ;; \ y ] ] 
+  ]
+
+*/

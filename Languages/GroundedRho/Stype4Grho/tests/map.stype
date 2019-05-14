@@ -1,0 +1,13 @@
+// Type - map
+
+ type[ { @\x!(*y) : for( y <- z ){ y!(Nil) } , \x : \y , @Nil!(\a) : \z } ]
+
+/*
+  Output:
+
+  type[ "map" ;; 
+    type[ "kvpair" ;; 
+      type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ x ] ;; unit ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; unit ] ] ;; type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "namevar" ;; z ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ] ] ;; 
+      type[ "kvpairs" ;; type[ "kvpair" ;; type[ "leaf" ;; "procvar" ;; \ x ] ;; type[ "leaf" ;; "procvar" ;; \ y ] ] ;; type[ "kvpair" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; unit ] ;; type[ "leaf" ;; "procvar" ;; \ a ] ] ;; type[ "leaf" ;; "procvar" ;; \ z ] ] ] ]
+
+*/

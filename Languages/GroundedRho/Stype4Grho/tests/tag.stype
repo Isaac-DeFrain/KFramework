@@ -1,0 +1,10 @@
+// Type - tagged process
+
+ type[ "tag" & Set ( ) ]
+
+/*
+Output:
+  
+  type[ "tag" ;; type[ "set" ;; type[ "leaf" ;; "proc" ;; "empty" ] ;; unit ] ;; unit ]
+
+*/

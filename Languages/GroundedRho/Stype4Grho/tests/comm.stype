@@ -1,0 +1,30 @@
+// Type - complex
+
+  type[ @\x!(Nil) | for( y,@\z <- x ){ (*y,\z,Nil) } | for( y,z <- @\x ){ ( *y|*z , Nil) } ]
+
+/*
+Output:
+
+  type[ "par" ;; 
+    type[ "par" ;; 
+      type[ "send" ;; 
+        type[ "chan" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ x ] ;; unit ] ;; unit ] ;; 
+        type[ "msg" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; unit ] 
+      ] ;; 
+      type[ "singleRec" ;; 
+        type[ "lbind" ;; 
+          type[ "bvar" ;; type[ "names" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ z ] ;; unit ] ] ;; unit ] ;; 
+          type[ "chan" ;; type[ "leaf" ;; "namevar" ;; x ] ;; unit ] 
+        ] ;; 
+        type[ "cont" ;; type[ "tuple" ;; type[ "procs" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; unit ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; \ z ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ] ;; unit ] ;; unit ] ] 
+      ] ;; 
+    type[ "singleRec" ;; 
+      type[ "lbind" ;; 
+        type[ "bvar" ;; type[ "names" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "leaf" ;; "namevar" ;; z ] ] ;; unit ] ;; 
+        type[ "chan" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ x ] ;; unit ] ;; unit ] 
+      ] ;; 
+      type[ "cont" ;; type[ "tuple" ;; type[ "procs" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; y ] ;; unit ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; z ] ;; unit ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; unit ] ;; unit ] 
+    ] 
+  ]
+ 
+*/

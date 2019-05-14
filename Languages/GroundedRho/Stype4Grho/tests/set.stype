@@ -1,0 +1,14 @@
+// Type - set
+
+ type[ Set ( x!(Nil) , @\y!("abc") , \z ) ]
+
+/*
+Output:
+  
+  type[ "set" ;; 
+    type[ "procs" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; 
+    type[ "procs" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; \ y ] ;; unit ] ;; type[ "leaf" ;; "string" ;; "abc" ] ] ;; 
+    type[ "leaf" ;; "procvar" ;; \ z ] ] 
+  ] ;; unit ]
+
+*/

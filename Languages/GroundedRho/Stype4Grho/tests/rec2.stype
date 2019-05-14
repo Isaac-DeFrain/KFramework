@@ -1,0 +1,11 @@
+// Type - single rec
+
+ type[ for(  <= @Nil ){ Set ( ) } ]
+
+/*
+Output:
+  
+  type[ "singleRec" ;; 
+    type[ "pbind" ;; type[ "leaf" ;; "msg" ;; "empty" ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; unit ] ] ;; type[ "set" ;; type[ "leaf" ;; "proc" ;; "empty" ] ;; unit ] ]
+
+*/

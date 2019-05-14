@@ -1,0 +1,12 @@
+// Type - contract invocation
+
+  type[ invoke x( \arg1 , \arg2  , "abc" ) ]
+
+/*
+Output:
+
+  type[ "invocation" ;; 
+    type[ "leaf" ;; "namevar" ;; x ] ;; 
+    type[ "procs" ;; type[ "leaf" ;; "procvar" ;; \ arg1 ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; \ arg2 ] ;; type[ "leaf" ;; "string" ;; "abc" ] ] ] ]
+ 
+*/
