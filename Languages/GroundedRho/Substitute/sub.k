@@ -12,14 +12,12 @@ TODO:
 */
 
 require "domains.k"
-require "substitution.k"
 require "../AuxFun/auxfun.k"
 require "../grho.k"
 
 module SUB-SYNTAX
   import GRHO-SYNTAX
   import DOMAINS
-  import SUBSTITUTION
 
   syntax   Proc ::= "#sub(" Proc  ";" Proc ")"   [function]
                   | "#sub(" Proc  ";" Proc  ";" Proc ")" [function]
