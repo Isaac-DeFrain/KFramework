@@ -85,24 +85,7 @@ module AUXFUN-SYNTAX
                   | Binds "#ine" "(" Binds ")"               [function]  // _#ine_: Binds x Binds ----> Bool
                   | Proc "#in_keys" RhoMap                   [function]
                   | Proc "#in_set"  RhoSet                   [function]
-/*
-  syntax    Int ::= "#chanmany"  "(" Name     ":" Set   ")"  [function]  // #chanmany(_:_): Name x Set ---------> Int
-                  | "#chanmany"  "(" ChanLen  ":" Bind  ")"  [function]  // #chanmany(_:_): ChanLen  x Bind ----> Int
-                  | "#chanmany"  "(" ChanLen  ":" Binds ")"  [function]  // #chanmany(_:_): ChanLen  x Binds ---> Int
-                  | "#chanmany"  "(" ChanList ":" Bind  ")"  [function]  // #chanmany(_:_): ChanList x Bind ----> Int
-                  | "#chanmany"  "(" ChanList ":" Binds ")"  [function]  // #chanmany(_:_): ChanList x Binds ---> Int
 
-  syntax    Set ::= "#chanlen"   "(" Bind  ")"               [function]  //  #chanlen(_): Bind -------> Set
-                  | "#chanlen"   "(" Binds ")"               [function]  //  #chanlen(_): Binds ------> Set
-                  | "#chanlist"  "(" Bind  ")"               [function]  // #chanlist(_): Bind -------> Set
-                  | "#chanlist"  "(" Binds ")"               [function]  // #chanlist(_): Binds ------> Set
-                  | "#bindocc"   "(" Bind  ")"               [function]  //  #bindocc(_): Bind -------> Set
-                  | "#bindocc"   "(" Binds ")"               [function]  //  #bindocc(_): Binds ------> Set
-                  | "#bindocce"  "(" Bind  ")"               [function]  // #bindocce(_): Bind -------> Set
-                  | "#bindocce"  "(" Binds ")"               [function]  // #bindocce(_): Binds ------> Set
-
-  syntax   Bind ::= "#bind" "(" BindOcc ")" [function]  // #bind(_): BindOcc --------> Bind
-*/
 endmodule
 
 module AUXFUN
@@ -111,8 +94,12 @@ module AUXFUN
   syntax KResult ::= Int | Name
 
 // Sends
-  rule #chan  ( N:Name !  _:RhoTuple ) => N
-  rule #chan  ( N:Name !! _:RhoTuple ) => N
+  rule #chan  ( N:Name !  ( ) ) => N
+  rule #chan  ( N:Name !  ( _:Proc  ) ) => N
+  rule #chan  ( N:Name !  ( _:Procs ) ) => N
+  rule #chan  ( N:Name !! ( ) ) => N
+  rule #chan  ( N:Name !! ( _:Proc  ) ) => N
+  rule #chan  ( N:Name !! ( _:Procs ) ) => N
 
   rule #msg   ( _:Name !  ( ) ) => EmptyMsg
   rule #msg   ( _:Name !  ( P:Proc     ) ) => P
@@ -123,8 +110,8 @@ module AUXFUN
   
   rule #length( S:Send ) => #length tuple(#msg(S)) requires #msg(S) =/=K EmptyMsg
 
-  rule #stype ( _:Name !  _:RhoTuple ) => 0
-  rule #stype ( _:Name !! _:RhoTuple ) => 1
+  rule #stype ( _:ConsumableSend ) => 0
+  rule #stype ( _:UnconsumableSend ) => 1
 
 // Receives
   rule #bind  ( for ( B:Bind  ){ _:Proc } ) => B
@@ -234,31 +221,20 @@ module AUXFUN
 // Int #in RhoTuple
   rule A:Int #in ( B:Int           ) => A ==Int B
   rule A:Int #in ( B:Int , C:Int   ) => A ==Int B orBool A ==Int C
-  rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in  (C)
+  rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in (C)
 
-// Name #in NameTuple
+// Name #in Names
   rule _:Name #in EmptyMsg => false
   rule A:Name #in B:Name           => A ==K B requires B =/=K EmptyMsg
   rule A:Name #in B:Name , C:Name  => A ==K B orBool A ==K C
   rule A:Name #in B:Name , C:Names => A ==K B orBool A #in C
-/*
-// Bind(s) #in BindTuple
-// checks binding occurence set inclusion
-  rule A:Bind  #in  ( B:Bind  ) => #bindocc(A) <=Set #bindocc(B)
-  rule A:Bind  #in  ( B:Binds ) => #bindocc(A) <=Set #bindocc(B)
-  rule A:Binds #in  ( B:Binds ) => #bindocc(A) <=Set #bindocc(B)
 
-// checks explicit binding occurence set inclusion
-  rule A:Bind  #ine ( B:Bind  ) => #bindocce(A) <=Set #bindocce(B)
-  rule A:Bind  #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
-  rule A:Binds #ine ( B:Binds ) => #bindocce(A) <=Set #bindocce(B)
-*/
-//----------------
+//------------
 //--- #dec ---
-//----------------
+//------------
+// New name declarations
   rule #dec( new A:Name  in { _:Proc } ) => A
   rule #dec( new A:Names in { _:Proc } ) => A
-
 
 //-------------
 //--- #size ---
@@ -275,7 +251,7 @@ module AUXFUN
 //---------------
 //--- #length ---
 //---------------
-// RhoTuple/ProcList
+// RhoTuple
   rule #length ( ) => 0
   rule #length ( _:Proc           ) => 1
   rule #length ( _:Proc , _:Proc  ) => 2
@@ -411,6 +387,7 @@ module AUXFUN
   rule A:Proc #in_set Set( Elm1:Proc , Rest:Procs ) => A ==K Elm1 orBool A #in_set Set( Rest )
 
 /*
+// Methods
 //--------------
 //--- #slice ---
 //--------------
@@ -437,153 +414,27 @@ module AUXFUN
   rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
   rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 
-//----------------
-//--- #chanlen ---
-//----------------
-// how many variables are we listening for in each binding
-  rule #chanlen ( A:Name  <- B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Names <- B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Lbind ;  B:Lbind  ) => #chanlen(A) #chanlen(B)
-  rule #chanlen ( A:Lbind ;  B:Lbinds ) => #chanlen(A) #chanlen(B)
-
-  rule #chanlen ( A:Name  <= B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Names <= B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Rbind ;  B:Rbind  ) => #chanlen(A) #chanlen(B)
-  rule #chanlen ( A:Rbind ;  B:Rbinds ) => #chanlen(A) #chanlen(B)
-
-  rule #chanlen ( A:Name  <! B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Names <! B:Name   ) => SetItem((B; #length (A)))
-  rule #chanlen ( A:Pbind ;  B:Pbind  ) => #chanlen(A) #chanlen(B)
-  rule #chanlen ( A:Pbind ;  B:Pbinds ) => #chanlen(A) #chanlen(B)
-
 //-----------------
-//--- #chanmany ---
+//--- #parmatch ---
 //-----------------
+// change NonParProc to each nonPar Proc constructor
+  rule #parcount( A ; B:NonParProc ) => #if A ==K B #then 1 #else 0 #fi
+  rule #parcount( A ; B | C:NonParProc ) => #if A ==K C #then 1 +Int #parcount(A;B) #else #parcount(A;B) #fi
 
-// #chanmany( ChanLen : Bind(s) )
-// gievn a channel and chanlength, how many occurrences are in Bind(s) 
-  rule #chanmany ( (A:Name ; I:Int) : B:Bind             ) => #if (A;I) in #chanlen(B) #then 1                         #else 0                  #fi
-  rule #chanmany ( (A:Name ; I:Int) : B:Lbind ; C:Lbind  ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
-  rule #chanmany ( (A:Name ; I:Int) : B:Lbind ; C:Lbinds ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
+  rule #parremove( A ; B:NonParProc ) => #if A ==K B #then Nil #else B #fi
+  rule #parremove( A ; B | C:NonParProc ) => #if A ==K C #then #parremove(A;B) #else #parremove(A;B) | C #fi
 
-  rule #chanmany ( (A:Name ; I:Int) : B:Rbind ; C:Rbind  ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
-  rule #chanmany ( (A:Name ; I:Int) : B:Rbind ; C:Rbinds ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
+  rule #setify( A:NonParProc ) => SetItem(A,1)
+  rule #setify( A | B:NonParProc ) 
+    => #if B ==K Nil
+       #then #setify(A)
+       #else
+         #if #parcount(B;A) >Int 0 
+         #then SetItem(B, 1 +Int #parcount(B;A)) (#setify(#parremove(B;A)) -Set SetItem(Nil,1))
+         #else SetItem(B,1) (#setify(A) -Set SetItem(Nil,1)) 
+         #fi 
+       #fi
 
-  rule #chanmany ( (A:Name ; I:Int) : B:Pbind ; C:Pbind  ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
-  rule #chanmany ( (A:Name ; I:Int) : B:Pbind ; C:Pbinds ) => #if (A;I) in #chanlen(B) #then 1 +Int #chanmany((A;I):C) #else #chanmany((A;I):C) #fi
-
-// #chanmany( ChanList : Bind(s) )
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Lbind ) => #if B <- A #ine (C) #then 1 #else 0 #fi
-  rule #chanmany ( (A:Name ; B:Names ) : C:Lbind ) => #if B <- A #ine (C) #then 1 #else 0 #fi
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Rbind ) => #if B <= A #ine (C) #then 1 #else 0 #fi
-  rule #chanmany ( (A:Name ; B:Names ) : C:Rbind ) => #if B <- A #ine (C) #then 1 #else 0 #fi
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Pbind ) => #if B <! A #ine (C) #then 1 #else 0 #fi
-  rule #chanmany ( (A:Name ; B:Names ) : C:Pbind ) => #if B <- A #ine (C) #then 1 #else 0 #fi
-
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Lbind ; D:Lbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Lbind ; D:Lbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Lbind ; D:Lbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Lbind ; D:Lbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Rbind ; D:Rbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Rbind ; D:Rbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Rbind ; D:Rbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Rbind ; D:Rbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Pbind ; D:Pbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Pbind ; D:Pbind  ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Name  ) : C:Pbind ; D:Pbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-  rule #chanmany ( (A:Name ; B:Names ) : C:Pbind ; D:Pbinds ) => #chanmany((A;B):C) +Int #chanmany((A;B):D)
-
-// #chanmany( Name : Set )
-// given a channel and set of binding occurrences, how many total occurrences involving that channel
-  rule #chanmany( N:Name : .Set ) => 0
-  rule #chanmany( N:Name : SetItem( M:Name ; _:Int ;; I:Int )       ) => #if N #in (M) #then I #else 0 #fi
-  rule #chanmany( N:Name : SetItem( M:Name ; _:Int ;; I:Int ) S:Set ) => #if N #in (M) #then I +Int #chanmany(N:S) #else #chanmany(N:S) #fi
-
-//----------------
-//--- #bindocc ---
-//----------------
-
-// set of binding occurrences and number of appearences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
-  rule #bindocc ( A:Bind ) => SetItem( #chan(A) ; #bnum(A) ;; 1 )
-
-// Linear join
-  rule #bindocc ( A:Lbind ; B:Lbind  )
-       => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
-          #else #bindocc(A) #bindocc(B)
-          #fi
-  rule #bindocc ( A:Lbind ; B:Lbinds )
-       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
-          #else #bindocc(A) #bindocc(B)
-          #fi
-
-// Repeated join
-  rule #bindocc ( A:Rbind ; B:Rbind  )
-       => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
-          #else #bindocc(A) #bindocc(B)
-          #fi
-  rule #bindocc ( A:Rbind ; B:Rbinds )
-       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
-          #else #bindocc(A) #bindocc(B)
-          #fi
-
-// Peek join
-  rule #bindocc ( A:Pbind ; B:Pbind  )
-       => #if #bindocc(A) <=Set #bindocc(B)
-          #then SetItem( #chan(A) ; #bnum(A) ;; 2 ) (#bindocc(B) -Set #bindocc(A) )
-          #else #bindocc(A) #bindocc(B)
-          #fi
-  rule #bindocc ( A:Pbind ; B:Pbinds )
-       => #if #chanmany((#chan(A) ; #bnum(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bnum(A) ;; 1 +Int #chanmany((#chan(A);#bnum(A)):B) ) (#bindocc(B) -Set SetItem( #chan(A) ; #bnum(A) ;; #chanmany((#chan(A);#bnum(A)):B)))
-          #else #bindocc(A) #bindocc(B)
-          #fi
-
-//-----------------
-//--- #bindocce ---
-//-----------------
-// set of explicit binding occurrences and number of appearences i.e. (channel ; chanlength ;; how many occurrences of channel/chanlength pair)
-  rule #bindocce ( A:Bind ) => SetItem( #chan(A) ; #bvar(A) ;; 1 )
-
-// Linear join
-  rule #bindocce ( A:Lbind ; B:Lbind  )
-       => #if #bindocce(A) <=Set #bindocce(B)
-          #then SetItem( #chan(A) ; #bvar(A) ;; 2 ) (#bindocce(B) -Set #bindocce(A) )
-          #else #bindocce(A) #bindocce(B)
-          #fi
-  rule #bindocce ( A:Lbind ; B:Lbinds )
-       => #if #chanmany((#chan(A) ; #bvar(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bvar(A) ;; 1 +Int #chanmany((#chan(A);#bvar(A)):B) ) (#bindocce(B) -Set SetItem( #chan(A) ; #bvar(A) ;; #chanmany((#chan(A);#bvar(A)):B)))
-          #else #bindocce(A) #bindocce(B)
-          #fi
-
-// Repeated join
-  rule #bindocce ( A:Rbind ; B:Rbind  )
-       => #if #bindocce(A) <=Set #bindocce(B)
-          #then SetItem( #chan(A) ; #bvar(A) ;; 2 ) (#bindocce(B) -Set #bindocce(A) )
-          #else #bindocce(A) #bindocce(B)
-          #fi
-  rule #bindocce ( A:Rbind ; B:Rbinds )
-       => #if #chanmany((#chan(A) ; #bvar(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bvar(A) ;; 1 +Int #chanmany((#chan(A);#bvar(A)):B) ) (#bindocce(B) -Set SetItem( #chan(A) ; #bvar(A) ;; #chanmany((#chan(A);#bvar(A)):B)))
-          #else #bindocce(A) #bindocce(B)
-          #fi
-
-// Peek join
-  rule #bindocce ( A:Pbind ; B:Pbind  )
-       => #if #bindocce(A) <=Set #bindocce(B)
-          #then SetItem( #chan(A) ; #bvar(A) ;; 2 ) (#bindocce(B) -Set #bindocce(A) )
-          #else #bindocce(A) #bindocce(B)
-          #fi
-  rule #bindocce ( A:Rbind ; B:Rbinds )
-       => #if #chanmany((#chan(A) ; #bvar(A)) : B ) =/=Int 0
-          #then SetItem( #chan(A) ; #bvar(A) ;; 1 +Int #chanmany((#chan(A);#bvar(A)):B) ) (#bindocce(B) -Set SetItem( #chan(A) ; #bvar(A) ;; #chanmany((#chan(A);#bvar(A)):B)))
-          #else #bindocce(A) #bindocce(B)
-          #fi
+  rule #parmatch( P:Proc ; Q:Proc ) => #setify(P) <=Set #setify(Q) andBool #setify(Q) <=Set #setify(P)
 */
 endmodule
