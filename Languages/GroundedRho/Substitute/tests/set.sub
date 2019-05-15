@@ -1,0 +1,10 @@
+// RhoSet
+
+  #sub( \a|2|3|@Nil!(Nil) ; \x|2|*b|x!(Nil) ; Set( ) )
+
+/*
+Output:
+
+    Set ( )
+
+*/
