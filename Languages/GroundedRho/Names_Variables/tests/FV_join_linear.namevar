@@ -4,9 +4,7 @@
 
 /*
 Output:
-<T>
-  <k>
-    SetItem ( u )
-  </k>
-</T>
+
+    SetItem ( u : name )
+
 */

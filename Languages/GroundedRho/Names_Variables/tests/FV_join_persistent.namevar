@@ -1,12 +1,12 @@
 // Free variables
 
-  FV( for( @Nil <= @true ; y <= u ; u <= @1 ){ *y | *u | for( x <- y ){ *x } } )
+  FV( for( @Nil <= @true ; y <= u ; u <= @1 ){ *y | *u | for( x <- y ){ *x + \y } } | *u )
 
 /*
 Output:
-<T>
-  <k>
-    SetItem ( u )
-  </k>
-</T>
+
+    SetItem ( * u : proc )
+    SetItem ( \ y : proc )
+    SetItem ( u : name )
+
 */
