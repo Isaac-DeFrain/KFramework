@@ -1,3 +1,0 @@
-// Free variables - receive
-
-  FV( for( y <- @Nil ){ y!(x) } )
