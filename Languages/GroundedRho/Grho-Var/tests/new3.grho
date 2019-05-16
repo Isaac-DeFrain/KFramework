@@ -1,0 +1,8 @@
+// New - nested
+
+  new x in { x!(1) | new x in { x!(1) } | new x in { @1!(*x | (\x , \y) ) } }
+
+/*
+  Output:
+
+*/

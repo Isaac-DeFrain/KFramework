@@ -1,0 +1,62 @@
+// Syntactic sugar for quoted tuples in listens
+
+  for( @ ( 1 , 2 , * x ) <= y ){ *x + 5 } | y!(3,2,7)
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        12
+      </k>
+      <lenv>
+        ( @ 1 ) |-> ( @ 3 )  // this needs to be corrected!!!
+        ( @ 2 ) |-> ( @ 2 )
+        x |-> @ 7
+      </lenv>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          y
+        </rchan>
+        <bvars>
+          @ 1 , @ 2 , x
+        </bvars>
+        <bnum>
+          3
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <cont>
+          * x + 5
+        </cont>
+        <rbind>
+          .Map
+        </rbind>
+      </rec>
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+</T>
+*/

@@ -1,0 +1,10 @@
+// RhoMap
+
+  #sub( \a|2|3|@Nil!(Nil) ; \x|2|*b|x!(Nil) ; { \x:b!(true) , 1:*x } )
+
+/*
+Output:
+
+    { \ a : ( @ 3 ) ! ( true ) , 1 : Nil }
+
+*/

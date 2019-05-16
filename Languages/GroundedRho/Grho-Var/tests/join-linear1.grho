@@ -1,0 +1,8 @@
+// Grounded rho - linear join
+
+  for( a,b <- x ; c <- y ){ (*a,*b,*c) } | y!("y") | x!("a","b") | y!!("y") | x!(true,true)
+
+/*
+Output:
+
+*/

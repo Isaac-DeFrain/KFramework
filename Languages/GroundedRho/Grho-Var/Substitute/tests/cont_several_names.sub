@@ -1,0 +1,10 @@
+// Names in continuation
+
+  #sub( @2 , @\z ; x , @\y ; *x | \y )
+
+/*
+Output:  
+
+    2 | \z
+
+*/

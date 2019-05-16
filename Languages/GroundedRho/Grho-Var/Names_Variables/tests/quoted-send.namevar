@@ -1,0 +1,3 @@
+// Quoted - send
+
+  QP( @"a"!(x!(*z) | for( y <- x ){ for( @x <- a ){ "a" } } ) )

@@ -1,0 +1,10 @@
+// New
+// need normalization for par ordering
+// compare with new1.grho - processes are alpha equivalent but not rewriting to syntactically equivalent
+
+  new x , y in { y!(1) | x!(2) }
+
+/*
+  Output:
+
+*/

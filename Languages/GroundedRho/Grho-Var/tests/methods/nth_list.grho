@@ -1,0 +1,3 @@
+// nth method - list
+
+  [ "a" , "b" , "c" , "d" ].nth( 2 )

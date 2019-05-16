@@ -1,0 +1,5 @@
+// slice - string
+
+  "abcdefghijklmnop".slice(2,6)
+
+// Output: cdef

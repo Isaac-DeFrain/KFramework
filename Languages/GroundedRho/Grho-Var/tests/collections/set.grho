@@ -1,0 +1,3 @@
+// RhoSet
+
+  for( a,b <- x ){ Set(*a,*b,1) }

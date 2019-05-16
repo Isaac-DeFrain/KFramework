@@ -1,0 +1,10 @@
+// Receive - name sub
+
+  #sub( @2 ; x ; for( @3 , x <- x ){ *x | true } )
+
+/*
+Output:
+
+    for ( @ 3 , x <- @ 2 ) { * x | true }
+
+*/

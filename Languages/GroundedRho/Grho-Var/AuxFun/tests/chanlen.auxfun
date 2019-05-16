@@ -1,0 +1,11 @@
+// Chan length of linear binds
+
+  #chanlen ( x : a,b <- x ; c <- y ; d,e,f <- z ; a,b <- x ; a <- x )
+
+/*
+  Output:
+  SetItem ( ( x , 1 ) )
+  SetItem ( ( x , 2 ) )
+  SetItem ( ( y , 1 ) )
+  SetItem ( ( z , 3 ) )
+*/

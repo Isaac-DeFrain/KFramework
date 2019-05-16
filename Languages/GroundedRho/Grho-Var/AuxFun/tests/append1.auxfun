@@ -1,0 +1,7 @@
+// Append proc lists
+
+  #append ( x!(Nil) , *y , *z ; *a , Nil )
+
+/*
+  Output: x!(Nil) , *y , *z , *a , Nil
+*/

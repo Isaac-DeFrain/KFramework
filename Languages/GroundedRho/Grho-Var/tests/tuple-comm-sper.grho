@@ -1,0 +1,64 @@
+// Grounded rho - comm with persistent send
+
+  x!!(1,"a",Nil) | for( a,b,c <- x ){ (*c,*a,*b,) } | for( a,b,c <= x ){ "should not appear in thread" } | x!((2,"b",Nil,))
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        ( Nil , 1 , "a" ,)
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          x
+        </schan>
+        <msg>
+          1 , "a" , Nil
+        </msg>
+        <tuple>
+          3
+        </tuple>
+        <sper>
+          1
+        </sper>
+      </send>
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          x
+        </rchan>
+        <bvars>
+          a , b , c
+        </bvars>
+        <bnum>
+          3
+        </bnum>
+        <rper>
+          1
+        </rper>
+        <cont>
+          "should not appear in thread"
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+</T>
+*/

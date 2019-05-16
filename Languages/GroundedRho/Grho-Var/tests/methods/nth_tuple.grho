@@ -1,0 +1,3 @@
+// nth method - tuple
+
+  ( ,).nth( 2 )

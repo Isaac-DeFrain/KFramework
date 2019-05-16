@@ -1,0 +1,10 @@
+// Free Variables - contract
+
+  FV( new Name , z in { contract Name ( x , y ) = { @{x!(Nil)}!(*z) | for( z <- @"a" ){ *y } } } )
+
+/*
+Output:
+
+    .Set
+
+*/

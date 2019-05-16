@@ -1,0 +1,11 @@
+// RhoList
+
+  [ Nil , true , 3 , @1!("a") ]
+
+/*
+Output:
+ListItem ( Nil )
+ListItem ( true )
+ListItem ( 3 )
+ListItem ( ( @ 1 ) ! ( "a" ) ) ~> #freezer#SemanticCastToRhoList0_ ( )
+*/

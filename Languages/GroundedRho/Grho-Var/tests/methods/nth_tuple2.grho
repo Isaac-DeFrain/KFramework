@@ -1,0 +1,3 @@
+// nth method - tuple
+
+  ( 1 , 2 , "this one" , "no" , "no" ,).nth( 6 )

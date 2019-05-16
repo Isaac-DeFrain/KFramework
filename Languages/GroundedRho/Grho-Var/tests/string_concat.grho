@@ -1,0 +1,3 @@
+// string concat
+
+  new helloWorldCh in { helloWorldCh!("Hello " ++ "world") }

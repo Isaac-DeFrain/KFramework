@@ -1,0 +1,7 @@
+// Binding Variables of bind
+
+  #bvar ( a,b,c,d,e,f,g,h,i,j,k <- x if "a" < 5 )
+
+/*
+  Output: a , b , c , d , e , f , g , h , i , j , k
+*/

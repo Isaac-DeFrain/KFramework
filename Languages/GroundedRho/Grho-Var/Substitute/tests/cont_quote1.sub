@@ -1,0 +1,7 @@
+// Names in continuation
+
+  #sub( @2 ; y ; *y )
+
+/*
+Output: 2
+*/

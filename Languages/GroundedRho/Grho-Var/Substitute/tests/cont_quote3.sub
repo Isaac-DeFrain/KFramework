@@ -1,0 +1,7 @@
+// Names in continuation
+
+  #sub( x ; @\y ; @Nil!(\y) )
+
+/*
+Output: ( @ Nil ) ! ( * x )
+*/

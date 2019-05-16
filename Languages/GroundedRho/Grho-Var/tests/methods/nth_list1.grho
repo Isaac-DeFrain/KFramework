@@ -1,0 +1,3 @@
+// nth method - list
+
+  [ ].nth( 2 )

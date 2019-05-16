@@ -1,0 +1,10 @@
+// Par
+
+  #sub( \a|2 , @true!(Nil) ; \x|*y , \z ; y!(\x | \z) )
+
+/*
+Output:
+
+    ( @ 2 ) ! ( \ a | ( @ true ) ! ( Nil ) )
+
+*/

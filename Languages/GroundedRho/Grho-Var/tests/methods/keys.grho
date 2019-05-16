@@ -1,0 +1,8 @@
+// union - map
+
+  { *a:1 , *b:2 , 1:1 , 2:Nil , *c:2 } .keys( )
+
+/*
+Output:
+
+*/

@@ -1,0 +1,12 @@
+// RhoMap
+
+  {1:*a , 2:*b , 3:*c , 4:*d , 5:*e}
+
+/*
+Output:
+1 |-> * a
+2 |-> * b
+3 |-> * c
+4 |-> * d
+5 |-> * e ~> #freezer#SemanticCastToRhoMap0_ ( )
+*/

@@ -1,0 +1,10 @@
+// Par - strange shadowing
+
+  #sub( \a|2 , @true!(Nil) ; \x|*y , \a ; y!(\x|\a) )
+
+/*
+Output:
+
+    ( @ 2 ) ! ( ( @ true ) ! ( Nil ) | ( @ true ) ! ( Nil ) )
+
+*/

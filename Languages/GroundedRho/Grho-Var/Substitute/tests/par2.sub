@@ -1,0 +1,10 @@
+// Par
+
+  #sub( \a|2|3|@Nil!(Nil) ; \x|2|*b|x!(Nil) )
+
+/*
+Output:
+
+    \ a | 2 | 3 | ( @ Nil ) ! ( Nil )
+
+*/

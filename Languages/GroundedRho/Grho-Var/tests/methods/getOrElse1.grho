@@ -1,0 +1,8 @@
+// getOrElse method
+
+  {  }.getOrElse( *a , "no" )
+
+/*
+Output:
+
+*/

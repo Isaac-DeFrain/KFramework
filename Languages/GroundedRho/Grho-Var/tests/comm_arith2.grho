@@ -1,0 +1,69 @@
+// send plus
+
+  new $x in { $x!(41,true) | for( @\y,$y <- $x ){ \y + 1 | not *$y } }
+
+/*
+Output: (not quite...)
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          41 , true
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          @ unforgeable( 0 )
+        </rchan>
+        <bvars>
+          @ \ y , $ y
+        </bvars>
+        <bnum>
+          2
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          \ y + 1 | not * $ y
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+</T>
+*/
