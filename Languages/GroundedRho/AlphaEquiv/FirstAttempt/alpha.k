@@ -2,190 +2,180 @@
 
 /*
 TODO:
+ - add environment, store, and nextLoc cells
+   - maybe memory of variables seen is all that's needed
  - how to handle several name listens & joins?
  - more tests for substitutions in continuations for listens on chan
- - create #mapify: function which computes the final deBruijn map of a Name
 */
 
-require "../../grho.k"
-require "../../Substitute/sub.k"
+require "../grho.k"
 
 module ALPHA-SYNTAX
-  import DOMAINS
   import GRHO-SYNTAX
   
-  syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ";" Map ")" [function]
-                        | "#deBruijn(" Int ";" Names ";" Proc ";" Map ")" [function]
+  syntax       DBProc ::= "#deBruijn(" Name  ";" Proc ")" [function]
+                        | "#deBruijn(" Names ";" Proc ")" [function]
   
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc ";" Map ")" [function]
-                        | "new" Name  "in" "{" DBProc "}" [function]
-                        | "new" Names "in" "{" DBProc "}" [function]
-                        | "#dBound("   Int ";" Proc ";" Map ")" [function]
+  syntax         Proc ::= "#deBruijn(" Proc ")"            [function]
+                        | "new" Name  "in" "{" DBProc "}"  [function]
+                        | "new" Names "in" "{" DBProc "}"  [function]
                         | Proc "#alpha" Proc
-                        | "#mapify(" Name ")"
-                        | "#mapify(" Proc ")"
-                        | "#val(" Map ";" Proc ")" [function]
-                        | BoundProc
 
-  syntax    BoundProc ::= "boundP(" Int ")"
-
-  syntax         Name ::= "#deBruijn(" Int ";" Name  ";" Map ")" [function]
-                        | "#dBound("   Int ";" Name  ";" Map ")" [function]
-                        | "#val(" Map ";" Name ")" [function]
+  syntax         Name ::= "#deBruijn(" Name ")"            [function]
                         | BoundName
+                        | FreeName
+//                      | "#deBruijn(" Int "," Int ";" Name ")"  [function, klabel(deBruijnN)]
 
-  syntax        Names ::= "#dBound("   Int ";" Names ";" Map ")" [function]
+//syntax        Names ::= "#deBruijn(" Int ";" Names ")"  [function, klabel(deBruijnNs)]
+//                      | "#deBruijn(" Int "," Int ";" Names ")"  [function, klabel(deBruijnNs)]
 
-  syntax    BoundName ::= "boundN(" Int ")"
-
-  syntax          Map ::= "#mapify(" Int ";" Name ";" Map ")" [function]
-                        | "#mapify(" Int ";" Proc ";" Map ")" [function]
+  syntax    BoundName ::= "bound(" Int ")"
+                        | "bound(" Int "," Int ")"          // for several name listens?
+                        | "bound(" Int "," Int "," Int ")"  // for several listen joins?
+  
+  syntax     FreeName ::= "free("  Int ")"  // this is only used for analyzing fragments of programs
 
 endmodule
 
 module ALPHA
   import ALPHA-SYNTAX
   import AUXFUN
-  import SUB
 
   configuration
   <T color="purple">
-    <k> #deBruijn( 0 ; $PGM:Proc ; .Map ) </k>
+    <threads color="blue">
+      <thread color="cyan" multiplicity="*">
+        <k> #deBruijn( $PGM:Proc ) ~> sub </k>
+        <env> .Map  </env>
+        <index> 0 </index>
+        <count> 0 </count>
+      </thread>
+    </threads>
+    <store color="pink"> .Map  </store>
+    <nextLoc color="gray"> 0 </nextLoc>
   </T>
 
   syntax KResult ::= Proc | Name | Bool
 
-// requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
-  rule #sub( _:Name ; _:NameVar ;  B:BoundName ) =>  B
-  rule #sub( _:Proc ; _:ProcVar ;  B:BoundName ) =>  B
-  rule #sub( _:Name ; _:NameVar ; *B:BoundName ) => *B
-  rule #sub( _:Proc ; _:ProcVar ; *B:BoundName ) => *B
-  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  A requires B ==K C
-  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  C requires B =/=K C
-  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *A requires B ==K C
-  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *C requires B =/=K C
+  syntax   KItem ::= "sub"
 
-  rule #sub( _:Name ; _:NameVar ;  B:BoundProc ) =>  B
-  rule #sub( _:Proc ; _:ProcVar ;  B:BoundProc ) =>  B
-  rule #sub( _:Name ; _:NameVar ; @B:BoundProc ) => @B
-  rule #sub( _:Proc ; _:ProcVar ; @B:BoundProc ) => @B
-
-// for using a value of Mem map directly as a Name or Proc in #sub function
-  rule #val( Mem:Map ; N:Name ) => Mem[N]
-  rule #val( Mem:Map ; P:Proc ) => Mem[P]
-
-// New Name Declarations - update mem map
-  rule #deBruijn( I:Int ; new M:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:Name , N:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:Name , N:Names in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
+// New Name Declarations
+  rule <k> #deBruijn( new M:NameVar in { P:Proc } ) => new M in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule new A:Name in { #deBruijn( I:Int ; M:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int ; M:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> #deBruijn( new M:NameVar , N:NameVar in { P:Proc } ) => new M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+       
+  rule <k> #deBruijn( new M:NameVar , N:Names in { P:Proc } ) => new M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> new A:Name in { #deBruijn( M:Name ; P:Proc ) } => new A , M in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> new A:Name in { #deBruijn( M:Name , N:Name ; P:Proc ) } => new A , M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
-  rule new A:Names in { #deBruijn( I:Int ; M:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> new A:Name in { #deBruijn( M:Name , N:Names ; P:Proc ) } => new A , M in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> new A:Names in { #deBruijn( M:Name ; P:Proc ) } => new #append(A ; M) in { #deBruijn( P ) } ~> setEnv(Env) ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:Name , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#val(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
+  rule <k> new A:Names in { #deBruijn( M:Name , N:Name ; P:Proc ) } => new #append(A ; M) in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
+
+  rule <k> new A:Names in { #deBruijn( M:Name , N:Names ; P:Proc ) } => new #append(A ; M) in { #deBruijn( N ; P ) } ...</k>
+       <env> Env => updateMap(Env, M |-> L) </env>
+       <index> I </index>
+       <count> C => C +Int 1 </count>
+       <store>... .Map => L |-> bound(I,C) ...</store>
+       <nextLoc> L => L +Int 1 </nextLoc>
 
 // Ground Terms
-  rule #deBruijn( _:Int ; A:Ground ; _:Map ) => A
-  rule #deBruijn( _:Int ; Nil ; _:Map ) => Nil
-  rule #deBruijn( _:Int ; A:BoundName ; _:Map ) => A
-  rule #deBruijn( _:Int ; A:BoundProc ; _:Map ) => A
+// index is constant and no storage allocation
+  rule #deBruijn( G:Ground ) => G
+  rule #deBruijn( Nil ) => Nil
 
 // Parallel Composition
-// Mem map propogates to both branchs
-  rule #deBruijn( I:Int ; P:Proc | Q:Proc ; Mem:Map ) => #deBruijn(I;P;Mem) | #deBruijn(I;Q;Mem)
-
-// Receives
-  // listening variables become boundN with the appropriate index and are guarded during De Bruijn indexing
-  // linear
-  rule #deBruijn( I:Int ; for( Y:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#val(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => for(   <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
-
-  // repeated
-  rule #deBruijn( I:Int ; for( Y:Name <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:Name <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#val(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int ; for(   <= X:Name ){ P:Proc } ; Mem:Map ) => for(   <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
-
-  // peek
-  rule #deBruijn( I:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#val(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int ; for(   <! X:Name ){ P:Proc } ; Mem:Map ) => for(   <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
+  rule #deBruijn( P:Proc | Q:Proc ) => #deBruijn( P ) | #deBruijn( Q )
 
 // Sends
-// index and map constant on name and proc
-  rule #deBruijn( I:Int ; X:Name !  ( P:Proc ) ; Mem:Map ) => #deBruijn(I;X;Mem) !  ( #deBruijn(I;P;Mem) )
-  rule #deBruijn( I:Int ; X:Name !! ( P:Proc ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( #deBruijn(I;P;Mem) )
+// index constant on name and proc
+  rule #deBruijn( X:Name !  ( P:Proc ) ) => #deBruijn( X ) !  ( #deBruijn( P ) )
+  rule #deBruijn( X:Name !! ( P:Proc ) ) => #deBruijn( X ) !! ( #deBruijn( P ) )
 
 // Evals
-// index and map are constant
-  rule #deBruijn( I:Int ; * X:Name ; Mem:Map ) => * #deBruijn(I;X;Mem)
+// index is constant
+  rule #deBruijn( * X:Name ) => * #deBruijn( X )
 
-// Variables
-  // NameVars
-  rule #deBruijn( _:Int ; N:NameVar ; Mem:Map ) => N requires notBool (N in keys(Mem))
-  rule #deBruijn( _:Int ; N:NameVar ; Mem:Map ) => #val(Mem;N) requires N in keys(Mem)
+// Names
+  // Bound names do not change
+  rule #deBruijn( N:BoundName ) => N
 
-  // ProcVars
-  rule #deBruijn( _:Int ; P:ProcVar ; Mem:Map ) => P requires notBool (P in keys(Mem))
-  rule #deBruijn( _:Int ; P:ProcVar ; Mem:Map ) => #val(Mem;P) requires P in keys(Mem)
+/*
+// Receives
+  // variables become bound with the appropriate index
+  rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ) => for( bound(I) <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P[ bound(I) / Y] ) }
+  rule #deBruijn( I:Int ; for(           <- X:Name ){ P:Proc } ) => for(          <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+
+  rule #deBruijn( I:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ) => for( bound(I) <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P[ bound(I) / Y] ) }
+  rule #deBruijn( I:Int ; for(           <= X:Name ){ P:Proc } ) => for(          <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+
+  rule #deBruijn( I:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ) => for( bound(I) <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P[ bound(I) / Y] ) }
+  rule #deBruijn( I:Int ; for(           <! X:Name ){ P:Proc } ) => for(          <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  
+  // TODO: more tests for substitution in P
+  rule #deBruijn( I:Int ; for( Y:Quote <- X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <- #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  rule #deBruijn( I:Int ; for( Y:Quote <= X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <= #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+  rule #deBruijn( I:Int ; for( Y:Quote <! X:Name ){ P:Proc } ) => for( #deBruijn(I;Y) <! #deBruijn(I;X) ){ #deBruijn( I +Int 1 ; P ) }
+
+  // Free variables are distinguised from bound ones - only pertains to fragments of programs
+  rule #deBruijn( I:Int ; _:NameVar ) => free(I)
 
   // Quotes
-  // index increases - this is not the desired semantics...
-  rule #deBruijn( I:Int ; @ P:Proc ; Mem:Map ) => @ #deBruijn(I;P;Mem)
+  // index increases - is this what we want?
+  // TODO: more tests
+  rule #deBruijn( I:Int ; @ P:Proc ) => @ #deBruijn( I +Int 1 ; P )
+*/
+
+// Resetting the environment
+  syntax KItem ::= setEnv(Map)
+  rule <k> setEnv(Env) => . ...</k> <env> _ => Env </env>  [structural]
+  
+  // if there are multiple sequential Env resets
+  rule (setEnv(_) => .) ~> setEnv(_)  [structural]
 
 // Several Names
   // want to do something like #deBruijn(I;Y,Z) => #deBruijn(I;Y) , #deBruijn(I;Z) for several names
@@ -193,44 +183,10 @@ module ALPHA
   
 // Alpha Equivalence Predicate
   // checks synactic equality of De Bruijn index substituted terms
-  rule #deBruijn( I:Int ; P:Proc #alpha Q:Proc ; Mem:Map) => #deBruijn(I;P;Mem) ==K #deBruijn(I;Q;Mem)
+//  rule #deBruijn( I:Int ; P:Proc #alpha Q:Proc ) => #deBruijn( I ; P ) ==K #deBruijn( I ; Q )
 
-// Rule for deleting map from deBruijnified proc
-//  rule #deBruijn( I:Int ; P:Proc ; )
-
-// #dBound
-  rule #dBound( I:Int ; _:NameVar   ; _:Map ) => boundN(I)
-  rule #dBound( I:Int ; @ _:ProcVar ; _:Map ) => @ boundP(I)
-  rule #dBound( I:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
-  rule #dBound( I:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
-
-  rule #dBound( I:Int ; _:ProcVar   ; _:Map ) => boundP(I)
-  rule #dBound( I:Int ; * _:NameVar ; _:Map ) => * boundN(I)
-
-// #mapify
-  rule #deBruijn( I:Int ; #mapify( A:Name ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
-  rule #deBruijn( I:Int ; #mapify( A:Proc ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
-
-  rule #mapify( I:Int ; A:NameVar   ; Mem:Map ) => updateMap( Mem , A |-> boundN(I) )
-  rule #mapify( _:Int ; _:BoundName ; Mem:Map ) => Mem
-  rule #mapify( I:Int ; @ A:Proc    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) ) // can .Map be used here?
-
-  rule #mapify( _:Int ; Nil ; Mem:Map ) => Mem
-  rule #mapify( _:Int ; _:Ground ; Mem:Map ) => Mem
-
-  rule #mapify( I:Int ; A:ProcVar   ; Mem:Map ) => updateMap( Mem , A |-> boundP(I) )
-  rule #mapify( _:Int ; _:BoundProc ; Mem:Map ) => Mem
-  rule #mapify( I:Int ; * A:Name    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) ) // can .Map be used here?
-
-  rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
-    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; B[boundN(I) / A] ; Mem ) ) requires notBool (A in values(Mem))
-  rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
-    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; B[boundN(I) / A] ; Mem ) ) requires A in values(Mem)
-
-  rule #mapify( I:Int ; A:Proc | B:Proc ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I;B;Mem) )
-
-  rule #mapify( I:Int ; A:Name ! ( B:Proc ) ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I;B;Mem) )
-
-  rule #mapify( I:Int ; for( A:Name <- B:Name ){ C:Proc } ; Mem:Map ) => #mapify( I +Int 1 ; C ; Mem )
+// This rule says that if #deBruijn( 0 ; $PGM ) evaluates to a Bool (i.e. if we evaluate the #alpha predicate), then forget about the post substitution.
+// That's not quite what I want... maybe alpha equivalence needs to be moved to a completely different module?
+//  rule <k> _:Bool ~> (sub => .) </k>
 
 endmodule

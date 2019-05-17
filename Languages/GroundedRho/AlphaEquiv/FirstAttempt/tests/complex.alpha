@@ -1,19 +1,18 @@
 // De Bruijn levels
 
-  new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) }
+  x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b)
   
 /* Output: 
    
-    new bound( 0 ) , bound( 1 ) , bound( 2 ) in {
-
-      bound( 0 ) ! ( for ( bound( 3 ) <- @ 1 ) { 
-        * bound( 3 ) | * bound( 0 ) | for ( bound( 4 ) <- bound( 1 ) ) {
-          for ( bound( 5 ) <- bound( 4 ) ) {
-            * bound( 4 ) | * bound( 5 )
-          } 
-        } 
-      } ) | 
-      bound( 1 ) ! ( * bound( 2 ) ) 
-    }
+   free( 0 ) ! ( for ( bound( 0 ) <- @ 1 ) { 
+   
+     * bound( 0 ) | * free( 1 ) | for ( bound( 1 ) <- free( 1 ) ) { 
+     
+       for ( bound( 2 ) <- bound( 1 ) ) { 
+       
+         * bound( 1 ) | * bound( 2 ) 
+       } 
+     } 
+   } ) | free( 0 ) ! ( * free( 0 ) )
 
 */

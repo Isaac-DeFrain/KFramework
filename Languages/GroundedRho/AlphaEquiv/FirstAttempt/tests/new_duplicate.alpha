@@ -3,9 +3,9 @@
   new x,x,y in { y!( *x ) }
   
 /*
-Output: 
+Output: (... the send should be: bound( 0 ) ! ( * bound( 1 ) ) not vvvvvvvvv ...)
 
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 2 ) ! ( * boundN( 1 ) ) }
+    new bound( 0 ) , bound( 1 ) , bound( 2 ) in { bound( 2 ) ! ( * bound( 0 ) ) }
 
 RNode:
 
