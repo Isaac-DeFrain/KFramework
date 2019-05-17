@@ -1,0 +1,5 @@
+// Removing appearances in a parallel composition
+
+    #parRemove( 3 ; "a" | 3 | true | 3 | 2 | "3" | @3!(3) )
+
+// Output: "a" | true | 2 | "3" | ( @ 3 ) ! ( 3 )

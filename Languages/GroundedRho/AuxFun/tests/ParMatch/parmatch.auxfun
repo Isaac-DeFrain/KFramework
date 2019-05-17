@@ -1,0 +1,5 @@
+// Structurally equivalent Pars
+
+    #parMatch( 3 | true | "a" ; "a" | 3 | true )
+
+// Output: true

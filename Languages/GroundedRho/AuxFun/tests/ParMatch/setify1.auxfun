@@ -1,0 +1,14 @@
+// Structural set of Procs and count
+
+    #setify( @"a"!(Nil) | *x | true | 3 | 2 | "3" | "a" | true | true | 3 | 3 | Nil | Nil )
+
+/* 
+Output:
+    SetItem ( 2 , 1 )
+    SetItem ( 3 , 3 )
+    SetItem ( "3" , 1 )
+    SetItem ( "a" , 1 )
+    SetItem ( ( @ "a" ) ! ( Nil ) , 1 )
+    SetItem ( * x , 1 )
+    SetItem ( true , 3 )
+*/
