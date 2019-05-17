@@ -1,0 +1,10 @@
+// Message map - substitution
+
+    #lisMap( for( a , b , @12 <= @"chan" ){ Nil } )[#msgMap( @"chan"!(1 , 2 , 12) )]
+
+/*
+Output:
+
+
+
+*/
