@@ -1,0 +1,102 @@
+// send plus - no free variables
+
+  new x , y in { x!(3 + 5) | y!("a") | *x | *y | 8 % 3 }
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        2
+      </k>
+      <env>
+        x |-> 0
+        y |-> 1
+      </env>
+    </thread> <thread>
+      <k>
+        unforgeable( 0 )
+      </k>
+      <env>
+        x |-> 0
+        y |-> 1
+      </env>
+    </thread> <thread>
+      <k>
+        unforgeable( 1 )
+      </k>
+      <env>
+        x |-> 0
+        y |-> 1
+      </env>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          8
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+        <sbind>
+          x |-> 0
+          y |-> 1
+        </sbind>
+      </send> <send>
+        <schan>
+          @ unforgeable( 1 )
+        </schan>
+        <msg>
+          "a"
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+        <sbind>
+          x |-> 0
+          y |-> 1
+        </sbind>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+  <store>
+    0 |-> ( @ unforgeable( 0 ) )
+    1 |-> @ unforgeable( 1 )
+  </store>
+  <nextLoc>
+    2
+  </nextLoc>
+  <free>
+    .Set
+  </free>
+</T>
+*/

@@ -1,3 +1,53 @@
 // send plus
 
   x!(3 + 5) | y!("a") | *x | *y | 8 % 3
+
+/*
+Output: (with free variable execution guard)
+<T>
+  <threads>
+    <thread>
+      <k>
+        Error: FreeVars! ~> x ! ( 8 ) | y ! ( "a" ) | * x | * y | 2
+      </k>
+      <env>
+        .Map
+      </env>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+    <update>
+      .Map
+    </update>
+  </reaction>
+  <store>
+    .Map
+  </store>
+  <nextLoc>
+    0
+  </nextLoc>
+  <free>
+    SetItem ( * x : proc )
+    SetItem ( * y : proc )
+    SetItem ( x : name )
+    SetItem ( y : name )
+  </free>
+</T>
+*/

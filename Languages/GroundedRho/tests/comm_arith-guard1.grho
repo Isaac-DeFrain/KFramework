@@ -1,0 +1,3 @@
+// send plus
+
+  new x , a in { x!(41,*a) | for( y,b <- x if *y > 40 ){ *y + 1 } }
