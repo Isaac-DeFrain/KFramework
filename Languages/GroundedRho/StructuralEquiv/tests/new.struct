@@ -1,0 +1,5 @@
+// Structural equivalence
+
+  #structEq(new a,b in {*b | *a} | @"a"!(1) | Nil ; @"a"!(1) | new b,a in {*a | *b})
+  
+// Output: true
