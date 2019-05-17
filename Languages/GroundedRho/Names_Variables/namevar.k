@@ -21,8 +21,7 @@ module NAMEVAR-SYNTAX
                    | MethodAndArgs
 
 // Variable types
-  syntax    Type ::= "name"
-                   | "proc"
+  syntax    Type ::= "name" | "proc"
 
 // Sets
   syntax     Set ::=  "FV(" Arg ")" [function] // free variables
@@ -34,7 +33,7 @@ module NAMEVAR-SYNTAX
                    | "Agg(" Set ")" [function] // aggregator
 // For sets...
 syntax     KItem ::= Arg ":" Type
-                   | KItem "," KItem
+//                   | KItem "," KItem
 
 endmodule
 
@@ -42,20 +41,20 @@ endmodule
 module NAMEVAR
   import NAMEVAR-SYNTAX
 
-  configuration
-    <T>
-      <k> $PGM:Set </k>
-    </T>
+//  configuration
+//    <T>
+//      <k> $PGM:Set </k>
+//    </T>
 //    <T>
 //      <k> Agg($PGM:Set) </k>
 //    </T>
 
-  syntax KResult ::= Ground | Eval | Set
+  syntax KResult ::= Set
 
 // Aggregates common name and process variables 
 // i.e. if x & *x are free, we combine them into (x,*x)
-//  rule Agg( SetItem( X:NameVar : name ) SetItem( *X : proc ) S:Set ) => SetItem(X : name , *X : proc) Agg(S)
-//  rule Agg( SetItem( X:ProcVar : proc ) SetItem( @X : name ) S:Set ) => SetItem(X : proc , @X : name) Agg(S)
+//  rule Agg( S:Set SetItem( X:NameVar : name ) ) => Agg(S) SetItem(X : name , *X : proc) requires SetItem(*X : proc) <=Set S
+//  rule Agg( S:Set SetItem( X:ProcVar : proc ) ) => Agg(S) SetItem(X : proc , @X : name) requires SetItem(@X : name) <=Set S
 //  rule Agg( S:Set ) => S [owise]
 
 //-----------------
@@ -66,18 +65,15 @@ module NAMEVAR
   rule V( _:Ground  ) => .Set
 
 // ProcVar
-  rule V( X:ProcVar ) => SetItem(X)
-//  rule V( X:ProcVar ) => SetItem(X : proc)
+  rule V( X:ProcVar ) => SetItem(X : proc)
 
 // Names
-  rule V( X:NameVar ) => SetItem(X)
-  rule V( X:NameVar ( _:Uri ) ) => SetItem(X)
-  rule V( @ P:ProcVar ) => SetItem(@P) SetItem(P)
-  rule V( @ P:Proc    ) => V(P) requires notBool isProcVar(P)
-//  rule V( X:NameVar ) => SetItem(X : name)
-//  rule V( X:NameVar ( _:Uri ) ) => SetItem(X : name)
-//  rule V( @ P:ProcVar ) => SetItem(@P : name) SetItem(P : proc)
-//  rule V( @ P:Proc    ) => V(P) requires notBool isProcVar(P)
+  rule V( X:NameVar ) => SetItem(X : name)
+  rule V( X:NameVar ( _:Uri ) ) => SetItem(X : name)
+
+  rule V( @ P:Proc ) => V(P) requires notBool isProcVar(P)
+  // can use @P as Name or P as Proc
+  rule V( @ P:ProcVar ) => SetItem(@P : name) SetItem(P : proc)
 
   rule V( A:Name , B:Name  ) => V(A) V(B)
   rule V( A:Name , B:Names ) => V(A) V(B)
@@ -105,8 +101,8 @@ module NAMEVAR
   rule V( A:Rbind ; B:Rbind  ) => V(A) V(B)
   rule V( A:Rbind ; B:Rbinds ) => V(A) V(B)
 
-  rule V( contract X:Name ( Y:Names ) = { P:Proc } ) => V(Y<=X) V(P)
-  rule V( contract X:Name ( Y:Name  ) = { P:Proc } ) => V(Y<=X) V(P)
+  rule V( contract X:Name ( _:Names ) = { P:Proc } ) => V(X) V(P)
+  rule V( contract X:Name ( _:Name  ) = { P:Proc } ) => V(X) V(P)
   rule V( contract X:Name (         ) = { P:Proc } ) => V(X) V(P)
 
 // Sends
@@ -121,48 +117,42 @@ module NAMEVAR
   rule V( P:Proc | Q:Proc ) => V(P) V(Q)
 
 // Eval
-  rule V( * X:Name    ) => V(X) requires notBool isNameVar(X)
-  rule V( * X:NameVar ) => SetItem(*X) SetItem(X)
-//  rule V( * X:Name    ) => V(X) requires notBool isNameVar(X)
-//  rule V( * X:NameVar ) => SetItem(*X : proc) SetItem(X : name)
+  rule V( * X:Name ) => V(X) requires notBool isNameVar(X)
+  // can use *X as Proc or X as Name
+  rule V( * X:NameVar ) => SetItem(*X : proc) SetItem(X : name)
 
 // Procs
   rule V( P:Proc , Q:Proc  ) => V(P) V(Q)
   rule V( P:Proc , Q:Procs ) => V(P) V(Q)
 
-// RhoTuple
-  rule V( tuple( P:Procs ) ) => V(P)
-  rule V( tuple( P:Proc  ) ) => V(P)
-  rule V( ( ) ) => .Set
-
-// RhoList
+//Collections
+  // RhoList
   rule V( [ P:Procs ] ) => V(P)
   rule V( [ P:Proc  ] ) => V(P)
   rule V( [ ] ) => .Set
-
-// RhoSet
-  rule V( Set( P:Procs ) ) => V(P)
-  rule V( Set( P:Proc  ) ) => V(P)
-  rule V( Set( ) ) => .Set
-
-// RhoMap
+  // RhoMap
   rule V( { } ) => .Set
   rule V( { R:RhoKVPair } ) => V(R)
   rule V( { R:RhoKVPair , S:RhoKVPair  } ) => V(R) V(S)
   rule V( { R:RhoKVPair , S:RhoKVPairs } ) => V(R) V(S)
-  // KV pairs
+    // KV pairs
   rule V( P:Proc : Q:Proc ) => V(P) V(Q)
   rule V( R:RhoKVPair , S:RhoKVPair  ) => V(R) V(S)
   rule V( R:RhoKVPair , S:RhoKVPairs ) => V(R) V(S)
+  // RhoSet
+  rule V( Set( P:Procs ) ) => V(P)
+  rule V( Set( P:Proc  ) ) => V(P)
+  rule V( Set( ) ) => .Set
+  // RhoTuple
+  rule V( tuple( P:Procs ) ) => V(P)
+  rule V( tuple( P:Proc  ) ) => V(P)
+  rule V( ( ) ) => .Set
 
-// VarRef
-  rule V( =  X:ProcVar ) => SetItem(X)
-  rule V( =* X:NameVar ) => SetItem(X)
-//  rule V( =  X:ProcVar ) => SetItem(X : proc)
-//  rule V( =* X:NameVar ) => SetItem(X : name) // ???
+// Variable Reference
+  rule V( =  X:ProcVar ) => SetItem(X : proc)
+  rule V( =* X:NameVar ) => V(*X) // can use *X as Proc or X as Name
 
-// TODO
-// Bundles
+// Bundles -- TODO: bindings?
   rule V( bundle+{ P:Proc } ) => V(P)  // write-only => only send names available
   rule V( bundle-{ P:Proc } ) => V(P)  // read-only  => only receive names available
   rule V( bundle0{ P:Proc } ) => V(P)  // no read/write => no names available
@@ -171,18 +161,6 @@ module NAMEVAR
 // New
   rule V( new X:Name  in { P:Proc } ) => V(X) V(P)
   rule V( new X:Names in { P:Proc } ) => V(X) V(P)
-
-// Arithmetic Expressions
-  rule V( A:AExp * B:AExp ) => V(A) V(B)
-  rule V( A:AExp / B:AExp ) => V(A) V(B)
-  rule V( A:AExp + B:AExp ) => V(A) V(B)
-  rule V( A:AExp - B:AExp ) => V(A) V(B)
-
-// Boolean Expressions
-  rule V( not B:BExp        ) => V(B)
-  rule V( A:BExp and B:BExp ) => V(A) V(B)
-  rule V( A:BExp or  B:BExp ) => V(A) V(B)
-  rule V( A:AExp <=  B:AExp ) => V(A) V(B)
 
 // Conditional
   rule V( if ( B:BExp ) P:Proc ) => V(B) V(P)
@@ -202,30 +180,51 @@ module NAMEVAR
   rule V( . _:Method ( A:Proc  ) ) => V(A)
   rule V( . _:Method ( ) ) => .Set
 
+// Arithmetic Expressions
+  rule V( - A:AExp         ) => V(A)
+  rule V( A:AExp ++ B:AExp ) => V(A) V(B)
+  rule V( A:AExp *  B:AExp ) => V(A) V(B)
+  rule V( A:AExp /  B:AExp ) => V(A) V(B)
+  rule V( A:AExp +  B:AExp ) => V(A) V(B)
+  rule V( A:AExp -  B:AExp ) => V(A) V(B)
+  rule V( A:AExp %  B:AExp ) => V(A) V(B)
+
+// Boolean Expressions
+  rule V( not B:BExp        ) => V(B)
+  rule V( A:BExp and B:BExp ) => V(A) V(B)
+  rule V( A:BExp or  B:BExp ) => V(A) V(B)
+  rule V( A:AExp <=  B:AExp ) => V(A) V(B)
+  rule V( A:AExp <   B:AExp ) => V(A) V(B)
+  rule V( A:AExp >=  B:AExp ) => V(A) V(B)
+  rule V( A:AExp >   B:AExp ) => V(A) V(B)
+  rule V( A:Proc ==  B:Proc ) => V(A) V(B)
+  rule V( A:Proc !=  B:Proc ) => V(A) V(B)
+  rule V( A:Name ==  B:Name ) => V(A) V(B)
+  rule V( A:Name !=  B:Name ) => V(A) V(B)
+  rule V( A:Proc matches B:Proc ) => V(A) V(B)
+
 //----------------------
 //--- Free Variables ---
 //----------------------
 
+// Auxiliary function for bindings in Receives & New
   rule FV-( X:NameVar ) => FV(*X)
   rule FV-( A:Name , B:Name  ) => FV-(A) FV-(B)
   rule FV-( A:Name , B:Names ) => FV-(A) FV-(B)
-  rule FV-( A:Arg ) => FV(A) [owise]
+  rule FV-( A:Name ) => FV(A) requires notBool isNameVar(A)
 
 // Nil, Ground, Unforgeable
   rule FV( _:Ground ) => .Set
 
 // NameVar
-//  rule FV( X:NameVar ) => SetItem(X)
   rule FV( X:NameVar ) => SetItem(X : name)
 
 // ProcVar
-//  rule FV( X:ProcVar ) => SetItem(X)
   rule FV( X:ProcVar ) => SetItem(X : proc)
 
 // Quote
-//  rule FV( @ P:Proc    ) => FV(P) requires notBool isProcVar(P)
-//  rule FV( @ P:ProcVar ) => SetItem(@P) SetItem(P)
-  rule FV( @ P:Proc    ) => FV(P) requires notBool isProcVar(P)
+  rule FV( @ P:Proc ) => FV(P) requires notBool isProcVar(P)
+  // can use @P as Name or P as Proc
   rule FV( @ P:ProcVar ) => SetItem(@P : name) SetItem(P : proc)
 
 // Names
@@ -236,7 +235,7 @@ module NAMEVAR
   rule FV( P:Proc , Q:Proc  ) => FV(P) FV(Q)
   rule FV( P:Proc , Q:Procs ) => FV(P) FV(Q)
 
-// Receives, Binds, Contract
+// Receives, Binds, Contract, Invocation
   rule FV( for( Y:Names <- X:Name ) { P:Proc } ) => FV(X) (FV(P) -Set FV-(Y))
   rule FV( for( Y:Name  <- X:Name ) { P:Proc } ) => FV(X) (FV(P) -Set FV-(Y))
   rule FV( for(         <- X:Name ) { P:Proc } ) => FV(X)  FV(P)
@@ -265,10 +264,18 @@ module NAMEVAR
   rule FV( for( Y:Names <! X:Name ; B:Pbinds ) { P:Proc } ) => FV(X) (FV(for(B){P}) -Set FV-(Y))
   rule FV( for( Y:Name  <! X:Name ; B:Pbinds ) { P:Proc } ) => FV(X) (FV(for(B){P}) -Set FV-(Y))
   rule FV( for(         <! X:Name ; B:Pbinds ) { P:Proc } ) => FV(X)  FV(for(B){P})
+  // Guarded
+  rule FV( for( B:Bind  _:Guard ){ P:Proc } ) => FV(for(B){P})
+  rule FV( for( B:Binds _:Guard ){ P:Proc } ) => FV(for(B){P})
 
   rule FV( contract X:Name ( Y:Names ) = { P:Proc } ) => FV( for(Y <= X){P} )
   rule FV( contract X:Name ( Y:Name  ) = { P:Proc } ) => FV( for(Y <= X){P} )
   rule FV( contract X:Name (         ) = { P:Proc } ) => FV( for(  <= X){P} )
+
+  // TODO: ???
+  rule FV( invoke X:Name ( Y:Procs ) ) => FV(X) FV(Y)
+  rule FV( invoke X:Name ( Y:Proc  ) ) => FV(X) FV(Y)
+  rule FV( invoke X:Name (         ) ) => FV(X)
 
 // Send
   rule FV( X:Name ! ( P:Procs ) ) => FV(X) FV(P)
@@ -282,64 +289,87 @@ module NAMEVAR
   rule FV( P:Proc | Q:Proc ) => FV(P) FV(Q)
 
 // Eval
-//  rule FV( * X:Name    ) => FV(X) requires notBool isNameVar(X)
-//  rule FV( * X:NameVar ) => SetItem(*X) SetItem(X)
-  rule FV( * X:Name    ) => FV(X) requires notBool isNameVar(X)
+  rule FV( * X:Name ) => FV(X) requires notBool isNameVar(X)
+  // can use *X as Proc or X as Name
   rule FV( * X:NameVar ) => SetItem(*X : proc) SetItem(X : name)
 
-// RhoTuple
+// Collections
+  // RhoTuple
   rule FV( tuple( P:Procs ) ) => FV(P)
   rule FV( tuple( P:Proc  ) ) => FV(P)
   rule FV( ( ) ) => .Set
-
-// RhoList
+  // RhoList
   rule FV( [ P:Procs ] ) => FV(P)
   rule FV( [ P:Proc  ] ) => FV(P)
   rule FV( [ ] ) => .Set
-
-// RhoSet
+  // RhoSet
   rule FV( Set( P:Procs ) ) => FV(P)
   rule FV( Set( P:Proc  ) ) => FV(P)
   rule FV( Set( ) ) => .Set
-
-// RhoMap
+  // RhoMap
   rule FV( { } ) => .Set
   rule FV( { R:RhoKVPair } ) => FV(R)
   rule FV( { R:RhoKVPair , S:RhoKVPair  } ) => FV(R) FV(S)
   rule FV( { R:RhoKVPair , S:RhoKVPairs } ) => FV(R) FV(S)
-  // KV pairs
+    // KV pairs
   rule FV( P:Proc : Q:Proc ) => FV(P) FV(Q)
   rule FV( R:RhoKVPair , S:RhoKVPair  ) => FV(R) FV(S)
   rule FV( R:RhoKVPair , S:RhoKVPairs ) => FV(R) FV(S)
+
+// Variable Reference -- TODO: binding?
+  rule FV( =  X:ProcVar ) => SetItem(X : proc)
+  rule FV( =* X:NameVar ) => FV(*X)
 
 // New
   rule FV( new X:Name  in { P:Proc } ) => FV(P) -Set FV-(X)
   rule FV( new X:Names in { P:Proc } ) => FV(P) -Set FV-(X)
 
+// Conditionals
+  rule V( if ( B:BExp ) P:Proc ) => V(B) V(P)
+  rule V( A:IfThen else P:Proc ) => V(A) V(P)
+
+// Match -- TODO: binding in match cases?
+  rule FV( match P:Proc { M:MatchCase  } ) => FV(P) FV(M)
+  rule FV( match P:Proc { M:MatchCases } ) => FV(P) FV(M)
+  // MatchCases
+  rule FV( P:Proc :=> Q:Proc        ) => FV(P) FV(Q)
+  rule FV( A:MatchCase B:MatchCase  ) => FV(A) FV(B)
+  rule FV( A:MatchCase B:MatchCases ) => FV(A) FV(B)
+
+// Method -- TODO: bindings?
+  rule FV( P:Proc M:MethodAndArgs ) => FV(P) FV(M)
+  rule FV( . _:Method ( A:Procs ) ) => FV(A)
+  rule FV( . _:Method ( A:Proc  ) ) => FV(A)
+  rule FV( . _:Method ( ) ) => .Set
+
+// Bundles -- TODO: bindings?
+  rule FV( bundle+{ P:Proc } ) => FV(P)  // write-only => only send names available
+  rule FV( bundle-{ P:Proc } ) => FV(P)  // read-only  => only receive names available
+  rule FV( bundle0{ P:Proc } ) => FV(P)  // no read/write => no names available
+  rule FV( bundle { P:Proc } ) => FV(P)  // read/write => both send & receive names available
+
 // Arithmetic Expressions
-  rule FV( A:AExp * B:AExp ) => FV(A) FV(B)
-  rule FV( A:AExp / B:AExp ) => FV(A) FV(B)
-  rule FV( A:AExp + B:AExp ) => FV(A) FV(B)
-  rule FV( A:AExp - B:AExp ) => FV(A) FV(B)
+  rule FV( - A:AExp         ) => FV(A)
+  rule FV( A:AExp ++ B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp *  B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp /  B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp +  B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp -  B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp %  B:AExp ) => FV(A) FV(B)
 
 // Boolean Expressions
   rule FV( not B:BExp        ) => FV(B)
   rule FV( A:BExp and B:BExp ) => FV(A) FV(B)
   rule FV( A:BExp or  B:BExp ) => FV(A) FV(B)
   rule FV( A:AExp <=  B:AExp ) => FV(A) FV(B)
-// Conditionals
-
-// Match
-
-// Methods
-
-// Variable Reference
-
-// Bundles
-rule FV( bundle+{ P:Proc } ) => FV(P) // ???
-rule FV( bundle-{ P:Proc } ) => FV(P)
-rule FV( bundle0{ P:Proc } ) => FV(P)
-rule FV( bundle { P:Proc } ) => FV(P) 
+  rule FV( A:AExp <   B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp >=  B:AExp ) => FV(A) FV(B)
+  rule FV( A:AExp >   B:AExp ) => FV(A) FV(B)
+  rule FV( A:Proc ==  B:Proc ) => FV(A) FV(B)
+  rule FV( A:Proc !=  B:Proc ) => FV(A) FV(B)
+  rule FV( A:Name ==  B:Name ) => FV(A) FV(B)
+  rule FV( A:Name !=  B:Name ) => FV(A) FV(B)
+  rule FV( A:Proc matches B:Proc ) => FV(A) FV(B)
 
 /*
 // Bound Name set
