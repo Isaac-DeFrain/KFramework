@@ -1,6 +1,7 @@
 // Auxilary functions for GRHO configuration
 
-requires "../grho.k"
+require "../grho.k"
+require "../AlphaEquiv/alpha.k"
 
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
@@ -34,12 +35,12 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Proc  ";" Procs ")" [function]  // #append(_;_): Proc  x Procs --------> Procs
                   | "#append" "(" Procs ";" Procs ")" [function]  // #append(_;_): Procs x Procs --------> Procs
 
-  syntax   Name ::= "#chan"   "("   Send  ")"         [function]  //     #chan(_): Send -------> Name
-                  | "#chan"   "(" Receive ")"         [function]  //     #chan(_): Receive ----> Name
-                  | "#chan"   "(" AnyBind ")"         [function]  //     #chan(_): AnyBind ----> Name
-                  | "#bvar"   "(" AnyBind ")"         [function]  //     #bvar(_): AnyBind ----> Name
-                  | "#bvar"   "(" Receive ")"         [function]  //     #bvar(_): Receive ----> Name
-                  | "#dec"    "(" New     ")"         [function]
+  syntax   Name ::= "#chan"   "("   Send  ")" [function]  //     #chan(_): Send -------> Name
+                  | "#chan"   "(" Receive ")" [function]  //     #chan(_): Receive ----> Name
+                  | "#chan"   "(" AnyBind ")" [function]  //     #chan(_): AnyBind ----> Name
+                  | "#bvar"   "(" AnyBind ")" [function]  //     #bvar(_): AnyBind ----> Name
+                  | "#bvar"   "(" Receive ")" [function]  //     #bvar(_): Receive ----> Name
+                  | "#dec"    "(" New     ")" [function]
 
   syntax  Names ::= "#chan"   "(" AnyBinds ")"        [function]  //     #chan(_): AnyBinds ---> Names
                   | "#chan"   "(" Receive  ")"        [function]  //     #chan(_): Receive ----> Names
@@ -53,15 +54,18 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Names ")" [function]
                   | "#dec"    "(" New     ")"         [function]
 
-  syntax    Map ::= "#listenmap" "(" SingleRec ")"    [function]
-                  | "#listenmap" "(" AnyBind   ")"    [function]
-                  | "#mapify(" Name  ";" Name  ")"    [function]
-                  | "#mapify(" Names ";" Name  ")"    [function]
-
-  syntax   Maps ::= "#listenmap" "(" MultiRec  ")"    [function]
-                  | "#listenmap" "(" AnyBinds  ")"    [function]
+  syntax    Map ::= "#lisMap(" SingleRec ")"     [function]
+                  | "#lisMap(" AnyBind   ")"     [function]
+                  | "#lisMap(" Name  ";" Int ")" [function]
+                  | "#lisMap(" Names ";" Int ")" [function]
+                  | "#msgMap(" Send ")"          [function]
+                  | "#msgMap(" Proc  ";" Int ")" [function]
+                  | "#msgMap(" Procs ";" Int ")" [function]
+/*
+  syntax   Maps ::= "#lisMap" "(" MultiRec ")"        [function]
+                  | "#lisMap" "(" AnyBinds ")"        [function]
                   | "#mapify(" Names ";" Names ")"    [function]
-  
+*/
   syntax   BExp ::= "#guard" "(" Receive ")"          [function]
 
   syntax RhoSet ::= "#keys" RhoMap                    [function]
@@ -79,10 +83,17 @@ module AUXFUN-SYNTAX
                   | Proc  "#in_keys" RhoMap   [function]
                   | Proc  "#in_set"  RhoSet   [function]
 
+// Structural equivalence
+  syntax   Bool ::= "#parMatch("  Proc ";" Proc ")" [function]
+  syntax    Int ::= "#parCount("  Proc ";" Proc ")" [function]
+  syntax   Proc ::= "#parRemove(" Proc ";" Proc ")" [function]
+  syntax    Set ::= "#setify(" Proc ")"             [function]
+
 endmodule
 
 module AUXFUN
   import AUXFUN-SYNTAX
+  import ALPHA
 
   syntax KResult ::= Int | Name
 
@@ -164,21 +175,29 @@ module AUXFUN
   rule #guard ( for( _:Binds ){ _:Proc } ) => true
   rule #guard ( for( _:Bind  if B:BExp ){ _:Proc } ) => B
   rule #guard ( for( _:Binds if B:BExp ){ _:Proc } ) => B
-/*
-// Listen maps
-  rule #listenmap( R:SingleRec ) => #mapify( #bvar(R) ; #chan(R) )
-  rule #listenmap( B:Bind ) => #mapify( #bvar(B) ; #chan(B) )
-  rule #mapify( A:Name ; B:Name ) => A |-> B
-  rule #mapify( A:Name , B:Name  ; C:Name ) => A |-> C #mapify(B;C)
-  rule #mapify( A:Name , B:Names ; C:Name ) => A |-> C #mapify(B;C)
 
-  rule #listenmap( for( B:Binds ){ _:Proc } ) => #listenmap(B)
-  rule #listenmap( A:Lbind ; B:Lbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-  rule #listenmap( A:Lbind ; B:Lbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-  rule #listenmap( A:Pbind ; B:Pbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-  rule #listenmap( A:Pbind ; B:Pbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-  rule #listenmap( A:Rbind ; B:Rbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
-  rule #listenmap( A:Rbind ; B:Rbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #listenmap(B))
+// Listen maps
+  // maps location to listening variable/name
+  rule #lisMap( R:SingleRec ) => #lisMap(#bvar(R);0)
+//  rule #lisMap( B:Bind ) => #lisMap(#bvar(B);0)
+  rule #lisMap( A:Name ; I:Int ) => I |-> A
+  rule #lisMap( A:Name , B:Name  ; I:Int ) => I |-> A #lisMap(B;I +Int 1)
+  rule #lisMap( A:Name , B:Names ; I:Int ) => I |-> A #lisMap(B;I +Int 1)
+
+// Message maps
+  rule #msgMap( S:Send ) => #msgMap(#msg(S);0)
+  rule #msgMap( A:Proc ; I:Int ) => $I |-> @A
+  rule #msgMap( A:Proc , B:Proc  ; I:Int ) => I |-> @A #msgMap(B;I +Int 1)
+  rule #msgMap( A:Proc , B:Procs ; I:Int ) => I |-> @A #msgMap(B;I +Int 1)
+/*
+  // not sure how to handle multiple listen receives yet...
+  rule #lisMap( for( B:Binds ){ _:Proc } ) => #lisMap(B)
+  rule #lisMap( A:Lbind ; B:Lbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
+  rule #lisMap( A:Lbind ; B:Lbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
+  rule #lisMap( A:Pbind ; B:Pbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
+  rule #lisMap( A:Pbind ; B:Pbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
+  rule #lisMap( A:Rbind ; B:Rbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
+  rule #lisMap( A:Rbind ; B:Rbinds ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
 */
 //---------------
 //--- #append ---
@@ -407,28 +426,40 @@ module AUXFUN
   rule S:RhoSet #union Set( ) => S
   rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
   rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
-
+*/
 //-----------------
-//--- #parmatch ---
+//--- #parMatch ---
 //-----------------
-// change NonParProc to each nonPar Proc constructor
-  rule #parcount( A ; B:NonParProc ) => #if A ==K B #then 1 #else 0 #fi
-  rule #parcount( A ; B | C:NonParProc ) => #if A ==K C #then 1 +Int #parcount(A;B) #else #parcount(A;B) #fi
+// TODO: switch ==K to #alpha
+// counts number of appearances of a nonPar Proc in a Par
+// first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
+  // single Proc Par i.e. a nonPar Proc
+  rule #parCount( A:Proc ; B:Proc ) => #if A ==K B #then 1 #else 0 #fi requires notBool isPar(B)
+  // multiple Proc Par
+  rule #parCount( A:Proc ; B:Proc | C:Proc ) => #if A ==K C #then 1 +Int #parCount(A;B) #else #parCount(A;B) #fi
+       requires notBool isPar(C)
 
-  rule #parremove( A ; B:NonParProc ) => #if A ==K B #then Nil #else B #fi
-  rule #parremove( A ; B | C:NonParProc ) => #if A ==K C #then #parremove(A;B) #else #parremove(A;B) | C #fi
+// removes a nonPar Proc from a Par and preserves order
+// first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
+  // single Proc Par i.e. a nonPar Proc
+  rule #parRemove( A:Proc ; B:Proc ) => #if A ==K B #then Nil #else B #fi requires notBool isPar(B)
+  // multiple Proc Par
+  rule #parRemove( A:Proc ; B:Proc | C:Proc ) => #if A ==K C #then #parRemove(A;B) #else #parRemove(A;B) | C #fi
+       requires notBool isPar(C)
 
-  rule #setify( A:NonParProc ) => SetItem(A,1)
-  rule #setify( A | B:NonParProc ) 
+// compute par set of a Proc
+  rule #setify( A:Proc ) => SetItem(A,1) requires notBool isPar(A)
+  rule #setify( A:Proc | B:Proc ) 
     => #if B ==K Nil
-       #then #setify(A)
+       #then #setify(A) // Nil is the unit of |
        #else
-         #if #parcount(B;A) >Int 0 
-         #then SetItem(B, 1 +Int #parcount(B;A)) (#setify(#parremove(B;A)) -Set SetItem(Nil,1))
+         #if #parCount(B;A) >Int 0 
+         #then SetItem(B, 1 +Int #parCount(B;A)) (#setify(#parRemove(B;A)) -Set SetItem(Nil,1))
          #else SetItem(B,1) (#setify(A) -Set SetItem(Nil,1)) 
          #fi 
-       #fi
+       #fi requires notBool isPar(B)
 
-  rule #parmatch( P:Proc ; Q:Proc ) => #setify(P) <=Set #setify(Q) andBool #setify(Q) <=Set #setify(P)
-*/
+// checks par set equlaity
+  rule #parMatch( P:Proc ; Q:Proc ) => #setify(P) <=Set #setify(Q) andBool #setify(Q) <=Set #setify(P)
+
 endmodule
