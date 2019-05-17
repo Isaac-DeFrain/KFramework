@@ -150,11 +150,11 @@ module STYPE
 // Uri
   rule type[ uri( S:String ) ] => type[ "leaf" ;; "uri" ;; S ]
 
-// EmptyMsg
-  rule type[ EmptyMsg ] => type[ "leaf" ;; "msg" ;; "empty" ]
+// EmptyName
+  rule type[ EmptyN ] => type[ "leaf" ;; "name" ;; "empty" ]
 
 // EmptyProc
-  rule type[ Empty ] => type[ "leaf" ;; "proc" ;; "empty" ]
+  rule type[ EmptyP ] => type[ "leaf" ;; "proc" ;; "empty" ]
 
 // Wildcards
 //  rule type[ #P ] => type[ "leaf" ;; "wildcard" ;; "proc" ]
@@ -173,11 +173,11 @@ module STYPE
 //  rule type[ * N:NamePat ] => type[ "eval" ;; type[N] ;; unit ]
 
 // Sends
-  rule type[ N:Name !  (  ) ] => type[ "send" ;; type["chan" & N] ;; type["msg" & Empty] ]
+  rule type[ N:Name !  (  ) ] => type[ "send" ;; type["chan" & N] ;; type["msg" & EmptyP] ]
   rule type[ N:Name !  ( M:Proc  ) ] => type[ "send" ;; type["chan" & N] ;; type["msg" & M] ]
   rule type[ N:Name !  ( M:Procs ) ] => type[ "send" ;; type["chan" & N] ;; type["msg" & M] ]
 
-  rule type[ N:Name !! (  ) ] => type[ "psend" ;; type["chan" & N] ;; type["msg" & Empty] ]
+  rule type[ N:Name !! (  ) ] => type[ "psend" ;; type["chan" & N] ;; type["msg" & EmptyP] ]
   rule type[ N:Name !! ( M:Proc  ) ] => type[ "psend" ;; type["chan" & N] ;; type["msg" & M] ]
   rule type[ N:Name !! ( M:Procs ) ] => type[ "psend" ;; type["chan" & N] ;; type["msg" & M] ]
 
@@ -189,19 +189,19 @@ module STYPE
 //  rule type[ N:NamePat !! R:PatTuple ] => type[ "psend" ;; type[N] ;; type[R] ]
 
 // Receives/Binds -- TODO: add guarded binds
-  rule type[         <- N:Name  ] => type[ "lbind"  ;; type["bvar" & EmptyMsg] ;; type["chan" & N] ]
+  rule type[         <- N:Name  ] => type[ "lbind"  ;; type["bvar" & EmptyN] ;; type["chan" & N] ]
   rule type[ B:Name  <- N:Name  ] => type[ "lbind"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ B:Names <- N:Name  ] => type[ "lbind"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ A:Lbind ; B:Lbind  ] => type[ "lbinds" ;; type[A] ;; type[B] ]
   rule type[ A:Lbind ; B:Lbinds ] => type[ "lbinds" ;; type[A] ;; type[B] ]
 
-  rule type[         <! N:Name  ] => type[ "peek"  ;; type["bvar" & EmptyMsg] ;; type["chan" & N] ]
+  rule type[         <! N:Name  ] => type[ "peek"  ;; type["bvar" & EmptyN] ;; type["chan" & N] ]
   rule type[ B:Name  <! N:Name  ] => type[ "peek"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ B:Names <! N:Name  ] => type[ "peek"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ A:Pbind ; B:Pbind  ] => type[ "peeks" ;; type[A] ;; type[B] ]
   rule type[ A:Pbind ; B:Pbinds ] => type[ "peeks" ;; type[A] ;; type[B] ]
 
-  rule type[         <= N:Name  ] => type[ "pbind"  ;; type["bvar" & EmptyMsg] ;; type["chan" & N] ]
+  rule type[         <= N:Name  ] => type[ "pbind"  ;; type["bvar" & EmptyN] ;; type["chan" & N] ]
   rule type[ B:Name  <= N:Name  ] => type[ "pbind"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ B:Names <= N:Name  ] => type[ "pbind"  ;; type["bvar" & B] ;; type["chan" & N] ]
   rule type[ A:Rbind ; B:Rbind  ] => type[ "pbinds" ;; type[A] ;; type[B] ]
@@ -223,7 +223,7 @@ module STYPE
 //  rule type[ contract X:Name ( Y:Names ) = { P:ProcPat } ] => type[ "contract" ;; type[ Y <= X ] ;; type[P] ]
 
 // Invocation
-  rule type[ invoke N:Name (  ) ] => type[ "invocation" ;; type["name" & N] ;; type[Empty] ]
+  rule type[ invoke N:Name (  ) ] => type[ "invocation" ;; type["name" & N] ;; type[EmptyP] ]
   rule type[ invoke N:Name ( P:Proc  ) ] => type[ "invocation" ;; type["name" & N] ;; type["param" & P] ]
   rule type[ invoke N:Name ( P:Procs ) ] => type[ "invocation" ;; type["name" & N] ;; type["params" & P] ]
 
@@ -285,7 +285,7 @@ module STYPE
 
 // Collections
 // RhoList
-  rule type[ [ ] ] => type[ "list" ;; type[Empty] ;; unit ]
+  rule type[ [ ] ] => type[ "list" ;; type[EmptyP] ;; unit ]
   rule type[ [ P:Proc           ] ] => type[ "list" ;; type[P] ;; unit ]
   rule type[ [ P:Proc , Q:Proc  ] ] => type[ "list" ;; type[P] ;; type[Q] ]
   rule type[ [ P:Proc , Q:Procs ] ] => type[ "list" ;; type[P] ;; type[Q] ]
@@ -298,7 +298,7 @@ module STYPE
   rule type[ R:RhoKVPair , S:RhoKVPair  ] => type[ "kvpairs" ;; type[R] ;; type[S] ]
   rule type[ R:RhoKVPair , S:RhoKVPairs ] => type[ "kvpairs" ;; type[R] ;; type[S] ]
 
-  rule type[ { } ] => type[ "map" ;; type[Empty] ;; unit ]
+  rule type[ { } ] => type[ "map" ;; type[EmptyP] ;; unit ]
   rule type[ { R:RhoKVPair                } ] => type[ "map" ;; type[R] ;; unit ]
   rule type[ { R:RhoKVPair , S:RhoKVPair  } ] => type[ "map" ;; type[R] ;; type[S] ]
   rule type[ { R:RhoKVPair , S:RhoKVPairs } ] => type[ "map" ;; type[R] ;; type[S] ]
@@ -310,7 +310,7 @@ module STYPE
 //  rule type[ { R:RhoKVPat , ... U:ProcVar : V:ProcVar } ] => type[ "mappat" ;; type[R]   ;; type[U:V] ]
 
 // RhoSet
-  rule type[ Set( ) ] => type[ "set" ;; type[Empty] ;; unit ]
+  rule type[ Set( ) ] => type[ "set" ;; type[EmptyP] ;; unit ]
   rule type[ Set( P:Proc  ) ] => type[ "set" ;; type[P] ;; unit ]
   rule type[ Set( P:Procs ) ] => type[ "set" ;; type[P] ;; unit ]
 
@@ -318,7 +318,7 @@ module STYPE
 //  rule type[ Set( P:ProcPat , ... V:ProcVar )   ] => type[ "setpat"   ;; type[P]   ;; type[V] ]
 
 // RhoTuple
-  rule type[ tuple(( )) ] => type[ "tuple" ;; type[Empty] ;; unit ]
+  rule type[ tuple(( )) ] => type[ "tuple" ;; type[EmptyP] ;; unit ]
   rule type[ tuple( P:Proc  ) ] => type[ "tuple" ;; type[P] ;; unit ]
   rule type[ tuple( P:Procs ) ] => type[ "tuple" ;; type[P] ;; unit ]
 
@@ -334,7 +334,7 @@ module STYPE
   rule type[ P:Proc MA:MethodAndArgs ] => type[ "method" ;; type[P] ;; type[MA] ]
   rule type[ . M:Method ( A:Procs )  ] => type[ "method&args" ;; type[M] ;; type["args" & A] ]
   rule type[ . M:Method ( A:Proc  )  ] => type[ "method&args" ;; type[M] ;; type["args" & A] ]
-  rule type[ . M:Method (         )  ] => type[ "method&args" ;; type[M] ;; type["args" & Empty] ]
+  rule type[ . M:Method (         )  ] => type[ "method&args" ;; type[M] ;; type["args" & EmptyP] ]
 
 //  rule type[ P:ProcPat . M:MethodAndArgs ] => type[ "method"        ;; type[P] ;; type[M] ]
 //  rule type[ M:Method (  A:MethodArgs )  ] => type[ "methodandargs" ;; type[M] ;; type[A] ]
