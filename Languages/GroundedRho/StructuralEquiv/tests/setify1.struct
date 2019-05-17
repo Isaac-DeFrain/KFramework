@@ -1,0 +1,10 @@
+// Setify
+
+  #setify(Nil | Nil | Nil)
+  
+/*
+Output: because Nil | Nil | Nil == Nil
+
+    SetItem ( Nil , 1 )
+
+*/

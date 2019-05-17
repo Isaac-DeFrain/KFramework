@@ -3,3 +3,13 @@
   #structEq(new a,b in {*b | *a} | @"a"!(1) | Nil ; @"a"!(1) | new b,a in {*a | *b})
   
 // Output: true
+/*
+Step one of computation:
+    #setify( new boundN( 0 ) , boundN( 1 ) in { * boundN( 1 ) | * boundN( 0 ) } | ( @ "a" ) ! ( 1 ) | Nil ) 
+      <=Set 
+    #setify( ( @ "a" ) ! ( 1 ) | new boundN( 0 ) , boundN( 1 ) in { * boundN( 1 ) | * boundN( 0 ) } ) 
+      andBool
+    #setify( ( @ "a" ) ! ( 1 ) | new boundN( 0 ) , boundN( 1 ) in { * boundN( 1 ) | * boundN( 0 ) } ) 
+      <=Set 
+    #setify( new boundN( 0 ) , boundN( 1 ) in { * boundN( 1 ) | * boundN( 0 ) } | ( @ "a" ) ! ( 1 ) | Nil )
+*/

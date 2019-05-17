@@ -1,0 +1,5 @@
+// Structural equivalence
+
+  #structEq(Nil | 1 | Nil | Nil | Nil ; 1)
+  
+// Output: true

@@ -1,0 +1,10 @@
+// Setify
+
+  #setify(Nil)
+  
+/*
+Output:
+
+    SetItem ( Nil , 1 )
+
+*/

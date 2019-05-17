@@ -36,13 +36,15 @@ module STRUCT
   rule #parRemove( A:Proc ; B:Proc | C:Proc ) => #if A ==K C #then #parRemove(A;B) #else #parRemove(A;B) | C #fi
        requires notBool isPar(C)
 
-// compute par set of a Proc
+// computes par set of a Proc
+  // par set of a nonPar Proc contains only one appearance of that Proc
   rule #setify( A:Proc ) => SetItem(A,1) requires notBool isPar(A)
   rule #setify( A:Proc | B:Proc ) 
     => #if B ==K Nil
-       #then #setify(A) // Nil is the unit of |
+       #then #setify(A) // Nil is the unit of | -- forget about it!
        #else
-         #if #parCount(B;A) >Int 0 
+         #if #parCount(B;A) >Int 0
+         // remove Nil introduced by #parRemove
          #then SetItem(B, 1 +Int #parCount(B;A)) (#setify(#parRemove(B;A)) -Set SetItem(Nil,1))
          #else SetItem(B,1) (#setify(A) -Set SetItem(Nil,1)) 
          #fi 
@@ -54,5 +56,9 @@ module STRUCT
 
   rule #nameEq( @P:Proc ; @Q:Proc ) => #structEq(P;Q)
   rule #nameEq( A:Name ; B:Name ) => A ==K B requires notBool isQuote(A)
+
+// For #setify testing
+  // configuration inherited from ALPHA (initializes execution with #deBruijn(0;$PGM:Proc;.Map))
+  rule #deBruijn(0;S:Set;.Map) => S
 
 endmodule
