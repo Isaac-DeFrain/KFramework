@@ -13,6 +13,7 @@ require "domains.k"
 require "substitution.k"
 require "AuxFun/auxfun.k"
 require "Substitute/sub.k"
+require "Names_Variables/namevar.k"
 
 // SYNTAX MODULE
 module GRHO-SYNTAX
@@ -31,7 +32,7 @@ module GRHO-SYNTAX
                             | NewUri
   syntax            Quote ::= "@" Proc
   syntax          NameVar ::= Var
-  syntax        EmptyName ::= "EmptyMsg" // listening for empty messages
+  syntax        EmptyName ::= "EmptyN" // listening for empty messages
   syntax           NewUri ::= NameVar "(" Uri ")"
 
 // Several Names
@@ -93,6 +94,8 @@ module GRHO-SYNTAX
                             |       "<=" Name
 
   syntax             Bind ::= Lbind | Pbind | Rbind
+  syntax      GuardedBind ::= Bind Guard
+  syntax          AnyBind ::= Bind | GuardedBind
 
   // Multiple listen receives
   syntax         MultiRec ::= "for" "(" Binds ")" "{" Proc "}"
@@ -107,10 +110,8 @@ module GRHO-SYNTAX
                             | Rbind ";" Rbinds
 
   syntax            Binds ::= Lbinds | Pbinds | Rbinds
-  syntax         BindList ::= Bind | Binds
-  syntax      GuardedBind ::= Bind Guard
   syntax     GuardedBinds ::= Binds Guard
-  syntax         AnyBinds ::= Bind | Binds | GuardedBind | GuardedBinds
+  syntax         AnyBinds ::= Binds | GuardedBinds
 
 // Sends
   syntax             Send ::= ConsumableSend | UnconsumableSend
@@ -262,7 +263,7 @@ module GRHO-SYNTAX
 
 // For empty content & args
   syntax             Proc ::= EmptyProc
-  syntax        EmptyProc ::= "Empty"
+  syntax        EmptyProc ::= "EmptyP"
 
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
@@ -270,7 +271,8 @@ module GRHO-SYNTAX
   syntax              Set ::= RhoSet
 
 // For K
-  syntax        KVariable ::= NameVar | ProcVar | Name | Proc
+  syntax        KVariable ::= NameVar | ProcVar 
+                            | Name | Proc  // still testing for necessity
                             | Send | Receive | Quote | Eval | Par | Collection  // for deep pattern-matching
                             | Int  // for map substitutions
   syntax            KItem ::= Name | Names | Proc | Procs
@@ -279,9 +281,10 @@ endmodule
 
 // SEMANTICS MODULE
 module GRHO
-  import GRHO-SYNTAX
+//  import GRHO-SYNTAX
   import AUXFUN
   import SUB
+  import NAMEVAR
 
 //---------------------
 //--- CONFIGURATION ---
@@ -290,43 +293,48 @@ module GRHO
     <T color="purple">                                  //
       <threads color="red">                             //**activity threads**
         <thread color="green" multiplicity="*">         // collection of threads (concurrent activity)
-          <k>  $PGM:Proc </k>                           // programs and computations are process-based
-          <env>  .Map  </env>                           // thread local environment
+//        <k> Error: FreeVars! ~> $PGM:Proc </k>        // Free variable program execution guard
+          <k> $PGM:Proc </k>                            // programs and computations are process-based
         </thread>                                       //
       </threads>                                        //**tuplespace**
       <tuplespace color="blue">                         // stores sends and receives
         <sends>                                         //**sends**
           <send color="cyan" multiplicity="*">          //
-            <schan>  .K  </schan>                       // sending channel (many messages on same channel)
-            <msg>    .K    </msg>                       // sent message
-            <tuple>  .K  </tuple>                       // equals N if N-tuple - for arity matching
-            <stype>  .K  </stype>                       // 0 for single send (consumed), 1 for persistent send (not consumed)
-            <sbind> .Map </sbind>                       // 
+            <schan> .K </schan>                         // sending channel (many messages on same channel)
+            <msg>   .K   </msg>                         // sent message
+            <tuple> .K </tuple>                         // equals N if N-tuple - for arity matching
+            <stype> .K </stype>                         // 0 for single send (consumed), 1 for persistent send (not consumed)
           </send>                                       //
         </sends>                                        //
         <receives>                                      //
           <rec color="yellow" multiplicity="*">         //
-            <rchan>  .K  </rchan>                       // receiving channel (many messages on same channel)
-            <bvars>  .K  </bvars>                       // binding varible(s) in continuation
-            <bnum>   .K   </bnum>                       // number of bindings
-            <rtype>  .K  </rtype>                       // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
-//            <guard>  .K  </guard>                     // input guard
-            <cont>   .K   </cont>                       // continuation
-            <rbind> .Map </rbind>                       // 
+            <rchan> .K </rchan>                         // receiving channel (many messages on same channel)
+            <bvars> .K </bvars>                         // binding varible(s) in continuation
+            <bnum>  .K  </bnum>                         // number of bindings
+            <rtype> .K </rtype>                         // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
+            <guard> .K </guard>                         // input guard
+            <cont>  .K  </cont>                         // continuation
           </rec>                                        // 
         </receives>                                     // 
       </tuplespace>                                     // 
       <reaction color="violet">                         //**comm events are processed here before being released back into the wild**
-        <who>     .K     </who>                         // continuation process
-        <what>    .K    </what>                         // msg process(es)
-        <where>   .K   </where>                         // binding variable(s)
-        <update> .Map </update>                         // updated variable binding(s)
+        <who>   .K   </who>                             // continuation process
+        <what>  .K  </what>                             // msg process(es)
+        <where> .K </where>                             // binding variable(s)
       </reaction>                                       // all comms are processed here
-      <store color="pink"> .Map </store>                // global store map: location |-> value 
       <nextLoc color="gray"> 0 </nextLoc>               // 
+      <freeVars color="purple">                         // 
+        FV($PGM:Proc)                                   // set of free variables
+      </freeVars>                                       // 
     </T>                                                // 
 
   syntax KResult ::= Ground | Eval | List | Map | Set   // final output of strict operations
+
+// Free variable execution guard
+//  syntax KItem ::= "Error: FreeVars!"
+// Remove free variable error guard if program is closed
+//  rule <k> (Error: FreeVars! ~> P:Proc) => P </k>
+//       <free> .Set </free>
 
 // Arithmetic expressions
   rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
@@ -354,7 +362,8 @@ module GRHO
   rule A:Ground == B:Ground => A ==K  B  [anywhere] // equality of ground terms
   rule A:Ground != B:Ground => A =/=K B  [anywhere] // inequality of ground terms
   // TODO: define structural equivalence for nonGround processes
-  rule P:Proc == Q:Proc => P ==K Q // requires notBool isGround(P)
+  rule  P:Proc == Q:Proc => P ==K Q requires notBool isGround(P)
+  rule @P:Proc == @Q:Proc => P == Q
 
 // Conditionals - short-circuited
   rule if ( true  ) P:Proc => P              [structural]
@@ -371,122 +380,59 @@ module GRHO
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCases } => #if (P ==K Q) #then R #else match P { M } #fi
 
 // New Operator Semantics
-// like blocks with local variable declarations
-// nested variable declarations will shadow each other
-//  syntax KItem ::= "undefined"  // declared as a variable, but not assigned a value yet
-
-  rule <k> new M:NameVar in { P:Proc } => #sub(@unforgeable(L);M;P) ~> setEnv(Env) ...</k>
-       <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> @ unforgeable(L) ...</store>
+// TODO: swap builtin substitution _[_/_] for #sub(_;_;_)
+  rule <k> new M:NameVar in { P:Proc } => P[@unforgeable(L) / M] ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule <k> new M:NameVar , N:Name in { P:Proc } => #sub(@unforgeable(L);M; new N in { P } ) ...</k>
-       <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> @ unforgeable(L) ...</store>
+  rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {P}[@unforgeable(L) / M] ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
        
-  rule <k> new M:NameVar , N:Names in { P:Proc } => #sub(@unforgeable(L);M; new N in { P } ) ...</k>
-       <env> Env => Env[M <- L] </env>
-       <store>... .Map => L |-> @ unforgeable(L) ...</store>
+  rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {P}[@unforgeable(L) / M] ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
 
-// Resetting the environment
-  syntax KItem ::= setEnv(Map)
-  rule <k> setEnv(Env) => . ...</k> <env> _ => Env </env>  [structural]
-  
-  // if there are multiple sequential Env resets
-  rule (setEnv(_) => .) ~> setEnv(_)  [structural]
-
 // Syntactic sugar - contract desugars into unconsumable receive
-  rule contract X:Name ( Y:Names ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
-  rule contract X:Name ( Y:Name  ) = { P:Proc } => for ( Y <= X ){ P }  [anywhere, structural]
-  rule contract X:Name (  ) = { P:Proc }        => for (   <= X ){ P }  [anywhere, structural]
+  rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
+  rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
+  rule contract X:Name (         ) = { P:Proc } => for(   <= X ){ P }  [anywhere, structural]
 
 // Par Operator Semantics - concurrent execution of processes
   rule <thread>
          <k> P:Proc | Q:Proc => . ...</k>
-         <env> Env </env>
        </thread>
-       (.Bag => <thread> <k> P </k> <env> Env </env> </thread>)
-       (.Bag => <thread> <k> Q </k> <env> Env </env> </thread>)
+       (.Bag => <thread> <k> P </k> </thread>)
+       (.Bag => <thread> <k> Q </k> </thread>)
 
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
   rule <thread>
          <k> S:Send => . ...</k>   // dissolve send in <threads/> and spawn <send/>
-         <env> B:Map </env>        // thread environment
-       </thread> 
-       <store> M:Map </store>      // global store
-       (.Bag => <send>
-                  <schan>   #chan(S)[B[M]] </schan>  // sending channel
-                  <msg>      #msg(S)[B[M]]   </msg>  // sending message(s)
-                  <tuple> #length(S)       </tuple>  // number of messages
-                  <stype>       #stype(S)  </stype>  // send type
-                  <sbind>              B   </sbind>
-                </send>) requires M =/=K .Map andBool B =/=K .Map
-
-  rule <thread>
-         <k> S:Send => . ...</k>   // dissolve send in <threads/> and spawn <send/>
-         <env> .Map </env>         // thread environment
        </thread>
        (.Bag => <send>
                   <schan>   #chan(S) </schan>  // sending channel
                   <msg>      #msg(S)   </msg>  // sending message(s)
                   <tuple> #length(S) </tuple>  // number of messages
                   <stype>  #stype(S) </stype>  // send type
-                  <sbind>    .Map    </sbind>
                 </send>)
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-//TODO: environments
   rule <thread>
          <k> R:SingleRec => . ...</k>  // dissolve Rec in <threads/> and spawn <rec/>
-         <env> B:Map </env>
-       </thread>
-       <store> M:Map </store>
-       (.Bag => <rec>
-                  <rchan>  #chan(R)[B[M]] </rchan>  // receiving channel
-                  <bvars>  #bvar(R)[B[M]] </bvars>  // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)        </bnum>  // 
-                  <rtype> #rtype(R)       </rtype>  // receive type
-                  <cont>   #cont(R)[B[M]]  </cont>  // continuation
-                  <rbind>        B        </rbind>
-                </rec>) requires M =/=K .Map andBool B =/=K .Map
-
-  rule <thread>
-         <k> R:SingleRec => . ...</k>  // dissolve Rec in <threads/> and spawn <rec/>
-         <env> .Map </env>
        </thread>
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
                   <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
                   <bnum>   #bnum(R)  </bnum>  // 
                   <rtype> #rtype(R) </rtype>  // receive type
+                  <guard> #guard(R) </guard>  // input guard
                   <cont>   #cont(R)  </cont>  // continuation
-                  <rbind>    .Map   </rbind>
                 </rec>)
 
 // Joins
   rule <thread>
          <k> R:MultiRec => . ...</k>
-         <env> B:Map </env>
-       </thread>
-       <store> M:Map </store>
-       (.Bag => <rec>
-                  <rchan>  #chan(R)[B[M]] </rchan>  // receiving channel
-                  <bvars>  #bvar(R)[B[M]] </bvars>  // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)        </bnum>  // number of variables to bind
-                  <rtype> #rtype(R)       </rtype>  // receive type
-                  <cont>   #cont(R)[B[M]]  </cont>  // continuation
-                  <rbind>        B        </rbind>
-                </rec>) requires M =/=K .Map andBool B =/=K .Map
-
-  rule <thread>
-         <k> R:MultiRec => . ...</k>
-         <env> .Map </env>
        </thread>
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
@@ -494,7 +440,7 @@ module GRHO
                   <bnum>   #bnum(R)  </bnum>  // number of variables to bind
                   <rtype> #rtype(R) </rtype>  // receive type
                   <cont>   #cont(R)  </cont>  // continuation
-                  <rbind>     .Map  </rbind>
+                  <guard> #guard(R) </guard>  // input guard
                 </rec>)
 
 //-------------------
@@ -502,40 +448,52 @@ module GRHO
 //-------------------
 // x!(Q) | for( z <- y ){P} /\ x equivN y => #sub(@Q;z;P)
 
-// TODO: what should be done with environments & stores?
-// TODO: replace builtin substitution for #sub
+// TODO: replace builtin substitution _[_/_] for #sub(_;_;_)
 
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
   rule 
     <reaction>
-      <who>    P:Proc => P[@ Q / Y]    </who>  // substitute @Q for Y
+      <who>    P:Proc => P[@Q / Y]     </who>  // substitute @Q for Y
       <what>   Q:Proc , R:Procs => R  </what>  // delete Q from list of values to substitute
       <where>  Y:Name , Z:Names => Z </where>  // delete Y from list of variables needing substitution
-      <update> M => M[ Y <-undef ]  </update>  // delete Y |-> M[Y] from the map
-    </reaction>
-//    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
+    </reaction>                                [react]
 
 // 2 substitutions
   rule
     <reaction>
-      <who>    P:Proc => P[@ Q / Y]    </who>
+      <who>    P:Proc => P[@Q / Y]     </who>
       <what>   Q:Proc , R:Proc => R   </what>
       <where>  Y:Name , Z:Name => Z  </where>
-      <update> M => M[ Y <- undef ] </update>  // delete Y |-> M[Y] from the map
-    </reaction>
-//    <store>... M[Y] |-> (_ => @Q) ...</store>  [react]
+    </reaction>                                [react]
 
 // Final substitution: spawn in a new thread holding the fully substituted continuation
   rule
     <reaction>
-      <who>    P:Proc =>  .K     </who>
-      <what>   Q:Proc =>  .K    </what>
-      <where>  Y:Name =>  .K   </where>
-      <update> M:Map  => .Map </update>
+      <who>    P:Proc => .K   </who>
+      <what>   Q:Proc => .K  </what>
+      <where>  Y:NameVar => .K </where>
     </reaction>
-//    <store>... M[Y] |-> (_ => @Q) ...</store>
-   (.Bag => <thread> <k> P[@ Q / Y] </k> <env> M </env> </thread>)  [react]
+   //spawn single <thread/> holding fully substituted continuation
+   (.Bag => <thread> <k> P[@Q / Y] </k> </thread>)  [react]
+
+  rule
+    <reaction>
+      <who>    P:Proc => .K   </who>
+      <what>   Q:Proc => .K  </what>
+      <where>  @\Y:Var => .K </where>
+    </reaction>
+   //spawn single <thread/> holding fully substituted continuation
+   (.Bag => <thread> <k> P[Q / \Y] </k> </thread>)  [react]
+
+  rule
+    <reaction>
+      <who>    P:Proc => .K   </who>
+      <what>   Q:Proc => .K  </what>
+      <where>  Y:Name => .K </where>
+    </reaction>
+   //spawn single <thread/> holding fully substituted continuation
+   (.Bag => <thread> <k> P[@Q / Y] </k> </thread>)  [react, owise]
 
 // Comm semantics
 // Linear listen, linear send
@@ -545,22 +503,21 @@ module GRHO
      <bvars> Y:Name  </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of names to bind
      <rtype> 0       </rtype>              // linear listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
   (<send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
-     <sbind> B:Map   </sbind>              // 
    </send> => .Bag)                        //
    <reaction>                              //
-     <who>      .K => P      </who>        // 
-     <what>     .K => Q     </what>        // 
-     <where>    .K => Y    </where>        // 
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] //spawn single <thread/> holding fully substituted continuation
+     <who>   .K => P   </who>              // 
+     <what>  .K => Q  </what>              // 
+     <where> .K => Y </where>              // 
+   </reaction>                             // 
+   requires B[@Q / Y]               [comm]
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -568,22 +525,21 @@ module GRHO
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of names to bind
      <rtype> 0       </rtype>              // linear listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
   (<send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
-     <sbind> B:Map   </sbind>              // 
    </send> => .Bag)                        //
    <reaction>                              // 
      <who>   .K => P   </who>              // 
      <what>  .K => Q  </what>              // 
      <where> .K => Y </where>              // 
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] //spawn single <thread/> holding fully substituted continuation
+   </reaction>                             // 
+   requires B[#quotes(Q) / Y]       [comm]
 
 // Persistent listen, linear send
   rule                                     //consume single send, keep persistent receive
@@ -592,22 +548,21 @@ module GRHO
      <bvars> Y:Name  </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 1       </rtype>              // repeated listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec>                                  //
   (<send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
-     <sbind> B:Map   </sbind>              // 
    </send> => .Bag)                        //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] // 
+   </reaction>                             // 
+   requires B[@Q / Y]               [comm]
 
   rule                                     //consume single send, keep persistent receive
    <rec>                                   //DON'T consume persistent receive
@@ -615,22 +570,21 @@ module GRHO
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 1       </rtype>              // repeated listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec>                                  //
   (<send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
-     <sbind> B:Map   </sbind>              // 
    </send> => .Bag)                        //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] //
+   </reaction>                             // 
+   requires B[#quotes(Q) / Y]       [comm]
 
 // Linear listen, persistent send
   rule                                     //consume single receive and keep single receive
@@ -639,22 +593,21 @@ module GRHO
      <bvars> Y:Name  </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 0       </rtype>              // linear listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
    <send>                                  //DON'T consume persistent send
      <schan> X       </schan>              // channel X
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
-     <sbind> B:Map   </sbind>              // 
    </send>                                 //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] // 
+   </reaction>                             // 
+   requires B[@Q / Y]               [comm]
 
   rule                                     //consume single receive and keep single receive
   (<rec>                                   //consume single receive
@@ -662,22 +615,21 @@ module GRHO
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 0       </rtype>              // linear listen
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
    <send>                                  //DON'T consume persistent send
      <schan> X       </schan>              // channel X
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
-     <sbind> B:Map   </sbind>              // 
    </send>                                 //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] // 
+   </reaction>                             // 
+   requires B[#quotes(Q) / Y]       [comm]
 
 // Peek semantics
   rule                                     //consume single send, single receive
@@ -686,22 +638,21 @@ module GRHO
      <bvars> Y:Name  </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 2       </rtype>              // peek
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
    <send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
-     <sbind> B:Map   </sbind>              // 
    </send>                                 //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] // 
+   </reaction>                             // 
+   requires B[@Q / Y]               [comm]
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -709,22 +660,21 @@ module GRHO
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 2       </rtype>              // peek
+     <guard> B:BExp  </guard>              // input guard
      <cont>  P:Proc   </cont>              // continuation P
-     <rbind> A:Map   </rbind>              // 
    </rec> => .Bag)                         //
    <send>                                  //consume single send
      <schan> X       </schan>              // channel X
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
-     <sbind> B:Map   </sbind>              // 
    </send>                                 //
    <reaction>                              //
      <who>   .K => P   </who>              //
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
-     <update> .Map => A B </update>        // 
-   </reaction>                      [comm] // 
+   </reaction>                             // 
+   requires B[#quotes(Q) / Y]       [comm]
 
 // Join semantics seem to be much more complicated than single listens...
 // moved progress to join.k
@@ -734,14 +684,12 @@ module GRHO
   rule P:Proc | Nil    => P  [anywhere, structural]
 
 // Dissolve computationally meaningless threads
-  rule <thread> <k> .K  </k> <env> _ </env> </thread> => .Bag  [structural] //empty threads
-  rule <thread> <k> Nil </k> <env> _ </env> </thread> => .Bag  [structural] //Nil threads
+  rule <thread> <k> .K  </k> </thread> => .Bag  [structural] //empty threads
+  rule <thread> <k> Nil </k> </thread> => .Bag  [structural] //Nil threads
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
 // P \equiv Q \implies @P \equiv_N @Q (side condition)
-  rule @P:Proc == @Q:Proc => P == Q
-
   rule @ * N:Name => N  [anywhere, structural]
   rule * @ P:Proc => P  [anywhere, structural]
 
@@ -848,5 +796,4 @@ module GRHO
   rule for( @ ( A:Procs ) <! X:Name ){ P:Proc } => for( #quotes(A) <! X ){ P } [anywhere, structural]
   rule for( @ ( A:Procs ) << X:Name ){ P:Proc } => for( #quotes(A) << X ){ P } [anywhere, structural]
 */
-
 endmodule
