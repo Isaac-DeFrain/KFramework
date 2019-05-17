@@ -1,0 +1,5 @@
+// Name equivalence
+
+  #nameEq(@{new a,b in {*b | *a} | Nil} ; @{new b,a in {*a | *b}})
+  
+// Output: true
