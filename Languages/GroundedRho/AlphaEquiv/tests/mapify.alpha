@@ -1,0 +1,11 @@
+// Mapify
+
+    #mapify( new x in { for( @\y <- x ){ \y | \y } | x!( new x in { *x } ) } )
+  
+/*
+Output:
+
+    updateMap ( .Map , boundN( 0 ) |-> boundN( 0 )
+    updateMap ( .Map , updateMap ( .Map , #mapify( 1 ; #deBruijn( 1 ; #sub( boundN( 0 ) ; x ; new x in { * x } ) ; x |-> boundN( 0 ) ) ; .Map ) ) ) )
+
+*/

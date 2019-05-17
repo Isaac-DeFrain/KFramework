@@ -1,6 +1,6 @@
 // De Bruijn levels - nested name pattern
 
-  for( @{x!( Nil )} <- @Nil ){ for( @{x!( Nil )} <- @Nil ){ *x } }
+  new x in { for( @{x!( Nil )} <- @Nil ){ for( @{x!( Nil )} <- @Nil ){ *x } } }
   
 /*
 Output:
