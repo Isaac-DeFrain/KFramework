@@ -1,0 +1,10 @@
+// Boolean exp
+
+    #sub( @ true ; y ; not * y )
+
+/*
+Output: (GRHO semantics are not imported so this doesn't reduce further...)
+
+    not true
+
+*/
