@@ -5,20 +5,19 @@ TODO:
  - Matching (patterns & wildcard)
  - Environments for new declarations, global store for location, & location counter cell
  - Finish method semantics
- - add contract invocation(?): Name "(" ProcList ")" - syntactic sugar for cell pattern
+ - add contract invocation(?): Name "(" EmptyP/Proc/Procs ")" - syntactic sugar for cell pattern
  - add sequential listen semantics
 */
 
 require "domains.k"
-require "substitution.k"
 require "AuxFun/auxfun.k"
-require "Substitute/sub.k"
 require "Names_Variables/namevar.k"
+require "Substitute/sub.k"
+require "StructuralEquiv/struct.k"
 
 // SYNTAX MODULE
 module GRHO-SYNTAX
   import DOMAINS
-  import SUBSTITUTION
 
 // Variables
   syntax             Var ::= Id
@@ -281,10 +280,11 @@ endmodule
 
 // SEMANTICS MODULE
 module GRHO
-//  import GRHO-SYNTAX
   import AUXFUN
-  import SUB
   import NAMEVAR
+  import SUB
+  import ALPHA
+  import STRUCT
 
 //---------------------
 //--- CONFIGURATION ---
@@ -323,9 +323,12 @@ module GRHO
         <where> .K </where>                             // binding variable(s)
       </reaction>                                       // all comms are processed here
       <nextLoc color="gray"> 0 </nextLoc>               // 
-      <freeVars color="purple">                         // 
+      <freeVars color="pink">                           // 
         FV($PGM:Proc)                                   // set of free variables
       </freeVars>                                       // 
+//      <deBruijn color="pink">                           // De Bruijn indexed
+//        #deBruijn(0;$PGM:Proc;.Map)                     // 
+//      </deBruijn>                                       // 
     </T>                                                // 
 
   syntax KResult ::= Ground | Eval | List | Map | Set   // final output of strict operations
@@ -361,9 +364,8 @@ module GRHO
   // Syntactic equality of Ground terms
   rule A:Ground == B:Ground => A ==K  B  [anywhere] // equality of ground terms
   rule A:Ground != B:Ground => A =/=K B  [anywhere] // inequality of ground terms
-  // TODO: define structural equivalence for nonGround processes
-  rule  P:Proc == Q:Proc => P ==K Q requires notBool isGround(P)
-  rule @P:Proc == @Q:Proc => P == Q
+  rule P:Proc == Q:Proc => #structEq(P;Q) requires notBool isGround(P)
+  rule M:Name == N:Name => #nameEq(M;N)
 
 // Conditionals - short-circuited
   rule if ( true  ) P:Proc => P              [structural]
@@ -374,20 +376,19 @@ module GRHO
 // Matching
   // "matches" binop desugars into "match" statement
   rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }  [anywhere]
-  
+  // TODO: replace P ==K Q with P #isIn Q
   rule match P:Proc { Q:Proc :=> R:Proc } => #if (P ==K Q) #then R #else Nil #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCase  } => #if (P ==K Q) #then R #else match P { M } #fi
   rule match P:Proc { Q:Proc :=> R:Proc M:MatchCases } => #if (P ==K Q) #then R #else match P { M } #fi
 
 // New Operator Semantics
-// TODO: swap builtin substitution _[_/_] for #sub(_;_;_)
-  rule <k> new M:NameVar in { P:Proc } => P[@unforgeable(L) / M] ...</k>
+  rule <k> new M:NameVar in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {P}[@unforgeable(L) / M] ...</k>
+  rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
        
-  rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {P}[@unforgeable(L) / M] ...</k>
+  rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
 
 // Syntactic sugar - contract desugars into unconsumable receive
@@ -448,13 +449,11 @@ module GRHO
 //-------------------
 // x!(Q) | for( z <- y ){P} /\ x equivN y => #sub(@Q;z;P)
 
-// TODO: replace builtin substitution _[_/_] for #sub(_;_;_)
-
 // Reaction Cell Semantics - quarantined reaction cell for processing comm events
 // N substitutions, N > 2
   rule 
     <reaction>
-      <who>    P:Proc => P[@Q / Y]     </who>  // substitute @Q for Y
+      <who>    P:Proc => #sub(@Q;Y;P)  </who>  // substitute @Q for Y
       <what>   Q:Proc , R:Procs => R  </what>  // delete Q from list of values to substitute
       <where>  Y:Name , Z:Names => Z </where>  // delete Y from list of variables needing substitution
     </reaction>                                [react]
@@ -462,7 +461,7 @@ module GRHO
 // 2 substitutions
   rule
     <reaction>
-      <who>    P:Proc => P[@Q / Y]     </who>
+      <who>    P:Proc => #sub(@Q;Y;P)  </who>
       <what>   Q:Proc , R:Proc => R   </what>
       <where>  Y:Name , Z:Name => Z  </where>
     </reaction>                                [react]
@@ -472,28 +471,10 @@ module GRHO
     <reaction>
       <who>    P:Proc => .K   </who>
       <what>   Q:Proc => .K  </what>
-      <where>  Y:NameVar => .K </where>
-    </reaction>
-   //spawn single <thread/> holding fully substituted continuation
-   (.Bag => <thread> <k> P[@Q / Y] </k> </thread>)  [react]
-
-  rule
-    <reaction>
-      <who>    P:Proc => .K   </who>
-      <what>   Q:Proc => .K  </what>
-      <where>  @\Y:Var => .K </where>
-    </reaction>
-   //spawn single <thread/> holding fully substituted continuation
-   (.Bag => <thread> <k> P[Q / \Y] </k> </thread>)  [react]
-
-  rule
-    <reaction>
-      <who>    P:Proc => .K   </who>
-      <what>   Q:Proc => .K  </what>
       <where>  Y:Name => .K </where>
     </reaction>
    //spawn single <thread/> holding fully substituted continuation
-   (.Bag => <thread> <k> P[@Q / Y] </k> </thread>)  [react, owise]
+   (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)  [react]
 
 // Comm semantics
 // Linear listen, linear send
@@ -507,7 +488,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec> => .Bag)                         //
   (<send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
@@ -517,7 +498,7 @@ module GRHO
      <what>  .K => Q  </what>              // 
      <where> .K => Y </where>              // 
    </reaction>                             // 
-   requires B[@Q / Y]               [comm]
+   requires #sub(@Q;Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -529,7 +510,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec> => .Bag)                         //
   (<send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
@@ -539,7 +520,7 @@ module GRHO
      <what>  .K => Q  </what>              // 
      <where> .K => Y </where>              // 
    </reaction>                             // 
-   requires B[#quotes(Q) / Y]       [comm]
+   requires #sub(#quotes(Q);Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
 // Persistent listen, linear send
   rule                                     //consume single send, keep persistent receive
@@ -552,7 +533,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec>                                  //
   (<send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
@@ -562,7 +543,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[@Q / Y]               [comm]
+   requires #sub(@Q;Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
   rule                                     //consume single send, keep persistent receive
    <rec>                                   //DON'T consume persistent receive
@@ -574,7 +555,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec>                                  //
   (<send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
@@ -584,7 +565,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[#quotes(Q) / Y]       [comm]
+   requires #sub(#quotes(Q);Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
 // Linear listen, persistent send
   rule                                     //consume single receive and keep single receive
@@ -597,7 +578,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation
    </rec> => .Bag)                         //
    <send>                                  //DON'T consume persistent send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
@@ -607,7 +588,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[@Q / Y]               [comm]
+   requires #sub(@Q;Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
   rule                                     //consume single receive and keep single receive
   (<rec>                                   //consume single receive
@@ -619,7 +600,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation
    </rec> => .Bag)                         //
    <send>                                  //DON'T consume persistent send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
@@ -629,7 +610,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[#quotes(Q) / Y]       [comm]
+   requires #sub(#quotes(Q);Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
 // Peek semantics
   rule                                     //consume single send, single receive
@@ -642,7 +623,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec> => .Bag)                         //
    <send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
@@ -652,7 +633,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[@Q / Y]               [comm]
+   requires #sub(@Q;Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -664,7 +645,7 @@ module GRHO
      <cont>  P:Proc   </cont>              // continuation P
    </rec> => .Bag)                         //
    <send>                                  //consume single send
-     <schan> X       </schan>              // channel X
+     <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
@@ -674,7 +655,7 @@ module GRHO
      <what>  .K => Q  </what>              //
      <where> .K => Y </where>              //
    </reaction>                             // 
-   requires B[#quotes(Q) / Y]       [comm]
+   requires #sub(#quotes(Q);Y;B) ==K true andBool #nameEq(X;Z) [comm]
 
 // Join semantics seem to be much more complicated than single listens...
 // moved progress to join.k
