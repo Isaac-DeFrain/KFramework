@@ -172,6 +172,16 @@ module SUB
   rule #subRec( A:Proc ; B:Proc ; for(         <! X:Name ){ P:Proc } ) => for(   <! #sub(A;B;X) ){ #sub(A;B;P) }
   rule #subRec( A:Proc ; B:Proc ; for( Y:Name  <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ #sub(A;B;P) }
   rule #subRec( A:Proc ; B:Proc ; for( Y:Names <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ #sub(A;B;P) }
+    // guarded
+  rule #subRec( A:Proc ; B:Proc ; for(         <- X:Name G:Guard ){ P:Proc } ) => for(   <- #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Name  <- X:Name G:Guard ){ P:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Names <- X:Name G:Guard ){ P:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for(         <= X:Name G:Guard ){ P:Proc } ) => for(   <= #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Name  <= X:Name G:Guard ){ P:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Names <= X:Name G:Guard ){ P:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for(         <! X:Name G:Guard ){ P:Proc } ) => for(   <! #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Name  <! X:Name G:Guard ){ P:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;P) }
+  rule #subRec( A:Proc ; B:Proc ; for( Y:Names <! X:Name G:Guard ){ P:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;P) }
     // substitute free variables - only in channel
   rule #subChan( A:Proc ; B:Proc ; for(         <- X:Name ){ P:Proc } ) => for(   <- #sub(A;B;X) ){ P }
   rule #subChan( A:Proc ; B:Proc ; for( Y:Name  <- X:Name ){ P:Proc } ) => for( Y <- #sub(A;B;X) ){ P }
@@ -182,6 +192,16 @@ module SUB
   rule #subChan( A:Proc ; B:Proc ; for(         <! X:Name ){ P:Proc } ) => for(   <! #sub(A;B;X) ){ P }
   rule #subChan( A:Proc ; B:Proc ; for( Y:Name  <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ P }
   rule #subChan( A:Proc ; B:Proc ; for( Y:Names <! X:Name ){ P:Proc } ) => for( Y <! #sub(A;B;X) ){ P }
+    // guarded
+  rule #subChan( A:Proc ; B:Proc ; for(         <- X:Name G:Guard ){ P:Proc } ) => for(   <- #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Name  <- X:Name G:Guard ){ P:Proc } ) => for( Y <- #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Names <- X:Name G:Guard ){ P:Proc } ) => for( Y <- #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for(         <= X:Name G:Guard ){ P:Proc } ) => for(   <= #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Name  <= X:Name G:Guard ){ P:Proc } ) => for( Y <= #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Names <= X:Name G:Guard ){ P:Proc } ) => for( Y <= #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for(         <! X:Name G:Guard ){ P:Proc } ) => for(   <! #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Name  <! X:Name G:Guard ){ P:Proc } ) => for( Y <! #sub(A;B;X) G){ P }
+  rule #subChan( A:Proc ; B:Proc ; for( Y:Names <! X:Name G:Guard ){ P:Proc } ) => for( Y <! #sub(A;B;X) G){ P }
 
   // sub Proc for Proc in Par -- apply after normalization
   rule #sub( A:Proc ; B:Proc ; C:Proc | D:Proc ) => #sub(A;B;C) | #sub(A;B;D)
@@ -223,17 +243,28 @@ module SUB
   rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
 */
 
-// Arithmetic Exps -- TODO: complete
+// Arithmetic Exps
   rule #sub( A:Proc ; B:Proc ; - C:AExp ) => - #sub(A;B;C)
-  rule #sub( A:Proc ; B:Proc ; C:AExp * D:AExp ) => #sub(A;B;C) * #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:AExp / D:AExp ) => #sub(A;B;C) / #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:AExp + D:AExp ) => #sub(A;B;C) + #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:AExp - D:AExp ) => #sub(A;B;C) - #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp *  D:AExp ) => #sub(A;B;C) *  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp /  D:AExp ) => #sub(A;B;C) /  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp +  D:AExp ) => #sub(A;B;C) +  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp -  D:AExp ) => #sub(A;B;C) -  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp %  D:AExp ) => #sub(A;B;C) %  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp ++ D:AExp ) => #sub(A;B;C) ++ #sub(A;B;D)
 
-// Boolean Exps -- TODO: complete
+// Boolean Exps
   rule #sub( A:Proc ; B:Proc ; not C:BExp ) => not #sub(A;B;C)
   rule #sub( A:Proc ; B:Proc ; C:BExp and D:BExp ) => #sub(A;B;C) and #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:BExp or  D:BExp ) => #sub(A;B;C) or  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp <=  D:AExp ) => #sub(A;B;C) <=  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp <   D:AExp ) => #sub(A;B;C) <   #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp >=  D:AExp ) => #sub(A;B;C) >=  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:AExp >   D:AExp ) => #sub(A;B;C) >   #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Name ==  D:Name ) => #sub(A;B;C) ==  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc ==  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
 
 // sub Proc for Proc in Names
   rule #sub( A:Proc ; B:Proc ; C:Name , D:Name  ) => #sub(A;B;C) , #sub(A;B;D)
@@ -330,6 +361,16 @@ module SUB
   rule #subRec( A:Name ; B:Name ; for(         <! Chan:Name ){ Cont:Proc } ) => for(   <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
   rule #subRec( A:Name ; B:Name ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
   rule #subRec( A:Name ; B:Name ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+    // guarded
+  rule #subRec( A:Name ; B:Name ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:Name ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
   // if name to be substituted is bound, then it is only substituted in the channel
   rule #subChan( A:Name ; B:Name ; for( Y:Name  <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
   rule #subChan( A:Name ; B:Name ; for( Y:Names <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
@@ -337,6 +378,16 @@ module SUB
   rule #subChan( A:Name ; B:Name ; for( Y:Names <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ Cont }
   rule #subChan( A:Name ; B:Name ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
   rule #subChan( A:Name ; B:Name ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
+    // guarded
+  rule #subChan( A:Name ; B:Name ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:Name ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
 
 // sub Name for Name in Send
   rule #sub( A:Name ; B:Name ; Chan:Name !  ( Msg:Proc  ) ) => #sub(A;B;Chan) !  ( #sub(A;B;Msg) )
@@ -377,22 +428,40 @@ module SUB
 
   // sub Name for Name in New
   rule #sub( A:Name ; B:Name ; P:New ) => #if (B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
-  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:New ) => #if (C #in #dec(P)) #then #sub(B;D;P) #else #sub(B;D;#subNew(A;C;P)) #fi
-  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:New ) => #if (C #in #dec(P)) #then #sub(B;D;P) #else #sub(B;D;#subNew(A;C;P)) #fi
+  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:New ) => #if (C #in #dec(P)) 
+                                                              #then #sub(B;D;P) 
+                                                              #else #sub(B;D;#subNew(A;C;P)) 
+                                                              #fi
+  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:New ) => #if (C #in #dec(P)) 
+                                                              #then #sub(B;D;P) 
+                                                              #else #sub(B;D;#subNew(A;C;P)) 
+                                                              #fi
   rule #subNew( A:Name ; B:Name ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
   rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
 
-// Arithmetic Exps -- TODO: complete
+// Arithmetic Exps
   rule #sub( A:Name ; B:Name ; - C:AExp ) => - #sub(A;B;C)
-  rule #sub( A:Name ; B:Name ; C:AExp * D:AExp ) => #sub(A;B;C) * #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:AExp / D:AExp ) => #sub(A;B;C) / #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:AExp + D:AExp ) => #sub(A;B;C) + #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:AExp - D:AExp ) => #sub(A;B;C) - #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp *  D:AExp ) => #sub(A;B;C) *  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp /  D:AExp ) => #sub(A;B;C) /  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp +  D:AExp ) => #sub(A;B;C) +  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp -  D:AExp ) => #sub(A;B;C) -  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp %  D:AExp ) => #sub(A;B;C) %  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp ++ D:AExp ) => #sub(A;B;C) ++ #sub(A;B;D)
 
-// Boolean Exps -- TODO: complete
+// Boolean Exps
   rule #sub( A:Name ; B:Name ; not C:BExp ) => not #sub(A;B;C)
   rule #sub( A:Name ; B:Name ; C:BExp and D:BExp ) => #sub(A;B;C) and #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:BExp or  D:BExp ) => #sub(A;B;C) or  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp <=  D:AExp ) => #sub(A;B;C) <=  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp <   D:AExp ) => #sub(A;B;C) <   #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp >=  D:AExp ) => #sub(A;B;C) >=  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:AExp >   D:AExp ) => #sub(A;B;C) >   #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Name ==  D:Name ) => #sub(A;B;C) ==  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
+
 
 // Several Names sub
   rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub(B;D;#sub(A;C;P)) // two name sub in continuation
