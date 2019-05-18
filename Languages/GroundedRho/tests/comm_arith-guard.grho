@@ -1,3 +1,41 @@
 // send plus
 
   new x in { x!(41) | for( y <- x if *y > 40 ){ *y + 1 } }
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        42
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+</T>
+*/

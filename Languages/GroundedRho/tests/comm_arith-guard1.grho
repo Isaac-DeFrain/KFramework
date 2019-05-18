@@ -1,3 +1,50 @@
-// send plus
+// Guarded receive
 
-  new x , a in { x!(41,*a) | for( y,b <- x if *y > 40 ){ *y + 1 } }
+  new x , a in { x!(41,*a) | for( y,@\b <- x if *y > 40 ){ @{*y + 1}!(\b) } }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ 42
+        </schan>
+        <msg>
+          unforgeable( 1 )
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+  <nextLoc>
+    2
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+</T>
+*/
