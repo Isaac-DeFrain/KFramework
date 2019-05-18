@@ -1,4 +1,5 @@
 // De Bruijn Index & Alpha Equivalence for Grounded Rho Calculus
+// Need to call #deBruijn(0;$PGM;.Map) at the beginning of program execution
 
 /*
 TODO:
@@ -13,28 +14,34 @@ require "../Substitute/sub.k"
 module ALPHA-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
-  
+
+// For new name declarations
   syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ";" Map ")" [function]
                         | "#deBruijn(" Int ";" Names ";" Proc ";" Map ")" [function]
   
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc ";" Map ")" [function]
-                        | "new" Name  "in" "{" DBProc "}"       [function]
-                        | "new" Names "in" "{" DBProc "}"       [function]
-                        | "#dBound("   Int ";" Proc ";" Map ")" [function]
-                        | Proc "#alpha" Proc
+  syntax         Proc ::= "#deBruijn(" Int ";" Proc  ";" Map ")" [function]
+                        | "new" Name  "in" "{" DBProc "}"        [function]
+                        | "new" Names "in" "{" DBProc "}"        [function]
+                        | "#dBound("   Int ";" Proc  ";" Map ")" [function]
+                        | "#val(" Map ";" Proc ")"               // for applying maps within #sub
                         | "#mapify(" Name ")"
                         | "#mapify(" Proc ")"
-                        | "#val(" Map ";" Proc ")"              [function]
                         | BoundProc
 
   syntax    BoundProc ::= "boundP(" Int ")"
 
+  syntax        Procs ::= "#deBruijn(" Int ";" Procs ";" Map ")" [function]
+
+// Alpha equivalence predicate
+  syntax         Bool ::= Proc "#alpha" Proc [function]
+
   syntax         Name ::= "#deBruijn(" Int ";" Name  ";" Map ")" [function]
                         | "#dBound("   Int ";" Name  ";" Map ")" [function]
-                        | "#val(" Map ";" Name ")" [function]
+                        | "#val(" Map ";" Name ")"
                         | BoundName
 
-  syntax        Names ::= "#dBound(" Int ";" Names ";" Map ")" [function]
+  syntax        Names ::= "#deBruijn(" Int ";" Names ";" Map ")" [function]
+                        | "#dBound("   Int ";" Names ";" Map ")" [function]
 
   syntax    BoundName ::= "boundN(" Int ")"
 
@@ -47,10 +54,11 @@ module ALPHA
   import ALPHA-SYNTAX
   import SUB
 
-  configuration
-  <T color="purple">
-    <k> #deBruijn( 0 ; $PGM:Proc ; .Map ) </k>
-  </T>
+// Must be taken out so we can import into GRHO
+//  configuration
+//  <T color="purple">
+//    <k> #deBruijn( 0 ; $PGM:Proc ; .Map ) </k>
+//  </T>
 
   syntax KResult ::= Proc | Name | Bool
 
@@ -168,46 +176,47 @@ module ALPHA
   rule #deBruijn( I:Int ; X:Name !  ( P:Proc ) ; Mem:Map ) => #deBruijn(I;X;Mem) !  ( #deBruijn(I;P;Mem) )
   rule #deBruijn( I:Int ; X:Name !! ( P:Proc ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( #deBruijn(I;P;Mem) )
 
-// Evals
-// index and map are constant
+// Evals -- goes inside
   rule #deBruijn( I:Int ; * X:Name ; Mem:Map ) => * #deBruijn(I;X;Mem)
 
 // Variables
-  // NameVars -- nothing happens if the variable is free w.r.t. Mem
+  // NameVars -- nothing happens if NameVar is free w.r.t. Mem
   rule #deBruijn( _:Int ; N:NameVar ; Mem:Map ) => N requires notBool (N in keys(Mem))
-  // if the variable has been bound, replace it with its value
+  // if NameVar is bound w.r.t. Mem, replace it with its value
   rule #deBruijn( _:Int ; N:NameVar ; Mem:Map ) => #val(Mem;N) requires N in keys(Mem)
 
-  // ProcVars -- nothing happens if the variable is free w.r.t. Mem
+  // ProcVars -- nothing happens if ProcVar is free w.r.t. Mem
   rule #deBruijn( _:Int ; P:ProcVar ; Mem:Map ) => P requires notBool (P in keys(Mem))
-  // if the variable has been bound, replace it with its value
+  // if ProcVar is bound w.r.t. Mem, replace it with its value
   rule #deBruijn( _:Int ; P:ProcVar ; Mem:Map ) => #val(Mem;P) requires P in keys(Mem)
 
-  // Quotes -- goes inside
+  // Quotes -- goes inside (like eval)
   rule #deBruijn( I:Int ; @ P:Proc ; Mem:Map ) => @ #deBruijn(I;P;Mem)
 
 // Several Names
-  // want to do something like #deBruijn(I;Y,Z) => #deBruijn(I;Y) , #deBruijn(I;Z) for several names
-  // these name lists will only appear in listens, but can't make the appropriate substitutions in the continuation...
+  // Name lists will only appear in listens (the Name declarations in New are dealt with separately)...
+  // need to make the appropriate substitutions in the continuation too...
+  // want to do something like #deBruijn(I;Y,Z;Mem) => #deBruijn(I;Y;Mem) , #deBruijn(I +Int 1;Z;updateMap(Mem,#mapify(I;Y;Mem)))
+
+// Several Procs
+  // Proc lists appear in Collections and Sends...
+  // want to do something like #deBruijn(I;Y,Z;Mem) => #deBruijn(I;Y;Mem) , #deBruijn(I +Int 1;Z;updateMap(Mem,#mapify(I;Y;Mem)))
   
 // Alpha Equivalence Predicate
   // checks synactic equality of De Bruijn index substituted terms
-  // for calling #alpha at the beginning of a program
-  rule #deBruijn( I:Int ; P:Proc #alpha Q:Proc ; Mem:Map) => #deBruijn(I;P;Mem) ==K #deBruijn(I;Q;Mem)
-
-// Rule for deleting map from deBruijnified proc
-//  rule #deBruijn( I:Int ; P:Proc ; )
+//  rule #deBruijn(I:Int ; P:Proc #alpha Q:Proc ; Mem:Map) => #deBruijn(I;P;Mem) ==K #deBruijn(I;Q;Mem)
+  rule P:Proc #alpha Q:Proc => #deBruijn(0;P;.Map) ==K #deBruijn(0;Q;.Map)
 
 // #dBound -- TODO: finish writing/testing semantics
   // can appear as @Proc for any Proc
   rule #dBound( _:Int ; @G:Ground ; _:Map ) => @G
 
-  rule #dBound( I:Int ; _:NameVar   ; _:Map ) => boundN(I)
+  rule #dBound( I:Int ; _:NameVar   ; _:Map ) =>  boundN(I)
   rule #dBound( I:Int ; @ _:ProcVar ; _:Map ) => @boundP(I)
   rule #dBound( I:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
   rule #dBound( I:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
 
-  rule #dBound( I:Int ; _:ProcVar   ; _:Map ) => boundP(I)
+  rule #dBound( I:Int ; _:ProcVar   ; _:Map ) =>  boundP(I)
   rule #dBound( I:Int ; * _:NameVar ; _:Map ) => *boundN(I)
 
 // #mapify -- return De Bruijn index map for a given Int, Name or Proc, and Map
@@ -223,9 +232,9 @@ module ALPHA
   rule #mapify( I:Int ; * A:Name    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) ) // can .Map be used here?
 
   rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
-    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; B[boundN(I) / A] ; Mem ) ) requires notBool (A in values(Mem))
+    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; #sub(boundN(I);A;B) ; Mem ) ) requires notBool (A in values(Mem))
   rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
-    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; B[boundN(I) / A] ; Mem ) ) requires A in values(Mem)
+    => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; #sub(boundN(I);A;B) ; Mem ) ) requires A in values(Mem)
 
   rule #mapify( I:Int ; A:Proc | B:Proc ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I;B;Mem) )
 
@@ -233,9 +242,7 @@ module ALPHA
 
   rule #mapify( I:Int ; for( A:Name <- B:Name ){ C:Proc } ; Mem:Map ) => #mapify( I +Int 1 ; C ; Mem )
 
-// for calling #mapify at the beginning of a program
-// configuration is initialized with #deBruijn( 0 ; $PGM ; .Map )
-  rule #deBruijn( I:Int ; #mapify( A:Name ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
-  rule #deBruijn( I:Int ; #mapify( A:Proc ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
+//  rule #deBruijn( I:Int ; #mapify( A:Name ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
+//  rule #deBruijn( I:Int ; #mapify( A:Proc ) ; Mem:Map ) => #mapify(I;#deBruijn(I;A;Mem);Mem)
 
 endmodule
