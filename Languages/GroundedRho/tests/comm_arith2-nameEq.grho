@@ -1,0 +1,45 @@
+// Communication on name equivalent channels
+
+    @{1|Nil}!(41,true) | for( @\y,y <- @1 ){ \y + 1 | not *y }
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        42
+      </k>
+    </thread> <thread>
+      <k>
+        false
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <reaction>
+    <who>
+      .
+    </who>
+    <what>
+      .
+    </what>
+    <where>
+      .
+    </where>
+  </reaction>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+</T>
+*/
