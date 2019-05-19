@@ -1,3 +1,11 @@
+(my project management skills are still in their infancy... I apologize ahead of time for the scatter-brained organizational scheme)
+
+This is a work in progress and is quickly evolving.
+
+# Rholang
+
+The main Rholang work is going on in `/Languages/GroundedRho`. This work started as an implementation of the Rho calculus with ground terms (Bool, Int, String) and name variables. It is quickly becoming a full scale implementation of RChain Rholang.
+
 # K Framework Learning Materials
 
 I am currently learning K Framework. I will compile all of the relevant materials that I encounter/create here.
