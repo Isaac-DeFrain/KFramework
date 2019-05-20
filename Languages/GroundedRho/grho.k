@@ -67,8 +67,9 @@ module GRHO-SYNTAX
                             | Proc "," Procs
 
 // Parallel composition
-// Pars should be like a multiset of processes...
-  syntax              Par ::= Proc "|" Proc  [left]
+  // Par should be like a multiset of processes
+  // implemented as a set which counts number of appearances in STRUCT
+  syntax              Par ::= Proc "|" Proc  [right]
 
 // Receives - no mixed linear/peek/repeated/sequential
 // TODO: Input guards - e.g. for( @\y <- x if \y > 0 ){ ... }
@@ -125,8 +126,8 @@ module GRHO-SYNTAX
   syntax             Eval ::= "*" Name
 
 // New - creates unforgeable names
-  syntax              New ::= "new" Name  "in" "{" Proc "}" // [binder]
-                            | "new" Names "in" "{" Proc "}" // [binder]
+  syntax              New ::= "new" Name  "in" "{" Proc "}"
+                            | "new" Names "in" "{" Proc "}"
 
 // Match
   syntax            Match ::= "match" Proc "{" MatchCases "}"
@@ -145,12 +146,13 @@ module GRHO-SYNTAX
   syntax           IfThen ::= "if" "(" BExp ")" Proc  [strict(1)]
   syntax             Else ::= IfThen "else" Proc
 
-// Contract
-  syntax         Contract ::= "contract" Name "(" Names ")" "=" "{" Proc "}"  // sugar for persistent receive
+// Contract - syntactic sugar for persistent receive
+  syntax         Contract ::= "contract" Name "(" Names ")" "=" "{" Proc "}"
                             | "contract" Name "(" Name  ")" "=" "{" Proc "}"
                             | "contract" Name "(" ")" "=" "{" Proc "}"
 
 // Contract Invocation
+  // keyword "invoke" added to disambiguate from NewUri
   syntax       Invocation ::= "invoke" Name "(" Procs ")"
                             | "invoke" Name "(" Proc  ")"
                             | "invoke" Name "(" ")"
