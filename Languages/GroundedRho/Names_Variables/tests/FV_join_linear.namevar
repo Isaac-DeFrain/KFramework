@@ -1,6 +1,6 @@
 // Free variables
 
-  FV( for( @Nil <- @1 ; y <- u ){ *y } )
+  FV( for( @Nil <- @1 ; y , @\z <- u ){ *y | \z } )
 
 /*
 Output:

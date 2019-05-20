@@ -21,7 +21,7 @@ module NAMEVAR-SYNTAX
                    | MethodAndArgs
 
 // Variable types
-  syntax    Type ::= "name" | "proc"
+  syntax    Kind ::= "name" | "proc"
 
 // Sets
   syntax     Set ::=  "FV(" Arg ")" [function] // free variables
@@ -32,22 +32,13 @@ module NAMEVAR-SYNTAX
                    |   "V(" Arg ")" [function] // variables
                    | "Agg(" Set ")" [function] // aggregator
 // For sets...
-syntax     KItem ::= Arg ":" Type
-//                   | KItem "," KItem
+syntax     KItem ::= Arg ":" Kind
 
 endmodule
 
 
 module NAMEVAR
   import NAMEVAR-SYNTAX
-
-//  configuration
-//    <T>
-//      <k> $PGM:Set </k>
-//    </T>
-//    <T>
-//      <k> Agg($PGM:Set) </k>
-//    </T>
 
   syntax KResult ::= Set
 
@@ -153,10 +144,10 @@ module NAMEVAR
   rule V( =* X:NameVar ) => V(*X) // can use *X as Proc or X as Name
 
 // Bundles -- TODO: bindings?
-  rule V( bundle+{ P:Proc } ) => V(P)  // write-only => only send names available
-  rule V( bundle-{ P:Proc } ) => V(P)  // read-only  => only receive names available
-  rule V( bundle0{ P:Proc } ) => V(P)  // no read/write => no names available
-  rule V( bundle { P:Proc } ) => V(P)  // read/write => both send & receive names available
+  rule V( bundle+{ P:Proc } ) => V(P)
+  rule V( bundle-{ P:Proc } ) => V(P)
+  rule V( bundle0{ P:Proc } ) => V(P)
+  rule V( bundle { P:Proc } ) => V(P)
 
 // New
   rule V( new X:Name  in { P:Proc } ) => V(X) V(P)
