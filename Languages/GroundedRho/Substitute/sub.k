@@ -33,13 +33,12 @@ module SUB-SYNTAX
                   | "#subChan(" Names ";" Names ";" Proc ")" [function]
                   | "#subNew("  Name  ";" Name  ";" New  ")" [function]
                   | "#subNew("  Names ";" Names ";" New  ")" [function]
-                  | "#sub(" Proc  ";" Proc ")"               [function]
 
   syntax   Name ::= "#sub(" Name  ";" Name  ";" Name ")"     [function]
                   | "#sub(" Names ";" Names ";" Name ")"     [function]
                   | "#sub(" Proc  ";" Proc  ";" Name ")"     [function]
                   | "#sub(" Procs ";" Procs ";" Name ")"     [function]
-                  | "#sub(" Name  ";" Name  ")"              [function]
+                  | "#sub(" Map   ";" Name  ")"              [function]
 
   syntax  Procs ::= "#sub(" Proc  ";" Proc  ";" Procs ")"    [function]
                   | "#sub(" Procs ";" Procs ";" Procs ")"    [function]
@@ -67,6 +66,12 @@ module SUB-SYNTAX
                       | "#subKV(" Name  ";" Name  ";" RhoKVPairs ")" [function]
                       | "#subKV(" Names ";" Names ";" RhoKVPairs ")" [function]
 
+// Map substitutions
+  syntax       Name ::= "#sub(" Name  ";" Map ")" [function]
+  syntax      Names ::= "#sub(" Names ";" Map ")" [function]
+  syntax       Proc ::= "#sub(" Proc  ";" Map ")" [function]
+  syntax      Procs ::= "#sub(" Procs ";" Map ")" [function]
+
 endmodule
 
 module SUB
@@ -74,7 +79,7 @@ module SUB
   import AUXFUN
 
   syntax KResult ::= Name | Names | Proc | Procs
-
+/*
 // Process substitution
   rule #sub( A:Proc ; A ) => A
   rule #sub( A:Proc ; _:ProcVar ) => A
@@ -126,7 +131,7 @@ module SUB
   // several Procs
   rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #sub(A;C) , #sub(B;D)
   rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ) => #sub(A;C) , #sub(B;D)
-
+*/
 //------------------------------------------------
 //--- Substitute Proc for Proc in Proc or Name ---
 //------------------------------------------------
@@ -293,7 +298,8 @@ module SUB
 //-----------------------
 //--- Deeper Patterns ---
 //-----------------------
-  // sub Send for Send in Proc or Name - sub Name for Name and Proc(s) for Proc(s) in Proc or Name
+
+// sub Send for Send in Proc or Name - sub Name for Name and Proc(s) for Proc(s) in Proc or Name
   rule #sub( A:Name ! ( ) ; B:Name ! ( ) ; C:Proc ) => #sub(A;B;C)
   rule #sub( A:Name ! ( B:Proc  ) ; C:Name ! ( D:Proc  ) ; P:Proc ) => #sub(B;D;#sub(A;C;P))
   rule #sub( A:Name ! ( B:Procs ) ; C:Name ! ( D:Procs ) ; P:Proc ) => #sub(B;D;#sub(A;C;P))
@@ -301,14 +307,16 @@ module SUB
   rule #sub( A:Name ! ( B:Proc  ) ; C:Name ! ( D:Proc  ) ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Name ! ( B:Procs ) ; C:Name ! ( D:Procs ) ; N:Name ) => #sub(B;D;#sub(A;C;N))
 
-  // sub Par for Par in Name or Proc
+// sub Receive for Receive on Proc or Name
+
+// sub Par for Par in Name or Proc
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub(B;D;#sub(A;C;P))
 
 //--------------------------
 //--- Name substitutions ---
 //--------------------------
-
+/*
 // Primitive substitutions
   rule #sub( A:Name ; A ) => A
   rule #sub( A:Name ; _:NameVar ) => A
@@ -318,7 +326,7 @@ module SUB
   // several Names
   rule #sub( A:Name , B:Name  ; C:Name , D:Name  ) => #sub(A;C) , #sub(B;D)
   rule #sub( A:Name , B:Names ; C:Name , D:Names ) => #sub(A;C) , #sub(B;D)
-
+*/
 //------------------------------------------------
 //--- Substitute Name for Name in Name or Proc ---
 //------------------------------------------------
@@ -469,6 +477,23 @@ module SUB
 
   rule #sub( A:Name ; B:Name ; C:Proc , D:Proc  ) => #sub(A;B;C) , #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
+
+//-------------------------
+//--- Map substitutions ---
+//-------------------------
+  rule #sub( N:Name  ; .Map ) => N
+  rule #sub( N:Names ; .Map ) => N
+  rule #sub( N:Name  ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;N);M)
+  rule #sub( N:Names ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;N);M)
+  rule #sub( N:Name  ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;N);M)
+  rule #sub( N:Names ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;N);M)
+
+  rule #sub( P:Proc  ; .Map ) => P
+  rule #sub( P:Procs ; .Map ) => P
+  rule #sub( P:Proc  ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;P);M)
+  rule #sub( P:Procs ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;P);M)
+  rule #sub( P:Proc  ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;P);M)
+  rule #sub( P:Procs ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;P);M)
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
