@@ -1,5 +1,5 @@
 // Preliminary pattern-matching for GRHO
-// Types must be the same for match to be successful -- #check handles this step
+// Types must be the same for match to be successful
 
 require "domains.k"
 require "../AuxFun/auxfun.k"
@@ -10,20 +10,20 @@ module MATCH-SYNTAX
   import GRHO-SYNTAX
 
 // #check predicate checks that the input types match
-  syntax   Bool ::= "#check(" Proc  ";" Proc ")"  [function]
-                  | "#check(" Name  ";" Name ")"  [function]
+  syntax   Bool ::= "#check(" Proc  ";" Proc  ")" [function]
+                  | "#check(" Name  ";" Name  ")" [function]
                   | "#check(" Procs ";" Procs ")" [function]
                   | "#check(" Names ";" Names ")" [function]
 
 // #checkNmatch predicate calls #check then calls #match
-  syntax   Bool ::= "#checkNmatch(" Proc  ";" Proc ")"  [function]
-                  | "#checkNmatch(" Name  ";" Name ")"  [function]
+  syntax   Bool ::= "#checkNmatch(" Proc  ";" Proc  ")" [function]
+                  | "#checkNmatch(" Name  ";" Name  ")" [function]
                   | "#checkNmatch(" Procs ";" Procs ")" [function]
                   | "#checkNmatch(" Names ";" Names ")" [function]
 
 // #match predicate checks that the terms match
-  syntax   Bool ::= "#match(" Proc  ";" Proc ")"  [function]
-                  | "#match(" Name  ";" Name ")"  [function]
+  syntax   Bool ::= "#match(" Proc  ";" Proc  ")" [function]
+                  | "#match(" Name  ";" Name  ")" [function]
                   | "#match(" Procs ";" Procs ")" [function]
                   | "#match(" Names ";" Names ")" [function]
 
@@ -34,22 +34,12 @@ module MATCH
   import AUXFUN
 //  import SUB
 
+//  K-REFLECTION 
+// contains the #sort(K) syntax but doesn't return the sort/type of a term even with KResult ::= String
+
   syntax KResult ::= Bool
 
-// don't want to check individually... does soemthing like this work? -- TODO: tests!
-// Check types
-  rule #check( A:Name ; B:Name ) => #sort(A) ==String #sort(B)
-  rule #check( A:Name , B:Name  ; C:Name , D:Name  ) => #check(A;C) andBool #check(B;D) 
-  rule #check( A:Name , B:Names ; C:Name , D:Names ) => #if #check(A;C)
-                                                        #then #check(B;D)
-                                                        #else false
-                                                        #fi
-  rule #check( A:Proc ; B:Proc ) => #sort(A) ==String #sort(B)
-  rule #check( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #check(A;C) andBool #check(B;D)
-  rule #check( A:Proc , B:Procs ; C:Proc , D:Procs ) => #if #check(A;C)
-                                                        #then #check(B;D)
-                                                        #else false
-                                                        #fi
+// Is there a good way to capture the right type inclusions without going through every pair individually???
 // Check then match
   rule #checkNmatch( A:Name  ; B:Name  ) => #if #check(A;B) #then #match(A;B) #else false #fi
   rule #checkNmatch( A:Names ; B:Names ) => #if #length A ==Int #length B
@@ -67,6 +57,20 @@ module MATCH
                                                   #fi
                                             #else false
                                             #fi
+
+// Check types
+  rule #check( A:Name ; B:Name ) => #sort(A) ==String #sort(B)
+  rule #check( A:Name , B:Name  ; C:Name , D:Name  ) => #check(A;C) andBool #check(B;D) 
+  rule #check( A:Name , B:Names ; C:Name , D:Names ) => #if #check(A;C)
+                                                        #then #check(B;D)
+                                                        #else false
+                                                        #fi
+  rule #check( A:Proc ; B:Proc ) => #sort(A) ==String #sort(B)
+  rule #check( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #check(A;C) andBool #check(B;D)
+  rule #check( A:Proc , B:Procs ; C:Proc , D:Procs ) => #if #check(A;C)
+                                                        #then #check(B;D)
+                                                        #else false
+                                                        #fi
 
 // Process matching
   rule #match( A:Ground ; B:Ground ) => A ==K B
