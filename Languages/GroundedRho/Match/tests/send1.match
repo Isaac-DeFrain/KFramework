@@ -1,0 +1,10 @@
+// Send match
+
+    #match( @{@true!(@8!(*a))} ; @{x!(*y)} )
+
+/*
+Output: 
+
+    true
+
+*/

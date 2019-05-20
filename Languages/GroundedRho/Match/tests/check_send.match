@@ -1,0 +1,10 @@
+// Send check
+
+    #check( @{@true!(@8!(*a))} ; @{x!(*y)} )
+
+/*
+Output: (not what I want...)
+
+    #sort ( @ ( ( @ true ) ! ( ( @ 8 ) ! ( * a ) ) ) ) ==K #sort ( @ ( x ! ( * y ) ) )
+
+*/
