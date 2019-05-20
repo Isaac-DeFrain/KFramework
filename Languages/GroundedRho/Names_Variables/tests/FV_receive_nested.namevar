@@ -1,0 +1,10 @@
+// Free Variables
+
+  FV( for( @{for( y <- x ){ Nil }} <- @Nil ){ *x } )
+
+/*
+Output:
+
+    SetItem ( * x : proc )
+
+*/
