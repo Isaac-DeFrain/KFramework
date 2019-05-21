@@ -1,32 +1,40 @@
 // Auxilary functions for GRHO configuration
 
+/*
+TODO:
+ - #toK( RhoList/RhoMap/RhoSet ) => List/Map/Set to utilize builtin functionality for methods
+ - #fromK( List/Map/Set ) => RhoList/RhoMap/RhoSet
+*/
+
 require "../grho.k"
 require "../AlphaEquiv/alpha.k"
 
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length"     Name         [function]  //    #length: Name -------------------> Int
-                  | "#length"     Names        [function]  //    #length: Names ------------------> Int
-                  | "#length" "(" AnyBinds ")" [function]  // #length(_): AnyBinds ---------------> Int
-                  | "#bnum"   "(" AnyBind  ")" [function]  //   #bnum(_): AnyBind ----------------> Int
-                  | "#bnum"   "(" Receive  ")" [function]  //   #bnum(_): Receive ----------------> Int
-                  | "#stype"  "(" Send     ")" [function]  //  #stype(_): Send -------------------> Int
-                  | "#rtype"  "(" AnyBind  ")" [function]  //  #rtype(_): AnyBind ----------------> Int
-                  | "#rtype"  "(" AnyBinds ")" [function]  //  #rtype(_): AnyBinds ---------------> Int
-                  | "#rtype"  "(" Receive  ")" [function]  //  #rtype(_): Receive ----------------> Int
+  syntax    Int ::= "#length(" Name     ")"        [function]  // #length(_): Name -------------------> Int
+                  | "#length(" Names    ")"        [function]  // #length(_): Names ------------------> Int
+                  | "#length(" Proc     ")"        [function]  // #length(_): Proc -------------------> Int
+                  | "#length(" Procs    ")"        [function]  // #length(_): Procs ------------------> Int
+                  | "#length(" AnyBinds ")"        [function]  // #length(_): AnyBinds ---------------> Int
+                  | "#msglen(" Send     ")"        [function]  // #msglen(_): Send -------------------> Int
+                  | "#bnum("   AnyBind  ")"        [function]  //   #bnum(_): AnyBind ----------------> Int
+                  | "#bnum("   Receive  ")"        [function]  //   #bnum(_): Receive ----------------> Int
+                  | "#stype("  Send     ")"        [function]  //  #stype(_): Send -------------------> Int
+                  | "#rtype("  AnyBind  ")"        [function]  //  #rtype(_): AnyBind ----------------> Int
+                  | "#rtype("  AnyBinds ")"        [function]  //  #rtype(_): AnyBinds ---------------> Int
+                  | "#rtype("  Receive  ")"        [function]  //  #rtype(_): Receive ----------------> Int
 
-  syntax    Int ::= "#size"   RhoMap           [function]  // #size: RhoMap ----------------------> Int
-                  | "#size"   RhoSet           [function]  // #size: RhoSet ----------------------> Int
-                  | "#length" RhoList          [function]  // #length: RhoList -------------------> Int
-                  | "#length" RhoTuple         [function]  // #length: RhoTuple ------------------> Int
+  syntax    Int ::= "#size"   RhoMap                  [function]  // #size: RhoMap ----------------------> Int
+                  | "#size"   RhoSet                  [function]  // #size: RhoSet ----------------------> Int
+                  | "#length" RhoList                 [function]  // #length: RhoList -------------------> Int
 
-  syntax   Bind ::= "#bind" "(" Receive ")"    [function]  // #bind(_): Receive --------> Bind
+  syntax   Bind ::= "#bind" "(" Receive ")"           [function]  // #bind(_): Receive --------> Bind
 
-  syntax  Binds ::= "#bind" "(" Receive ")"    [function]  // #bind(_): Receive --------> Binds
+  syntax  Binds ::= "#bind" "(" Receive ")"           [function]  // #bind(_): Receive --------> Binds
 
-  syntax   Proc ::= "#cont" "(" Receive ")"    [function]  // #cont(_): Receive --------> Proc
-                  | "#msg"  "("   Send  ")"    [function]  // #msg(_): Send ------------> Proc
+  syntax   Proc ::= "#cont" "(" Receive ")"           [function]  // #cont(_): Receive --------> Proc
+                  | "#msg"  "("   Send  ")"           [function]  // #msg(_): Send ------------> Proc
 
   syntax  Procs ::= "#lengths" "(" AnyBinds ")"       [function]  // #length(_): AnyBinds -----> Procs
                   | "#msg"     "(" Send     ")"       [function]  // #msg(_): Send ------------> Procs
@@ -35,12 +43,12 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Proc  ";" Procs ")" [function]  // #append(_;_): Proc  x Procs --------> Procs
                   | "#append" "(" Procs ";" Procs ")" [function]  // #append(_;_): Procs x Procs --------> Procs
 
-  syntax   Name ::= "#chan"   "("   Send  ")" [function]  //     #chan(_): Send -------> Name
-                  | "#chan"   "(" Receive ")" [function]  //     #chan(_): Receive ----> Name
-                  | "#chan"   "(" AnyBind ")" [function]  //     #chan(_): AnyBind ----> Name
-                  | "#bvar"   "(" AnyBind ")" [function]  //     #bvar(_): AnyBind ----> Name
-                  | "#bvar"   "(" Receive ")" [function]  //     #bvar(_): Receive ----> Name
-                  | "#dec"    "(" New     ")" [function]
+  syntax   Name ::= "#chan"   "("   Send  ")"         [function]  //     #chan(_): Send -------> Name
+                  | "#chan"   "(" Receive ")"         [function]  //     #chan(_): Receive ----> Name
+                  | "#chan"   "(" AnyBind ")"         [function]  //     #chan(_): AnyBind ----> Name
+                  | "#bvar"   "(" AnyBind ")"         [function]  //     #bvar(_): AnyBind ----> Name
+                  | "#bvar"   "(" Receive ")"         [function]  //     #bvar(_): Receive ----> Name
+                  | "#dec"    "(" New     ")"         [function]
 
   syntax  Names ::= "#chan"   "(" AnyBinds ")"        [function]  //     #chan(_): AnyBinds ---> Names
                   | "#chan"   "(" Receive  ")"        [function]  //     #chan(_): Receive ----> Names
@@ -54,128 +62,125 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Names ")" [function]
                   | "#dec"    "(" New     ")"         [function]
 
-  syntax    Map ::= "#lisMap(" SingleRec ")"     [function]
-                  | "#lisMap(" AnyBind   ")"     [function]
-                  | "#lisMap(" Name  ";" Int ")" [function]
-                  | "#lisMap(" Names ";" Int ")" [function]
-                  | "#msgMap(" Send ")"          [function]
-                  | "#msgMap(" Proc  ";" Int ")" [function]
-                  | "#msgMap(" Procs ";" Int ")" [function]
-/*
-  syntax   Maps ::= "#lisMap" "(" MultiRec ")"        [function]
-                  | "#lisMap" "(" AnyBinds ")"        [function]
-                  | "#mapify(" Names ";" Names ")"    [function]
-*/
   syntax   BExp ::= "#guard" "(" Receive ")"          [function]
 
+// Methods
   syntax RhoSet ::= "#keys" RhoMap                    [function]
                   | RhoSet "#union" RhoSet            [function]
 
   syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")" [function]
                    | "#truncate(" RhoList "," Int ")"      [function]
 
-  syntax   Bool ::= Int   "#in" RhoTuple      [function]  // _#in_: Int x RhoTuple ----> Bool
-                  | Name  "#in" Name          [function]  // _#in_: Name x Name  ------> Bool
-                  | Name  "#in" Names         [function]  // _#in_: Name x Names ------> Bool
-                  | Bind  "#in" "(" Bind  ")" [function]  // _#in_: Bind  x Bind ------> Bool
-                  | Bind  "#in" "(" Binds ")" [function]  // _#in_: Bind  x Binds -----> Bool
-                  | Binds "#in" "(" Binds ")" [function]  // _#in_: Binds x Binds -----> Bool
+// Predicates
+  syntax   Bool ::= Int   "#in" RhoTuple      [function]
+                  | Name  "#in" Name          [function]
+                  | Name  "#in" Names         [function]
+                  | Bind  "#in" "(" Bind  ")" [function]
+                  | Bind  "#in" "(" Binds ")" [function]
+                  | Binds "#in" "(" Binds ")" [function]
                   | Proc  "#in_keys" RhoMap   [function]
                   | Proc  "#in_set"  RhoSet   [function]
+/*
+  syntax    Map ::= "#lisMap(" SingleRec ")"          [function]
+                  | "#lisMap(" AnyBind   ")"          [function]
+                  | "#lisMap(" Name  ";" Int ")"      [function]
+                  | "#lisMap(" Names ";" Int ")"      [function]
+                  | "#msgMap(" Send ")"               [function]
+                  | "#msgMap(" Proc  ";" Int ")"      [function]
+                  | "#msgMap(" Procs ";" Int ")"      [function]
 
-// Structural equivalence
-  syntax   Bool ::= "#parMatch("  Proc ";" Proc ")" [function]
-  syntax    Int ::= "#parCount("  Proc ";" Proc ")" [function]
-  syntax   Proc ::= "#parRemove(" Proc ";" Proc ")" [function]
-  syntax    Set ::= "#setify(" Proc ")"             [function]
+  syntax   Maps ::= "#lisMap" "(" MultiRec ")"        [function]
+                  | "#lisMap" "(" AnyBinds ")"        [function]
+                  | "#mapify(" Names ";" Names ")"    [function]
+*/
 
 endmodule
 
 module AUXFUN
   import AUXFUN-SYNTAX
-  import ALPHA
 
-  syntax KResult ::= Int | Name
+  syntax KResult ::= Int | Name | Names | Proc | Procs
 
 // Sends
-  rule #chan  ( N:Name !  ( ) ) => N
-  rule #chan  ( N:Name !  ( _:Proc  ) ) => N
-  rule #chan  ( N:Name !  ( _:Procs ) ) => N
-  rule #chan  ( N:Name !! ( ) ) => N
-  rule #chan  ( N:Name !! ( _:Proc  ) ) => N
-  rule #chan  ( N:Name !! ( _:Procs ) ) => N
+  rule #chan( N:Name !  ( ) ) => N
+  rule #chan( N:Name !  ( _:Proc  ) ) => N
+  rule #chan( N:Name !  ( _:Procs ) ) => N
+  rule #chan( N:Name !! ( ) ) => N
+  rule #chan( N:Name !! ( _:Proc  ) ) => N
+  rule #chan( N:Name !! ( _:Procs ) ) => N
 
-  rule #msg   ( _:Name !  ( ) ) => EmptyP
-  rule #msg   ( _:Name !  ( P:Proc  ) ) => P
-  rule #msg   ( _:Name !  ( P:Procs ) ) => P
-  rule #msg   ( _:Name !! ( ) ) => EmptyP
-  rule #msg   ( _:Name !! ( P:Proc  ) ) => P
-  rule #msg   ( _:Name !! ( P:Procs ) ) => P
+  rule #msg( _:Name !  ( ) ) => EmptyP
+  rule #msg( _:Name !  ( P:Proc  ) ) => P
+  rule #msg( _:Name !  ( P:Procs ) ) => P
+  rule #msg( _:Name !! ( ) ) => EmptyP
+  rule #msg( _:Name !! ( P:Proc  ) ) => P
+  rule #msg( _:Name !! ( P:Procs ) ) => P
   
-  rule #length( S:Send ) => #length tuple(#msg(S)) requires #msg(S) =/=K EmptyP
+  rule #msglen( S:Send ) => #length(#msg(S))
 
-  rule #stype ( _:ConsumableSend ) => 0
-  rule #stype ( _:UnconsumableSend ) => 1
+  rule #stype( _:ConsumableSend   ) => 0
+  rule #stype( _:UnconsumableSend ) => 1
 
 // Receives
-  rule #bind  ( for ( B:Bind  ){ _:Proc } ) => B
-  rule #bind  ( for ( B:Binds ){ _:Proc } ) => B
-  rule #bind  ( for ( B:Bind  _:Guard ){ _:Proc } ) => B
-  rule #bind  ( for ( B:Binds _:Guard ){ _:Proc } ) => B
+  rule #bind( for ( B:Bind  ){ _:Proc } ) => B
+  rule #bind( for ( B:Binds ){ _:Proc } ) => B
+  rule #bind( for ( B:Bind  _:Guard ){ _:Proc } ) => B
+  rule #bind( for ( B:Binds _:Guard ){ _:Proc } ) => B
 
-  rule #bvar  ( for ( B:Bind  ){ _:Proc } ) => #bvar(B)
-  rule #bvar  ( for ( B:Binds ){ _:Proc } ) => #bvar(B)
-  rule #bvar  ( for ( B:Bind  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar  ( for ( B:Binds _:Guard ){ _:Proc } ) => #bvar(B)
+  rule #bvar( for ( B:Bind  ){ _:Proc } ) => #bvar(B)
+  rule #bvar( for ( B:Binds ){ _:Proc } ) => #bvar(B)
+  rule #bvar( for ( B:Bind  _:Guard ){ _:Proc } ) => #bvar(B)
+  rule #bvar( for ( B:Binds _:Guard ){ _:Proc } ) => #bvar(B)
 
-  rule #chan  ( for ( B:Bind  ){ _:Proc } ) => #chan(B)
-  rule #chan  ( for ( B:Binds ){ _:Proc } ) => #chan(B)
-  rule #chan  ( for ( B:Bind  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan  ( for ( B:Binds _:Guard ){ _:Proc } ) => #chan(B)
+  rule #chan( for ( B:Bind  ){ _:Proc } ) => #chan(B)
+  rule #chan( for ( B:Binds ){ _:Proc } ) => #chan(B)
+  rule #chan( for ( B:Bind  _:Guard ){ _:Proc } ) => #chan(B)
+  rule #chan( for ( B:Binds _:Guard ){ _:Proc } ) => #chan(B)
 
-  rule #cont  ( for ( _:Bind  ){ P:Proc } ) => P
-  rule #cont  ( for ( _:Binds ){ P:Proc } ) => P
-  rule #cont  ( for ( _:Bind  _:Guard ){ P:Proc } ) => P
-  rule #cont  ( for ( _:Binds _:Guard ){ P:Proc } ) => P
+  rule #cont( for ( _:Bind  ){ P:Proc } ) => P
+  rule #cont( for ( _:Binds ){ P:Proc } ) => P
+  rule #cont( for ( _:Bind  _:Guard ){ P:Proc } ) => P
+  rule #cont( for ( _:Binds _:Guard ){ P:Proc } ) => P
 
-  rule #bnum  ( for ( B:Bind  ){ _:Proc } ) => #bnum(B)
-  rule #bnum  ( for ( B:Binds ){ _:Proc } ) => #length(B)
-  rule #bnum  ( for ( B:Bind  _:Guard ){ _:Proc } ) => #bnum(B)
-  rule #bnum  ( for ( B:Binds _:Guard ){ _:Proc } ) => #length(B)
+  rule #bnum( for ( B:Bind  ){ _:Proc } ) => #bnum(B)
+  rule #bnum( for ( B:Binds ){ _:Proc } ) => #length(B)
+  rule #bnum( for ( B:Bind  _:Guard ){ _:Proc } ) => #bnum(B)
+  rule #bnum( for ( B:Binds _:Guard ){ _:Proc } ) => #length(B)
 
 // receive types - receive
-  rule #rtype ( for ( _:Lbind  ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Lbinds ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Lbind  _:Guard ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Lbinds _:Guard ){ _:Proc } ) => 0
-  rule #rtype ( for ( _:Rbind  ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Rbinds ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Rbind  _:Guard ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Rbinds _:Guard ){ _:Proc } ) => 1
-  rule #rtype ( for ( _:Pbind  ){ _:Proc } ) => 2
-  rule #rtype ( for ( _:Pbinds ){ _:Proc } ) => 2
-  rule #rtype ( for ( _:Pbind  _:Guard ){ _:Proc } ) => 2
-  rule #rtype ( for ( _:Pbinds _:Guard ){ _:Proc } ) => 2
+  rule #rtype( for ( _:Lbind  ){ _:Proc } ) => 0
+  rule #rtype( for ( _:Lbinds ){ _:Proc } ) => 0
+  rule #rtype( for ( _:Lbind  _:Guard ){ _:Proc } ) => 0
+  rule #rtype( for ( _:Lbinds _:Guard ){ _:Proc } ) => 0
+  rule #rtype( for ( _:Rbind  ){ _:Proc } ) => 1
+  rule #rtype( for ( _:Rbinds ){ _:Proc } ) => 1
+  rule #rtype( for ( _:Rbind  _:Guard ){ _:Proc } ) => 1
+  rule #rtype( for ( _:Rbinds _:Guard ){ _:Proc } ) => 1
+  rule #rtype( for ( _:Pbind  ){ _:Proc } ) => 2
+  rule #rtype( for ( _:Pbinds ){ _:Proc } ) => 2
+  rule #rtype( for ( _:Pbind  _:Guard ){ _:Proc } ) => 2
+  rule #rtype( for ( _:Pbinds _:Guard ){ _:Proc } ) => 2
 
-  rule #rtype ( _:Lbind  ) => 0
-  rule #rtype ( _:Lbinds ) => 0
-  rule #rtype ( _:Lbind  _:Guard ) => 0
-  rule #rtype ( _:Lbinds _:Guard ) => 0
-  rule #rtype ( _:Rbind  ) => 1
-  rule #rtype ( _:Rbinds ) => 1
-  rule #rtype ( _:Rbind  _:Guard ) => 1
-  rule #rtype ( _:Rbinds _:Guard ) => 1
-  rule #rtype ( _:Pbind  ) => 2
-  rule #rtype ( _:Pbinds ) => 2
-  rule #rtype ( _:Pbind  _:Guard ) => 2
-  rule #rtype ( _:Pbinds _:Guard ) => 2
+  rule #rtype( _:Lbind  ) => 0
+  rule #rtype( _:Lbinds ) => 0
+  rule #rtype( _:Lbind  _:Guard ) => 0
+  rule #rtype( _:Lbinds _:Guard ) => 0
+  rule #rtype( _:Rbind  ) => 1
+  rule #rtype( _:Rbinds ) => 1
+  rule #rtype( _:Rbind  _:Guard ) => 1
+  rule #rtype( _:Rbinds _:Guard ) => 1
+  rule #rtype( _:Pbind  ) => 2
+  rule #rtype( _:Pbinds ) => 2
+  rule #rtype( _:Pbind  _:Guard ) => 2
+  rule #rtype( _:Pbinds _:Guard ) => 2
 
 // Guards
-  rule #guard ( for( _:Bind  ){ _:Proc } ) => true
-  rule #guard ( for( _:Binds ){ _:Proc } ) => true
-  rule #guard ( for( _:Bind  if B:BExp ){ _:Proc } ) => B
-  rule #guard ( for( _:Binds if B:BExp ){ _:Proc } ) => B
+  rule #guard( for( _:Bind  ){ _:Proc } ) => true
+  rule #guard( for( _:Binds ){ _:Proc } ) => true
+  rule #guard( for( _:Bind  if B:BExp ){ _:Proc } ) => B
+  rule #guard( for( _:Binds if B:BExp ){ _:Proc } ) => B
 
+/* these are not as useful as I had originally hoped...
 // Listen maps
   // maps location to listening variable/name
   rule #lisMap( R:SingleRec ) => #lisMap(#bvar(R);0)
@@ -189,7 +194,7 @@ module AUXFUN
   rule #msgMap( A:Proc ; I:Int ) => $I |-> @A
   rule #msgMap( A:Proc , B:Proc  ; I:Int ) => I |-> @A #msgMap(B;I +Int 1)
   rule #msgMap( A:Proc , B:Procs ; I:Int ) => I |-> @A #msgMap(B;I +Int 1)
-/*
+
   // not sure how to handle multiple listen receives yet...
   rule #lisMap( for( B:Binds ){ _:Proc } ) => #lisMap(B)
   rule #lisMap( A:Lbind ; B:Lbind  ) => maps(#mapify( #bvar(A) ; #chan(A) ) , #lisMap(B))
@@ -202,19 +207,19 @@ module AUXFUN
 //---------------
 //--- #append ---
 //---------------
-  rule #append ( A:Name           ; B:Name  ) => A,B
-  rule #append ( A:Name , B:Name  ; C:Name  ) => A,#append(B;C)
-  rule #append ( A:Name , B:Names ; C:Name  ) => A,#append(B;C)
-  rule #append ( A:Name           ; B:Names ) => A,B
-  rule #append ( A:Name , B:Name  ; C:Names ) => A,#append(B;C)
-  rule #append ( A:Name , B:Names ; C:Names ) => A,#append(B;C)
+  rule #append( A:Name           ; B:Name  ) => A,B
+  rule #append( A:Name , B:Name  ; C:Name  ) => A,#append(B;C)
+  rule #append( A:Name , B:Names ; C:Name  ) => A,#append(B;C)
+  rule #append( A:Name           ; B:Names ) => A,B
+  rule #append( A:Name , B:Name  ; C:Names ) => A,#append(B;C)
+  rule #append( A:Name , B:Names ; C:Names ) => A,#append(B;C)
 
-  rule #append ( A:Proc           ; B:Proc  ) => A,B
-  rule #append ( A:Proc , B:Proc  ; C:Proc  ) => A,#append(B;C)
-  rule #append ( A:Proc , B:Procs ; C:Proc  ) => A,#append(B;C)
-  rule #append ( A:Proc           ; B:Procs ) => A,B
-  rule #append ( A:Proc , B:Proc  ; C:Procs ) => A,#append(B;C)
-  rule #append ( A:Proc , B:Procs ; C:Procs ) => A,#append(B;C)
+  rule #append( A:Proc           ; B:Proc  ) => A,B
+  rule #append( A:Proc , B:Proc  ; C:Proc  ) => A,#append(B;C)
+  rule #append( A:Proc , B:Procs ; C:Proc  ) => A,#append(B;C)
+  rule #append( A:Proc           ; B:Procs ) => A,B
+  rule #append( A:Proc , B:Proc  ; C:Procs ) => A,#append(B;C)
+  rule #append( A:Proc , B:Procs ; C:Procs ) => A,#append(B;C)
 
 //-------------
 //--- #bind ---
@@ -252,8 +257,8 @@ module AUXFUN
 //--- #size ---
 //-------------
   rule #size Set( ) => 0
-  rule #size Set( P:Proc  ) => #length (P)
-  rule #size Set( P:Procs ) => #length (P)
+  rule #size Set( P:Proc  ) => #length(P)
+  rule #size Set( P:Procs ) => #length(P)
   
   rule #size { }:RhoMap => 0
   rule #size { _:Proc : _:Proc } => 1
@@ -263,11 +268,11 @@ module AUXFUN
 //---------------
 //--- #length ---
 //---------------
-// RhoTuple
-  rule #length ( ) => 0
-  rule #length ( _:Proc           ) => 1
-  rule #length ( _:Proc , _:Proc  ) => 2
-  rule #length ( _:Proc , P:Procs ) => 1 +Int #length (P)
+// Procs
+  rule #length( EmptyP ) => 0
+  rule #length( A:Proc ) => 1 requires A =/=K EmptyP
+  rule #length( _:Proc , _:Proc  ) => 2
+  rule #length( _:Proc , P:Procs ) => 1 +Int #length(P)
 
 // RhoList
   rule #length [ ] => 0
@@ -275,114 +280,114 @@ module AUXFUN
   rule #length [ P:Procs ] => #length(P)
 
 // Name(s)
-  rule #length EmptyN => 0
-  rule #length A:Name           => 1 requires A =/=K EmptyN
-  rule #length _:Name , _:Name  => 2
-  rule #length _:Name , N:Names => 1 +Int #length N
+  rule #length( EmptyN ) => 0
+  rule #length( A:Name ) => 1 requires A =/=K EmptyN
+  rule #length( _:Name , _:Name  ) => 2
+  rule #length( _:Name , N:Names ) => 1 +Int #length(N)
 
 //--- Binds ---
 // Binds - number of listens in a join
-  rule #length ( _:Lbind ; _:Lbind  ) => 2
-  rule #length ( _:Lbind ; C:Lbinds ) => 1 +Int #length (C)
+  rule #length( _:Lbind ; _:Lbind  ) => 2
+  rule #length( _:Lbind ; C:Lbinds ) => 1 +Int #length(C)
 
-  rule #length ( _:Rbind ; _:Rbind  ) => 2
-  rule #length ( _:Rbind ; C:Rbinds ) => 1 +Int #length (C)
+  rule #length( _:Rbind ; _:Rbind  ) => 2
+  rule #length( _:Rbind ; C:Rbinds ) => 1 +Int #length(C)
 
-  rule #length ( _:Pbind ; _:Pbind  ) => 2
-  rule #length ( _:Pbind ; C:Pbinds ) => 1 +Int #length (C)
+  rule #length( _:Pbind ; _:Pbind  ) => 2
+  rule #length( _:Pbind ; C:Pbinds ) => 1 +Int #length(C)
   
-  rule #length ( B:Binds _:Guard ) => #length (B)
+  rule #length( B:Binds _:Guard ) => #length(B)
 
 //----------------
 //--- #lengths ---
 //----------------
 // Binds
-  rule #lengths ( B:Lbind ; C:Lbind  ) => #bnum(B) , #bnum (C)
-  rule #lengths ( B:Lbind ; C:Lbinds ) => #bnum(B) , #lengths(C)
+  rule #lengths( B:Lbind ; C:Lbind  ) => #bnum(B) , #bnum(C)
+  rule #lengths( B:Lbind ; C:Lbinds ) => #bnum(B) , #lengths(C)
 
-  rule #lengths ( B:Rbind ; C:Rbind  ) => #bnum(B) , #bnum (C)
-  rule #lengths ( B:Rbind ; C:Rbinds ) => #bnum(B) , #lengths(C)
+  rule #lengths( B:Rbind ; C:Rbind  ) => #bnum(B) , #bnum(C)
+  rule #lengths( B:Rbind ; C:Rbinds ) => #bnum(B) , #lengths(C)
 
-  rule #lengths ( B:Pbind ; C:Pbind  ) => #bnum(B) , #bnum (C)
-  rule #lengths ( B:Pbind ; C:Pbinds ) => #bnum(B) , #lengths(C)
+  rule #lengths( B:Pbind ; C:Pbind  ) => #bnum(B) , #bnum(C)
+  rule #lengths( B:Pbind ; C:Pbinds ) => #bnum(B) , #lengths(C)
 
 //-------------
 //--- #chan ---
 //-------------
 // Bind
-  rule #chan (         <- N:Name ) => N
-  rule #chan ( _:Name  <- N:Name ) => N
-  rule #chan ( _:Names <- N:Name ) => N
-  rule #chan (         <= N:Name ) => N
-  rule #chan ( _:Name  <= N:Name ) => N
-  rule #chan ( _:Names <= N:Name ) => N
-  rule #chan (         <! N:Name ) => N
-  rule #chan ( _:Name  <! N:Name ) => N
-  rule #chan ( _:Names <! N:Name ) => N
+  rule #chan(         <- N:Name ) => N
+  rule #chan( _:Name  <- N:Name ) => N
+  rule #chan( _:Names <- N:Name ) => N
+  rule #chan(         <= N:Name ) => N
+  rule #chan( _:Name  <= N:Name ) => N
+  rule #chan( _:Names <= N:Name ) => N
+  rule #chan(         <! N:Name ) => N
+  rule #chan( _:Name  <! N:Name ) => N
+  rule #chan( _:Names <! N:Name ) => N
   
-  rule #chan ( B:Bind _:Guard ) => #chan (B)
+  rule #chan( B:Bind _:Guard ) => #chan (B)
 
 // comma-separated list of channels involved in bindings
-  rule #chan ( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)
-  rule #chan ( B:Lbind ; C:Lbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind ; C:Lbinds ) => #chan(B) , #chan(C)
 
-  rule #chan ( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)
-  rule #chan ( B:Rbind ; C:Rbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind ; C:Rbinds ) => #chan(B) , #chan(C)
 
-  rule #chan ( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
-  rule #chan ( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
   
-  rule #chan ( B:Binds _:Guard ) => #chan (B)
+  rule #chan( B:Binds _:Guard ) => #chan (B)
 
 //-------------
 //--- #bnum ---
 //-------------
 // number of binding variables in a listen
-  rule #bnum (         <- N:Name ) => 0
-  rule #bnum ( _:Name  <- _:Name ) => 1
-  rule #bnum ( N:Names <- _:Name ) => #length(N)
-  rule #bnum (         <= N:Name ) => 0
-  rule #bnum ( _:Name  <= _:Name ) => 1
-  rule #bnum ( N:Names <= _:Name ) => #length(N)
-  rule #bnum (         <! N:Name ) => 0
-  rule #bnum ( _:Name  <! _:Name ) => 1
-  rule #bnum ( N:Names <! _:Name ) => #length(N)
+  rule #bnum(         <- N:Name ) => 0
+  rule #bnum( _:Name  <- _:Name ) => 1
+  rule #bnum( N:Names <- _:Name ) => #length(N)
+  rule #bnum(         <= N:Name ) => 0
+  rule #bnum( _:Name  <= _:Name ) => 1
+  rule #bnum( N:Names <= _:Name ) => #length(N)
+  rule #bnum(         <! N:Name ) => 0
+  rule #bnum( _:Name  <! _:Name ) => 1
+  rule #bnum( N:Names <! _:Name ) => #length(N)
   
-  rule #bnum ( B:Bind _:Guard ) => #bnum (B)
+  rule #bnum( B:Bind _:Guard ) => #bnum(B)
 
 //-------------
 //--- #bvar ---
 //-------------
 // binding variables
-  rule #bvar (         <- N:Name ) => EmptyN
-  rule #bvar ( N:Name  <- _:Name ) => N
-  rule #bvar ( N:Names <- _:Name ) => N
-  rule #bvar (         <= N:Name ) => EmptyN
-  rule #bvar ( N:Name  <= _:Name ) => N
-  rule #bvar ( N:Names <= _:Name ) => N
-  rule #bvar (         <! N:Name ) => EmptyN
-  rule #bvar ( N:Name  <! _:Name ) => N
-  rule #bvar ( N:Names <! _:Name ) => N
+  rule #bvar(         <- N:Name ) => EmptyN
+  rule #bvar( N:Name  <- _:Name ) => N
+  rule #bvar( N:Names <- _:Name ) => N
+  rule #bvar(         <= N:Name ) => EmptyN
+  rule #bvar( N:Name  <= _:Name ) => N
+  rule #bvar( N:Names <= _:Name ) => N
+  rule #bvar(         <! N:Name ) => EmptyN
+  rule #bvar( N:Name  <! _:Name ) => N
+  rule #bvar( N:Names <! _:Name ) => N
   
-  rule #bvar ( B:Bind _:Guard ) => #bvar(B)
+  rule #bvar( B:Bind _:Guard ) => #bvar(B)
 
   // multiple bindings -- TODO: is this right?
-  rule #bvar ( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar ( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvar(C)
 
-  rule #bvar ( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar ( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvar(C)
 
-  rule #bvar ( B:Pbind ; C:Pbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar ( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Pbind ; C:Pbind  ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvar(C)
   
-  rule #bvar ( B:Binds _:Guard ) => #bvar(B)
+  rule #bvar( B:Binds _:Guard ) => #bvar(B)
   
 //---------------
 //--- #quotes ---  
 //---------------
-  rule #quotes ( A:Proc , B:Proc  ) => @A , @B
-  rule #quotes ( A:Proc , B:Procs ) => @A , #quotes( B )
+  rule #quotes( A:Proc , B:Proc  ) => @A , @B
+  rule #quotes( A:Proc , B:Procs ) => @A , #quotes(B)
 
 //------------------
 //--- Predicates ---
@@ -427,39 +432,5 @@ module AUXFUN
   rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
   rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 */
-//-----------------
-//--- #parMatch ---
-//-----------------
-// TODO: switch ==K to #alpha
-// counts number of appearances of a nonPar Proc in a Par
-// first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
-  // single Proc Par i.e. a nonPar Proc
-  rule #parCount( A:Proc ; B:Proc ) => #if A ==K B #then 1 #else 0 #fi requires notBool isPar(B)
-  // multiple Proc Par
-  rule #parCount( A:Proc ; B:Proc | C:Proc ) => #if A ==K C #then 1 +Int #parCount(A;B) #else #parCount(A;B) #fi
-       requires notBool isPar(C)
-
-// removes a nonPar Proc from a Par and preserves order
-// first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
-  // single Proc Par i.e. a nonPar Proc
-  rule #parRemove( A:Proc ; B:Proc ) => #if A ==K B #then Nil #else B #fi requires notBool isPar(B)
-  // multiple Proc Par
-  rule #parRemove( A:Proc ; B:Proc | C:Proc ) => #if A ==K C #then #parRemove(A;B) #else #parRemove(A;B) | C #fi
-       requires notBool isPar(C)
-
-// compute par set of a Proc
-  rule #setify( A:Proc ) => SetItem(A,1) requires notBool isPar(A)
-  rule #setify( A:Proc | B:Proc ) 
-    => #if B ==K Nil
-       #then #setify(A) // Nil is the unit of |
-       #else
-         #if #parCount(B;A) >Int 0 
-         #then SetItem(B, 1 +Int #parCount(B;A)) (#setify(#parRemove(B;A)) -Set SetItem(Nil,1))
-         #else SetItem(B,1) (#setify(A) -Set SetItem(Nil,1)) 
-         #fi 
-       #fi requires notBool isPar(B)
-
-// checks par set equlaity
-  rule #parMatch( P:Proc ; Q:Proc ) => #setify(P) <=Set #setify(Q) andBool #setify(Q) <=Set #setify(P)
 
 endmodule
