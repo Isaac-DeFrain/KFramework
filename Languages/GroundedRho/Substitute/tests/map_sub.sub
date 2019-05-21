@@ -1,6 +1,6 @@
 // Map substitution
 
-    #sub( y!( @\x!( 3 | \y ) ) ; \y |-> 1 x |-> @2 y |-> @3 \x |-> 4 )
+    #sub( \y |-> 1 x |-> @2 y |-> @3 \x |-> 4 ; y!( @\x!( 3 | \y ) ) )
 
 /*
 Output: 
