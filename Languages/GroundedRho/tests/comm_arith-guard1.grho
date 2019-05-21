@@ -1,6 +1,6 @@
 // Guarded receive
 
-  new x , a in { x!(41,*a) | for( y,@\b <- x if *y > 40 ){ @{*y + 1}!(\b) } }
+  new x,a in { x!(41,*a) | for( y,@\b <- x if *y > 40 ){ @{*y + 1}!(\b) } }
 
 /*
 Output:
@@ -29,22 +29,15 @@ Output:
       .RecCellBag
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
   <nextLoc>
     2
   </nextLoc>
   <freeVars>
     .Set
   </freeVars>
+  <deBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | #deBruijn( 2 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 ) { ( @ * y + 1 ) ! ( \ b ) } ; a |-> boundN( 1 )
+    x |-> boundN( 0 ) ) }
+  </deBruijn>
 </T>
 */

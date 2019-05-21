@@ -1,6 +1,6 @@
-// send plus
+// Guarded receive
 
-  new x in { x!(41) | for( y <- x if *y > 40 ){ *y + 1 } }
+  new x in { x!(41,true) | for( y,@\b <- x if *y > 40 and \b == true ){ *y + 1 } }
 
 /*
 Output:
@@ -27,7 +27,7 @@ Output:
     .Set
   </freeVars>
   <deBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 41 ) | #deBruijn( 1 ; for ( y <- boundN( 0 ) if * y > 40 ) { * y + 1 } ; x |-> boundN( 0 ) ) }
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 and \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
   </deBruijn>
 </T>
 */
