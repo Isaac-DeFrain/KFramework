@@ -24,22 +24,14 @@ Output:
       .RecCellBag
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
   <nextLoc>
     0
   </nextLoc>
   <freeVars>
     .Set
   </freeVars>
+  <deBruijn>
+    ( @ 1 ) ! ( 41 , true ) | for ( @ boundP( 0 ) , boundN( 1 ) <- @ 1 ) { boundP( 0 ) + 1 | not * boundN( 1 ) }
+  </deBruijn>
 </T>
 */
