@@ -67,10 +67,10 @@ module SUB-SYNTAX
                       | "#subKV(" Names ";" Names ";" RhoKVPairs ")" [function]
 
 // Map substitutions
-  syntax       Name ::= "#sub(" Name  ";" Map ")" [function]
-  syntax      Names ::= "#sub(" Names ";" Map ")" [function]
-  syntax       Proc ::= "#sub(" Proc  ";" Map ")" [function]
-  syntax      Procs ::= "#sub(" Procs ";" Map ")" [function]
+  syntax       Name ::= "#sub(" Map ";" Name  ")" [function]
+  syntax      Names ::= "#sub(" Map ";" Names ")" [function]
+  syntax       Proc ::= "#sub(" Map ";" Proc  ")" [function]
+  syntax      Procs ::= "#sub(" Map ";" Procs ")" [function]
 
 endmodule
 
@@ -132,6 +132,27 @@ module SUB
   rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #sub(A;C) , #sub(B;D)
   rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ) => #sub(A;C) , #sub(B;D)
 */
+
+// BoundName/Proc subs for ALPHA
+  // requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
+  rule #sub( _:Name ; _:Name ;  B:BoundName ) =>  B
+  rule #sub( _:Proc ; _:Proc ;  B:BoundName ) =>  B
+  rule #sub( _:Name ; _:Name ; *B:BoundName ) => *B
+  rule #sub( _:Proc ; _:Proc ; *B:BoundName ) => *B
+  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  A requires B ==K C
+  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  C requires B =/=K C
+  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *A requires B ==K C
+  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *C requires B =/=K C
+
+  rule #sub( _:Name ; _:Name ;  B:BoundProc ) =>  B
+  rule #sub( _:Proc ; _:Proc ;  B:BoundProc ) =>  B
+  rule #sub( _:Name ; _:Name ; @B:BoundProc ) => @B
+  rule #sub( _:Proc ; _:Proc ; @B:BoundProc ) => @B
+  rule #sub( A:BoundProc ; B:BoundProc ;  C:BoundProc ) =>  A requires B ==K C
+  rule #sub( A:BoundProc ; B:BoundProc ;  C:BoundProc ) =>  C requires B =/=K C
+  rule #sub( A:BoundProc ; B:BoundProc ; @C:BoundProc ) => @A requires B ==K C
+  rule #sub( A:BoundProc ; B:BoundProc ; @C:BoundProc ) => @C requires B =/=K C
+
 //------------------------------------------------
 //--- Substitute Proc for Proc in Proc or Name ---
 //------------------------------------------------
@@ -147,8 +168,8 @@ module SUB
 
   // sub Proc for *NameVar in NameVar or ProcVar
   rule #sub( A:Proc ; *B:NameVar ; C:NameVar ) => @A requires B ==K C
-  rule #sub( A:Proc ; *B:NameVar ; C:NameVar ) => C requires B =/=K C
-  rule #sub( _:Proc ; *_:NameVar ; A:ProcVar ) => A
+  rule #sub( A:Proc ; *B:NameVar ; C:NameVar ) =>  C requires B =/=K C
+  rule #sub( _:Proc ; *_:NameVar ; A:ProcVar ) =>  A
 
   // sub Proc for Proc in @Proc
   rule #sub( A:Proc ; B:Proc ; @C:Proc ) => @ #sub(A;B;C)
@@ -342,14 +363,14 @@ module SUB
 
   // sub Name for @ProcVar in NameVar
   rule #sub( A:Name ; @B:ProcVar ; C:ProcVar ) => *A requires B ==K C
-  rule #sub( A:Name ; @B:ProcVar ; C:ProcVar ) => C requires B =/=K C
-  rule #sub( _:Name ; @_:ProcVar ; A:NameVar ) => A
+  rule #sub( A:Name ; @B:ProcVar ; C:ProcVar ) =>  C requires B =/=K C
+  rule #sub( _:Name ; @_:ProcVar ; A:NameVar ) =>  A
 
-  // sub Name for NameVar in @Proc
-  rule #sub( A:Name ; B:NameVar ; @C:Proc ) => @ #sub(A;B;C)
+  // sub Name for Name in @Proc
+  rule #sub( A:Name ; B:Name ; @C:Proc ) => @ #sub(A;B;C)
 
-  // sub Name for NameVar in *Name
-  rule #sub( A:Name ; B:NameVar ; *C:Name ) => * #sub(A;B;C)
+  // sub Name for Name in *Name
+  rule #sub( A:Name ; B:Name ; *C:Name ) => * #sub(A;B;C)
 
   rule #sub( A:NameVar ; @B:Proc ; C:Proc ) => #sub(*A;B;C)
 
@@ -409,13 +430,13 @@ module SUB
 // sub Name for Name in Collections
   // RhoList
   rule #sub( _:Name ; _:Name ; [ ] ) => [ ]
-  rule #sub( A:Name ; B:Name ; [ C:Proc  ] ) => [ #sub(A;B;C) ]
+  rule #sub( A:Name ; B:Name ; [ C:Proc ] ) => [ #sub(A;B;C) ]
   rule #sub( A:Name ; B:Name ; [ C:Proc , D:Proc  ] ) => [ #sub(A;B;C) , #sub(A;B;D) ]
   rule #sub( A:Name ; B:Name ; [ C:Proc , D:Procs ] ) => [ #sub(A;B;C) , #sub(A;B;D) ]
 
   // RhoMap
   rule #sub( _:Name ; _:Name ; { } ) => { }
-  rule #sub( A:Name ; B:Name ; { C:RhoKVPair  } ) => { #subKV(A;B;C) }
+  rule #sub( A:Name ; B:Name ; { C:RhoKVPair } ) => { #subKV(A;B;C) }
   rule #sub( A:Name ; B:Name ; { C:RhoKVPair , D:RhoKVPair  } ) => { #subKV(A;B;C) , #subKV(A;B;D) }
   rule #sub( A:Name ; B:Name ; { C:RhoKVPair , D:RhoKVPairs } ) => { #subKV(A;B;C) , #subKV(A;B;D) }
     // RhoKVPairs
@@ -425,7 +446,7 @@ module SUB
 
   // RhoSet
   rule #sub( _:Name ; _:Name ; Set( ) ) => Set( )
-  rule #sub( A:Name ; B:Name ; Set( C:Proc  ) ) => Set( #sub(A;B;C) )
+  rule #sub( A:Name ; B:Name ; Set( C:Proc ) ) => Set( #sub(A;B;C) )
   rule #sub( A:Name ; B:Name ; Set( C:Proc , D:Proc  ) ) => Set( #sub(A;B;C) , #sub(A;B;D) )
   rule #sub( A:Name ; B:Name ; Set( C:Proc , D:Procs ) ) => Set( #sub(A;B;C) , #sub(A;B;D) )
 
@@ -472,8 +493,8 @@ module SUB
 
 
 // Several Names sub
-  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub(B;D;#sub(A;C;P)) // two name sub in continuation
-  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:Proc ) => #sub(B;D;#sub(A;C;P)) // N name sub, N > 2, in continuation
+  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub(B;D;#sub(A;C;P))
+  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:Proc ) => #sub(B;D;#sub(A;C;P))
 
   rule #sub( A:Name ; B:Name ; C:Proc , D:Proc  ) => #sub(A;B;C) , #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
@@ -481,19 +502,19 @@ module SUB
 //-------------------------
 //--- Map substitutions ---
 //-------------------------
-  rule #sub( N:Name  ; .Map ) => N
-  rule #sub( N:Names ; .Map ) => N
-  rule #sub( N:Name  ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;N);M)
-  rule #sub( N:Names ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;N);M)
-  rule #sub( N:Name  ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;N);M)
-  rule #sub( N:Names ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;N);M)
+  rule #sub( .Map ; N:Name  ) => N
+  rule #sub( .Map ; N:Names ) => N
+  rule #sub( Key:Name |-> Val:Name M:Map ; N:Name  ) => #sub(M;#sub(Val;Key;N))
+  rule #sub( Key:Name |-> Val:Name M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Name  ) => #sub(M;#sub(Val;Key;N))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
 
-  rule #sub( P:Proc  ; .Map ) => P
-  rule #sub( P:Procs ; .Map ) => P
-  rule #sub( P:Proc  ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;P);M)
-  rule #sub( P:Procs ; Key:Name |-> Val:Name M:Map ) => #sub(#sub(Val;Key;P);M)
-  rule #sub( P:Proc  ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;P);M)
-  rule #sub( P:Procs ; Key:Proc |-> Val:Proc M:Map ) => #sub(#sub(Val;Key;P);M)
+  rule #sub( .Map ; P:Proc  ) => P
+  rule #sub( .Map ; P:Procs ) => P
+  rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Name |-> Val:Name M:Map ; P:Procs ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Procs ) => #sub(M;#sub(Val;Key;P))
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
