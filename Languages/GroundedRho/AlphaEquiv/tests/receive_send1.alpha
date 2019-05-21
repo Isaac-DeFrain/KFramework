@@ -1,0 +1,10 @@
+// De Bruijn levels - receive
+
+  #deBruijn(0 ; for( @{x!(\y)} <- @Nil ){ *x | [ \y ] } ; .Map )
+  
+/*
+Output:
+
+    for ( @ ( boundN( 0 ) ! ( boundP( 0 ) ) ) <- @ Nil ) { * boundN( 0 ) | [ boundP( 0 ) ] }
+
+*/

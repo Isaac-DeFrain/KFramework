@@ -1,0 +1,10 @@
+// De Bruijn levels - several names
+
+  #deBruijn(0 ; for( x,a,b,@\c <- @Nil ){ *x | @\c!(*a | *b ) } ; .Map )
+  
+/*
+Output:
+
+   
+
+*/

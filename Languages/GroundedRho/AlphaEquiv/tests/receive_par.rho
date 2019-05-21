@@ -1,0 +1,10 @@
+// Receive - par
+
+    #deBruijn( 0 ; new x in { for( @{ \a | \b | \c } <- x ){ [\a,\b,\c] } } ; .Map )
+  
+/*
+Output: 
+
+    new boundN( 0 ) in { for ( @ boundP( 1 ) | boundP( 2 ) | boundP( 3 ) <- boundN( 0 ) ) { [ boundP( 1 ) , boundP( 2 ) , boundP( 3 ) ] } }
+
+*/

@@ -1,0 +1,11 @@
+// Mapify -- nested receives
+
+    #mapify( 0 ; for( a,b,@\a <- x ){ \y | boundP(0) | *a | \a } ; .Map )
+  
+/*
+Output:
+
+    \ y |-> boundP( 3 )
+    x |-> boundN( 2 )
+
+*/

@@ -1,0 +1,10 @@
+// De Bruijn levels
+
+    #deBruijn( 0 ; new a,b,c in { a!(*b,1,c!(1),"a") } ; .Map )
+
+/*
+Output: (not sure why the parentheses are appearing on the last two procs...)
+
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( * boundN( 1 ) , ( 1 , boundN( 2 ) ! ( 1 ) ) ) }
+
+*/

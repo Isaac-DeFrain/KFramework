@@ -1,0 +1,17 @@
+// Receive matching
+
+    #deBruijn(0; new x in { for( @{ for( b <- a ){ *b } } <- x ){ *a } } ; .Map)
+  
+/*
+Output: 
+
+    new boundN( 0 ) in { 
+      for ( #dBound( 1 ; @ for ( b <- a ) { * b } ; .Map ) <- boundN( 0 ) ) { 
+        #deBruijn( 2 ; #sub( #dBound( 1 ; @ for ( b <- a ) { * b } ; .Map ) ; @ for ( b <- a ) { * b } ; * a ) ; b |-> boundN( 2 ) x |-> boundN( 0 ) ) } 
+    }
+
+RNode: (note the change in variable naming scheme in the pattern)
+
+    new x0 in { for( @{for( @{y0} <- @{x1} ) { y0 }} <- x0 ) { x1 } }
+
+*/

@@ -1,0 +1,10 @@
+// De Bruijn levels - receive
+
+  #deBruijn(0 ; for( @{for( y <- x ){ Nil }} <- @Nil ){ *x } ; .Map )
+  
+/*
+Output:
+
+    for ( @ for ( boundN( 1 , 0 ) <- boundN( 0 ) ) { Nil } <- @ Nil ) { * boundN( 0 ) }
+
+*/
