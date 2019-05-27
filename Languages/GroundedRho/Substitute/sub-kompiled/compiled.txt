@@ -157,8 +157,6 @@ module ALPHA-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(15,1,89,
   syntax Proc ::= "{" Proc "}"
   syntax Proc ::= "new" Names "in" "{" DBProc "}"
   syntax Proc ::= "new" Name "in" "{" DBProc "}"
-  syntax Proc ::= "#mapify(" Proc ")"
-  syntax Proc ::= "#mapify(" Name ")"
   syntax Proc ::= "#deBruijn(" Int ";" Proc ";" Map ")"
   syntax Proc ::= "#deBruijn(" Int "," Int ";" Proc ";" Map ")"
   syntax Proc ::= "#dBound(" Int ";" Proc ";" Map ")"
@@ -169,10 +167,6 @@ module ALPHA-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(15,1,89,
   syntax Pbind ::= Name "<!" Name
   syntax Pbind ::= "<!" Name
   syntax Par ::= Proc "|" Proc
-  syntax Par ::= "#deBruijn(" Int ";" Par ";" Map ")"
-  syntax Par ::= "#deBruijn(" Int "," Int ";" Par ";" Map ")"
-  syntax Par ::= "#dBound(" Int ";" Par ";" Map ")"
-  syntax Par ::= "#dBound(" Int "," Int ";" Par ";" Map ")"
   syntax NewUri ::= NameVar "(" Uri ")"
   syntax New ::= "new" Names "in" "{" Proc "}"
   syntax New ::= "new" Name "in" "{" Proc "}"
@@ -231,6 +225,8 @@ module ALPHA-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(15,1,89,
   syntax Map ::= "updateMap" "(" Map "," Map ")"
   syntax Map ::= "removeAll" "(" Map "," Set ")"
   syntax Map ::= ".Map"
+  syntax Map ::= "#mapify(" Proc ")"
+  syntax Map ::= "#mapify(" Name ")"
   syntax Map ::= "#mapify(" Int ";" Procs ";" Map ")"
   syntax Map ::= "#mapify(" Int ";" Proc ";" Map ")"
   syntax Map ::= "#mapify(" Int ";" Names ";" Map ")"
@@ -608,10 +604,6 @@ module ALPHA-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(15,1,89,
   syntax BExp ::= AExp "<" AExp
   syntax BExp ::= "{" BExp "}"
   syntax BExp ::= "not" BExp
-  syntax BExp ::= "#deBruijn(" Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#deBruijn(" Int "," Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#dBound(" Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#dBound(" Int "," Int ";" BExp ";" Map ")"
   syntax AnyBinds ::= GuardedBinds
   syntax AnyBinds ::= Binds
   syntax AnyBind ::= GuardedBind
@@ -629,10 +621,6 @@ module ALPHA-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(15,1,89,
   syntax AExp ::= AExp "%" AExp
   syntax AExp ::= "{" AExp "}"
   syntax AExp ::= "-" AExp
-  syntax AExp ::= "#deBruijn(" Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#deBruijn(" Int "," Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#dBound(" Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#dBound(" Int "," Int ";" AExp ";" Map ")"
   context `<k>`(`not__GRHO-SYNTAX`(HOLE)~>DotVar0) requires #token("true","Bool")
   context `<k>`(`if(_)__GRHO-SYNTAX`(HOLE,K1)~>DotVar0) requires #token("true","Bool")
   context `<k>`(`_or__GRHO-SYNTAX`(HOLE,K1)~>DotVar0) requires #token("true","Bool")
@@ -6073,8 +6061,6 @@ module STRUCT$SYNTAX [org.kframework.attributes.Location(Location(19,1,67,9)) or
   syntax Proc ::= "#sub(" Map ";" Proc ")"
   syntax Proc ::= "#parRemove(" Proc ";" Proc ")"
   syntax Proc ::= "#msg" "(" Send ")"
-  syntax Proc ::= "#mapify(" Proc ")"
-  syntax Proc ::= "#mapify(" Name ")"
   syntax Proc ::= "#deBruijn(" Int ";" Proc ";" Map ")"
   syntax Proc ::= "#deBruijn(" Int "," Int ";" Proc ";" Map ")"
   syntax Proc ::= "#dBound(" Int ";" Proc ";" Map ")"
@@ -6086,10 +6072,6 @@ module STRUCT$SYNTAX [org.kframework.attributes.Location(Location(19,1,67,9)) or
   syntax Pbind ::= Name "<!" Name
   syntax Pbind ::= "<!" Name
   syntax Par ::= Proc "|" Proc
-  syntax Par ::= "#deBruijn(" Int ";" Par ";" Map ")"
-  syntax Par ::= "#deBruijn(" Int "," Int ";" Par ";" Map ")"
-  syntax Par ::= "#dBound(" Int ";" Par ";" Map ")"
-  syntax Par ::= "#dBound(" Int "," Int ";" Par ";" Map ")"
   syntax NewUri ::= NameVar "(" Uri ")"
   syntax New ::= "new" Names "in" "{" Proc "}"
   syntax New ::= "new" Name "in" "{" Proc "}"
@@ -6176,6 +6158,8 @@ module STRUCT$SYNTAX [org.kframework.attributes.Location(Location(19,1,67,9)) or
   syntax Map ::= "updateMap" "(" Map "," Map ")"
   syntax Map ::= "removeAll" "(" Map "," Set ")"
   syntax Map ::= ".Map"
+  syntax Map ::= "#mapify(" Proc ")"
+  syntax Map ::= "#mapify(" Name ")"
   syntax Map ::= "#mapify(" Int ";" Procs ";" Map ")"
   syntax Map ::= "#mapify(" Int ";" Proc ";" Map ")"
   syntax Map ::= "#mapify(" Int ";" Names ";" Map ")"
@@ -6588,10 +6572,6 @@ module STRUCT$SYNTAX [org.kframework.attributes.Location(Location(19,1,67,9)) or
   syntax BExp ::= "{" BExp "}"
   syntax BExp ::= "not" BExp
   syntax BExp ::= "#guard" "(" Receive ")"
-  syntax BExp ::= "#deBruijn(" Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#deBruijn(" Int "," Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#dBound(" Int ";" BExp ";" Map ")"
-  syntax BExp ::= "#dBound(" Int "," Int ";" BExp ";" Map ")"
   syntax AnyBinds ::= GuardedBinds
   syntax AnyBinds ::= Binds
   syntax AnyBind ::= GuardedBind
@@ -6609,10 +6589,6 @@ module STRUCT$SYNTAX [org.kframework.attributes.Location(Location(19,1,67,9)) or
   syntax AExp ::= AExp "%" AExp
   syntax AExp ::= "{" AExp "}"
   syntax AExp ::= "-" AExp
-  syntax AExp ::= "#deBruijn(" Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#deBruijn(" Int "," Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#dBound(" Int ";" AExp ";" Map ")"
-  syntax AExp ::= "#dBound(" Int "," Int ";" AExp ";" Map ")"
   context `<k>`(`not__GRHO-SYNTAX`(HOLE)~>DotVar0) requires #token("true","Bool")
   context `<k>`(`if(_)__GRHO-SYNTAX`(HOLE,K1)~>DotVar0) requires #token("true","Bool")
   context `<k>`(`_or__GRHO-SYNTAX`(HOLE,K1)~>DotVar0) requires #token("true","Bool")
@@ -7247,7 +7223,7 @@ module STRUCT-SYNTAX$SYNTAX [org.kframework.attributes.Location(Location(6,1,17,
 endmodule
 
 
-module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))]
+module SUB [org.kframework.attributes.Location(Location(77,1,525,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))]
   imports SUB-SYNTAX
   imports SUB$SYNTAX
   imports DEFAULT-CONFIGURATION
@@ -8211,12 +8187,14 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`{_}_GRHO-SYNTAX`(C))=>`{_}_GRHO-SYNTAX`(`#subKV(_;_;_)_SUB-SYNTAX`(A,B,C)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(0f061e89c6dad05248cc8d62ba5b155c5bb9e06768d0b3f5afa13f581eab181f) contentStartColumn(8) contentStartLine(244) org.kframework.attributes.Location(Location(244,8,244,71)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`not__GRHO-SYNTAX`(C))=>`not__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d296924090163e829542f50f136a1bc6cf3dae784d25a6c064f394b882f3e6eb) contentStartColumn(8) contentStartLine(282) org.kframework.attributes.Location(Location(282,8,282,63)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`not__GRHO-SYNTAX`(C))=>`not__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(33a1dc80b8bbd3b031857488d350b35921a4cffc14f76a4ad792204569be9612) contentStartColumn(8) contentStartLine(481) org.kframework.attributes.Location(Location(481,8,481,63)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`if(_)__GRHO-SYNTAX`(C,D))=>`if(_)__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(aa931b861473f46c97d18d68c48ed82e5b3915dc6d5b998038d68bdbb51ca41b) contentStartColumn(8) contentStartLine(495) org.kframework.attributes.Location(Location(495,8,495,86)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_|__GRHO-SYNTAX`(Left,Right))=>`_|__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,Left),`#sub(_;_;_)_SUB-SYNTAX`(A,B,Right)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(fa627ef488a18dcea1152d9b3c4e7224b39397e456b7f11d4fa2170a24f340d7) contentStartColumn(8) contentStartLine(428) org.kframework.attributes.Location(Location(428,8,428,92)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_|__GRHO-SYNTAX`(C,D))=>`_|__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(d6f068c91c77916a3383c9eb6a2e87902572d05a76d2a6db21bde93991e1c516) contentStartColumn(8) contentStartLine(233) org.kframework.attributes.Location(Location(233,8,233,78)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_or__GRHO-SYNTAX`(C,D))=>`_or__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(42deb17b5fb24aa8b4023fced863fc08d4b379f30cee10abf91923f22af6bfe8) contentStartColumn(8) contentStartLine(284) org.kframework.attributes.Location(Location(284,8,284,82)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_or__GRHO-SYNTAX`(C,D))=>`_or__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(30e26cd200c069dad2e81342c98dbc5aee3a5a5b635bdea2ae18c5ec59f46908) contentStartColumn(8) contentStartLine(483) org.kframework.attributes.Location(Location(483,8,483,82)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_matches__GRHO-SYNTAX`(C,D))=>`_matches__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(86194b470b21e263049776a62a6da2732050354f2e3d455e4775e1a6687b6842) contentStartColumn(8) contentStartLine(293) org.kframework.attributes.Location(Location(293,8,293,90)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_matches__GRHO-SYNTAX`(C,D))=>`_matches__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(66182db70c0a86f2a5b690006d12ea67e0eef660ae18a43006be9ad6e03dd79d) contentStartColumn(8) contentStartLine(492) org.kframework.attributes.Location(Location(492,8,492,90)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
+  rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_else__GRHO-SYNTAX`(C,D))=>`_else__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(39a20d2fbfc5443a4e609c22582940bde5fbc659f9275aa46cd9a1bda5aafeb6) contentStartColumn(8) contentStartLine(496) org.kframework.attributes.Location(Location(496,8,496,86)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_and__GRHO-SYNTAX`(C,D))=>`_and__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(77055d1aead77a8a3d727d1be818f70d1f05e327d5b8e7ca1ac9b7311c71577c) contentStartColumn(8) contentStartLine(283) org.kframework.attributes.Location(Location(283,8,283,82)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_and__GRHO-SYNTAX`(C,D))=>`_and__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(31c2ce3e5c1b00230ca2548e1ceb14d987122fbdba2db81fce02ec7add805740) contentStartColumn(8) contentStartLine(482) org.kframework.attributes.Location(Location(482,8,482,82)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
   rule `#sub(_;_;_)_SUB-SYNTAX`(A,B,`_>__GRHO-SYNTAX`(C,D))=>`_>__GRHO-SYNTAX`(`#sub(_;_;_)_SUB-SYNTAX`(A,B,C),`#sub(_;_;_)_SUB-SYNTAX`(A,B,D)) requires #token("true","Bool") ensures #token("true","Bool") [UNIQUE_ID(bdb37560e125c552f0aef2852a271edd1caa3fd35095ccd16e2641a550db6a7f) contentStartColumn(8) contentStartLine(487) org.kframework.attributes.Location(Location(487,8,487,82)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k)) org.kframework.definition.Production(syntax RuleContent ::= K)]
@@ -8513,8 +8491,8 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
   ModuleComment(------------------------------------------------,[UNIQUE_ID(129398c6d28adefaa979425080ceb8eb9285489a614bc736c8fb4abec445c02f) org.kframework.attributes.Location(Location(156,1,156,51)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(--------------------------,[UNIQUE_ID(63e87e54ceb7eae58e4fac1666d8bc616dd255495ccab0c74b327c97c10d8e3c) org.kframework.attributes.Location(Location(339,1,339,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(--------------------------,[UNIQUE_ID(63e87e54ceb7eae58e4fac1666d8bc616dd255495ccab0c74b327c97c10d8e3c) org.kframework.attributes.Location(Location(337,1,337,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
-  ModuleComment(-------------------------,[UNIQUE_ID(2053879e88015b7d1a36578938ecf724e3da31e91cb6adfff2cf66c29580ce78) org.kframework.attributes.Location(Location(504,1,504,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
-  ModuleComment(-------------------------,[UNIQUE_ID(2053879e88015b7d1a36578938ecf724e3da31e91cb6adfff2cf66c29580ce78) org.kframework.attributes.Location(Location(502,1,502,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
+  ModuleComment(-------------------------,[UNIQUE_ID(2053879e88015b7d1a36578938ecf724e3da31e91cb6adfff2cf66c29580ce78) org.kframework.attributes.Location(Location(507,1,507,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
+  ModuleComment(-------------------------,[UNIQUE_ID(2053879e88015b7d1a36578938ecf724e3da31e91cb6adfff2cf66c29580ce78) org.kframework.attributes.Location(Location(505,1,505,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(-----------------------,[UNIQUE_ID(a0511dd9e683f162b8450d29d3f8cec211e1d7aad4ec634bbf87230fd96aefda) org.kframework.attributes.Location(Location(321,1,321,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(-----------------------,[UNIQUE_ID(a0511dd9e683f162b8450d29d3f8cec211e1d7aad4ec634bbf87230fd96aefda) org.kframework.attributes.Location(Location(319,1,319,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(------------------,[UNIQUE_ID(91d1278556d69c199fb75324821480bf37f4675148c95a6cfed71f21525ae145) org.kframework.attributes.Location(Location(394,1,394,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/AuxFun/auxfun.k))])
@@ -8551,7 +8529,7 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
   ModuleComment(--- PROCESSES ---,[UNIQUE_ID(3a24862f6596553bee07ce20557358f699afbc44bc3ba112bef141c16fc39140) org.kframework.attributes.Location(Location(42,1,42,20)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment(--- Name substitutions ---,[UNIQUE_ID(efde48e07a9056bcbe8a6a08ce6f69f574feb522c25f9a19eba1ed0e5bd92be1) org.kframework.attributes.Location(Location(338,1,338,29)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(--- NAMES ---,[UNIQUE_ID(75fa027aa765d49d1dd767c8187188d178dc685085a833c35677778f8946fb5d) org.kframework.attributes.Location(Location(26,1,26,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
-  ModuleComment(--- Map substitutions ---,[UNIQUE_ID(017adb8ac5ec3ea0734f63870320784efaa032d9c8b8497bdbc804df72deff9e) org.kframework.attributes.Location(Location(503,1,503,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
+  ModuleComment(--- Map substitutions ---,[UNIQUE_ID(017adb8ac5ec3ea0734f63870320784efaa032d9c8b8497bdbc804df72deff9e) org.kframework.attributes.Location(Location(506,1,506,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(--- Deeper Patterns ---,[UNIQUE_ID(2e6713186176df67472fe87c664cf68d0d7c46dacfb679267a93697cc1acab6e) org.kframework.attributes.Location(Location(320,1,320,26)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment(--- Binds ---,[UNIQUE_ID(158e8eca09b6d6b1c09cb4f9f8a65df93084c797567fec6b65b759b1c35d9bb6) org.kframework.attributes.Location(Location(288,1,288,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/AuxFun/auxfun.k))])
   ModuleComment(--- #size ---,[UNIQUE_ID(fc5a8f56a59f8fef2e858dd41e6bf651016a889ca5c6cafb563f640b2d20b994) org.kframework.attributes.Location(Location(257,1,257,16)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/AuxFun/auxfun.k))])
@@ -8730,7 +8708,7 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
   ModuleComment( Single listen receives,[UNIQUE_ID(fc0ac9b731923212ce550f8c46df79758a32070aaf608d6e346ff76e3100b4a1) org.kframework.attributes.Location(Location(78,3,78,28)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( Several Processes,[UNIQUE_ID(e48569e1ab074385e91ec2db7fc9f6562edb589336bb5ccbf3c1cdb65452ebec) org.kframework.attributes.Location(Location(65,1,65,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( Several Names,[UNIQUE_ID(610c6311f75d62b75652a336fd30b06f8ce368d685f472c1044607f4cc4cc422) org.kframework.attributes.Location(Location(37,1,37,17)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
-  ModuleComment( Several Names sub,[UNIQUE_ID(e57bd6a1997ae7d5fde04526de5562897ed1d9b21260453fa1a9217a7fdfed26) org.kframework.attributes.Location(Location(495,1,495,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
+  ModuleComment( Several Names sub,[UNIQUE_ID(e57bd6a1997ae7d5fde04526de5562897ed1d9b21260453fa1a9217a7fdfed26) org.kframework.attributes.Location(Location(498,1,498,21)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment( Sets,[UNIQUE_ID(89b1068cbbf4a1a92448e0a2f065ba94bd94288b1e22f6c5d3afaa1917330e61) org.kframework.attributes.Location(Location(401,1,401,8)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/AuxFun/auxfun.k))])
   ModuleComment( Sends,[UNIQUE_ID(08352e4c78dfe7b448c76089fd28ca31763f58728d2b247112a05af2e4228147) org.kframework.attributes.Location(Location(116,1,116,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( Sends,[UNIQUE_ID(08352e4c78dfe7b448c76089fd28ca31763f58728d2b247112a05af2e4228147) org.kframework.attributes.Location(Location(104,1,104,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/AuxFun/auxfun.k))])
@@ -8826,6 +8804,7 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
    the two Maps are assumed disjoint) ,[UNIQUE_ID(6679eb27ec4cf10bc2383e668e61ff6f90ba8f9af2bfd3d873b5545ebed3abec) org.kframework.attributes.Location(Location(102,3,103,40)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
   ModuleComment( Construct a new List as the concatenation of two Lists. This is similar to
    the append "@" operation in many functional programming languages. ,[UNIQUE_ID(0868794ada4415e11b50b57ab44b84cd174450f8bd777d3cfd50bfc64228ff5e) org.kframework.attributes.Location(Location(237,3,238,72)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
+  ModuleComment( Condtionals,[UNIQUE_ID(c2b956b743bae9156046a52e476ef6f7c442828a0f9abf26f19995a2f299fec7) org.kframework.attributes.Location(Location(494,1,494,15)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))])
   ModuleComment( Conditional,[UNIQUE_ID(5960a567491ef22192600dbcdb4a38b78def011540587066b88e5c8b2adb06cf) org.kframework.attributes.Location(Location(143,1,143,15)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( Collections - data structures,[UNIQUE_ID(6e17f389b2a0f5be50a0ce925c11f616b4b535eb648d614ce6f19c356cd86566) org.kframework.attributes.Location(Location(160,1,160,33)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/grho.k))])
   ModuleComment( Check set inclusion ($A \subseteq B$) ,[UNIQUE_ID(19c9154470dea30050c482e88fbd28a612075105ab1f810378d0b9fe4de8c17a) org.kframework.attributes.Location(Location(186,3,186,46)) org.kframework.attributes.Source(Source(/usr/lib/kframework/include/builtin/domains.k))])
@@ -9022,7 +9001,7 @@ module SUB [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframew
 endmodule
 
 
-module SUB$SYNTAX [org.kframework.attributes.Location(Location(77,1,522,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))]
+module SUB$SYNTAX [org.kframework.attributes.Location(Location(77,1,525,9)) org.kframework.attributes.Source(Source(/home/isaac/Documents/KFramework/Git/Languages/GroundedRho/Substitute/sub.k))]
   imports SUB-SYNTAX$SYNTAX
   imports AUXFUN$SYNTAX
   syntax KResult ::= Procs

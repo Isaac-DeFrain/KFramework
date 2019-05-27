@@ -1,7 +1,7 @@
 // SUBSTITUTION FOR GRHO
 /*
 TODO:
- - add remaining features
+ - add remaining features - Methods, Bundles, 
  - more testing
 */
 /*
@@ -491,6 +491,9 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
 
+// Condtionals
+  rule #sub( A:Name ; B:Name ; if (C:BExp) D:Proc   ) => if (#sub(A;B;C)) #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:IfThen else D:Proc ) => #sub(A;B;C) else #sub(A;B;D)
 
 // Several Names sub
   rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub(B;D;#sub(A;C;P))
