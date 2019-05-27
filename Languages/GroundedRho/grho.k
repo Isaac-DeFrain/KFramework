@@ -1,10 +1,8 @@
 // RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a monadic style
 /*
 TODO:
- - Par as set with number of occurrences of each element
  - Matching (patterns & wildcard)
- - Environments for new declarations, global store for location, & location counter cell
- - Finish method semantics
+ - Method semantics
  - add contract invocation(?): Name "(" EmptyP/Proc/Procs ")" - syntactic sugar for cell pattern
  - add sequential listen semantics
 */
@@ -195,11 +193,10 @@ module GRHO-SYNTAX
 // Arithmetic
   syntax             AExp ::= "{" AExp "}"   [bracket]
                             > Int
-                            | ProcVar         // for interesting message passing, e.g. for( @\y <- x ){ \y + 5 }
-                            | BoundProc
-                            | Eval            // for interesting message passing, e.g. for( y <- x ){ *y + 5 }
+                            | ProcVar
+                            | Eval
                             | String
-                            | AExp "++" AExp  // string concatenation, e.g. for( y <- x1 ; z <- x2 ){ *y ++ *z }
+                            | AExp "++" AExp  // string concatenation
                             > "-" AExp        [strict]
                             > AExp "*"  AExp  [strict]
                             | AExp "/"  AExp  [strict]
@@ -212,7 +209,6 @@ module GRHO-SYNTAX
   syntax             BExp ::= "{" BExp "}"   [bracket]
                             > Bool
                             | ProcVar
-                            | BoundProc
                             | Eval
                             | String
                             | AExp "<=" AExp        [seqstrict]
@@ -268,7 +264,7 @@ module GRHO-SYNTAX
   syntax             Proc ::= EmptyProc
   syntax        EmptyProc ::= "EmptyP"
 
-// For De Bruijn Indices
+// For De Bruijn indices & alpha/structural equivalence
   syntax         Name ::= BoundName
   syntax    BoundName ::= "boundN(" Int ")"
   syntax    BoundName ::= "boundN(" Int "," Int ")"
@@ -277,17 +273,17 @@ module GRHO-SYNTAX
   syntax    BoundProc ::= "boundP(" Int ")"
   syntax    BoundProc ::= "boundP(" Int "," Int ")"
 
+  syntax         AExp ::= BoundProc // for substitution of variables in AExps
+  syntax         BExp ::= BoundProc // for substitution of variables in BExps
+
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
   syntax              Map ::= RhoMap
   syntax              Set ::= RhoSet
 
 // For K
-  syntax        KVariable ::= NameVar | ProcVar 
-                            | Name | Proc  // still testing for necessity
-                            | Send | Receive | Quote | Eval | Par | Collection  // for deep pattern-matching
-                            | Int  // for map substitutions
   syntax            KItem ::= Name | Names | Proc | Procs
+//  syntax        KVariable ::= NameVar | ProcVar // no longer needed since we're using #sub(_;_;_)
 
 endmodule
 
@@ -399,6 +395,7 @@ module GRHO
   rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
 
+// TODO: is this what I want?
 // Syntactic sugar - contract desugars into unconsumable receive
   rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
   rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
