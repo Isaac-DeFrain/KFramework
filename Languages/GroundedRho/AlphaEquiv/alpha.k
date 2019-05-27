@@ -6,7 +6,7 @@ TODO:
  - how to handle listens with several names & joins? -- Mem subues for several Names/Procs in #dBound
  - more tests for substitutions in continuations for listens on chan
  - create #mapify: function which computes the final deBruijn map of a Name
- - add remaining productions - GuardedRecs
+ - add remaining productions - GuardedRecs, Nonlinear Recs, MultiRecs, Conditional, MultiRecs, Collections, Bundles, 
 */
 
 require "../grho.k"
@@ -17,12 +17,10 @@ module ALPHA-SYNTAX
   import GRHO-SYNTAX
 
 // Top level Procs
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc  ";" Map ")" [function]
+  syntax         Proc ::= "#deBruijn(" Int ";" Proc  ";" Map ")" [function, poly(0,2)]
+                        | "#dBound("   Int ";" Proc  ";" Map ")" [function]
                         | "new" Name  "in" "{" DBProc "}"        [function]
                         | "new" Names "in" "{" DBProc "}"        [function]
-                        | "#dBound("   Int ";" Proc  ";" Map ")" [function]
-                        | "#mapify(" Name ")"
-                        | "#mapify(" Proc ")"
 
   // New name declarations
   syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ";" Map ")" [function]
@@ -32,7 +30,7 @@ module ALPHA-SYNTAX
                         | "#dBound("   Int ";" Procs ";" Map ")" [function]
 
 // Nested Procs
-  syntax         Proc ::= "#deBruijn(" Int "," Int ";" Proc  ";" Map ")" [function]
+  syntax         Proc ::= "#deBruijn(" Int "," Int ";" Proc  ";" Map ")" [function, poly(0,2)]
                         | "#dBound("   Int "," Int ";" Proc  ";" Map ")" [function]
 
   syntax       DBProc ::= "#deBruijn(" Int "," Int ";" Name  ";" Proc ";" Map ")" [function]
@@ -56,7 +54,9 @@ module ALPHA-SYNTAX
                         | "#dBound("   Int "," Int ";" Names ";" Map ")" [function]
 
 // Top level Map updates
-  syntax          Map ::= "#mapify(" Int ";" Name  ";" Map ")" [function]
+  syntax          Map ::= "#mapify(" Name ")"
+                        | "#mapify(" Proc ")"
+                        | "#mapify(" Int ";" Name  ";" Map ")" [function]
                         | "#mapify(" Int ";" Names ";" Map ")" [function]
                         | "#mapify(" Int ";" Proc  ";" Map ")" [function]
                         | "#mapify(" Int ";" Procs ";" Map ")" [function]
@@ -69,7 +69,7 @@ module ALPHA-SYNTAX
 
 // Alpha equisubence predicate
   syntax         Bool ::= Proc "#alpha" Proc [function]
-
+/*
 // For proper typing
   syntax          Par ::= "#deBruijn(" Int ";" Par ";" Map ")" [function]
                         | "#dBound("   Int ";" Par ";" Map ")" [function]
@@ -85,7 +85,7 @@ module ALPHA-SYNTAX
                         | "#dBound("   Int ";" BExp ";" Map ")" [function]
                         | "#deBruijn(" Int "," Int ";" BExp ";" Map ")" [function]
                         | "#dBound("   Int "," Int ";" BExp ";" Map ")" [function]
-
+*/
 endmodule
 
 module ALPHA
