@@ -1,3 +1,46 @@
-// Grounded rho - send
+// Send
 
-  x!( Nil , *y )
+    new x in { x!(Nil,*y,[1,2,\a,2],{1:2,3:4,1:2},Set(x!(1,[2],Set(3))),(1,2,"a")) }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          Nil , * y , [ 1 , 2 , \ a , 2 ] , { 1 : 2 , 3 : 4 , 1 : 2 } , Set ( ( @ unforgeable( 0 ) ) ! ( 1 , ( [ 2 ] , Set ( 3 ) ) ) ) , ( 1 , 2 , "a" )
+        </msg>
+        <tuple>
+          6
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    SetItem ( * y : proc )
+    SetItem ( \ a : proc )
+    SetItem ( y : name )
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( Nil , * y , [ 1 , 2 , \ a , 2 ] , #deBruijn( 4 ; { 1 : 2 , 3 : 4 , 1 : 2 } ; updateMap ( x |-> boundN( 0 )
+    y |-> boundN( 2 ) , #mapify( 3 ; [ 1 , 2 , \ a , 2 ] ; x |-> boundN( 0 )
+    y |-> boundN( 2 ) ) ) ) , ( Set ( boundN( 0 ) ! ( 1 , ( [ 2 ] , Set ( 3 ) ) ) ) , ( 1 , 2 , "a" ) ) ) }
+  </deBruijn>
+</T>
+*/

@@ -1,40 +1,16 @@
 // Grounded rho - linear join
 
-  for( a,b <- x ; c <- y ; d,e,f <- z ){ (*a,*b,*c,*d,*e,*f) } | y!("y") | x!("a","b") | y!!("y") | x!(true,true)
+    for( a,b <- x ; c <- y ; d,e,f <- z ){ (*a,*b,*c,*d,*e,*f) } | y!("y") | x!("a","b") | y!!("y") | x!(true,true)
 
 /*
 Output:
 <T>
   <threads>
-    <thread>
-      <k>
-        {[ 22 ; ]}
-      </k>
-    </thread> <thread>
-      <k>
-        {[ 37 ; ]}
-      </k>
-    </thread>
+    .ThreadCellBag
   </threads>
   <tuplespace>
     <sends>
       <send>
-        <schan>
-          x
-        </schan>
-        <msg>
-          1 , Nil
-        </msg>
-        <tuple>
-          2
-        </tuple>
-        <sper>
-          0
-        </sper>
-        <id>
-          59
-        </id>
-      </send> <send>
         <schan>
           x
         </schan>
@@ -44,12 +20,9 @@ Output:
         <tuple>
           2
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
-        <id>
-          50
-        </id>
+        </stype>
       </send> <send>
         <schan>
           x
@@ -60,12 +33,9 @@ Output:
         <tuple>
           2
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
-        <id>
-          55
-        </id>
+        </stype>
       </send> <send>
         <schan>
           y
@@ -76,12 +46,9 @@ Output:
         <tuple>
           1
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
-        <id>
-          62
-        </id>
+        </stype>
       </send> <send>
         <schan>
           y
@@ -92,54 +59,13 @@ Output:
         <tuple>
           1
         </tuple>
-        <sper>
+        <stype>
           1
-        </sper>
-        <id>
-          64
-        </id>
-      </send> <send>
-        <schan>
-          z
-        </schan>
-        <msg>
-          * z1 , * z2 , * z3
-        </msg>
-        <tuple>
-          3
-        </tuple>
-        <sper>
-          0
-        </sper>
-        <id>
-          44
-        </id>
+        </stype>
       </send>
     </sends>
     <receives>
       <rec>
-        <rchan>
-          b , b
-        </rchan>
-        <bvars>
-          a , a
-        </bvars>
-        <bnum>
-          1 , 1
-        </bnum>
-        <rper>
-          2
-        </rper>
-        <join>
-          22
-        </join>
-        <jlen>
-          2
-        </jlen>
-        <cont>
-          * a
-        </cont>
-      </rec> <rec>
         <rchan>
           x , y , z
         </rchan>
@@ -147,33 +73,30 @@ Output:
           a , b , c , d , e , f
         </bvars>
         <bnum>
-          2 , 1 , 3
-        </bnum>
-        <rper>
-          0
-        </rper>
-        <join>
-          37
-        </join>
-        <jlen>
           3
-        </jlen>
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
         <cont>
           ( * a , * b , * c , * d , * e , * f )
         </cont>
       </rec>
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+    SetItem ( y : name )
+    SetItem ( z : name )
+  </freeVars>
+  <deBruijn>
+    #deBruijn( 0 ; for ( a , b <- x ; c <- y ; d , e , f <- z ) { ( * a , * b , * c , * d , * e , * f ) } ; .Map ) | y ! ( "y" ) | x ! ( "a" , "b" ) | y !! ( "y" ) | x ! ( true , true )
+  </deBruijn>
 </T>
 */

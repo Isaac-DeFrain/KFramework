@@ -1,3 +1,42 @@
 // Conditional - if ... then ... else
 
-  if ( 3 < 5 and 2 < 0 ) x!(false,0) else x!(true,1)
+    new x in { if ( 3 < 5 and 2 < 0 ) x!(false,0) else x!(true,1) }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          true , 1
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { #deBruijn( 1 ; ( if ( false ) boundN( 0 ) ! ( false , 0 ) ) else boundN( 0 ) ! ( true , 1 ) ; x |-> boundN( 0 ) ) }
+  </deBruijn>
+</T>
+*/

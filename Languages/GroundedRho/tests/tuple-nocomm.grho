@@ -1,6 +1,6 @@
-// Grounded rho - no comm
+// No comm
 
-  x!(1,2,3,Nil) | for( a,b,c <- x ){ (*b,*a,*c,) }
+    new x in { x!(1,Set(2),[3,4],Nil|Nil) | for( a,b,c <- x ){ Set(*b,*a,*c) } }
 
 /*
 Output:
@@ -12,23 +12,23 @@ Output:
     <sends>
       <send>
         <schan>
-          x
+          @ unforgeable( 0 )
         </schan>
         <msg>
-          1 , 2 , 3 , Nil
+          1 , Set ( 2 ) , [ 3 , 4 ] , Nil
         </msg>
         <tuple>
           4
         </tuple>
-        <sper>
+        <stype>
           0
-        </sper>
+        </stype>
       </send>
     </sends>
     <receives>
       <rec>
         <rchan>
-          x
+          @ unforgeable( 0 )
         </rchan>
         <bvars>
           a , b , c
@@ -36,25 +36,26 @@ Output:
         <bnum>
           3
         </bnum>
-        <rper>
+        <rtype>
           0
-        </rper>
+        </rtype>
+        <guard>
+          true
+        </guard>
         <cont>
-          ( * b , * a , * c ,)
+          Set ( * b , * a , * c )
         </cont>
       </rec>
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 1 , Set ( 2 ) , ( [ 3 , 4 ] , Nil ) ) | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- boundN( 0 ) ) { Set ( * boundN( 2 ) , * boundN( 1 ) , * boundN( 3 ) ) } }
+  </deBruijn>
 </T>
 */

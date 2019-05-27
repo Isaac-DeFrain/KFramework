@@ -1,21 +1,25 @@
-// Guarded receive
+// AExp - input guard
 
-    new x,a,b in { x!(41,*a) | x!(40,*b) | for( y,@\b <- x if *y > 40 ){ @{*y + 1}!(\b) } }
+    for( @\y <- @Nil if \y < 38 and \y > 36 ){ \y + 5 } | @Nil!(36) | @Nil!(37) | @Nil!(38)
 
 /*
 Output:
 <T>
   <threads>
-    .ThreadCellBag
+    <thread>
+      <k>
+        42
+      </k>
+    </thread>
   </threads>
   <tuplespace>
     <sends>
       <send>
         <schan>
-          @ 42
+          @ Nil
         </schan>
         <msg>
-          unforgeable( 1 )
+          36
         </msg>
         <tuple>
           1
@@ -25,13 +29,13 @@ Output:
         </stype>
       </send> <send>
         <schan>
-          @ unforgeable( 0 )
+          @ Nil
         </schan>
         <msg>
-          40 , unforgeable( 2 )
+          38
         </msg>
         <tuple>
-          2
+          1
         </tuple>
         <stype>
           0
@@ -43,15 +47,13 @@ Output:
     </receives>
   </tuplespace>
   <nextLoc>
-    3
+    0
   </nextLoc>
   <freeVars>
     .Set
   </freeVars>
   <deBruijn>
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 , * boundN( 2 ) ) | #deBruijn( 3 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 ) { ( @ * y + 1 ) ! ( \ b ) } ; a |-> boundN( 1 )
-    b |-> boundN( 2 )
-    x |-> boundN( 0 ) ) }
+    #deBruijn( 0 ; for ( @ \ y <- @ Nil if \ y < 38 and \ y > 36 ) { \ y + 5 } ; .Map ) | ( @ Nil ) ! ( 36 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
   </deBruijn>
 </T>
 */

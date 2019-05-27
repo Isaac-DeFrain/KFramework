@@ -1,3 +1,48 @@
-// Grounded rho - send tuple
+// Receive tuple
 
-  for( a,b,c <= x ){ (*a,*b,*c,) }
+    for( a,b,c <= x ){ (*a,*b,*c) }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          x
+        </rchan>
+        <bvars>
+          a , b , c
+        </bvars>
+        <bnum>
+          3
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          ( * a , * b , * c )
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+  </freeVars>
+  <deBruijn>
+    #deBruijn( 0 ; for ( a , b , c <= x ) { ( * a , * b , * c ) } ; .Map )
+  </deBruijn>
+</T>
+*/

@@ -1,3 +1,42 @@
-// string concat
+// String concat
 
   new helloWorldCh in { helloWorldCh!("Hello " ++ "world") }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          "Hello world"
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( "Hello world" ) }
+  </deBruijn>
+</T>
+*/

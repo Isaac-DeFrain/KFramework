@@ -1,3 +1,48 @@
 // Contract
 
-  contract Name ( ) = { Nil }
+    contract Name ( ) = { Nil }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          Name
+        </rchan>
+        <bvars>
+          EmptyN
+        </bvars>
+        <bnum>
+          0
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          Nil
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( Name : name )
+  </freeVars>
+  <deBruijn>
+    for ( <= Name ) { Nil }
+  </deBruijn>
+</T>
+*/

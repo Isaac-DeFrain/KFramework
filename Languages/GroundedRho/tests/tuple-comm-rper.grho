@@ -1,97 +1,198 @@
-// Grounded rho - multiple comms with persistent receive
+// Nondeterministic comms with persistent receive
 
-  x!(19,23,0) | for( a,b,c <= x ){ *a + *b + *c } | y!(true,true,true) | x!(1,2,3) | x!("a","b") | for( a <- x ){ Nil }
+    new x,y in { x!(19,23,0) | for( a,b,c <= x ){ *a + *b + *c } | y!(true,true,true) | x!(1,2,3) | x!("a","b") | for( a <- x ){ Nil } }
 
 /*
 Output:
-<T>
-  <threads>
-    <thread>
-      <k>
-        6
-      </k>
-    </thread> <thread>
-      <k>
-        42
-      </k>
-    </thread>
-  </threads>
-  <tuplespace>
-    <sends>
-      <send>
-        <schan>
-          x
-        </schan>
-        <msg>
-          "a" , "b"
-        </msg>
-        <tuple>
-          2
-        </tuple>
-        <sper>
-          0
-        </sper>
-      </send> <send>
-        <schan>
-          y
-        </schan>
-        <msg>
-          true , true , true
-        </msg>
-        <tuple>
-          3
-        </tuple>
-        <sper>
-          0
-        </sper>
-      </send>
-    </sends>
-    <receives>
-      <rec>
-        <rchan>
-          x
-        </rchan>
-        <bvars>
-          a
-        </bvars>
-        <bnum>
-          1
-        </bnum>
-        <rper>
-          0
-        </rper>
-        <cont>
-          Nil
-        </cont>
-      </rec> <rec>
-        <rchan>
-          x
-        </rchan>
-        <bvars>
-          a , b , c
-        </bvars>
-        <bnum>
-          3
-        </bnum>
-        <rper>
-          1
-        </rper>
-        <cont>
-          ( * a + * b ) + * c
-        </cont>
-      </rec>
-    </receives>
-  </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
-</T>
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          6
+        </k>
+      </thread> <thread>
+        <k>
+          42
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            "a" , "b"
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 1 )
+          </schan>
+          <msg>
+            true , true , true
+          </msg>
+          <tuple>
+            3
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a
+          </bvars>
+          <bnum>
+            1
+          </bnum>
+          <rtype>
+            0
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            Nil
+          </cont>
+        </rec> <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a , b , c
+          </bvars>
+          <bnum>
+            3
+          </bnum>
+          <rtype>
+            1
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            { * a + * b } + * c
+          </cont>
+        </rec>
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      2
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 19 , ( 23 , 0 ) ) | #deBruijn( 2 ; for ( a , b , c <= boundN( 0 ) ) { { * a + * b } + * c } ; x |-> boundN( 0 )
+      y |-> boundN( 1 ) ) | boundN( 1 ) ! ( true , ( true , true ) ) | boundN( 0 ) ! ( 1 , ( 2 , 3 ) ) | boundN( 0 ) ! ( "a" , "b" ) | for ( boundN( 2 ) <- boundN( 0 ) ) { Nil } }
+    </deBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          6
+        </k>
+      </thread> <thread>
+        <k>
+          42
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            "a" , "b"
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 1 )
+          </schan>
+          <msg>
+            true , true , true
+          </msg>
+          <tuple>
+            3
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a
+          </bvars>
+          <bnum>
+            1
+          </bnum>
+          <rtype>
+            0
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            Nil
+          </cont>
+        </rec> <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a , b , c
+          </bvars>
+          <bnum>
+            3
+          </bnum>
+          <rtype>
+            1
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            { * a + * b } + * c
+          </cont>
+        </rec>
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      2
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 19 , ( 23 , 0 ) ) | #deBruijn( 2 ; for ( a , b , c <= boundN( 0 ) ) { { * a + * b } + * c } ; x |-> boundN( 0 )
+      y |-> boundN( 1 ) ) | boundN( 1 ) ! ( true , ( true , true ) ) | boundN( 0 ) ! ( 1 , ( 2 , 3 ) ) | boundN( 0 ) ! ( "a" , "b" ) | for ( boundN( 2 ) <- boundN( 0 ) ) { Nil } }
+    </deBruijn>
+  </T>
 */

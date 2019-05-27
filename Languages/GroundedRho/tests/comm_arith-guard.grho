@@ -1,6 +1,6 @@
-// send plus
+// AExp - guard
 
-  new x in { x!(41) | for( y <- x if *y > 40 ){ *y + 1 } }
+    new x in { x!(41) | for( y <- x if *y > 40 ){ *y + 1 } }
 
 /*
 Output:

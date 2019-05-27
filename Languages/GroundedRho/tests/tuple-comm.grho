@@ -1,8 +1,33 @@
-// Grounded rho - comm with tuple message
+// Comm with multiple messages
 
-  x!(1,2,3,bundle+{Nil}) | for( a,b,c,d <- x ){ (*d,*b,*a,*c,) }
+    x!(1,2,3,bundle+{Nil}) | for( a,b,c,d <- x ){ (*d,*b,*a,*c) }
 
 /*
-  ( bundle+{Nil} , 2 , 1 , 3 , )
-  Whoop whoop! YAY!
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        ( bundle+ { Nil } , 2 , 1 , 3 )
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+  </freeVars>
+  <deBruijn>
+    x ! ( 1 , 2 , ( 3 , #deBruijn( 3 ; bundle+ { Nil } ; .Map ) ) ) | for ( boundN( 0 ) , boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- x ) { ( * boundN( 3 ) , * boundN( 1 ) , * boundN( 0 ) , * boundN( 2 ) ) }
+  </deBruijn>
+</T>
 */

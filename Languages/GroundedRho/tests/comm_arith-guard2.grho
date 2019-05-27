@@ -1,6 +1,6 @@
 // Guarded receive
 
-  new x in { x!(41,true) | for( y,@\b <- x if *y > 40 and \b == true ){ *y + 1 } }
+    new x in { x!(41,true) | x!(41,"true") | x!(41,false) | for( y,@\b <- x if *y > 40 and \b == true ){ *y + 1 } }
 
 /*
 Output:
@@ -14,7 +14,33 @@ Output:
   </threads>
   <tuplespace>
     <sends>
-      .SendCellBag
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          41 , "true"
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          41 , false
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
     </sends>
     <receives>
       .RecCellBag
@@ -27,7 +53,7 @@ Output:
     .Set
   </freeVars>
   <deBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 and \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( 41 , "true" ) | boundN( 0 ) ! ( 41 , false ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 and \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
   </deBruijn>
 </T>
 */

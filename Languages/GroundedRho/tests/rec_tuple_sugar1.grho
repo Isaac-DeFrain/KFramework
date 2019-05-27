@@ -6,20 +6,24 @@
 Output:
 <T>
   <threads>
-    <thread>
-      <k>
-        12
-      </k>
-      <lenv>
-        ( @ 1 ) |-> ( @ 3 )  // this needs to be corrected!!!
-        ( @ 2 ) |-> ( @ 2 )
-        x |-> @ 7
-      </lenv>
-    </thread>
+    .ThreadCellBag
   </threads>
   <tuplespace>
     <sends>
-      .SendCellBag
+      <send>
+        <schan>
+          y
+        </schan>
+        <msg>
+          3 , 2 , 7
+        </msg>
+        <tuple>
+          3
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
     </sends>
     <receives>
       <rec>
@@ -27,36 +31,31 @@ Output:
           y
         </rchan>
         <bvars>
-          @ 1 , @ 2 , x
+          @ ( 1 , 2 , * x )
         </bvars>
         <bnum>
-          3
+          1
         </bnum>
         <rtype>
           1
         </rtype>
+        <guard>
+          true
+        </guard>
         <cont>
           * x + 5
         </cont>
-        <rbind>
-          .Map
-        </rbind>
       </rec>
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-    <update>
-      .Map
-    </update>
-  </reaction>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( y : name )
+  </freeVars>
+  <deBruijn>
+    for ( @ #dBound( 0 ; ( 1 , 2 , * x ) ; .Map ) <= y ) { * #deBruijn( 1 ; #sub( #dBound( 0 ; ( 1 , 2 , * x ) ; .Map ) ; ( 1 , 2 , * x ) ; x ) ; updateMap ( .Map , updateMap ( .Map , #mapify( 0 ; ( 1 , 2 , * x ) ; .Map ) ) ) ) + 5 } | y ! ( 3 , ( 2 , 7 ) )
+  </deBruijn>
 </T>
 */

@@ -1,3 +1,42 @@
 // Conditional - if ... then ...
 
   if ( 3 < 5 and 2 > 0 ) x!(Nil)
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          x
+        </schan>
+        <msg>
+          Nil
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+  </freeVars>
+  <deBruijn>
+    #deBruijn( 0 ; if ( true ) x ! ( Nil ) ; .Map )
+  </deBruijn>
+</T>
+*/

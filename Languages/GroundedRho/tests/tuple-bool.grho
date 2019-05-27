@@ -1,3 +1,35 @@
-// Grounded rho - tupbool
+// Tuple
 
-  x!( 1 <= 0 + 2 and not 2 <= 1 , [ *y , @Nil!(Nil) , Set( *x, Nil , *y ) ] , { *x : Set ( ( Nil ) ) } )
+    new x,y in { ( 1 <= 0 + 2 and not 2 <= 1 , [ *y , @Nil!(Nil) , Set( *x, Nil , *y ) ] , { *x : Set ( ( Nil ) ) } ) }
+
+/*
+Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        ( true , [ unforgeable( 1 ) , ( @ Nil ) ! ( Nil ) , Set ( unforgeable( 0 ) , Nil , unforgeable( 1 ) ) ] , { unforgeable( 0 ) : Set ( ( Nil ) ) } )
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    2
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { ( true , [ * boundN( 1 ) , ( @ Nil ) ! ( Nil ) , Set ( * boundN( 0 ) , Nil , * boundN( 1 ) ) ] , #deBruijn( 4 ; { * boundN( 0 ) : Set ( ( Nil ) ) } ; updateMap ( x |-> boundN( 0 )
+    y |-> boundN( 1 ) , #mapify( 3 ; [ * boundN( 1 ) , ( @ Nil ) ! ( Nil ) , Set ( * boundN( 0 ) , Nil , * boundN( 1 ) ) ] ; x |-> boundN( 0 )
+    y |-> boundN( 1 ) ) ) ) ) }
+  </deBruijn>
+</T>
+*/

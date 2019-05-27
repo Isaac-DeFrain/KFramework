@@ -1,3 +1,270 @@
 // Comm - AExp with Eval
 
-  @Nil!(1) | for( y <- @Nil ){ *y + 5 }
+    @Nil!(1) | for( y <- @Nil ){ *y + 5 } | @Nil!(37) | @Nil!(37) | @Nil!(38)
+
+/*
+Output:
+<T>
+    <threads>
+      <thread>
+        <k>
+          6
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            38
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </deBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          42
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            1
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            38
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </deBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          42
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            1
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            38
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </deBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          43
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            1
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ Nil
+          </schan>
+          <msg>
+            37
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </deBruijn>
+  </T>
+*/

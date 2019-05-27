@@ -1,3 +1,46 @@
-// Grounded rho - peek
+// Peek
 
-  x!(1,"a",Nil) | for( a,b,c <! x ){(*a,*b,*c)}
+    x!(1,"a",Nil) | for( a,b,c <! x ){(*a,*b,*c)}
+
+/*
+Output: (message stays in the tuplespace)
+<T>
+  <threads>
+    <thread>
+      <k>
+        ( 1 , "a" , Nil )
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          x
+        </schan>
+        <msg>
+          1 , "a" , Nil
+        </msg>
+        <tuple>
+          3
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+  </freeVars>
+  <deBruijn>
+    x ! ( 1 , ( "a" , Nil ) ) | #deBruijn( 0 ; for ( a , b , c <! x ) { ( * a , * b , * c ) } ; .Map )
+  </deBruijn>
+</T>
+*/

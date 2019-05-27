@@ -1,3 +1,49 @@
 // Grounded rho - repeated join
 
   for( a,b <= x ; c,d,e <= y ){ (*a,*b,*c,*d,*e) }
+
+/*
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          x , y
+        </rchan>
+        <bvars>
+          a , b , c , d , e
+        </bvars>
+        <bnum>
+          2
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          ( * a , * b , * c , * d , * e )
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <freeVars>
+    SetItem ( x : name )
+    SetItem ( y : name )
+  </freeVars>
+  <deBruijn>
+    #deBruijn( 0 ; for ( a , b <= x ; c , d , e <= y ) { ( * a , * b , * c , * d , * e ) } ; .Map )
+  </deBruijn>
+</T>
+*/

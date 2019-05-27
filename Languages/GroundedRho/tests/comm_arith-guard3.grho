@@ -1,6 +1,6 @@
-// String - race condition
+// Guarded receive
 
-    x!("Hello ") | for( y <- x ){ *y ++ "world!" } | x!("Goodbye ")
+    new x in { x!(41,true) | x!(-43,true and true) | for( y,@\b <- x if \b == true ){ *y + 1 } }
 
 /*
 Output:
@@ -8,7 +8,7 @@ Output:
     <threads>
       <thread>
         <k>
-          "Goodbye world!"
+          42
         </k>
       </thread>
     </threads>
@@ -16,13 +16,13 @@ Output:
       <sends>
         <send>
           <schan>
-            x
+            @ unforgeable( 0 )
           </schan>
           <msg>
-            "Hello "
+            -43 , true
           </msg>
           <tuple>
-            1
+            2
           </tuple>
           <stype>
             0
@@ -34,13 +34,13 @@ Output:
       </receives>
     </tuplespace>
     <nextLoc>
-      0
+      1
     </nextLoc>
     <freeVars>
-      SetItem ( x : name )
+      .Set
     </freeVars>
     <deBruijn>
-      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
+      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
     </deBruijn>
   </T>
 #Or
@@ -48,7 +48,7 @@ Output:
     <threads>
       <thread>
         <k>
-          "Hello world!"
+          -42
         </k>
       </thread>
     </threads>
@@ -56,13 +56,13 @@ Output:
       <sends>
         <send>
           <schan>
-            x
+            @ unforgeable( 0 )
           </schan>
           <msg>
-            "Goodbye "
+            41 , true
           </msg>
           <tuple>
-            1
+            2
           </tuple>
           <stype>
             0
@@ -74,13 +74,13 @@ Output:
       </receives>
     </tuplespace>
     <nextLoc>
-      0
+      1
     </nextLoc>
     <freeVars>
-      SetItem ( x : name )
+      .Set
     </freeVars>
     <deBruijn>
-      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
+      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
     </deBruijn>
   </T>
 */

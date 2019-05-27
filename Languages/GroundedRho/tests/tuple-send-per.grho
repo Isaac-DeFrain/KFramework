@@ -1,3 +1,42 @@
 // Grounded rho - persistent send
 
-  x!!(1,"a",Nil)
+    new x in { x!!(1,"a",Nil) }
+
+/*
+Output:
+Result ==K <T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          1 , "a" , Nil
+        </msg>
+        <tuple>
+          3
+        </tuple>
+        <stype>
+          1
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { boundN( 0 ) !! ( 1 , ( "a" , Nil ) ) }
+  </deBruijn>
+</T>
+*/

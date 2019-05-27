@@ -1,6 +1,6 @@
 // send plus - no free variables
 
-  new x , y in { x!(3 + 5) | y!("a") | *x | *y | 8 % 3 }
+  new x,y in { x!(3 + 5) | y!("a") | *x | *y | 8 % 3 }
 
 /*
 Output:
@@ -10,26 +10,14 @@ Output:
       <k>
         2
       </k>
-      <env>
-        x |-> 0
-        y |-> 1
-      </env>
     </thread> <thread>
       <k>
         unforgeable( 0 )
       </k>
-      <env>
-        x |-> 0
-        y |-> 1
-      </env>
     </thread> <thread>
       <k>
         unforgeable( 1 )
       </k>
-      <env>
-        x |-> 0
-        y |-> 1
-      </env>
     </thread>
   </threads>
   <tuplespace>
@@ -47,10 +35,6 @@ Output:
         <stype>
           0
         </stype>
-        <sbind>
-          x |-> 0
-          y |-> 1
-        </sbind>
       </send> <send>
         <schan>
           @ unforgeable( 1 )
@@ -64,39 +48,20 @@ Output:
         <stype>
           0
         </stype>
-        <sbind>
-          x |-> 0
-          y |-> 1
-        </sbind>
       </send>
     </sends>
     <receives>
       .RecCellBag
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-    <update>
-      .Map
-    </update>
-  </reaction>
-  <store>
-    0 |-> ( @ unforgeable( 0 ) )
-    1 |-> @ unforgeable( 1 )
-  </store>
   <nextLoc>
     2
   </nextLoc>
-  <free>
+  <freeVars>
     .Set
-  </free>
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 8 ) | boundN( 1 ) ! ( "a" ) | * boundN( 0 ) | * boundN( 1 ) | 2 }
+  </deBruijn>
 </T>
 */

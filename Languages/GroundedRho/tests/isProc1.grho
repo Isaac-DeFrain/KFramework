@@ -1,5 +1,8 @@
 // isProc
 
-  #isProc( y!(Nil | "3") )
+    #isProc( y!(Nil | "3") )
 
-// Output: true
+/*
+Output:
+true
+*/

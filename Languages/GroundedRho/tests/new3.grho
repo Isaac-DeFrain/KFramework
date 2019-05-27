@@ -1,8 +1,69 @@
 // New - nested
 
-  new x in { x!(1) | new x in { x!(1) } | new x in { @1!(*x | (\x , \y) ) } }
+    new x in { x!(1) | new x in { x!(1) } | new x in { @1!(*x | (\x , \y) ) } }
 
 /*
-  Output:
-
+Output:
+<T>
+  <threads>
+    .ThreadCellBag
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ 1
+        </schan>
+        <msg>
+          unforgeable( 2 ) | ( \ x , \ y )
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          1
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 1 )
+        </schan>
+        <msg>
+          1
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    3
+  </nextLoc>
+  <freeVars>
+    SetItem ( \ x : proc )
+    SetItem ( \ y : proc )
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) | new boundN( 1 ) in { boundN( 1 ) ! ( 1 ) } | new boundN( 1 ) in { ( @ 1 ) ! ( * boundN( 1 ) | ( \ x , \ y ) ) } }
+  </deBruijn>
+</T>
 */

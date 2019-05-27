@@ -1,64 +1,158 @@
-// Grounded rho - comm with persistent send
+// Comm with persistent send
 
-  x!!(1,"a",Nil) | for( a,b,c <- x ){ (*c,*a,*b,) } | for( a,b,c <= x ){ "should not appear in thread" } | x!((2,"b",Nil,))
+    new x in { x!!(1,"a",Nil) | for( a,b,c <- x ){ (*c,*a,*b) } | for( a,b,c <- x ){ "appears in thread" } | for( a,b,c <= x ){ "should not appear in thread" } | x!((2,"b",Nil)) }
 
 /*
 Output:
 <T>
-  <threads>
-    <thread>
-      <k>
-        ( Nil , 1 , "a" ,)
-      </k>
-    </thread>
-  </threads>
-  <tuplespace>
-    <sends>
-      <send>
-        <schan>
-          x
-        </schan>
-        <msg>
-          1 , "a" , Nil
-        </msg>
-        <tuple>
-          3
-        </tuple>
-        <sper>
-          1
-        </sper>
-      </send>
-    </sends>
-    <receives>
-      <rec>
-        <rchan>
-          x
-        </rchan>
-        <bvars>
-          a , b , c
-        </bvars>
-        <bnum>
-          3
-        </bnum>
-        <rper>
-          1
-        </rper>
-        <cont>
-          "should not appear in thread"
-        </cont>
-      </rec>
-    </receives>
-  </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-  </reaction>
-</T>
+    <threads>
+      <thread>
+        <k>
+          "appears in thread"
+        </k>
+      </thread> <thread>
+        <k>
+          ( Nil , 1 , "a" )
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            1 , "a" , Nil
+          </msg>
+          <tuple>
+            3
+          </tuple>
+          <stype>
+            1
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            ( 2 , "b" , Nil )
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a , b , c
+          </bvars>
+          <bnum>
+            3
+          </bnum>
+          <rtype>
+            1
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            "should not appear in thread"
+          </cont>
+        </rec>
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      1
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      new boundN( 0 ) in { boundN( 0 ) !! ( 1 , ( "a" , Nil ) ) | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- boundN( 0 ) ) { ( * boundN( 3 ) , * boundN( 1 ) , * boundN( 2 ) ) } | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- boundN( 0 ) ) { "appears in thread" } | #deBruijn( 1 ; for ( a , b , c <= boundN( 0 ) ) { "should not appear in thread" } ; x |-> boundN( 0 ) ) | boundN( 0 ) ! ( ( 2 , "b" , Nil ) ) }
+    </deBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <threads>
+      <thread>
+        <k>
+          "appears in thread"
+        </k>
+      </thread> <thread>
+        <k>
+          ( Nil , 1 , "a" )
+        </k>
+      </thread>
+    </threads>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            1 , "a" , Nil
+          </msg>
+          <tuple>
+            3
+          </tuple>
+          <stype>
+            1
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            ( 2 , "b" , Nil )
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        <rec>
+          <rchan>
+            @ unforgeable( 0 )
+          </rchan>
+          <bvars>
+            a , b , c
+          </bvars>
+          <bnum>
+            3
+          </bnum>
+          <rtype>
+            1
+          </rtype>
+          <guard>
+            true
+          </guard>
+          <cont>
+            "should not appear in thread"
+          </cont>
+        </rec>
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      1
+    </nextLoc>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijn>
+      new boundN( 0 ) in { boundN( 0 ) !! ( 1 , ( "a" , Nil ) ) | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- boundN( 0 ) ) { ( * boundN( 3 ) , * boundN( 1 ) , * boundN( 2 ) ) } | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <- boundN( 0 ) ) { "appears in thread" } | #deBruijn( 1 ; for ( a , b , c <= boundN( 0 ) ) { "should not appear in thread" } ; x |-> boundN( 0 ) ) | boundN( 0 ) ! ( ( 2 , "b" , Nil ) ) }
+    </deBruijn>
+  </T>
 */

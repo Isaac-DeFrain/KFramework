@@ -1,53 +1,70 @@
 // send plus
 
-  x!(3 + 5) | y!("a") | *x | *y | 8 % 3
+    x!(3 + 5) | y!("a") | *x | *y | 8 % 3
 
 /*
-Output: (with free variable execution guard)
+Output: (without free variable execution guard)
 <T>
   <threads>
     <thread>
       <k>
-        Error: FreeVars! ~> x ! ( 8 ) | y ! ( "a" ) | * x | * y | 2
+        2
       </k>
-      <env>
-        .Map
-      </env>
+    </thread> <thread>
+      <k>
+        * x
+      </k>
+    </thread> <thread>
+      <k>
+        * y
+      </k>
     </thread>
   </threads>
   <tuplespace>
     <sends>
-      .SendCellBag
+      <send>
+        <schan>
+          x
+        </schan>
+        <msg>
+          8
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          y
+        </schan>
+        <msg>
+          "a"
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
     </sends>
     <receives>
       .RecCellBag
     </receives>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-    <update>
-      .Map
-    </update>
-  </reaction>
-  <store>
-    .Map
-  </store>
   <nextLoc>
     0
   </nextLoc>
-  <free>
+  <freeVars>
     SetItem ( * x : proc )
     SetItem ( * y : proc )
     SetItem ( x : name )
     SetItem ( y : name )
-  </free>
+  </freeVars>
+  <deBruijn>
+    x ! ( 8 ) | y ! ( "a" ) | * x | * y | 2
+  </deBruijn>
 </T>
 */
