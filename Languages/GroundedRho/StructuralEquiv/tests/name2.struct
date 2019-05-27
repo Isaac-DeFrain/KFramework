@@ -1,0 +1,5 @@
+// Name equivalence
+
+    #nameEq(@{1|Nil} ; @1)
+  
+// Output: true
