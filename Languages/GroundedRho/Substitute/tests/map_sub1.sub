@@ -1,0 +1,10 @@
+// Map substitution
+
+    #sub( \y |-> 1 x |-> @2 y |-> @3 \x |-> 4 ; y!( @\x!( 3,\y,*x,Set(*y,true,\y) ) ) )
+
+/*
+Output: (what's up with the parentheses around the last two procs???)
+
+    ( @ 3 ) ! ( ( @ 4 ) ! ( 3 , 1 , ( 2 , Set ( 3 , true , 1 ) ) ) )
+
+*/
