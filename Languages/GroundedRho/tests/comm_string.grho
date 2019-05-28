@@ -1,86 +1,36 @@
 // String - race condition
 
-    x!("Hello ") | for( y <- x ){ *y ++ "world!" } | x!("Goodbye ")
+    x!("Hello ") | for( y <- x ){ *y ++ "world!" }
 
 /*
 Output:
-<T>
-    <threads>
-      <thread>
-        <k>
-          "Goodbye world!"
-        </k>
-      </thread>
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            "Hello "
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <stype>
-            0
-          </stype>
-        </send>
-      </sends>
-      <receives>
-        .RecCellBag
-      </receives>
-    </tuplespace>
-    <nextLoc>
-      0
-    </nextLoc>
-    <freeVars>
-      SetItem ( x : name )
-    </freeVars>
-    <deBruijn>
-      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
-    </deBruijn>
-  </T>
-#Or
-  Result ==K <T>
-    <threads>
-      <thread>
-        <k>
-          "Hello world!"
-        </k>
-      </thread>
-    </threads>
-    <tuplespace>
-      <sends>
-        <send>
-          <schan>
-            x
-          </schan>
-          <msg>
-            "Goodbye "
-          </msg>
-          <tuple>
-            1
-          </tuple>
-          <stype>
-            0
-          </stype>
-        </send>
-      </sends>
-      <receives>
-        .RecCellBag
-      </receives>
-    </tuplespace>
-    <nextLoc>
-      0
-    </nextLoc>
-    <freeVars>
-      SetItem ( x : name )
-    </freeVars>
-    <deBruijn>
-      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
-    </deBruijn>
-  </T>
+Result ==K <T>
+  <activity>
+    <task>
+      <k>
+        "Hello world!"
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    x ! ( "Hello " ) | for ( y <- x ) { * y ++ "world!" }
+  </original>
+  <freeVars>
+    SetItem ( x : name )
+  </freeVars>
+  <deBruijnified>
+    x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" }
+  </deBruijnified>
+</T>
 */

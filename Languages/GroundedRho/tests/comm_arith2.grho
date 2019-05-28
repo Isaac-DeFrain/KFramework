@@ -1,21 +1,21 @@
 // send plus
 
-  new x in { x!(41,true) | for( @\y,y <- x ){ \y + 1 | not *y } }
+    new x in { x!(41,true) | for( @\y,y <- x ){ \y + 1 | not *y } }
 
 /*
 Output:
-<T>
-  <threads>
-    <thread>
+Result ==K <T>
+  <activity>
+    <task>
       <k>
         42
       </k>
-    </thread> <thread>
+    </task> <task>
       <k>
         false
       </k>
-    </thread>
-  </threads>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       .SendCellBag
@@ -27,11 +27,14 @@ Output:
   <nextLoc>
     1
   </nextLoc>
+  <original>
+    new x in { x ! ( 41 , true ) | for ( @ \ y , y <- x ) { \ y + 1 | not * y } }
+  </original>
   <freeVars>
     .Set
   </freeVars>
-  <deBruijn>
+  <deBruijnified>
     new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | for ( @ boundP( 1 ) , boundN( 2 ) <- boundN( 0 ) ) { boundP( 1 ) + 1 | not * boundN( 2 ) } }
-  </deBruijn>
+  </deBruijnified>
 </T>
 */

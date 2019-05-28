@@ -1,0 +1,92 @@
+// String - race condition
+
+    x!("Hello ") | for( y <- x ){ *y ++ "world!" } | x!("Goodbye ")
+
+/*
+Output:
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "Goodbye world!"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            "Hello "
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <original>
+      x ! ( "Hello " ) | for ( y <- x ) { * y ++ "world!" } | x ! ( "Goodbye " )
+    </original>
+    <freeVars>
+      SetItem ( x : name )
+    </freeVars>
+    <deBruijnified>
+      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
+    </deBruijnified>
+  </T>
+#Or
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "Hello world!"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            x
+          </schan>
+          <msg>
+            "Goodbye "
+          </msg>
+          <tuple>
+            1
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <original>
+      x ! ( "Hello " ) | for ( y <- x ) { * y ++ "world!" } | x ! ( "Goodbye " )
+    </original>
+    <freeVars>
+      SetItem ( x : name )
+    </freeVars>
+    <deBruijnified>
+      x ! ( "Hello " ) | for ( boundN( 0 ) <- x ) { * boundN( 0 ) ++ "world!" } | x ! ( "Goodbye " )
+    </deBruijnified>
+  </T>
+*/

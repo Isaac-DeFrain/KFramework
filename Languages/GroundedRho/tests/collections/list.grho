@@ -4,8 +4,33 @@
 
 /*
 Output:
-ListItem ( Nil )
-ListItem ( true )
-ListItem ( 3 )
-ListItem ( ( @ 1 ) ! ( "a" ) ) ~> #freezer#SemanticCastToRhoList0_ ( )
+Result ==K <T>
+  <activity>
+    <task>
+      <k>
+        [ Nil , true , 3 , ( @ 1 ) ! ( "a" ) ]
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    [ Nil , true , 3 , ( @ 1 ) ! ( "a" ) ]
+  </original>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijnified>
+    [ Nil , true , 3 , ( @ 1 ) ! ( "a" ) ]
+  </deBruijnified>
+</T>
 */

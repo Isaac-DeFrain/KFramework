@@ -4,10 +4,10 @@
 
 /*
 Output:
-<T>
-  <threads>
-    .ThreadCellBag
-  </threads>
+Result ==K <T>
+  <activity>
+    .TaskCellBag
+  </activity>
   <tuplespace>
     <sends>
       <send>
@@ -45,13 +45,16 @@ Output:
   <nextLoc>
     3
   </nextLoc>
+  <original>
+    new x , a , b in { x ! ( 41 , * a ) | x ! ( 40 , * b ) | for ( y , @ \ b <- x if * y > 40 ) { ( @ * y + 1 ) ! ( \ b ) } }
+  </original>
   <freeVars>
     .Set
   </freeVars>
-  <deBruijn>
+  <deBruijnified>
     new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 , * boundN( 2 ) ) | #deBruijn( 3 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 ) { ( @ * y + 1 ) ! ( \ b ) } ; a |-> boundN( 1 )
     b |-> boundN( 2 )
     x |-> boundN( 0 ) ) }
-  </deBruijn>
+  </deBruijnified>
 </T>
 */

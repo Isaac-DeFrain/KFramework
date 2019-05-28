@@ -1,33 +1,94 @@
 // Communication on name equivalent channels
 
-    @{1 | @3!(Nil) | Nil | "a"}!(41,true) | for( @\y,y <- @{"a" | 1 | @3!(Nil)} ){ [\y + 1 , not *y] }
+    @{1 | @3!(Nil) | Nil | "a"}!(41,true) |
+    @{1 | @3!(Nil) | "a"}!(-43,true) |
+    for( @\y,y <- @{"a" | 1 | @3!(Nil)} ){ [\y + 1 , not *y] }
 
 /*
 Output:
-<T>
-  <threads>
-    <thread>
-      <k>
-        [ 42 , false ]
-      </k>
-    </thread>
-  </threads>
-  <tuplespace>
-    <sends>
-      .SendCellBag
-    </sends>
-    <receives>
-      .RecCellBag
-    </receives>
-  </tuplespace>
-  <nextLoc>
-    0
-  </nextLoc>
-  <freeVars>
-    .Set
-  </freeVars>
-  <deBruijn>
-    ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( 41 , true ) | for ( @ boundP( 0 ) , boundN( 1 ) <- @ "a" | 1 | ( @ 3 ) ! ( Nil ) ) { [ boundP( 0 ) + 1 , not * boundN( 1 ) ] }
-  </deBruijn>
-</T>
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          [ 42 , false ]
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ 1 | ( @ 3 ) ! ( Nil ) | "a"
+          </schan>
+          <msg>
+            -43 , true
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <original>
+      ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( 41 , true ) | ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( -43 , true ) | for ( @ \ y , y <- @ "a" | 1 | ( @ 3 ) ! ( Nil ) ) { [ \ y + 1 , not * y ] }
+    </original>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijnified>
+      ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( 41 , true ) | ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( -43 , true ) | for ( @ boundP( 0 ) , boundN( 1 ) <- @ "a" | 1 | ( @ 3 ) ! ( Nil ) ) { [ boundP( 0 ) + 1 , not * boundN( 1 ) ] }
+    </deBruijnified>
+  </T>
+#Or
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          [ -42 , false ]
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ 1 | ( @ 3 ) ! ( Nil ) | "a"
+          </schan>
+          <msg>
+            41 , true
+          </msg>
+          <tuple>
+            2
+          </tuple>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      0
+    </nextLoc>
+    <original>
+      ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( 41 , true ) | ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( -43 , true ) | for ( @ \ y , y <- @ "a" | 1 | ( @ 3 ) ! ( Nil ) ) { [ \ y + 1 , not * y ] }
+    </original>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijnified>
+      ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( 41 , true ) | ( @ 1 | ( @ 3 ) ! ( Nil ) | "a" ) ! ( -43 , true ) | for ( @ boundP( 0 ) , boundN( 1 ) <- @ "a" | 1 | ( @ 3 ) ! ( Nil ) ) { [ boundP( 0 ) + 1 , not * boundN( 1 ) ] }
+    </deBruijnified>
+  </T>
 */
