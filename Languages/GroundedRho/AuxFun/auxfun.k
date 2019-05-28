@@ -62,7 +62,11 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Names ")" [function]
                   | "#dec"    "(" New     ")"         [function]
 
+// For input guards
   syntax   BExp ::= "#guard" "(" Receive ")"          [function]
+
+// For string interpolation
+  syntax String ::= "#interpolate(" String ";" RhoMap ")" [function]
 
 // Methods
   syntax RhoSet ::= "#keys" RhoMap                    [function]
@@ -388,6 +392,37 @@ module AUXFUN
 //---------------
   rule #quotes( A:Proc , B:Proc  ) => @A , @B
   rule #quotes( A:Proc , B:Procs ) => @A , #quotes(B)
+
+// #interpolate
+  rule #interpolate( S:String ; { A:String : B:String } )
+       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
+          #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),                                  
+                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) // this part substitutes B for A
+          +String substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+          #else S
+          #fi
+  rule #interpolate( S:String ; { A:String : B:String , KV:RhoKVPair } )
+       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
+          #then substrString(S,0,findString(S,"${",0)) +String
+                replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),
+                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) +String
+                substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+          #else #interpolate(S;{KV})
+          #fi
+  rule #interpolate( S:String ; { A:String : B:String , KVs:RhoKVPairs } )
+       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
+          #then substrString(S,0,findString(S,"${",0)) +String
+                replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),
+                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) +String
+                substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+          #else #interpolate(S;{KVs})
+          #fi
+  // if key is not a string, bypass it
+  rule #interpolate(S:String ; { A:Proc : _:Proc ,  KV:RhoKVPair  } ) => #interpolate(S;{KV})  requires notBool isString(A)
+  rule #interpolate(S:String ; { A:Proc : _:Proc , KVs:RhoKVPairs } ) => #interpolate(S;{KVs}) requires notBool isString(A)
+  // if all else fails, return the original string
+  rule #interpolate(S:String ; _:RhoMap ) => S [owise]
 
 //------------------
 //--- Predicates ---
