@@ -1,0 +1,84 @@
+// New
+
+    new x(`rho:io:stdout`) in { x!(1) }
+
+/*
+  Output:
+<T>
+  <threads>
+    <thread>
+      <k>
+        8
+      </k>
+    </thread> <thread>
+      <k>
+        unforgeable( 1 )
+      </k>
+    </thread>
+  </threads>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 2 )
+        </schan>
+        <msg>
+          "a"
+        </msg>
+        <tuple>
+          1
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 3 )
+        </schan>
+        <msg>
+          unforgeable( 1 ) , Nil
+        </msg>
+        <tuple>
+          2
+        </tuple>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          @ unforgeable( 0 )
+        </rchan>
+        <bvars>
+          a
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          "no unforgeable names here"
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    4
+  </nextLoc>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijn>
+    new boundN( 0 ) in { new boundN( 1 ) , boundN( 2 ) , boundN( 3 ) in { boundN( 1 ) ! ( 8 ) | boundN( 2 ) ! ( "a" ) | boundN( 3 ) ! ( * boundN( 1 ) , Nil ) | for ( boundN( 4 ) <- boundN( 1 ) ) { * boundN( 4 ) } | #deBruijn( 4 ; for ( @ \ y , a <! boundN( 3 ) ) { \ y | * a } ; x |-> boundN( 1 )
+    y |-> boundN( 2 )
+    z |-> boundN( 3 ) ) } | for ( boundN( 1 ) <- boundN( 0 ) ) { "no unforgeable names here" } }
+  </deBruijn>
+</T>
+*/
