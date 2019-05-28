@@ -1,0 +1,36 @@
+// String interpolation
+
+    "begin->${sub}<-rest" %% { "a":"b" , "ab":"bc" , Nil:1 , "sub":"val" , "stuff":"something" }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        "begin->val<-rest"
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    "begin->${sub}<-rest" %% { "a" : "b" , "ab" : "bc" , Nil : 1 , "sub" : "val" , "stuff" : "something" }
+  </original>
+  <freeVars>
+    FV( "begin->${sub}<-rest" %% { "a" : "b" , "ab" : "bc" , Nil : 1 , "sub" : "val" , "stuff" : "something" } )
+  </freeVars>
+  <deBruijnified>
+    #deBruijn( 0 ; "begin->${sub}<-rest" %% { "a" : "b" , "ab" : "bc" , Nil : 1 , "sub" : "val" , "stuff" : "something" } ; .Map )
+  </deBruijnified>
+</T>
+*/
