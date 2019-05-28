@@ -13,6 +13,7 @@ TODO:
 
 require "domains.k"
 require "../AuxFun/auxfun.k"
+require "../Names_Variables/namevar.k"
 require "../grho.k"
 
 module SUB-SYNTAX
@@ -31,6 +32,8 @@ module SUB-SYNTAX
                   | "#subChan(" Procs ";" Procs ";" Proc ")" [function]
                   | "#subChan(" Name  ";" Name  ";" Proc ")" [function]
                   | "#subChan(" Names ";" Names ";" Proc ")" [function]
+                  | "#subNew("  Proc  ";" Proc  ";" New  ")" [function]
+                  | "#subNew("  Procs ";" Procs ";" New  ")" [function]
                   | "#subNew("  Name  ";" Name  ";" New  ")" [function]
                   | "#subNew("  Names ";" Names ";" New  ")" [function]
 
@@ -77,61 +80,9 @@ endmodule
 module SUB
   import SUB-SYNTAX
   import AUXFUN
+  import NAMEVAR
 
   syntax KResult ::= Name | Names | Proc | Procs
-/*
-// Process substitution
-  rule #sub( A:Proc ; A ) => A
-  rule #sub( A:Proc ; _:ProcVar ) => A
-  rule #sub( A:Proc ; * _:NameVar ) => A
-  rule #sub( * A:Name ; * B:Name  ) => * #sub(A;B)
-
-  // send substitutions
-  rule #sub( A:Name !  (         ) ; C:Name !  (         ) ) => #sub(A;C) !  (           )
-  rule #sub( A:Name !  ( B:Proc  ) ; C:Name !  ( D:Proc  ) ) => #sub(A;C) !  ( #sub(B;D) )
-  rule #sub( A:Name !  ( B:Procs ) ; C:Name !  ( D:Procs ) ) => #sub(A;C) !  ( #sub(B;D) )
-  rule #sub( A:Name !! (         ) ; C:Name !! (         ) ) => #sub(A;C) !! (           )
-  rule #sub( A:Name !! ( B:Proc  ) ; C:Name !! ( D:Proc  ) ) => #sub(A;C) !! ( #sub(B;D) )
-  rule #sub( A:Name !! ( B:Procs ) ; C:Name !! ( D:Procs ) ) => #sub(A;C) !! ( #sub(B;D) )
-
-  // receive substitutions
-  rule #sub( for(         <- A:Name ){ B:Proc } ; for(         <- C:Name ){ D:Proc } ) => for(   <- #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( _:Name  <- A:Name ){ B:Proc } ; for( Y:Name  <- C:Name ){ D:Proc } ) => for( Y <- #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( X:Names <- A:Name ){ B:Proc } ; for( Y:Names <- C:Name ){ D:Proc } ) => for( Y <- #sub(A;C) ){ #sub(B;D) }
-       requires #length(X) ==Int #length(Y)
-  rule #sub( for(         <= A:Name ){ B:Proc } ; for(         <= C:Name ){ D:Proc } ) => for(   <= #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( _:Name  <= A:Name ){ B:Proc } ; for( Y:Name  <= C:Name ){ D:Proc } ) => for( Y <= #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( X:Names <= A:Name ){ B:Proc } ; for( Y:Names <= C:Name ){ D:Proc } ) => for( Y <= #sub(A;C) ){ #sub(B;D) } 
-       requires #length(X) ==Int #length(Y)
-  rule #sub( for(         <! A:Name ){ B:Proc } ; for(         <! C:Name ){ D:Proc } ) => for(   <! #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( _:Name  <! A:Name ){ B:Proc } ; for( Y:Name  <! C:Name ){ D:Proc } ) => for( Y <! #sub(A;C) ){ #sub(B;D) }
-  rule #sub( for( X:Names <! A:Name ){ B:Proc } ; for( Y:Names <! C:Name ){ D:Proc } ) => for( Y <! #sub(A;C) ){ #sub(B;D) } 
-       requires #length(X) ==Int #length(Y)
-
-// Par sub - apply after normalization
-  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ) => #sub(A;C) | #sub(B;D)
-
-// Collection substitutions - empty structures are accomodated by the first rule
-  // RhoLists
-  rule #sub( [ A:Proc  ] ; [ B:Proc  ] ) => [ #sub(A;B) ]
-  rule #sub( [ A:Procs ] ; [ B:Procs ] ) => [ #sub(A;B) ]
-
-  // RhoMaps & RhoSets are unordered -> assume canonical ordering
-  rule #sub( { A:Proc : B:Proc } ; { C:Proc : D:Proc } ) => { #sub(A;C) : #sub(B;D) }
-//  rule #sub( { A:RhoKVPair , B:RhoKVPair  } ; { C:RhoKVPair , D:RhoKVPair  } ) => { #sub({A};{C}) , #sub({B};{D}) }
-//  rule #sub( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPair , D:RhoKVPairs } ) => { #sub({A};{C}) , #sub({B};{D}) }
-
-  rule #sub( Set( A:Proc  ) ; Set( B:Proc  ) ) => Set( #sub(A;B) )
-  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ) => Set( #sub(A;B) )
-
-  // RhoTuples
-  rule #sub( tuple( A:Proc  ) ; tuple( B:Proc  ) ) => tuple( #sub(A;B) )
-  rule #sub( tuple( A:Procs ) ; tuple( B:Procs ) ) => tuple( #sub(A;B) )
-
-  // several Procs
-  rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #sub(A;C) , #sub(B;D)
-  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ) => #sub(A;C) , #sub(B;D)
-*/
 
 // BoundName/Proc subs for ALPHA
   // requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
@@ -260,14 +211,20 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; tuple( C:Proc  ) ) => tuple( #sub(A;B;C) )
   rule #sub( A:Proc ; B:Proc ; tuple( C:Procs ) ) => tuple( #sub(A;B;C) )
 
+// sub Proc for Proc in New
+  rule #sub( A:Proc ; B:ProcVar ; P:New ) => #if (@B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
 /*
- // sub Proc for Proc in New -- TODO
-  rule #sub( A:Name ; B:Name ; P:New ) => #if (B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
-  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:New ) => #if (C #in #dec(P)) #then #sub(B;D;P) #else #sub(B;D;#subNew(A;C;P)) #fi
-  rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:New ) => #if (C #in #dec(P)) #then #sub(B;D;P) #else #sub(B;D;#subNew(A;C;P)) #fi
-  rule #subNew( A:Name ; B:Name ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
-  rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
+  rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ; P:New ) => #if (C #in #dec(P)) 
+                                                              #then #sub(B;D;P) 
+                                                              #else #sub(B;D;#subNew(A;C;P)) 
+                                                              #fi
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; P:New ) => #if (C #in #dec(P)) 
+                                                              #then #sub(B;D;P) 
+                                                              #else #sub(B;D;#subNew(A;C;P)) 
+                                                              #fi
 */
+  rule #subNew( A:Proc ; B:Proc ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
+  rule #subNew( A:Proc ; B:Proc ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
 
 // Arithmetic Exps
   rule #sub( A:Proc ; B:Proc ; - C:AExp ) => - #sub(A;B;C)
@@ -328,26 +285,33 @@ module SUB
   rule #sub( A:Name ! ( B:Proc  ) ; C:Name ! ( D:Proc  ) ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Name ! ( B:Procs ) ; C:Name ! ( D:Procs ) ; N:Name ) => #sub(B;D;#sub(A;C;N))
 
-// sub Receive for Receive on Proc or Name
+// sub Receive for Receive in Proc or Name
+  rule #sub( for(         <- A:Name ){ P:Proc } ; for(         <- B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Name  <- A:Name ){ P:Proc } ; for( _:Name  <- B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Names <- A:Name ){ P:Proc } ; for( _:Names <- B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for(         <= A:Name ){ P:Proc } ; for(         <= B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Name  <= A:Name ){ P:Proc } ; for( _:Name  <= B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Names <= A:Name ){ P:Proc } ; for( _:Names <= B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for(         <! A:Name ){ P:Proc } ; for(         <! B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Name  <! A:Name ){ P:Proc } ; for( _:Name  <! B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for( _:Names <! A:Name ){ P:Proc } ; for( _:Names <! B:Name ){ Q:Proc } ; R:Proc ) => #sub(P;Q;#sub(A;B;R))
+  rule #sub( for(         <- A:Name ){ P:Proc } ; for(         <- B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Name  <- A:Name ){ P:Proc } ; for( _:Name  <- B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Names <- A:Name ){ P:Proc } ; for( _:Names <- B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for(         <= A:Name ){ P:Proc } ; for(         <= B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Name  <= A:Name ){ P:Proc } ; for( _:Name  <= B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Names <= A:Name ){ P:Proc } ; for( _:Names <= B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for(         <! A:Name ){ P:Proc } ; for(         <! B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Name  <! A:Name ){ P:Proc } ; for( _:Name  <! B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
+  rule #sub( for( _:Names <! A:Name ){ P:Proc } ; for( _:Names <! B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
 
 // sub Par for Par in Name or Proc
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub(B;D;#sub(A;C;P))
 
-//--------------------------
-//--- Name substitutions ---
-//--------------------------
-/*
-// Primitive substitutions
-  rule #sub( A:Name ; A ) => A
-  rule #sub( A:Name ; _:NameVar ) => A
-  rule #sub( A:Name ; @ _:ProcVar ) => A
-  rule #sub( @A:Proc ; @B:Proc ) => @ #sub(A;B)
+// TODO: other productions
 
-  // several Names
-  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ) => #sub(A;C) , #sub(B;D)
-  rule #sub( A:Name , B:Names ; C:Name , D:Names ) => #sub(A;C) , #sub(B;D)
-*/
+
 //------------------------------------------------
 //--- Substitute Name for Name in Name or Proc ---
 //------------------------------------------------
@@ -456,7 +420,8 @@ module SUB
   rule #sub( A:Name ; B:Name ; tuple( C:Procs ) ) => tuple( #sub(A;B;C) )
 
   // sub Name for Name in New
-  rule #sub( A:Name ; B:Name ; P:New ) => #if (B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
+  rule #sub( A:Name ; B:NameVar ; P:New ) => #if (B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
+/*
   rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:New ) => #if (C #in #dec(P)) 
                                                               #then #sub(B;D;P) 
                                                               #else #sub(B;D;#subNew(A;C;P)) 
@@ -465,6 +430,7 @@ module SUB
                                                               #then #sub(B;D;P) 
                                                               #else #sub(B;D;#subNew(A;C;P)) 
                                                               #fi
+*/
   rule #subNew( A:Name ; B:Name ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
   rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
 
@@ -505,15 +471,21 @@ module SUB
 //-------------------------
 //--- Map substitutions ---
 //-------------------------
-  rule #sub( .Map ; N:Name  ) => N
-  rule #sub( .Map ; N:Names ) => N
+  // if no variables are map keys, then no substitution happens
+  rule #sub( M:Map ; N:Name  ) => N requires intersectSet( #V(N) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; A:Name , B:Name  ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; A:Name , B:Names ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  // if variables appear as map keys, substitute value for key
   rule #sub( Key:Name |-> Val:Name M:Map ; N:Name  ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Name |-> Val:Name M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Name  ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
 
-  rule #sub( .Map ; P:Proc  ) => P
-  rule #sub( .Map ; P:Procs ) => P
+  // if no variables are map keys, then no substitution happens
+  rule #sub( M:Map ; P:Proc  ) => P requires intersectSet( #V(P) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; A:Proc , B:Proc  ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; A:Proc , B:Procs ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  // if variables appear as map keys, substitute value for key
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Procs ) => #sub(M;#sub(Val;Key;P))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
