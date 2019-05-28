@@ -1,10 +1,11 @@
-// RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a monadic style
+// RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a polyadic style
 /*
 TODO:
  - Matching (patterns & wildcard)
  - Method semantics
  - add contract invocation(?): Name "(" EmptyP/Proc/Procs ")" - syntactic sugar for cell pattern
  - add sequential listen semantics
+ - add remaining NativeChan
 */
 
 require "domains.k"
@@ -37,6 +38,7 @@ module GRHO-SYNTAX
   syntax            Names ::= Name "," Name
                             | Name "," Names
 
+// For pattern binding
 //  syntax          NamePat ::= Name | Pattern
 //  syntax         NamePats ::= NamePat "," NamePat
 //                            | NamePat "," NamePats
@@ -208,20 +210,19 @@ module GRHO-SYNTAX
                             | Eval
                             | String
                             | AExp "++" AExp  // string concatenation
+                            | String "%%" RhoMap // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
                             > "-" AExp        [strict]
                             > AExp "*"  AExp  [strict]
                             | AExp "/"  AExp  [strict]
                             > AExp "+"  AExp  [strict]
                             | AExp "-"  AExp  [strict]
                             | AExp "%"  AExp  [strict] // mod reduction
-                           // String interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
 
 // Boolean
   syntax             BExp ::= "{" BExp "}"   [bracket]
                             > Bool
                             | ProcVar
                             | Eval
-                            | String
                             | AExp "<=" AExp        [seqstrict]
                             | AExp "<"  AExp        [seqstrict]
                             | AExp ">=" AExp        [seqstrict]
@@ -244,7 +245,6 @@ module GRHO-SYNTAX
 // #isProc Predicate
   syntax             Bool ::= "#isProc(" K ")"
                             | "#isName(" K ")"
-                            | "#isClosed(" K ")"
 
 // Methods
   syntax       MethodProc ::= Proc MethodAndArgs
@@ -317,12 +317,12 @@ module GRHO
 //---------------------
   configuration
     <T color="purple">                                  //
-      <threads color="red">                             //**activity threads**
-        <thread color="green" multiplicity="*">         // collection of threads (concurrent activity)
-//        <k> Error: FreeVars! ~> $PGM:Proc </k>        // Free variable program execution guard
+      <activity color="red">                            //**activity threads**
+        <task color="green" multiplicity="*">           // collection of concurrent tasks
+//        <k> Error: FreeVars! ~> $PGM:Proc </k>        // Free variable program execution guard (part of type system)
           <k> $PGM:Proc </k>                            // programs and computations are process-based
-        </thread>                                       //
-      </threads>                                        //**tuplespace**
+        </task>                                         //
+      </activity>                                       //**tuplespace**
       <tuplespace color="blue">                         // stores sends and receives
         <sends>                                         //**sends**
           <send color="cyan" multiplicity="*">          //
@@ -365,14 +365,16 @@ module GRHO
 
 // Arithmetic & Boolean expressions are evaluated as soon as they can be
   // Arithmetic expressions
-  rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
-  rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] // subtraction
-  rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] // multiplication
-  rule I1:Int / I2:Int => I1 /Int I2 requires I2 =/=Int 0 [anywhere] // division
-  rule I1:Int % I2:Int => I1 %Int I2 requires I2 =/=Int 0 [anywhere] // modular reduction
-  rule - I:Int => 0 -Int I                                [anywhere] // negation
+  rule I:Int + J:Int => I +Int J                     [anywhere] // addition
+  rule I:Int - J:Int => I -Int J                     [anywhere] // subtraction
+  rule I:Int * J:Int => I *Int J                     [anywhere] // multiplication
+  rule I:Int / J:Int => I /Int J requires J =/=Int 0 [anywhere] // division
+  rule I:Int % J:Int => I %Int J requires J =/=Int 0 [anywhere] // modular reduction
+  rule - I:Int => 0 -Int I                           [anywhere] // negation
   
-  rule S1:String ++ S2:String => S1 +String S2  [anywhere] // string concatenation
+  rule S:String ++ T:String => S +String T [anywhere] // string concatenation
+  // string interpolation: "begin${key}rest" %% { ..., key:value ,... } => "begin" ++ "value" ++ "rest"
+  rule S:String %% R:RhoMap => #interpolate(S;R) [anywhere]
 
   // Boolean expressions
   rule I1:Int <= I2:Int => I1 <=Int I2   [anywhere] // 
@@ -430,16 +432,16 @@ module GRHO
   rule contract X:Name (         ) = { P:Proc } => for(   <= X ){ P }  [anywhere, structural]
 
 // Par Operator Semantics - concurrent execution of processes
-  rule <thread>
+  rule <task>
          <k> P:Proc | Q:Proc => Q ...</k>
-       </thread>
-       (.Bag => <thread> <k> P </k> </thread>)
+       </task>
+       (.Bag => <task> <k> P </k> </task>)
        requires notBool isPar(P)
 
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
-  rule (<thread> <k> S:Send </k> </thread> => .Bag)   // dissolve send in <threads/> and spawn <send/>
+  rule (<task> <k> S:Send </k> </task> => .Bag) // dissolve send in <activity/> and spawn <send/>
        (.Bag => <send>
                   <schan>   #chan(S) </schan>  // sending channel
                   <msg>      #msg(S)   </msg>  // sending message(s)
@@ -450,7 +452,7 @@ module GRHO
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-  rule (<thread> <k> R:SingleRec </k> </thread> => .Bag) // dissolve Rec in <threads/> and spawn <rec/>
+  rule (<task> <k> R:SingleRec </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
                   <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
@@ -461,7 +463,7 @@ module GRHO
                 </rec>)
 
 // Joins
-  rule (<thread> <k> R:MultiRec </k> </thread> => .Bag)
+  rule (<task> <k> R:MultiRec </k> </task> => .Bag)
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
                   <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
@@ -494,7 +496,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
-   (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>) 
+   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>) 
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
@@ -514,7 +516,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
-   (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
@@ -535,7 +537,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
-   (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
@@ -555,7 +557,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
-   (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
@@ -576,7 +578,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
    </send>                                 //
-   (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
@@ -596,7 +598,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
    </send>                                 //
-   (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
@@ -617,7 +619,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
    </send>                                 // 
-   (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
@@ -637,7 +639,7 @@ module GRHO
      <tuple> N       </tuple>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
    </send>                                 //
-   (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
+   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
@@ -649,23 +651,22 @@ module GRHO
   rule    Nil | P:Proc => P  [anywhere, structural]
   rule P:Proc | Nil    => P  [anywhere, structural]
 
-// Dissolve computationally meaningless threads
-  rule <thread> <k> .K  </k> </thread> => .Bag  [structural] //empty threads
-  rule <thread> <k> Nil </k> </thread> => .Bag  [structural] //Nil threads
+// Dissolve computationally meaningless activity
+  rule <task> <k> .K  </k> </task> => .Bag  [structural]
+  rule <task> <k> Nil </k> </task> => .Bag  [structural]
 
 // NAME EQUIVALENCE
 // @{*x} \equiv_N x
-// P \equiv Q \implies @P \equiv_N @Q (side condition)
+// P \equiv Q \implies @P \equiv_N @Q
   rule @ * N:Name => N  [anywhere, structural]
   rule * @ P:Proc => P  [anywhere, structural]
 
-// Predicates
-  rule #isProc( A:K ) => isProc(A)
-  rule #isName( A:K ) => isName(A)
+// Predicates for closed terms
+  rule #isProc( A:Proc ) => FV(A) <=Set .Set
+  rule #isProc( A:K    ) => false [owise]
 
-  rule #isClosed( A:Proc ) => FV(A) <=Set .Set
-  rule #isClosed( A:Name ) => FV(A) <=Set .Set
-  rule #isClosed( A:K ) => false [owise]
+  rule #isName( A:Name ) => FV(A) <=Set .Set
+  rule #isName( A:K    ) => false [owise]
 
 // Relation to built-ins
 //  syntax List ::= "#makeList(" RhoList ")"    [function]
