@@ -5,6 +5,6 @@
 /*
 Output: (not sure why the parentheses are appearing on the last two procs...)
 
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( * boundN( 1 ) , ( 1 , boundN( 2 ) ! ( 1 ) ) ) }
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( * boundN( 1 ) , 1 , ( boundN( 2 ) ! ( 1 ) , "a" ) ) }
 
 */

@@ -1,5 +1,10 @@
 // Alpha equivalence
 
-  for( a <- x ){ *a } #alpha for( b <- x ){ *b }
+    for( a <- x ){ *a } #alpha for( b <- x ){ *b }
   
-  // Output: true
+/*
+Output:
+
+    true
+
+*/

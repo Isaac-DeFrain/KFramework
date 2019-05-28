@@ -1,0 +1,14 @@
+// Receive multiple messages
+
+    #deBruijn( 0 ; new x in { for( a,b,c <- x ){ *a } } ; .Map )
+  
+/*
+Output: 
+
+    new boundN( 0 ) in { for ( boundN( 1 ) <- boundN( 0 ) ) { * boundN( 1 ) } }
+
+RNode:
+
+    
+
+*/

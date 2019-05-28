@@ -1,10 +1,15 @@
 // Alpha equivalence
 // these processes are structurally equivalent, but *not* alpha equivalent
 
-  { *a | for( b <- c ){ *b } }
+    { *a | for( b <- c ){ *b } }
   
-    #alpha
+      #alpha
   
-  { for( b <- c ){ *b } | *a }
+    { for( b <- c ){ *b } | *a }
   
-// Output: false
+/*
+Output:
+
+    false
+
+*/

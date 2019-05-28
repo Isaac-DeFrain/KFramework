@@ -1,19 +1,19 @@
 // De Bruijn levels
 
-  new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) }
+    #deBruijn( 0 ; new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) } ; .Map )
   
 /* Output: 
    
-    new bound( 0 ) , bound( 1 ) , bound( 2 ) in {
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in {
 
-      bound( 0 ) ! ( for ( bound( 3 ) <- @ 1 ) { 
-        * bound( 3 ) | * bound( 0 ) | for ( bound( 4 ) <- bound( 1 ) ) {
-          for ( bound( 5 ) <- bound( 4 ) ) {
-            * bound( 4 ) | * bound( 5 )
+      boundN( 0 ) ! ( for ( boundN( 3 ) <- @ 1 ) { 
+        * boundN( 3 ) | * boundN( 0 ) | for ( boundN( 4 ) <- boundN( 1 ) ) {
+          for ( boundN( 5 ) <- boundN( 4 ) ) {
+            * boundN( 4 ) | * boundN( 5 )
           } 
         } 
       } ) | 
-      bound( 1 ) ! ( * bound( 2 ) ) 
+      boundN( 1 ) ! ( * boundN( 2 ) ) 
     }
 
 */

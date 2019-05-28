@@ -1,14 +1,14 @@
 // De Bruijn levels - nested pattern
 
-  new x in { for( @x!(new y in { *y } ) <- @Nil ){ *x } }
+    #deBruijn( 0 ; new x in { for( @x!(new y in { *y } ) <- @Nil ){ *x } } ; .Map )
   
 /*
 Output:
 
-    for ( @ ( free( 1 ) ! ( new bound( 1 ) in { * bound( 1 ) } ) ) <- @ Nil ) { * free( 1 ) }
+    new boundN( 0 ) in { for ( @ ( boundN( 1 ) ! ( new boundN( 1 , 0 ) in { * boundN( 1 , 0 ) } ) ) <- @ Nil ) { * boundN( 0 ) } }
     
 From RNode:
     
-    
+    new x0 in { for( @{@{x1}!(new y0 in { y0 })} <- @{Nil} ) { x1 } }
 
 */
