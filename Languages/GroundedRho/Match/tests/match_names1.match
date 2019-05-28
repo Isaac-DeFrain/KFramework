@@ -1,0 +1,10 @@
+// Names match
+
+    #match( @ true , x , @{@2!("abc")} ; @\b , c )
+
+/*
+Output: 
+
+    false
+
+*/

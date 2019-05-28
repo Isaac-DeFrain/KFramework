@@ -1,0 +1,10 @@
+// Receive match
+
+    #match( for( a,b,@\c <- @Nil ){ *a | *b | \c } ; for( x,@\y,z <- d ){ *x | \y | *z } )
+
+/*
+Output: 
+
+    true
+
+*/

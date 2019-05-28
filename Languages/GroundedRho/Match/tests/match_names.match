@@ -1,4 +1,4 @@
-// Name match
+// Names match
 
     #match( @ true , x , @{@2!("abc")} ; a , @\b , c )
 
