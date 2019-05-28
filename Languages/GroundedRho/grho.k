@@ -9,6 +9,7 @@ TODO:
 
 require "domains.k"
 require "AuxFun/auxfun.k"
+require "Match/match.k"
 require "Names_Variables/namevar.k"
 require "Substitute/sub.k"
 require "StructuralEquiv/struct.k"
@@ -35,6 +36,10 @@ module GRHO-SYNTAX
 // Several Names
   syntax            Names ::= Name "," Name
                             | Name "," Names
+
+//  syntax          NamePat ::= Name | Pattern
+//  syntax         NamePats ::= NamePat "," NamePat
+//                            | NamePat "," NamePats
 
 //-----------------
 //--- PROCESSES ---
@@ -70,7 +75,7 @@ module GRHO-SYNTAX
   syntax              Par ::= Proc "|" Proc  [right]
 
 // Receives - no mixed linear/peek/repeated/sequential
-// TODO: Input guards - e.g. for( @\y <- x if \y > 0 ){ ... }
+// TODO: add Name patterns
   syntax          Receive ::= SingleRec | MultiRec
 
   // Single listen receives
@@ -78,6 +83,7 @@ module GRHO-SYNTAX
                             | GuardedSingleRec
   syntax GuardedSingleRec ::= "for" "(" GuardedBind ")" "{" Proc "}"
   syntax            Guard ::= "if" BExp
+
   // Linear listen
   syntax            Lbind ::= Names "<-" Name
                             | Name  "<-" Name
@@ -187,7 +193,12 @@ module GRHO-SYNTAX
                             | "Nil"        // stopped process
                             | Unforgeable | Uri
   syntax      Unforgeable ::= "unforgeable(" Int ")"
-  syntax              Uri ::= "uri(" String ")"
+
+  syntax              Uri ::= "`" NativeChan "`"
+  syntax       NativeChan ::= NativeIO
+// TODO: add other native channels
+  syntax         NativeIO ::= "rho:io:stdout"
+                            | "rho:io:stdoutAck"
 
 // AExp & BExp resolve to ground terms
 // Arithmetic
@@ -233,6 +244,7 @@ module GRHO-SYNTAX
 // #isProc Predicate
   syntax             Bool ::= "#isProc(" K ")"
                             | "#isName(" K ")"
+                            | "#isClosed(" K ")"
 
 // Methods
   syntax       MethodProc ::= Proc MethodAndArgs
@@ -264,17 +276,21 @@ module GRHO-SYNTAX
   syntax             Proc ::= EmptyProc
   syntax        EmptyProc ::= "EmptyP"
 
+// Patterns
+//  syntax          Pattern ::= "#"
+//                            | "@" "#"
+
 // For De Bruijn indices & alpha/structural equivalence
-  syntax         Name ::= BoundName
-  syntax    BoundName ::= "boundN(" Int ")"
-  syntax    BoundName ::= "boundN(" Int "," Int ")"
+  syntax             Name ::= BoundName
+  syntax        BoundName ::= "boundN(" Int ")"
+  syntax        BoundName ::= "boundN(" Int "," Int ")"
 
-  syntax         Proc ::= BoundProc
-  syntax    BoundProc ::= "boundP(" Int ")"
-  syntax    BoundProc ::= "boundP(" Int "," Int ")"
+  syntax             Proc ::= BoundProc
+  syntax        BoundProc ::= "boundP(" Int ")"
+  syntax        BoundProc ::= "boundP(" Int "," Int ")"
 
-  syntax         AExp ::= BoundProc // for substitution of variables in AExps
-  syntax         BExp ::= BoundProc // for substitution of variables in BExps
+  syntax             AExp ::= BoundProc // for substitution of variables in AExps
+  syntax             BExp ::= BoundProc // for substitution of variables in BExps
 
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
@@ -290,6 +306,7 @@ endmodule
 // SEMANTICS MODULE
 module GRHO
   import AUXFUN
+  import MATCH
   import NAMEVAR
   import SUB
   import ALPHA
@@ -323,17 +340,20 @@ module GRHO
             <rtype> .K </rtype>                         // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
             <guard> .K </guard>                         // input guard
             <cont>  .K  </cont>                         // continuation
-          </rec>                                        // 
-        </receives>                                     // 
-      </tuplespace>                                     // 
-      <nextLoc color="gray"> 0 </nextLoc>               // 
-      <freeVars color="pink">                           // 
-        FV($PGM:Proc)                                   // set of free variables
-      </freeVars>                                       // 
-      <deBruijn color="pink">                           // De Bruijn indexed
-        #deBruijn(0;$PGM:Proc;.Map)                     // 
-      </deBruijn>                                       // 
-    </T>                                                // 
+          </rec>                                        //
+        </receives>                                     //
+      </tuplespace>                                     //
+      <nextLoc color="gray"> 0 </nextLoc>               //
+      <original color="pink">                           //
+        $PGM                                            // original program
+      </original>                                       //
+      <freeVars color="pink">                           //
+        FV($PGM)                                        // set of free variables
+      </freeVars>                                       //
+      <deBruijnified color="pink">                      //
+        #deBruijn(0;$PGM;.Map)                          // De Bruijn indexed
+      </deBruijnified>                                  //
+    </T>                                                //
 
   syntax KResult ::= Ground | Eval | List | Map | Set   // final output of strict operations
 
@@ -343,7 +363,8 @@ module GRHO
 //  rule <k> (Error: FreeVars! ~> P:Proc) => P </k>
 //       <free> .Set </free>
 
-// Arithmetic expressions
+// Arithmetic & Boolean expressions are evaluated as soon as they can be
+  // Arithmetic expressions
   rule I1:Int + I2:Int => I1 +Int I2                      [anywhere] // addition
   rule I1:Int - I2:Int => I1 -Int I2                      [anywhere] // subtraction
   rule I1:Int * I2:Int => I1 *Int I2                      [anywhere] // multiplication
@@ -353,7 +374,7 @@ module GRHO
   
   rule S1:String ++ S2:String => S1 +String S2  [anywhere] // string concatenation
 
-// Boolean expressions
+  // Boolean expressions
   rule I1:Int <= I2:Int => I1 <=Int I2   [anywhere] // 
   rule I1:Int <  I2:Int => I1  <Int I2   [anywhere] // 
   rule I1:Int >= I2:Int => I1 >=Int I2   [anywhere] // 
@@ -388,11 +409,18 @@ module GRHO
 // New Operator Semantics
   rule <k> new M:NameVar in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
+  // TODO: special channel map needed?
+  rule <k> new M:NameVar ( _:Uri ) in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
+       <nextLoc> L => L +Int 1 </nextLoc>
   
   rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
+  rule <k> new M:NameVar ( _:Uri ) , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
+       <nextLoc> L => L +Int 1 </nextLoc>
        
   rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
+       <nextLoc> L => L +Int 1 </nextLoc>
+  rule <k> new M:NameVar ( _:Uri ) , N:Names in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
 
 // TODO: is this what I want?
@@ -447,7 +475,7 @@ module GRHO
 //--- COMM EVENTS ---
 //-------------------
 // Communication over name equivalent channels
-// x!(Q) | for( z <- y ){P} => P[@Q / z] requires x \equiv_N y
+// x!(Q) | for( z <- y ){P} => #sub(@Q;z;P) requires #nameEq(x;y)
 
 // Comm semantics
 // Linear listen, linear send
@@ -468,7 +496,8 @@ module GRHO
    </send> => .Bag)                        //
    (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>) 
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -487,7 +516,8 @@ module GRHO
    </send> => .Bag)                        //
    (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
 // Persistent listen, linear send
   rule                                     //consume single send, keep persistent receive
@@ -507,7 +537,8 @@ module GRHO
    </send> => .Bag)                        //
    (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
   rule                                     //consume single send, keep persistent receive
    <rec>                                   //DON'T consume persistent receive
@@ -526,7 +557,8 @@ module GRHO
    </send> => .Bag)                        //
    (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
 // Linear listen, persistent send
   rule                                     //consume single receive and keep single receive
@@ -546,7 +578,8 @@ module GRHO
    </send>                                 //
    (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
   rule                                     //consume single receive and keep single receive
   (<rec>                                   //consume single receive
@@ -565,7 +598,8 @@ module GRHO
    </send>                                 //
    (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
 // Peek semantics
   rule                                     //consume single send, single receive
@@ -585,7 +619,8 @@ module GRHO
    </send>                                 // 
    (.Bag => <thread> <k> #sub(@Q;Y;P) </k> </thread>)
    requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
@@ -604,7 +639,8 @@ module GRHO
    </send>                                 //
    (.Bag => <thread> <k> #sub(#quotes(Q);Y;P) </k> </thread>)
    requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
-    andBool #nameEq(X;Z) [comm]            // checks if channels are name equivalent
+    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
+/*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
 // Join semantics seem to be much more complicated than single listens...
 // moved progress to join.k
@@ -623,8 +659,13 @@ module GRHO
   rule @ * N:Name => N  [anywhere, structural]
   rule * @ P:Proc => P  [anywhere, structural]
 
+// Predicates
   rule #isProc( A:K ) => isProc(A)
   rule #isName( A:K ) => isName(A)
+
+  rule #isClosed( A:Proc ) => FV(A) <=Set .Set
+  rule #isClosed( A:Name ) => FV(A) <=Set .Set
+  rule #isClosed( A:K ) => false [owise]
 
 // Relation to built-ins
 //  syntax List ::= "#makeList(" RhoList ")"    [function]
