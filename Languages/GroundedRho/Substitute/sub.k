@@ -86,23 +86,31 @@ module SUB
 
 // BoundName/Proc subs for ALPHA
   // requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
-  rule #sub( _:Name ; _:Name ;  B:BoundName ) =>  B
-  rule #sub( _:Proc ; _:Proc ;  B:BoundName ) =>  B
-  rule #sub( _:Name ; _:Name ; *B:BoundName ) => *B
-  rule #sub( _:Proc ; _:Proc ; *B:BoundName ) => *B
-  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  A requires B ==K C
-  rule #sub( A:BoundName ; B:BoundName ;  C:BoundName ) =>  C requires B =/=K C
-  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *A requires B ==K C
-  rule #sub( A:BoundName ; B:BoundName ; *C:BoundName ) => *C requires B =/=K C
+  rule #sub( A:Name ; B:Name ;  C:BoundName ) =>  C requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ;  C:BoundName ) =>  C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ; *C:BoundName ) => *C requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ; *C:BoundName ) => *C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:BoundName ; _:BoundName ;  _:BoundName ) =>  A
+  rule #sub( A:BoundName ; _:BoundName ; *_:BoundName ) => *A
+  rule #sub( A:BoundName ; _:BoundName ;  _:NameVar   ) =>  A
+  rule #sub( A:BoundName ; _:BoundName ; *_:NameVar   ) => *A
+  rule #sub( _:BoundName ; _:BoundName ;  C:ProcVar   ) =>  C
+  rule #sub( _:BoundName ; _:BoundName ; @C:ProcVar   ) => @C
+  rule #sub( _:BoundName ; _:BoundName ;  C:BoundProc ) =>  C
+  rule #sub( _:BoundName ; _:BoundName ; @C:BoundProc ) => @C
 
-  rule #sub( _:Name ; _:Name ;  B:BoundProc ) =>  B
-  rule #sub( _:Proc ; _:Proc ;  B:BoundProc ) =>  B
-  rule #sub( _:Name ; _:Name ; @B:BoundProc ) => @B
-  rule #sub( _:Proc ; _:Proc ; @B:BoundProc ) => @B
-  rule #sub( A:BoundProc ; B:BoundProc ;  C:BoundProc ) =>  A requires B ==K C
-  rule #sub( A:BoundProc ; B:BoundProc ;  C:BoundProc ) =>  C requires B =/=K C
-  rule #sub( A:BoundProc ; B:BoundProc ; @C:BoundProc ) => @A requires B ==K C
-  rule #sub( A:BoundProc ; B:BoundProc ; @C:BoundProc ) => @C requires B =/=K C
+  rule #sub( A:Name ; B:Name ;  C:BoundProc ) =>  C requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ;  C:BoundProc ) =>  C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ; @C:BoundProc ) => @C requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ; @C:BoundProc ) => @C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:BoundProc ; _:BoundProc ;  _:BoundProc ) =>  A
+  rule #sub( A:BoundProc ; _:BoundProc ; @_:BoundProc ) => @A
+  rule #sub( A:BoundProc ; _:BoundProc ;  _:ProcVar   ) =>  A
+  rule #sub( A:BoundProc ; _:BoundProc ; @_:ProcVar   ) => @A
+  rule #sub( _:BoundProc ; _:BoundProc ;  C:NameVar   ) =>  C
+  rule #sub( _:BoundProc ; _:BoundProc ; *C:NameVar   ) => *C
+  rule #sub( _:BoundProc ; _:BoundProc ;  C:BoundName ) =>  C
+  rule #sub( _:BoundProc ; _:BoundProc ; *C:BoundName ) => *C
 
 //------------------------------------------------
 //--- Substitute Proc for Proc in Proc or Name ---
@@ -246,24 +254,25 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:Name ==  D:Name ) => #sub(A;B;C) ==  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:Proc ==  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc !=  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
 
 // sub Proc for Proc in Names
   rule #sub( A:Proc ; B:Proc ; C:Name , D:Name  ) => #sub(A;B;C) , #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Name , D:Names ) => #sub(A;B;C) , #sub(A;B;D)
 
-// sub Procs for Procs in Name
+// sub Proc for Proc in Procs
+  rule #sub( A:Proc ; B:Proc ; C:Proc , D:Proc  ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
+
+// Several Procs sub
+  // sub Procs for Procs in Name -- applies after #match predicate
   rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; N:Name ) => #sub(B;D;#sub(A;C;N))
 
 // sub Procs for Procs in Names
   rule #sub( A:Procs ; B:Procs ; M:Name , N:Name  ) => #sub(A;B;M) , #sub(A;B;N)
   rule #sub( A:Procs ; B:Procs ; M:Name , N:Names ) => #sub(A;B;M) , #sub(A;B;N)
-
-// sub Proc for Proc in Procs
-  rule #sub( A:Proc ; B:Proc ; C:Proc , D:Proc  ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
 
 // sub Procs for Procs in Proc
   rule #sub( A:Proc , B:Proc  ; C:Proc , D:Proc  ; P:Proc ) => #sub(B;D;#sub(A;C;P))
@@ -306,10 +315,16 @@ module SUB
   rule #sub( for( _:Names <! A:Name ){ P:Proc } ; for( _:Names <! B:Name ){ Q:Proc } ; N:Name ) => #sub(P;Q;#sub(A;B;N))
 
 // sub Par for Par in Name or Proc
-  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N))
+  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N)) requires notBool (isPar(A) orBool isPar(C))
   rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub(B;D;#sub(A;C;P))
 
 // TODO: other productions
+
+
+// sub Proc for Proc in Map
+  rule #sub( _:Proc ; _:Proc ; .Map ) => .Map
+  rule #sub( A:Proc ; B:Proc ; C:Proc |-> D:Proc E:Map ) => #sub(A;B;C) |-> #sub(A;B;D) #sub(A;B;E)
+  rule #sub( A:Proc ; B:Proc ; C:Name |-> D:Name E:Map ) => #sub(A;B;C) |-> #sub(A;B;D) #sub(A;B;E)
 
 
 //------------------------------------------------
@@ -343,44 +358,51 @@ module SUB
   rule #sub( @A:Proc ; @B:Proc ; C:Proc ) => #sub(A;B;C)
 
 // sub Name for Name in Receive
-  rule #sub( A:Name ; B:Name ; Rec:Receive ) => #if (B #in #bvar(Rec)) #then #subChan(A;B;Rec) #else #subRec(A;B;Rec) #fi
+  // no common free variables means no substitution
+  // TODO: need to check if free variables in B coincide with free variables in continuation which are bound in Rec
+  rule #sub( _:Name ;  B:Name    ; Rec:Receive ) => Rec requires intersectSet(#FV(B),intersectSet(#FV(#cont(Rec)),#BV(Rec))) <=Set .Set
+  // common free variables means substitution
+  rule #sub( A:Name ;  B:NameVar ; Rec:Receive ) => #if (B in #BV(Rec)) #then #subChan(A;B;Rec) #else #subRec(A;B;Rec) #fi
+   //    requires notBool intersectSet(#FV(B),#BV(Rec)) <=Set .Set
+  rule #sub( A:Name ; @B:ProcVar ; Rec:Receive ) => #if (B in #BV(Rec)) #then #subChan(*A;B;Rec) #else #subRec(*A;B;Rec) #fi
+   //    requires notBool intersectSet(#FV(B),#BSV(Rec)) <=Set .Set
   // if name to substitute is free, then it is substituted in the channel and continuation
-  rule #subRec( A:Name ; B:Name ; for(         <- Chan:Name ){ Cont:Proc } ) => for(   <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for(         <= Chan:Name ){ Cont:Proc } ) => for(   <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for(         <! Chan:Name ){ Cont:Proc } ) => for(   <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <- Chan:Name ){ Cont:Proc } ) => for(   <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <= Chan:Name ){ Cont:Proc } ) => for(   <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <! Chan:Name ){ Cont:Proc } ) => for(   <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ #sub(A;B;Cont) }
     // guarded
-  rule #subRec( A:Name ; B:Name ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
-  rule #subRec( A:Name ; B:Name ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
+  rule #subRec( A:Name ; B:NameVar ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ #sub(A;B;Cont) }
   // if name to be substituted is bound, then it is only substituted in the channel
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <- Chan:Name ){ Cont:Proc } ) => for( Y <- #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <= Chan:Name ){ Cont:Proc } ) => for( Y <= #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <! Chan:Name ){ Cont:Proc } ) => for( Y <! #sub(A;B;Chan) ){ Cont }
     // guarded
-  rule #subChan( A:Name ; B:Name ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
-  rule #subChan( A:Name ; B:Name ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for(         <- X:Name G:Guard ){ Cont:Proc } ) => for(   <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <- X:Name G:Guard ){ Cont:Proc } ) => for( Y <- #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for(         <= X:Name G:Guard ){ Cont:Proc } ) => for(   <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <= X:Name G:Guard ){ Cont:Proc } ) => for( Y <= #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for(         <! X:Name G:Guard ){ Cont:Proc } ) => for(   <! #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Name  <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
+  rule #subChan( A:Name ; B:NameVar ; for( Y:Names <! X:Name G:Guard ){ Cont:Proc } ) => for( Y <! #sub(A;B;X) G){ Cont }
 
 // sub Name for Name in Send
   rule #sub( A:Name ; B:Name ; Chan:Name !  ( Msg:Proc  ) ) => #sub(A;B;Chan) !  ( #sub(A;B;Msg) )
@@ -454,27 +476,41 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:Name ==  D:Name ) => #sub(A;B;C) ==  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc !=  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
 
 // Condtionals
   rule #sub( A:Name ; B:Name ; if (C:BExp) D:Proc   ) => if (#sub(A;B;C)) #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:IfThen else D:Proc ) => #sub(A;B;C) else #sub(A;B;D)
 
-// Several Names sub
+// sub Names for Names in Name or Proc
+  rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; N:Name ) => #sub(B;D;#sub(A;C;N))
+  rule #sub( A:Name , B:Names ; C:Name , D:Names ; N:Name ) => #sub(B;D;#sub(A;C;N))
   rule #sub( A:Name , B:Name  ; C:Name , D:Name  ; P:Proc ) => #sub(B;D;#sub(A;C;P))
   rule #sub( A:Name , B:Names ; C:Name , D:Names ; P:Proc ) => #sub(B;D;#sub(A;C;P))
 
+// sub Name for Name in Names or Procs
+  rule #sub( A:Name ; B:Name ; C:Name , D:Name  ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Name , D:Names ) => #sub(A;B;C) , #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc , D:Proc  ) => #sub(A;B;C) , #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
+
+// sub Names for Names in Names
+  rule #sub( A:Names ; B:Names ; M:Name , N:Name  ) => #sub(A;B;M) , #sub(A;B;N)
+  rule #sub( A:Names ; B:Names ; M:Name , N:Names ) => #sub(A;B;M) , #sub(A;B;N)
+
+// sub Name for Name in Map
+  rule #sub( _:Name ; _:Name ; .Map ) => .Map
+  rule #sub( A:Name ; B:Name ; C:Proc |-> D:Proc M:Map ) => #sub(A;B;C) |-> #sub(A;B;D) #sub(A;B;M)
+  rule #sub( A:Name ; B:Name ; C:Name |-> D:Name M:Map ) => #sub(A;B;C) |-> #sub(A;B;D) #sub(A;B;M)
 
 //-------------------------
 //--- Map substitutions ---
 //-------------------------
   // if no variables are map keys, then no substitution happens
-  rule #sub( M:Map ; N:Name  ) => N requires intersectSet( #V(N) , keys(M) ) <=Set .Set
-  rule #sub( M:Map ; A:Name , B:Name  ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
-  rule #sub( M:Map ; A:Name , B:Names ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; N:Name ) => N requires intersectSet(#FV(N),keys(M)) <=Set .Set
+  rule #sub( M:Map ; A:Name , B:Name  ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) <=Set .Set
+  rule #sub( M:Map ; A:Name , B:Names ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) <=Set .Set
   // if variables appear as map keys, substitute value for key
   rule #sub( Key:Name |-> Val:Name M:Map ; N:Name  ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Name |-> Val:Name M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
@@ -482,14 +518,15 @@ module SUB
   rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Names ) => #sub(M;#sub(Val;Key;N))
 
   // if no variables are map keys, then no substitution happens
-  rule #sub( M:Map ; P:Proc  ) => P requires intersectSet( #V(P) , keys(M) ) <=Set .Set
-  rule #sub( M:Map ; A:Proc , B:Proc  ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
-  rule #sub( M:Map ; A:Proc , B:Procs ) => A , #sub(M;B) requires intersectSet( #V(A) , keys(M) ) <=Set .Set
+  rule #sub( M:Map ; P:Proc ) => P requires intersectSet(#FV(P),keys(M)) <=Set .Set
+  rule #sub( M:Map ; A:Proc , B:Proc  ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) <=Set .Set
+  rule #sub( M:Map ; A:Proc , B:Procs ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) <=Set .Set
   // if variables appear as map keys, substitute value for key
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Procs ) => #sub(M;#sub(Val;Key;P))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc  ) => #sub(M;#sub(Val;Key;P))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Procs ) => #sub(M;#sub(Val;Key;P))
+
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
