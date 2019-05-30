@@ -1,7 +1,10 @@
 // Append name lists
 
-  #append ( x , y , z ; a , b , c , d )
+    #append( x , y , z ; a , b , c , d )
 
 /*
-  Output: x , y , z , a , b , c , d
+Output:
+
+    x , y , z , a , b , c , d
+
 */

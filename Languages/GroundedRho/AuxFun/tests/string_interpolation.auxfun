@@ -1,0 +1,10 @@
+// String interpolation
+
+    #interpolate( "aaab}vbvbn ${sub} blahblah${bsgjgfg" ; { 1:1 , 1:2 , "sub":"YAY!" , "bsgjgfg":"WRONG!" } )
+
+/*
+Output:
+
+    "aaab}vbvbn YAY! blahblah${bsgjgfg"
+
+*/

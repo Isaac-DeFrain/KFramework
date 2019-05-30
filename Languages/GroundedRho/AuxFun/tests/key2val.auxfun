@@ -1,0 +1,10 @@
+// Val2Key function
+
+    #val2Key( x ; 2 |-> 1 @3 |-> x Nil |-> @0!(0) )
+
+/*
+Output:
+
+    @ 3
+
+*/
