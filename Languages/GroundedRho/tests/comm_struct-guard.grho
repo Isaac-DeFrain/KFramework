@@ -1,0 +1,36 @@
+// Input guard
+
+    new x in { x!(41,"nth",Nil | true) | for( @\a,@\b,@\c <- x if \a > 40 and \b == "nth" and \c == true ){ \a + 1 } }
+
+/*
+Output:
+Result ==K <T>
+  <activity>
+    <task>
+      <k>
+        42
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new x in { x ! ( 41 , ( "nth" , true ) ) | for ( @ \ a , @ \ b , @ \ c <- x if ( \ a > 40 and \ b == "nth" ) and \ c == true ) { \ a + 1 } }
+  </original>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijnified>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , ( "nth" , true ) ) | #deBruijn( 1 ; for ( @ \ a , @ \ b , @ \ c <- boundN( 0 ) if ( \ a > 40 and \ b == "nth" ) and \ c == true ) { \ a + 1 } ; x |-> boundN( 0 ) ) }
+  </deBruijnified>
+</T>
+*/
