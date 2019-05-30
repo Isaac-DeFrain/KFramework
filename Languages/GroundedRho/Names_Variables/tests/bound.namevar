@@ -1,0 +1,10 @@
+// Bound Variables - kind
+
+    BV( for( a,b <- x ){ a!(*b) | a!(*y) } )
+
+/*
+Output:
+  SetItem ( * b : proc )
+  SetItem ( a : name )
+  SetItem ( b : name )
+*/
