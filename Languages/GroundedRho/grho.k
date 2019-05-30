@@ -54,8 +54,7 @@ module GRHO-SYNTAX
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
-                            > AExp            // Arithmetic expressions
-                            > BExp            // Boolean expressions
+                            > Exp             // Arithmetic & Boolean expressions
                             > Match           // Process matching
                             > Receive         // Receive messages
                             | Contract        // Contract
@@ -202,39 +201,44 @@ module GRHO-SYNTAX
   syntax         NativeIO ::= "rho:io:stdout"
                             | "rho:io:stdoutAck"
 
-// AExp & BExp resolve to ground terms
+// Expressions resolve to ground terms
+  syntax              Exp ::= AExp > BExp
+
 // Arithmetic
+  // Variable
   syntax             AExp ::= "{" AExp "}"   [bracket]
-                            > Int
-                            | ProcVar
-                            | Eval
-                            | String
-                            | AExp "++" AExp  // string concatenation
-                            | String "%%" RhoMap // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
+                            > ProcVar          // e.g. \x + 1 or \x ++ "word"
+                            | Eval             // e.g. *x + 1 or *x ++ "word"
+  // String
+  syntax             AExp ::= String           // string output
+                            | AExp "++" AExp   // string concatenation
+                            | AExp "%%" RhoMap // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
+  // Int
+  syntax             AExp ::= Int                // integer output
                             > "-" AExp        [strict]
+                            > AExp "%"  AExp  [strict] // mod reduction
                             > AExp "*"  AExp  [strict]
                             | AExp "/"  AExp  [strict]
                             > AExp "+"  AExp  [strict]
                             | AExp "-"  AExp  [strict]
-                            | AExp "%"  AExp  [strict] // mod reduction
 
 // Boolean
   syntax             BExp ::= "{" BExp "}"   [bracket]
-                            > Bool
-                            | ProcVar
-                            | Eval
-                            | AExp "<=" AExp        [seqstrict]
-                            | AExp "<"  AExp        [seqstrict]
-                            | AExp ">=" AExp        [seqstrict]
-                            | AExp ">"  AExp        [seqstrict]
-                            | Proc "matches" Proc   // P matches Q is syntactic sugar for: match P { Q :=> true P :=> false }
-                            | Name "==" Name        // name equivalence
-                            | Name "!=" Name        // not ( Name == Name )
-                            | Proc "==" Proc        // structural equivalence
-                            | Proc "!=" Proc        // not ( Proc == Proc )
-                            > "not" BExp            [strict]
-                            > BExp "and" BExp       [strict(1)]
-                            > BExp "or"  BExp       [strict(1)]
+                            > Bool                // boolean output
+                            | ProcVar             // e.g. \x == Proc or not \x
+                            | Eval                // e.g. *x == Proc or not *x
+                            > AExp "<=" AExp      [seqstrict]
+                            | AExp "<"  AExp      [seqstrict]
+                            | AExp ">=" AExp      [seqstrict]
+                            > AExp ">"  AExp      [seqstrict]
+                            | Name "==" Name      // name equivalence
+                            | Name "!=" Name      // not ( Name == Name )
+                            | Proc "==" Proc      // structural equivalence
+                            | Proc "!=" Proc      // not ( Proc == Proc )
+                            > "not" BExp          [strict]
+                            > BExp "and" BExp     [strict(1)]
+                            > BExp "or"  BExp     [strict(1)]
+                            > Proc "matches" Proc // P matches Q is syntactic sugar for: match P { Q :=> true P :=> false }
 
 // Bundles
   syntax           Bundle ::= "bundle+" "{" Proc "}"   // write-only
@@ -243,8 +247,8 @@ module GRHO-SYNTAX
                             | "bundle"  "{" Proc "}"   // both read/write
 
 // #isProc Predicate
-  syntax             Bool ::= "#isProc(" K ")"
-                            | "#isName(" K ")"
+  syntax             Bool ::= "#isProc(" K ")" // tests if term has type Proc and no free variables
+                            | "#isName(" K ")" // tests if term has type Name and no free variables
 
 // Methods
   syntax       MethodProc ::= Proc MethodAndArgs
@@ -299,7 +303,6 @@ module GRHO-SYNTAX
 
 // For K
   syntax            KItem ::= Name | Names | Proc | Procs
-//  syntax        KVariable ::= NameVar | ProcVar // no longer needed since we're using #sub(_;_;_)
 
 endmodule
 
@@ -392,7 +395,9 @@ module GRHO
   rule A:Ground == B:Ground => A ==K  B  [anywhere] // equality of ground terms
   rule A:Ground != B:Ground => A =/=K B  [anywhere] // inequality of ground terms
   rule P:Proc == Q:Proc => #structEq(P;Q) requires notBool isGround(P)
+  rule P:Proc != Q:Proc => notBool #structEq(P;Q) requires notBool isGround(P)
   rule M:Name == N:Name => #nameEq(M;N)
+  rule M:Name != N:Name => notBool #nameEq(M;N)
 
 // Conditionals - short-circuited
   rule if ( true  ) P:Proc => P              [structural]
