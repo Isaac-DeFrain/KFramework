@@ -12,18 +12,18 @@ require "../AlphaEquiv/alpha.k"
 module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
-  syntax    Int ::= "#length(" Name     ")"        [function]  // #length(_): Name -------------------> Int
-                  | "#length(" Names    ")"        [function]  // #length(_): Names ------------------> Int
-                  | "#length(" Proc     ")"        [function]  // #length(_): Proc -------------------> Int
-                  | "#length(" Procs    ")"        [function]  // #length(_): Procs ------------------> Int
-                  | "#length(" AnyBinds ")"        [function]  // #length(_): AnyBinds ---------------> Int
-                  | "#msglen(" Send     ")"        [function]  // #msglen(_): Send -------------------> Int
-                  | "#bnum("   AnyBind  ")"        [function]  //   #bnum(_): AnyBind ----------------> Int
-                  | "#bnum("   Receive  ")"        [function]  //   #bnum(_): Receive ----------------> Int
-                  | "#stype("  Send     ")"        [function]  //  #stype(_): Send -------------------> Int
-                  | "#rtype("  AnyBind  ")"        [function]  //  #rtype(_): AnyBind ----------------> Int
-                  | "#rtype("  AnyBinds ")"        [function]  //  #rtype(_): AnyBinds ---------------> Int
-                  | "#rtype("  Receive  ")"        [function]  //  #rtype(_): Receive ----------------> Int
+  syntax    Int ::= "#length(" Name     ")"           [function]  // #length(_): Name -------------------> Int
+                  | "#length(" Names    ")"           [function]  // #length(_): Names ------------------> Int
+                  | "#length(" Proc     ")"           [function]  // #length(_): Proc -------------------> Int
+                  | "#length(" Procs    ")"           [function]  // #length(_): Procs ------------------> Int
+                  | "#length(" AnyBinds ")"           [function]  // #length(_): AnyBinds ---------------> Int
+                  | "#msglen(" Send     ")"           [function]  // #msglen(_): Send -------------------> Int
+                  | "#bnum("   AnyBind  ")"           [function]  //   #bnum(_): AnyBind ----------------> Int
+                  | "#bnum("   Receive  ")"           [function]  //   #bnum(_): Receive ----------------> Int
+                  | "#stype("  Send     ")"           [function]  //  #stype(_): Send -------------------> Int
+                  | "#rtype("  AnyBind  ")"           [function]  //  #rtype(_): AnyBind ----------------> Int
+                  | "#rtype("  AnyBinds ")"           [function]  //  #rtype(_): AnyBinds ---------------> Int
+                  | "#rtype("  Receive  ")"           [function]  //  #rtype(_): Receive ----------------> Int
 
   syntax    Int ::= "#size"   RhoMap                  [function]  // #size: RhoMap ----------------------> Int
                   | "#size"   RhoSet                  [function]  // #size: RhoSet ----------------------> Int
@@ -62,11 +62,8 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Names ")" [function]
                   | "#dec"    "(" New     ")"         [function]
 
-// For input guards
+// Input Guards
   syntax   BExp ::= "#guard" "(" Receive ")"          [function]
-
-// For string interpolation
-  syntax String ::= "#interpolate(" String ";" RhoMap ")" [function]
 
 // Methods
   syntax RhoSet ::= "#keys" RhoMap                    [function]
@@ -74,6 +71,21 @@ module AUXFUN-SYNTAX
 
   syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")" [function]
                    | "#truncate(" RhoList "," Int ")"      [function]
+
+// Par Normalization
+  syntax   Proc ::= "#normPar("   Proc ")" [function, poly(0,1)]
+                  | "#set2Par("   Proc ")" [function]
+                  | "#removePar(" Proc ";" Proc ")" [function]
+                  | "#parDup("    Proc ";" Int  ")" [function]
+  syntax    Set ::= "#par2Set("   Proc ")" [function]
+  syntax    Int ::= "#countPar("  Proc ";" Proc ")" [function]
+
+// String Interpolation
+  syntax String ::= "#interpolate(" String ";" RhoMap ")" [function]
+
+// De Bruijn indexing
+  syntax  Proc ::= "#val2Key(" Proc ";" Map ")" [function]
+  syntax  Name ::= "#val2Key(" Name ";" Map ")" [function]
 
 // Predicates
   syntax   Bool ::= Int   "#in" RhoTuple      [function]
@@ -84,19 +96,6 @@ module AUXFUN-SYNTAX
                   | Binds "#in" "(" Binds ")" [function]
                   | Proc  "#in_keys" RhoMap   [function]
                   | Proc  "#in_set"  RhoSet   [function]
-/*
-  syntax    Map ::= "#lisMap(" SingleRec ")"          [function]
-                  | "#lisMap(" AnyBind   ")"          [function]
-                  | "#lisMap(" Name  ";" Int ")"      [function]
-                  | "#lisMap(" Names ";" Int ")"      [function]
-                  | "#msgMap(" Send ")"               [function]
-                  | "#msgMap(" Proc  ";" Int ")"      [function]
-                  | "#msgMap(" Procs ";" Int ")"      [function]
-
-  syntax   Maps ::= "#lisMap" "(" MultiRec ")"        [function]
-                  | "#lisMap" "(" AnyBinds ")"        [function]
-                  | "#mapify(" Names ";" Names ")"    [function]
-*/
 
 endmodule
 
@@ -393,29 +392,32 @@ module AUXFUN
   rule #quotes( A:Proc , B:Proc  ) => @A , @B
   rule #quotes( A:Proc , B:Procs ) => @A , #quotes(B)
 
-// #interpolate
+//--------------------
+//--- #interpolate ---
+//--------------------
+  // substitutes string in first occurrence of ${...} and ignores all } before ${
   rule #interpolate( S:String ; { A:String : B:String } )
-       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
+       => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
           #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
-          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),                                  
-                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) // this part substitutes B for A
-          +String substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
+                substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
+          +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
           #else S
           #fi
   rule #interpolate( S:String ; { A:String : B:String , KV:RhoKVPair } )
-       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
-          #then substrString(S,0,findString(S,"${",0)) +String
-                replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),
-                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) +String
-                substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+       => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
+          #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
+                substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
+          +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
           #else #interpolate(S;{KV})
           #fi
   rule #interpolate( S:String ; { A:String : B:String , KVs:RhoKVPairs } )
-       => #if substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)) ==String A
-          #then substrString(S,0,findString(S,"${",0)) +String
-                replaceAll(substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)),
-                substrString(S,findString(S,"${",0) +Int 2,findChar(S,"}",0)), B) +String
-                substrString(S,findChar(S,"}",0) +Int 1, lengthString(S))
+       => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
+          #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
+                substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
+          +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
           #else #interpolate(S;{KVs})
           #fi
   // if key is not a string, bypass it
@@ -467,5 +469,56 @@ module AUXFUN
   rule Set( A:Proc ) #union Set( B:Proc ) => #if A ==K B #then Set( A ) #else Set( A , B ) #fi
   rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 */
+
+//------------------
+//--- #normPar ---
+//------------------
+  rule #normPar( A:Proc ) => A requires notBool isPar(A)
+  rule #normPar( A:Par  ) => #set2Par(#par2Set(A))
+
+// Essentially identical to functions in STRUCT except that #par2Set does not delete Nil from the Par
+// counts appearances in Par
+  // nonPar Proc
+  rule #countPar( A:Proc ; B:Proc ) => #if A ==K B #then 1 #else 0 #fi requires notBool isPar(B)
+  // multiple Proc Par
+  rule #countPar( A:Proc ; B:Proc | C:Proc ) => #if A ==K B #then 1 +Int #countPar(A;C) #else #countPar(A;C) #fi
+       requires notBool isPar(B)
+
+// removes a nonPar Proc from a Par and preserves order
+// first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
+  // single Proc Par i.e. a nonPar Proc
+  rule #removePar( A:Proc ; B:Proc ) => #if A ==K B #then .K #else B #fi requires notBool isPar(B)
+  // multiple Proc Par
+  rule #removePar( A:Proc ; B:Proc | C:Proc ) => #if A ==K B #then #removePar(A;C) #else B | #removePar(A;C) #fi
+       requires notBool isPar(B)
+
+// computes Par Set of a Proc
+  // par set of a nonPar Proc contains only one appearance of that Proc
+  rule #par2Set( A:Proc ) => SetItem(A,1) requires notBool isPar(A)
+  rule #par2Set( A:Proc | B:Proc ) 
+    => #if #countPar(A;B) >Int 0
+       #then SetItem(A, 1 +Int #countPar(A;B)) #par2Set(#removePar(A;B))
+       #else SetItem(A,1) #par2Set(B)
+       #fi requires notBool isPar(A)
+
+  // duplicator
+  rule #parDup( A:Proc ; 1 ) => A
+  rule #parDup( A:Proc ; N:Int ) => A | #parDup(A;N -Int 1) requires N >Int 1
+
+  // turns Set into normPard Par
+  rule #set2Par( SetItem( A:Proc , N:Int )  .Set ) => #parDup(A;N)
+  rule #set2Par( SetItem( A:Proc , N:Int ) S:Set ) => #parDup(A;N) | #set2Par( S ) requires notBool S <=Set .Set
+
+//----------------
+//--- #val2Key ---
+//----------------
+// requires each KV pair of the form: Proc |-> Proc or Name |-> Name & requested value uniquely in values(Map)
+  rule #val2Key( A:Proc ; B:Proc |-> A M:Map ) => B // if value matches, return key
+  rule #val2Key( A:Proc ; _:Proc |-> C:Proc M:Map ) => #val2Key(A;M) requires A =/=K C // if value doesn't match, traverse map
+  rule #val2Key( A:Proc ; _:Name |-> _:Name M:Map ) => #val2Key(A;M) // if value has wrong type, traverse map
+
+  rule #val2Key( A:Name ; B:Name |-> A _:Map ) => B // if value matches, return key
+  rule #val2Key( A:Name ; _:Name |-> C:Name M:Map ) => #val2Key(A;M) requires A =/=K C // if value doesn't match, traverse map
+  rule #val2Key( A:Name ; _:Proc |-> _:Proc M:Map ) => #val2Key(A;M) // if value has wrong type, traverse map
 
 endmodule
