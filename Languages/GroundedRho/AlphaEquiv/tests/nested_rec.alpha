@@ -1,0 +1,14 @@
+// De Bruijn levels - nested receives
+
+    #deBruijn( 0 ; new x in { for( @\a <- x ){ for( @\a <- x ){ x!(\a) } } } ; .Map )
+  
+/*
+Output:
+
+    new boundN( 0 ) in { for ( @ boundP( 1 ) <- boundN( 0 ) ) { for ( @ boundP( 2 ) <- boundN( 0 ) ) { boundN( 0 ) ! ( boundP( 2 ) ) } } }
+
+From RNode: 
+
+    
+
+*/

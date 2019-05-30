@@ -1,6 +1,6 @@
 // Receive scoping
 
-    new x,y,z in { for( @\a <- x ){ new x in { *x } | new y in { *y } | \a } }
+    #deBruijn( 0 ; new x,y,z in { for( @\a <- x ){ new x in { *x } | new y in { *y } | \a } } ; .Map )
   
 /*
 Output: 

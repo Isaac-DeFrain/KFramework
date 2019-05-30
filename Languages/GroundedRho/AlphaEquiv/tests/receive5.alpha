@@ -1,0 +1,14 @@
+// Receive scoping
+
+    #deBruijn( 0 ; new a in { for( @{a!(\b)} <- @Nil ){ *a | \b } } ; .Map )
+  
+/*
+Output: 
+
+    new boundN( 0 ) in { for ( @ ( boundN( 1 ) ! ( boundP( 2 ) ) ) <- @ Nil ) { * boundN( 1 ) | boundP( 2 ) } }
+
+RNode:
+
+    
+
+*/

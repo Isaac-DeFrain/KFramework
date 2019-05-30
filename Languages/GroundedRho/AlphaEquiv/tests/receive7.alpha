@@ -1,0 +1,19 @@
+// Receive scoping
+
+    #deBruijn( 0 ; new a,b in { for( @{for( a,b,@\c,d <- a ){ *a | *b | d!(\c) } } <- @Nil ){ *a | *b } } ; .Map )
+  
+/*
+Output: 
+
+    new boundN( 0 ) , boundN( 1 ) in { 
+      for ( @ for ( boundN( 1 , 0 ) , boundN( 1 , 1 ) , @ boundP( 1 , 2 ) , boundN( 1 , 3 ) <- boundN( 2 ) ) { 
+        * boundN( 1 , 0 ) | * boundN( 1 , 1 ) | boundN( 1 , 3 ) ! ( boundP( 1 , 2 ) ) } <- @ Nil ) { 
+          * boundN( 2 ) | * boundN( 1 ) 
+      } 
+    }
+
+RNode:
+
+    
+
+*/
