@@ -104,12 +104,14 @@ module ALPHA
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
@@ -117,12 +119,14 @@ module ALPHA
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
@@ -130,12 +134,14 @@ module ALPHA
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires notBool (M in keys(Mem))
+  // shadow and update Mem for already declared names
   rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
     => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
@@ -179,90 +185,153 @@ module ALPHA
     => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
 
-// Ground & bound terms
+// Ground & Bound Terms
   rule #deBruijn( _:Int ; A:Ground    ; _:Map ) => A
   rule #deBruijn( _:Int ; A:BoundName ; _:Map ) => A
   rule #deBruijn( _:Int ; A:BoundProc ; _:Map ) => A
 
 // Parallel Composition
 // Mem map propogates to both branchs
-  rule #deBruijn( I:Int ; P:Proc | Q:Proc ; Mem:Map ) => #deBruijn(I;P;Mem) | #deBruijn(I;Q;Mem)
+  rule #deBruijn( I:Int ; P:Proc | Q:Proc ; Mem:Map ) => #deBruijn(I;P;Mem) | #deBruijn(I +Int size(#BV(P));Q;Mem)
 
 // Receives
-//-- TODO: listen for multiple names & listens on complex names like @Proc for general Proc
+//-- TODO: multirec
   // listening variables become boundN(I) with the appropriate index and are guarded during De Bruijn indexing
   // linear
-    // no listening variables
-  rule #deBruijn( I:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => for(   <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
-    // listening for NameVars
-  rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-    // listening for @ProcVars
-  rule #deBruijn( I:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int ; for(  <- X:Name ){ P:Proc } ; Mem:Map ) => for( <- #deBruijn(I;X;Mem) ){ #deBruijn(I +Int size(#BV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <- #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:NameVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <- #deBruijn(I +Int 1;X;Mem) if #sub(boundN(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <- #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <- #deBruijn(I +Int 1;X;Mem) if #sub(boundP(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
     // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #deBruijn( I:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <- #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#mapify(I;Y;.Map);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool isProcVar(Y)
-
-    // several Name listens -- TODO: resolve values in Mem
-  rule #deBruijn( I:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <- #deBruijn(I;X;Mem) ){ 
-            #deBruijn( I +Int #length(Y) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-//    requires notBool (Y in keys(Mem))
-//  rule #deBruijn( I:Int ; for( Y:Name , Z:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-//    => for( #dBound(I;Y;.Map) , #dBound(I +Int 1;Z;.Map) <- #deBruijn(I;X;Mem) ){ 
-//            #deBruijn( I +Int s ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-//    requires Y in keys(Mem)
+  rule #deBruijn( I:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <- #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:Proc <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <- #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <- #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:Names <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <- #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
 
   // repeated
-    // no listening variables
-  rule #deBruijn( I:Int ; for(   <= X:Name ){ P:Proc } ; Mem:Map ) => for(   <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int ; for(  <= X:Name ){ P:Proc } ; Mem:Map ) => for( <= #deBruijn(I;X;Mem) ){ #deBruijn(I +Int size(#BV(X));P;Mem) }
     // listening for NameVar
-  rule #deBruijn( I:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <= #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:NameVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <= #deBruijn(I +Int 1;X;Mem) if #sub(boundN(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
     // listening for @ProcVar
-  rule #deBruijn( I:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <= #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <= #deBruijn(I +Int 1;X;Mem) if #sub(boundP(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
     // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #deBruijn( I:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;@Y;.Map) <= #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#mapify(I;Y;.Map);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool isProcVar(Y)
+  rule #deBruijn( I:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <= #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:Proc <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <= #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int ; for( Y:Names <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <= #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:Names <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <= #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
 
   // peek
-  rule #deBruijn( I:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;Y;.Map) <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int ; for(   <! X:Name ){ P:Proc } ; Mem:Map ) => for(   <! #deBruijn(I;X;Mem) ){ #deBruijn( I +Int 1 ; P ; Mem ) }
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int ; for(  <! X:Name ){ P:Proc } ; Mem:Map ) => for( <! #deBruijn(I;X;Mem) ){ #deBruijn(I +Int size(#BV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <! #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:NameVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I) <! #deBruijn(I +Int 1;X;Mem) if #sub(boundN(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundN(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <! #deBruijn(I +Int 1;X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:ProcVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I) <! #deBruijn(I +Int 1;X;Mem) if #sub(boundP(I);#sub(Mem;Y);B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int 1 ; #sub(boundP(I);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #deBruijn( I:Int ; for( @Y:Proc <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <! #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int ; for( @Y:Proc <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I;Y;.Map) <! #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int ; for( Y:Names <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <! #deBruijn(I +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int ; for( Y:Names <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I;Y;.Map) <! #deBruijn(I +Int size(#FV(Y));X;Mem) if #sub(#dBound(I;Y;.Map);Y;B) ){ 
+            #deBruijn( I +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
 
 // Sends
-// index and map constant on name and proc
+// no free variables left once #deBruijn arrives at a Send -- index and map constant on Name and Proc
   rule #deBruijn( I:Int ; X:Name !  ( P:Proc  ) ; Mem:Map ) => #deBruijn(I;X;Mem) !  ( #deBruijn(I;P;Mem) )
   rule #deBruijn( I:Int ; X:Name !  ( P:Procs ) ; Mem:Map ) => #deBruijn(I;X;Mem) !  ( #deBruijn(I;P;Mem) )
   rule #deBruijn( I:Int ; X:Name !! ( P:Proc  ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( #deBruijn(I;P;Mem) )
   rule #deBruijn( I:Int ; X:Name !! ( P:Procs ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( #deBruijn(I;P;Mem) )
 
 // Esubs -- goes inside
-  rule #deBruijn( I:Int ; * X:Name ; Mem:Map ) => * #deBruijn(I;X;Mem)
+  rule #deBruijn( I:Int ; *X:Name ; Mem:Map ) => * #deBruijn(I;X;Mem)
 
 // Variables
   // NameVars -- nothing happens if NameVar is free w.r.t. Mem
@@ -297,7 +366,7 @@ module ALPHA
   rule #deBruijn( I:Int ; tuple( P:Procs ) ; Mem:Map ) => tuple(#deBruijn(I;P;Mem))
 
 // Quotes -- goes inside (like eval)
-  rule #deBruijn( I:Int ; @ P:Proc ; Mem:Map ) => @ #deBruijn(I;P;Mem)
+  rule #deBruijn( I:Int ; @P:Proc ; Mem:Map ) => @ #deBruijn(I;P;Mem)
 
 // TODO: add these productions to nested section
 // Arithmetic Exps
@@ -396,42 +465,42 @@ module ALPHA
        requires M in keys(Mem)
 
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
 
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
 
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);M;P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires notBool (M in keys(Mem))
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( J,I +Int 1 ; N ; #sub(boundN(J,I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(J,I) ) ) }
+    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
 
 // Ground & bound terms
@@ -443,44 +512,133 @@ module ALPHA
 // Mem map propogates to both branchs
   rule #deBruijn( I:Int , J:Int ; P:Proc | Q:Proc ; Mem:Map ) => #deBruijn(I,J;P;Mem) | #deBruijn(I,J;Q;Mem)
 
-// Receives -- TODO: listen for multiple names 
+// Receives 
   // listening variables become boundN(I) with the appropriate index and are guarded during De Bruijn indexing
   // linear
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <- #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <- #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int , J:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => for(   <- #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; P ; Mem ) }
-
-    // several Name listens -- TODO: resolve values in Mem
-  rule #deBruijn( I:Int , J:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <- #deBruijn(I,J;X;Mem) ){ 
-            #deBruijn( I,J +Int #length(Y) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-//    requires notBool (Y in keys(Mem))
-//  rule #deBruijn( I:Int ; for( Y:Name , Z:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-//    => for( #dBound(I;Y;.Map) , #dBound(I +Int 1;Z;.Map) <- #deBruijn(I;X;Mem) ){ 
-//            #deBruijn( I +Int s ; #sub(#dBound(I;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I;Y;.Map) ) ) }
-//    requires Y in keys(Mem)
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int , J:Int ; for(  <- X:Name ){ P:Proc } ; Mem:Map ) => for( <- #deBruijn(I,J;X;Mem) ){ #deBruijn(I,J +Int size(#BV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <- #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <- #deBruijn(I,J +Int 1;X;Mem) if #sub(boundN(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <- #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <- #deBruijn(I,J +Int 1;X;Mem) if #sub(boundP(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <- #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <- #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <- #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <- #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
 
   // repeated
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <= #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <= X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <= #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int , J:Int ; for(        <= X:Name ){ P:Proc } ; Mem:Map ) => for(   <= #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; P ; Mem ) }
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int , J:Int ; for(  <= X:Name ){ P:Proc } ; Mem:Map ) => for( <= #deBruijn(I,J;X;Mem) ){ #deBruijn(I,J +Int size(#BV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <= #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <= #deBruijn(I,J +Int 1;X;Mem) if #sub(boundN(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <= #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <= #deBruijn(I,J +Int 1;X;Mem) if #sub(boundP(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <= #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <= #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <= #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <= #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
 
   // peek
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <! #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires notBool (Y in keys(Mem))
-  rule #deBruijn( I:Int , J:Int ; for( Y:Name <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;Y;.Map) <! #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; #sub(#dBound(I,J;Y;.Map);#sub(Mem;Y);P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
-    requires Y in keys(Mem)
-  rule #deBruijn( I:Int , J:Int ; for(        <! X:Name ){ P:Proc } ; Mem:Map ) => for(   <! #deBruijn(I,J;X;Mem) ){ #deBruijn( I,J +Int 1 ; P ; Mem ) }
+    // no listening variables -- no binding variables so nothing changes
+  rule #deBruijn( I:Int , J:Int ; for(  <! X:Name ){ P:Proc } ; Mem:Map ) => for( <! #deBruijn(I,J;X;Mem) ){ #deBruijn(I,J +Int size(#BV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <! #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:NameVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I,J) <! #deBruijn(I,J +Int 1;X;Mem) if #sub(boundN(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundN(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I,J) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <! #deBruijn(I,J +Int 1;X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:ProcVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I,J) <! #deBruijn(I,J +Int 1;X;Mem) if #sub(boundP(I,J);#sub(Mem;Y);B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int 1 ; #sub(boundP(I,J);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I,J) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <! #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( @Y:Proc <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I,J;Y;.Map) <! #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <! #deBruijn(I,J +Int size(#FV(Y));X;Mem) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
+        // guarded
+  rule #deBruijn( I:Int , J:Int ; for( Y:Names <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I,J;Y;.Map) <! #deBruijn(I,J +Int size(#FV(Y));X;Mem) if #sub(#dBound(I,J;Y;.Map);Y;B) ){ 
+            #deBruijn( I,J +Int size(#BV(X)) +Int size(#FV(Y)) ; #sub(#dBound(I,J;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I,J;Y;.Map) ) ) }
 
 // Sends
 // index and map constant on name and proc
@@ -549,41 +707,172 @@ module ALPHA
 //---------------
 //--- #dBound ---
 //---------------
-
+// assigns De Bruijn indices to variables bound by a listen in a receive
 // TODO: finish writing/testing semantics for general Procs
 // TODO: Mem values for several Names/Procs
 
 // Name
-  rule #dBound( I:Int ; _:NameVar ; _:Map   ) => boundN(I)
-  rule #dBound( I:Int ; @P:Proc   ; Mem:Map ) => @ #dBound(I;P;Mem)
+  rule #dBound( I:Int ;  _:NameVar ; _:Map   ) => boundN(I)
+  rule #dBound( I:Int ; @P:ProcVar ; _:Map   ) => @ boundP(I)
+  rule #dBound( I:Int ; @P:Proc    ; Mem:Map ) => @ #dBound(I;P;Mem) requires notBool isProcVar(P)
 
   // several Names
-  rule #dBound( I:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
-  rule #dBound( I:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int 1 ;B;Mem)
+  rule #dBound( I:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int size(#FV(A));B;Mem)
+  rule #dBound( I:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I;A;Mem) , #dBound( I +Int size(#FV(A));B;Mem)
 
 // Proc
-  rule #dBound( _:Int ; G:Ground  ; _:Map   ) => G
-  rule #dBound( I:Int ; _:ProcVar ; _:Map   ) => boundP(I)
-  rule #dBound( I:Int ; *N:Name   ; Mem:Map ) => * #dBound(I;N;Mem)
+  rule #dBound( _:Int ; G:Ground   ; _:Map   ) => G
+  rule #dBound( I:Int ; _:ProcVar  ; _:Map   ) => boundP(I)
+  rule #dBound( I:Int ; *N:NameVar ; _:Map   ) => * boundN(I)
+  rule #dBound( I:Int ; *N:Name    ; Mem:Map ) => * #dBound(I;N;Mem)
 
   // Send
-  rule #dBound( I:Int ; A:Name ! ( B:Proc  ) ; Mem:Map ) => #dBound(I;A;Mem) ! ( #dBound(I;B;Mem) )
-  rule #dBound( I:Int ; A:Name ! ( B:Procs ) ; Mem:Map ) => #dBound(I;A;Mem) ! ( #dBound(I;B;Mem) )
+  rule #dBound( I:Int ; A:Name ! ( B:Proc  ) ; Mem:Map ) => #dBound(I;A;Mem) ! ( #dBound(I +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int ; A:Name ! ( B:Procs ) ; Mem:Map ) => #dBound(I;A;Mem) ! ( #dBound(I +Int size(#FV(A));B;Mem) )
 
+// TODO: #V, #FV, or #BV??? & MultiRec
   // Receive -- increase nesting index for bound Names
-  rule #dBound( I:Int ; for(        <- X:Name ){ P:Proc } ; Mem:Map ) => for(   <- #dBound(I;X;Mem) ){ #dBound(I;P;Mem) }
-  rule #dBound( I:Int ; for( Y:Name <- X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(1,I;Y;.Map) <- #dBound(I;X;Mem) ){ #deBruijn(1,I +Int 1;#sub(#dBound(1,I;Y;.Map);Y;P); updateMap( Mem , #mapify(I;X;Mem) ) ) }
+  // linear
+    // no listening variables
+  rule #dBound( I:Int ; for(  <- X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <- #dBound(I;X;Mem) ){ #dBound(I +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
+  rule #dBound( I:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <- #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:NameVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <- #dBound(I;X;Mem) if #sub(boundN(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <- #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)); #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( @Y:ProcVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <- #dBound(I;X;Mem) if #sub(boundP(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <- #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int ; for( @Y:Proc <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <- #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <- #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:Names <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <- #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+
+  // repeated
+    // no listening variables
+  rule #dBound( I:Int ; for(  <= X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <= #dBound(I;X;Mem) ){ #dBound(I +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar -- map union because Y is not in keys
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar -- map update because Y is in keys
+  rule #dBound( I:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <= #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:NameVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <= #dBound(I;X;Mem) if #sub(boundN(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <= #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)); #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( @Y:ProcVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <= #dBound(I;X;Mem) if #sub(boundP(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <= #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int ; for( @Y:Proc <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <= #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int ; for( Y:Names <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <= #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:Names <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <= #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+
+  // peek
+    // no listening variables
+  rule #dBound( I:Int ; for(  <! X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <! #dBound(I;X;Mem) ){ #dBound(I +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
+  rule #dBound( I:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <! #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:NameVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(1,0) <! #dBound(I;X;Mem) if #sub(boundN(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundN(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int ; for( @Y:ProcVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <! #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)); #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( @Y:ProcVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(1,0) <! #dBound(I;X;Mem) if #sub(boundP(1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(boundP(1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int ; for( @Y:Proc <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <! #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int ; for( @Y:Proc <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(1,0;Y;.Map) <! #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int ; for( Y:Names <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <! #dBound(I;X;Mem) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int ; for( Y:Names <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(1,0;Y;.Map) <! #dBound(I;X;Mem) if #sub(#dBound(1,0;Y;.Map);Y;B) ){ 
+            #dBound( I +Int size(#FV(X)) ; #sub(#dBound(1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(1,0;Y;.Map) ) ) }
 
   // Par
-  rule #dBound( I:Int ; A:Proc | B:Proc  ; Mem:Map ) => #dBound(I;A;Mem) | #dBound(I +Int 1;B;Mem) requires notBool isPar(A)
+  rule #dBound( I:Int ; A:Proc | B:Proc ; Mem:Map ) => #dBound(I;A;Mem) | #dBound(I +Int size(#FV(A));B;Mem) requires notBool isPar(A)
 
   // New
   rule #dBound( _:Int ; A:New ; Mem:Map ) => #deBruijn(1,0;A;.Map)
 
+  // several Names -- increase index for each name (if not already bound)
+  rule #dBound( I:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+  rule #dBound( I:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   // several Procs -- increase index for each name (if not already bound)
-  rule #dBound( I:Int ; A:Proc , B:Proc  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int 1;B;Mem)
-  rule #dBound( I:Int ; A:Proc , B:Procs ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int 1;B;Mem)
+  rule #dBound( I:Int ; A:Proc , B:Proc  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+  rule #dBound( I:Int ; A:Proc , B:Procs ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
 
 // Nested
   // Name
@@ -591,8 +880,8 @@ module ALPHA
   rule #dBound( I:Int , J:Int ; @P:Proc   ; Mem:Map ) => @ #dBound(I,J;P;Mem)
 
     // several Names
-  rule #dBound( I:Int , J:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound( I,J +Int 1;B;Mem)
-  rule #dBound( I:Int , J:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound( I,J +Int 1;B;Mem)
+  rule #dBound( I:Int , J:Int ; A:Name , B:Name  ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound( I,J +Int size(#FV(A));B;Mem)
+  rule #dBound( I:Int , J:Int ; A:Name , B:Names ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound( I,J +Int size(#FV(A));B;Mem)
 
   // Proc
   rule #dBound( _:Int , _:Int ; G:Ground  ; _:Map   ) => G
@@ -600,60 +889,186 @@ module ALPHA
   rule #dBound( I:Int , J:Int ; *N:Name   ; Mem:Map ) => * #dBound(I,J;N;Mem)
 
     // Send
-  rule #dBound( I:Int , J:Int ; A:Name ! ( B:Proc  ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J;B;Mem) )
-  rule #dBound( I:Int , J:Int ; A:Name ! ( B:Procs ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J;B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name ! ( B:Proc  ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name ! ( B:Procs ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
 
     // Receive -- increase nesting index for bound Names
-  rule #dBound( I:Int , J:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => for(   <- #dBound(I,J;X;Mem) ){ #dBound(I,J;P;Mem) }
+  // linear
+    // no listening variables
+  rule #dBound( I:Int , J:Int ; for(  <- X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <- #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <- #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <- #dBound(I,J;X;Mem) if #sub(boundN(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <- #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)); #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <- #dBound(I,J;X;Mem) if #sub(boundP(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int , J:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <- #dBound(I +Int 1,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:Names <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+
+  // repeated
+    // no listening variables
+  rule #dBound( I:Int , J:Int ; for(  <= X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <= #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <= #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <= #dBound(I,J;X;Mem) if #sub(boundN(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <= #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)); #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <= #dBound(I,J;X;Mem) if #sub(boundP(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int , J:Int ; for( Y:Names <= X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <= #dBound(I +Int 1,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:Names <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+
+  // peek
+    // no listening variables
+  rule #dBound( I:Int , J:Int ; for(  <! X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <! #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
+    // listening for NameVar
+      // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
+      // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <! #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <! #dBound(I,J;X;Mem) if #sub(boundN(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
+    // listening for @ProcVar
+      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
+      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <! #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)); #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <! #dBound(I,J;X;Mem) if #sub(boundP(I +Int 1,0);#sub(Mem;Y);B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
+    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+       requires notBool isProcVar(Y)
+    // several Name listens
+  rule #dBound( I:Int , J:Int ; for( Y:Names <! X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <! #dBound(I +Int 1,J;X;Mem) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
+        // guarded
+  rule #dBound( I:Int , J:Int ; for( Y:Names <! X:Name if B:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){ 
+            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
 
   // New
   rule #dBound( I:Int , _:Int ; A:New ; Mem:Map ) => #deBruijn(I +Int 1,0;A;.Map)
 
-    // several Names
-  rule #dBound( I:Int , J:Int ; A:Proc , B:Proc  ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound(I,J +Int 1;B;Mem)
-  rule #dBound( I:Int , J:Int ; A:Proc , B:Procs ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound(I,J +Int 1;B;Mem)
+    // several Procs
+  rule #dBound( I:Int , J:Int ; A:Proc , B:Proc  ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound(I,J +Int size(#FV(A));B;Mem)
+  rule #dBound( I:Int , J:Int ; A:Proc , B:Procs ; Mem:Map ) => #dBound(I,J;A;Mem) , #dBound(I,J +Int size(#FV(A));B;Mem)
 
 //---------------
 //--- #mapify ---
 //---------------
-// returns De Bruijn index map for a given Int, Name or Proc, and Map
+// returns map from variables to De Bruijn indices
 
 // Name
   rule #mapify( I:Int ; A:NameVar   ; Mem:Map ) => updateMap( Mem , A |-> boundN(I) )
   rule #mapify( _:Int ; _:BoundName ; Mem:Map ) => Mem
-  rule #mapify( I:Int ; @ A:Proc    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) ) // can .Map be used here?
-
+  rule #mapify( I:Int ; @ A:Proc    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) )
 
   // several Names
-  rule #mapify( I:Int ; A:Name , B:Name  ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int 1;B;Mem) )
-  rule #mapify( I:Int ; A:Name , B:Names ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int 1;B;Mem) )
+  rule #mapify( I:Int ; A:Name , B:Name  ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
+  rule #mapify( I:Int ; A:Name , B:Names ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
 
 // Proc
   rule #mapify( _:Int ; _:Ground    ; Mem:Map ) => Mem
   rule #mapify( I:Int ; A:ProcVar   ; Mem:Map ) => updateMap( Mem , A |-> boundP(I) )
   rule #mapify( _:Int ; _:BoundProc ; Mem:Map ) => Mem
-  rule #mapify( I:Int ; * A:Name    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) ) // can .Map be used here?
+  rule #mapify( I:Int ; * A:Name    ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) )
 
   // several Procs
-  rule #mapify( I:Int ; A:Proc , B:Proc  ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int 1;B;Mem) )
-  rule #mapify( I:Int ; A:Proc , B:Procs ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int 1;B;Mem) )
+  rule #mapify( I:Int ; A:Proc , B:Proc  ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
+  rule #mapify( I:Int ; A:Proc , B:Procs ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
 
-  // New
+  // New -- TODO: fix this
   rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
     => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; #sub(boundN(I);A;B) ; Mem ) ) requires notBool (A in values(Mem))
   rule #mapify( I:Int ; new A:Name in { B:Proc } ; Mem:Map ) 
     => updateMap( Mem , A |-> boundN(I) #mapify( I +Int 1 ; #sub(boundN(I);A;B) ; Mem ) ) requires A in values(Mem)
 
   // Par
-  rule #mapify( I:Int ; A:Proc | B:Proc ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int 1;B;Mem) )
+  rule #mapify( I:Int ; A:Proc | B:Proc ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
 
   // Send
-  rule #mapify( I:Int ; A:Name ! ( B:Proc ) ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I;B;Mem) )
+  rule #mapify( I:Int ; A:Name ! ( B:Proc ) ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
 
   // Receive -- TODO: more testing
-  rule #mapify( I:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;P;updateMap(Mem,#mapify(I;X;Mem)))
+  rule #mapify( I:Int ; for(   <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int size(#FV(X));P;updateMap(Mem,#mapify(I;X;Mem)))
     // sub @Nil for bound variable so no binding is recorded
-  // TODO: incorporate listening Names into map
+  // TODO: incorporate listening Names into map and variables from each name
   rule #mapify( I:Int ; for(         Y:Name  <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;for( <-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I;Y;Mem)))
   rule #mapify( I:Int ; for( Y:Name, Z:Name  <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I;Y;Mem)))
   rule #mapify( I:Int ; for( Y:Name, Z:Names <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I;Y;Mem)))
@@ -707,16 +1122,29 @@ module ALPHA
   rule #mapify( I:Int , J:Int ; for(         Y:Name  <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(                 <- X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;P;updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(         Y:Name  <- X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <- X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <- X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+
 
   rule #mapify( I:Int , J:Int ; for(                 <= X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;P;updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for(         Y:Name  <= X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <= X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<=X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <= X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<=X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(                 <= X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;P;updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(         Y:Name  <= X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <= X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <= X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
 
   rule #mapify( I:Int , J:Int ; for(                 <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;P;updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for(         Y:Name  <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<!X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
   rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<!X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(                 <! X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I +Int 1;P;updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for(         Y:Name  <! X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;#sub(@Nil;Y;P);updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Name  <! X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
+  rule #mapify( I:Int , J:Int ; for( Y:Name, Z:Names <! X:Name _:Guard ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int 1;for(Z<-X){#sub(@Nil;Y;P)};updateMap(Mem,#mapify(I,J;X;Mem)))
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
