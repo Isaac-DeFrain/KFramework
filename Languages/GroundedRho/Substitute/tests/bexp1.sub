@@ -1,0 +1,10 @@
+// Input guard
+
+    #sub(@41,@"nth",@{Nil | true | [ ]};@\a,@\b,@\c;{\a > 40} and {\b == "nth"} and {\c == [ ] | true})
+
+/*
+Output:
+
+    41 > 40 and "nth" == "nth" and { Nil | true | [ ] } == { [ ] | true }
+
+*/
