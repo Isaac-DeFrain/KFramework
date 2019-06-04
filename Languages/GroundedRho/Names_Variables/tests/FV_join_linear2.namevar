@@ -1,0 +1,11 @@
+// Free variables
+
+    #FV( for( a,b <- x ; @\c <- a){ Nil } )
+
+/*
+Output:
+
+    SetItem ( a )
+    SetItem ( x )
+
+*/
