@@ -1,0 +1,12 @@
+// Joined receive names
+
+    #RN+( a!(Nil) | a!(Nil) | b!(1,2) | for( @Nil <- a ; y , @\z <- b ){ *y | \z } | for( c,d <- b ){ c!(*d) } )
+
+/*
+Output: (set of sets: { { a , b } , { b } } )
+
+  SetItem ( SetItem ( a )
+  SetItem ( b ) )
+  SetItem ( SetItem ( b ) )
+
+*/
