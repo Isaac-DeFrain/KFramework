@@ -1,0 +1,12 @@
+// Listening variables
+
+    #LV( for( a,b <- x ; @\c <- a){ Nil } )
+
+/*
+Output:
+
+    SetItem ( \ c )
+    SetItem ( a )
+    SetItem ( b )
+
+*/
