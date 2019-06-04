@@ -4,14 +4,14 @@
 
 /*
 Output:
-<T>
-    <threads>
-      <thread>
+  Result ==K <T>
+    <activity>
+      <task>
         <k>
           42
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -36,22 +36,25 @@ Output:
     <nextLoc>
       1
     </nextLoc>
+    <original>
+      new x in { x ! ( 41 , true ) | x ! ( -43 , true ) | for ( y , @ \ b <- x if \ b == true ) { * y + 1 } }
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
-      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
-    </deBruijn>
+    <deBruijnified>
+      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | for ( boundN( 1 ) , @ boundP( 2 ) <- boundN( 0 ) if boundP( 2 ) == true ) { * boundN( 1 ) + 1 } }
+    </deBruijnified>
   </T>
 #Or
   Result ==K <T>
-    <threads>
-      <thread>
+    <activity>
+      <task>
         <k>
           -42
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -76,11 +79,14 @@ Output:
     <nextLoc>
       1
     </nextLoc>
+    <original>
+      new x in { x ! ( 41 , true ) | x ! ( -43 , true ) | for ( y , @ \ b <- x if \ b == true ) { * y + 1 } }
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
-      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | #deBruijn( 1 ; for ( y , @ \ b <- boundN( 0 ) if \ b == true ) { * y + 1 } ; x |-> boundN( 0 ) ) }
-    </deBruijn>
+    <deBruijnified>
+      new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | boundN( 0 ) ! ( -43 , true ) | for ( boundN( 1 ) , @ boundP( 2 ) <- boundN( 0 ) if boundP( 2 ) == true ) { * boundN( 1 ) + 1 } }
+    </deBruijnified>
   </T>
 */

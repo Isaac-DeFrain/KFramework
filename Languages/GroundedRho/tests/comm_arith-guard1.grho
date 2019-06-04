@@ -52,9 +52,7 @@ Result ==K <T>
     .Set
   </freeVars>
   <deBruijnified>
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 , * boundN( 2 ) ) | #deBruijn( 3 ; for ( y , @ \ b <- boundN( 0 ) if * y > 40 ) { ( @ * y + 1 ) ! ( \ b ) } ; a |-> boundN( 1 )
-    b |-> boundN( 2 )
-    x |-> boundN( 0 ) ) }
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 , * boundN( 2 ) ) | for ( boundN( 3 ) , @ boundP( 4 ) <- boundN( 0 ) if * boundN( 3 ) > 40 ) { @ * boundN( 3 ) + 1 ! ( boundP( 4 ) ) } }
   </deBruijnified>
 </T>
 */
