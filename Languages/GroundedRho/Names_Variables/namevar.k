@@ -477,9 +477,11 @@ module NAMEVAR
   rule  FV( _:Ground    ) => .Set
   rule  FV( _:BoundName ) => .Set
   rule  FV( _:BoundProc ) => .Set
+  rule  FV(   sub       ) => .Set
   rule #FV( _:Ground    ) => .Set
   rule #FV( _:BoundName ) => .Set
   rule #FV( _:BoundProc ) => .Set
+  rule #FV(   sub       ) => .Set
 
 // NameVar
   rule  FV( X:NameVar ) => SetItem(X : name)
