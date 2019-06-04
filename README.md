@@ -1,4 +1,6 @@
-(my project management skills are still in their infancy... I apologize ahead of time for the scatter-brained organizational scheme)
+Hello! Welcome to my GitHub!
+
+Let me first apologize ahead of time for my scatter-brained organizational scheme.
 
 This is a work in progress and is quickly evolving!
 
