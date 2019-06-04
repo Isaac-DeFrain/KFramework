@@ -2,10 +2,33 @@
 /*
 TODO:
  - Matching (patterns & wildcard)
+ - add TypedName ::= Name [":" Proc ]
  - Method semantics
- - add contract invocation(?): Name "(" EmptyP/Proc/Procs ")" - syntactic sugar for cell pattern
- - add sequential listen semantics
- - add remaining NativeChan
+ - Invocation semantics - syntactic sugar for cell pattern(?)
+ - Sequential Listen syntax
+ - NativeChan semantics
+
+**V1.1 features**
+ - New & improved for-comprehension:
+   for( ptrn 11 <- src 11 & ... & ptrn 1n <- src 1n ;
+        ...
+        ptrn m1 <- src m1 & ... & ptrn mn <- src mn ;
+      ){P}
+   where src ::= x | x?! | x!?( a 1 , ..., a k ) and ‘&’ replaces the old meaning of ‘;’
+   ⟦for( ptrn ← x?! ){P}⟧ = for( ( ptrn, r ) ← x ){ r!() | ⟦P⟧ }
+   ⟦for( ptrn ← x!?( a 1 , ..., a k )){P}⟧ = new r in { x!( a 1 , ..., a k , *r) | for( ptrn ← r ){ ⟦P⟧ } }
+
+ - Sequential output:
+   - x!?(v);P
+    ⟦x!?(v);P⟧ = new r in x!((v,*r)) | for( _ ← r ){ ⟦P⟧ }
+   - x!?(v).
+    ⟦x!?(v).⟧ = x!?(v);0
+
+ - Sequential let expressions: let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
+   ⟦let ptrn_1 ← v_1 ; ... ; ptrn_n ← v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 ← x_1 ){ ⟦let ptrn_2 ← v_2 ; ... ; ptrn_n ← v_n in P ⟧ } }
+
+ - Simultaneous let expressions: let ptrn_1 ← v_1 & ... & ptrn_m ← v m in P
+   ⟦let ptrn_1 ← v_1 & ... & ptrn_n ← v_n in P ⟧ = new x_1 , ... , x_n in { x_1 !(v_1) | ... | x_n!(v_n) | for( ptrn_1 ← x_1 & ... & ptrn_n ← x_n ){ ⟦P⟧ }
 */
 
 require "domains.k"
@@ -36,7 +59,7 @@ module GRHO-SYNTAX
 
 // Several Names
   syntax            Names ::= Name "," Name
-                            | Name "," Names
+                            | Name "," Names [right]
 
 // For pattern binding
 //  syntax          NamePat ::= Name | Pattern
@@ -46,6 +69,7 @@ module GRHO-SYNTAX
 //-----------------
 //--- PROCESSES ---
 //-----------------
+// TODO: Finalize precedence
   syntax             Proc ::= "{" Proc "}"    [bracket]
                             > New             // New name declaration(s)
                             > Ground          // Ground terms - Bool, Int, Nil, String, Uri
@@ -56,6 +80,7 @@ module GRHO-SYNTAX
                             > MethodProc      // Methods
                             > Exp             // Arithmetic & Boolean expressions
                             > Match           // Process matching
+                            > Select          // Nondeterministic selection
                             > Receive         // Receive messages
                             | Contract        // Contract
                             | Invocation      // Contract invocation
@@ -68,11 +93,12 @@ module GRHO-SYNTAX
 
 // Several Processes
   syntax            Procs ::= Proc "," Proc
-                            | Proc "," Procs
+                            | Proc "," Procs [right]
 
 // Parallel composition
-  // Par should be like a multiset of processes
-  // implemented as a set which counts number of appearances in STRUCT
+  // Par should be a multiset of processes
+    // each nonPar Proc is put into it's own <k/> cell in GRHO 
+    // implemented as a multiset in STRUCT
   syntax              Par ::= Proc "|" Proc  [right]
 
 // Receives - no mixed linear/peek/repeated/sequential
@@ -115,7 +141,7 @@ module GRHO-SYNTAX
                             | Rbind ";" Rbinds
 
   syntax            Binds ::= Lbinds | Pbinds | Rbinds
-  syntax     GuardedBinds ::= Binds Guard
+  syntax     GuardedBinds ::= Binds Guard // instead Lbinds Guard | Pbinds Guard | Rbinds Guard?
   syntax         AnyBinds ::= Binds | GuardedBinds
 
 // Sends
@@ -135,11 +161,20 @@ module GRHO-SYNTAX
                             | "new" Names "in" "{" Proc "}"
 
 // Match
-  syntax            Match ::= "match" Proc "{" MatchCases "}"
-                            | "match" Proc "{" MatchCase  "}"
-  syntax        MatchCase ::= Proc ":=>" Proc
+  syntax            Match ::= "match" "{" Proc "}" "{" MatchCases "}"
+                            | "match" "{" Proc "}" "{" MatchCase  "}"
+  // TODO: make MatchCase ::= "{" "{" PrcoPat "}" ":=>" Proc "}"
+  syntax        MatchCase ::= "{" Proc "}" "|=>" Proc
   syntax       MatchCases ::= MatchCase MatchCase
                             | MatchCase MatchCases
+
+// Select
+  syntax            Select ::= "select" "{" Branch   "}"
+                             | "select" "{" Branches "}"
+
+  syntax            Branch ::= "{" Lbind "}" "|=>" Proc
+  syntax          Branches ::= Branch Branch
+                             | Branch Branches
 
 // Variable Reference - allows for shadowing
   syntax           VarRef ::= "=" "*" NameVar
@@ -180,14 +215,14 @@ module GRHO-SYNTAX
                             | RhoKVPair "," RhoKVPairs
 
   // Process sets
-  syntax           RhoSet ::= "Set" "(" Procs ")"
-                            | "Set" "(" Proc  ")"
-                            | "Set" "(" ")"
+  syntax           RhoSet ::= "Set(" Procs ")"
+                            | "Set(" Proc  ")"
+                            | "Set(" ")"
 
   // Process tuples
   syntax         RhoTuple ::= "(" Procs ")"  [klabel(tuple)]
-                            | "(" Proc  ")"  [klabel(tuple)]
-                            | "(" ")"        [klabel(tuple)]
+                            | "(" Proc ",)"
+                         // | "(" ")"        [klabel(tuple)]
 
 // Ground terms
   syntax           Ground ::= Bool | Int | String // built-in
@@ -202,25 +237,37 @@ module GRHO-SYNTAX
                             | "rho:io:stdoutAck"
 
 // Expressions resolve to ground terms
-  syntax              Exp ::= AExp > BExp
+  syntax              Exp ::= "{" Exp "}" [bracket]
+                            | AExp
+                            | StringExp
+                            > BExp
+
 
 // Arithmetic
-  // Variable
-  syntax             AExp ::= "{" AExp "}"   [bracket]
-                            > ProcVar          // e.g. \x + 1 or \x ++ "word"
-                            | Eval             // e.g. *x + 1 or *x ++ "word"
-  // String
-  syntax             AExp ::= String           // string output
-                            | AExp "++" AExp   // string concatenation
-                            | AExp "%%" RhoMap // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
-  // Int
-  syntax             AExp ::= Int                // integer output
-                            > "-" AExp        [strict]
-                            > AExp "%"  AExp  [strict] // mod reduction
-                            > AExp "*"  AExp  [strict]
-                            | AExp "/"  AExp  [strict]
-                            > AExp "+"  AExp  [strict]
-                            | AExp "-"  AExp  [strict]
+  syntax         IntOrVar ::= Int | ProcVar | Eval
+  syntax             AExp ::= "{" AExp "}" [bracket]
+                            > IntOrVar
+                            > "-" AExp       [strict]
+                            > AExp "%" AExp  [strict] // mod reduction
+                            > AExp "*" AExp  [strict, left]
+                            | AExp "/" AExp  [strict, left]
+                            > AExp "+" AExp  [strict, left]
+                            | AExp "-" AExp  [strict, left]
+
+// String
+  syntax      StringOrVar ::= String | ProcVar | Eval
+  syntax        StringExp ::= "{" StringExp "}" [bracket]
+                            > StringOrVar
+                            | Concat  // string concatenation
+                            | Interp  // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
+
+  syntax           Concat ::= StringOrVar ConcatExp
+  syntax        ConcatExp ::= "++" StringOrVar
+                            | "++" StringOrVar ConcatExp
+
+  syntax           Interp ::= StringOrVar "%%" InterpMaps
+  syntax       InterpMaps ::= RhoMap
+                            | RhoMap "%%" InterpMaps
 
 // Boolean
   syntax             BExp ::= "{" BExp "}"   [bracket]
@@ -236,9 +283,9 @@ module GRHO-SYNTAX
                             | Proc "==" Proc      // structural equivalence
                             | Proc "!=" Proc      // not ( Proc == Proc )
                             > "not" BExp          [strict]
-                            > BExp "and" BExp     [strict(1)]
-                            > BExp "or"  BExp     [strict(1)]
-                            > Proc "matches" Proc // P matches Q is syntactic sugar for: match P { Q :=> true P :=> false }
+                            > BExp "and" BExp     [strict(1), right]
+                            > BExp "or"  BExp     [strict(1), right]
+                            > Proc "matches" Proc // P matches Q is syntactic sugar for: match P { { Q :=> true } { P :=> false } }
 
 // Bundles
   syntax           Bundle ::= "bundle+" "{" Proc "}"   // write-only
@@ -296,13 +343,18 @@ module GRHO-SYNTAX
   syntax             AExp ::= BoundProc // for substitution of variables in AExps
   syntax             BExp ::= BoundProc // for substitution of variables in BExps
 
+// For substitution
+  syntax              Sub ::= "sub"
+  syntax             Name ::= "@" Sub
+  syntax             Proc ::= Sub
+
 // Builtins are processes too
   syntax             Proc ::= List | Map | Set
   syntax              Map ::= RhoMap
   syntax              Set ::= RhoSet
 
 // For K
-  syntax            KItem ::= Name | Names | Proc | Procs
+  syntax            KItem ::= Name | Names | Proc | Procs | RhoKVPair
 
 endmodule
 
@@ -348,14 +400,14 @@ module GRHO
       </tuplespace>                                     //
       <nextLoc color="gray"> 0 </nextLoc>               //
       <original color="pink">                           //
-        $PGM                                            // original program
+        $PGM                                            // parsed original program
       </original>                                       //
-      <freeVars color="pink">                           //
-        FV($PGM)                                        // set of free variables
-      </freeVars>                                       //
-      <deBruijnified color="pink">                      //
-        #deBruijn(0;$PGM;.Map)                          // De Bruijn indexed
-      </deBruijnified>                                  //
+      <OGfreevar color="pink">                          //
+        FV($PGM)                                        // set of free variables of original program
+      </OGfreevar>                                      //
+      <OGdeBruijn color="pink">                         //
+        #deBruijn(0;$PGM;.Map)                          // De Bruijn indexed original program
+      </OGdeBruijn>                                     //
     </T>                                                //
 
   syntax KResult ::= Ground | Eval | List | Map | Set   // final output of strict operations
@@ -368,55 +420,61 @@ module GRHO
 
 // Arithmetic & Boolean expressions are evaluated as soon as they can be
   // Arithmetic expressions
-  rule I:Int + J:Int => I +Int J                     [anywhere] // addition
-  rule I:Int - J:Int => I -Int J                     [anywhere] // subtraction
-  rule I:Int * J:Int => I *Int J                     [anywhere] // multiplication
-  rule I:Int / J:Int => I /Int J requires J =/=Int 0 [anywhere] // division
-  rule I:Int % J:Int => I %Int J requires J =/=Int 0 [anywhere] // modular reduction
-  rule - I:Int => 0 -Int I                           [anywhere] // negation
+  rule I:Int + J:Int => I +Int J                     [anywhere, structural] // addition
+  rule I:Int - J:Int => I -Int J                     [anywhere, structural] // subtraction
+  rule I:Int * J:Int => I *Int J                     [anywhere, structural] // multiplication
+  rule I:Int / J:Int => I /Int J requires J =/=Int 0 [anywhere, structural] // division
+  rule I:Int % J:Int => I %Int J requires J =/=Int 0 [anywhere, structural] // modular reduction
+  rule - I:Int => 0 -Int I                           [anywhere, structural] // negation
   
-  rule S:String ++ T:String => S +String T [anywhere] // string concatenation
+  // string concatenation
+  rule S:String ++ T:String => S +String T [anywhere, structural]
+  rule S:String ++ T:String U:ConcatExp => S +String T U [anywhere, structural]
   // string interpolation: "begin${key}rest" %% { ..., key:value ,... } => "begin" ++ "value" ++ "rest"
-  rule S:String %% R:RhoMap => #interpolate(S;R) [anywhere]
+  rule S:String %% R:RhoMap => #interpolate(S;R) [anywhere, structural]
+  rule S:String %% R:RhoMap %% T:InterpMaps => #interpolate(S;R) %% T [anywhere, structural]
 
   // Boolean expressions
-  rule I1:Int <= I2:Int => I1 <=Int I2   [anywhere] // 
-  rule I1:Int <  I2:Int => I1  <Int I2   [anywhere] // 
-  rule I1:Int >= I2:Int => I1 >=Int I2   [anywhere] // 
-  rule I1:Int >  I2:Int => I1  >Int I2   [anywhere] // 
-  rule not B:Bool => notBool B           [anywhere] // 
-  rule true  and B:Bool => B             [anywhere] // short-circuited 
-  rule false and _:Bool => false         [anywhere] // short-circuited 
-  rule true  or  _:Bool => true          [anywhere] // short-circuited 
-  rule false or  B:Bool => B             [anywhere] // short-circuited 
+  rule I1:Int <= I2:Int => I1 <=Int I2 [anywhere, structural]
+  rule I1:Int <  I2:Int => I1  <Int I2 [anywhere, structural]
+  rule I1:Int >= I2:Int => I1 >=Int I2 [anywhere, structural]
+  rule I1:Int >  I2:Int => I1  >Int I2 [anywhere, structural]
+  rule not B:Bool => notBool B         [anywhere, structural]
+    // short-circuited
+  rule true  and B:Bool => B     [anywhere, structural]
+  rule false and _:Bool => false [anywhere, structural]
+  rule true  or  _:Bool => true  [anywhere, structural]
+  rule false or  B:Bool => B     [anywhere, structural]
 
 // Structural Equivalence
-  // Syntactic equality of Ground terms
-  rule A:Ground == B:Ground => A ==K  B  [anywhere] // equality of ground terms
-  rule A:Ground != B:Ground => A =/=K B  [anywhere] // inequality of ground terms
-  rule P:Proc == Q:Proc => #structEq(P;Q) requires notBool isGround(P)
-  rule P:Proc != Q:Proc => notBool #structEq(P;Q) requires notBool isGround(P)
-  rule M:Name == N:Name => #nameEq(M;N)
-  rule M:Name != N:Name => notBool #nameEq(M;N)
+  // Syntactic equality of Ground terms -- checked immediately
+  rule A:Ground == B:Ground => A ==K  B [anywhere, structural]
+  rule A:Ground != B:Ground => A =/=K B [anywhere, structural]
+  // if only one term is Ground, we wait for the other -- e.g. in *x == true, we must wait on a value for x before computing
+  // if both terms are not Ground, check structural equivalence immediately
+  rule P:Proc == Q:Proc => #structEq(P;Q) requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
+  rule P:Proc != Q:Proc => notBool #structEq(P;Q) requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
+  rule M:Name == N:Name => #nameEq(M;N) [anywhere, structural]
+  rule M:Name != N:Name => notBool #nameEq(M;N) [anywhere, structural]
 
-// Conditionals - short-circuited
+// Conditionals -- short-circuited
   rule if ( true  ) P:Proc => P              [structural]
   rule if ( false ) _:Proc => Nil            [structural]
   rule if ( true  ) P:Proc else _:Proc => P  [structural]
   rule if ( false ) _:Proc else Q:Proc => Q  [structural]
 
-// Matching
+// Matching -- #match predicate is still rather primative...
   // "matches" binop desugars into "match" statement
-  rule P:Proc matches Q:Proc => match P { Q :=> true P :=> false }  [anywhere]
+  rule P:Proc matches Q:Proc => #match(P;Q) [structural]
   // TODO: replace P ==K Q with P #isIn Q
-  rule match P:Proc { Q:Proc :=> R:Proc } => #if (P ==K Q) #then R #else Nil #fi
-  rule match P:Proc { Q:Proc :=> R:Proc M:MatchCase  } => #if (P ==K Q) #then R #else match P { M } #fi
-  rule match P:Proc { Q:Proc :=> R:Proc M:MatchCases } => #if (P ==K Q) #then R #else match P { M } #fi
+  rule match { P:Proc } { { Q:Proc } |=> R:Proc } => #if #match(P;Q) #then #sub(P;Q;R) #else Nil #fi
+  rule match { P:Proc } { { Q:Proc } |=> R:Proc M:MatchCase  } => #if #match(P;Q) #then #sub(P;Q;R) #else match {P}{M} #fi
+  rule match { P:Proc } { { Q:Proc } |=> R:Proc M:MatchCases } => #if #match(P;Q) #then #sub(P;Q;R) #else match {P}{M} #fi
 
 // New Operator Semantics
   rule <k> new M:NameVar in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
-  // TODO: special channel map needed?
+  // TODO: special channel map needed for Uri?
   rule <k> new M:NameVar ( _:Uri ) in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
   
@@ -502,7 +560,7 @@ module GRHO
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>) 
-   requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
@@ -522,7 +580,7 @@ module GRHO
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
@@ -543,7 +601,7 @@ module GRHO
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
@@ -563,7 +621,7 @@ module GRHO
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
@@ -584,7 +642,7 @@ module GRHO
      <stype> 1       </stype>              // persistent send
    </send>                                 //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
@@ -604,7 +662,7 @@ module GRHO
      <stype> 1       </stype>              // persistent send
    </send>                                 //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
@@ -625,7 +683,7 @@ module GRHO
      <stype> _       </stype>              // any kind of send
    </send>                                 // 
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #sub(@Q;Y;B) ==K true          // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(@Q;Y) */ [comm]         // checks if sent messages match the variable being listened for
 
@@ -645,7 +703,7 @@ module GRHO
      <stype> _       </stype>              // any kind of send
    </send>                                 //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #sub(#quotes(Q);Y;B) ==K true  // checks if input guard is satisfied
+   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
     andBool #nameEq(X;Z)                   // checks if channels are name equivalent
 /*  andBool #match(#quotes(Q);Y) */ [comm] // checks if sent messages match the variables being listened for
 
@@ -653,8 +711,8 @@ module GRHO
 // moved progress to join.k
 
 // Eliminate Nil in parallel compositions
-  rule    Nil | P:Proc => P  [anywhere, structural]
-  rule P:Proc | Nil    => P  [anywhere, structural]
+  rule    Nil | P:Proc => P  [structural]
+  rule P:Proc | Nil    => P  [structural]
 
 // Dissolve computationally meaningless activity
   rule <task> <k> .K  </k> </task> => .Bag  [structural]
