@@ -1,0 +1,19 @@
+// MultiRec - complex name sub
+
+    #sub( @{@1!(Nil,0,true,"e")} ; @a!(\b,*c,\d,*e) ; for( a,@\b <- @{@{\b | \d}!(*a,*c,*e)} ; @{c!(\d)},e <- a ){ a!(\b,\d) | c!(*e) } )
+
+/*
+Output:
+
+ a = @1
+\b = Nil
+ c = @0
+\d = true
+ e = @"e"
+
+    for ( a , @ \ b <- @ ( ( @ Nil | true ) ! ( 1 , ( 0 , "e" ) ) ) ; @ ( c ! ( \ d ) ) , e <- @ 1 ) { a ! ( \ b , \ d ) | c ! ( * e ) }
+
+KAST:
+`<k>`(`for(_){_}_GRHO-SYNTAX`(`_;__GRHO-SYNTAX`(`_<-__GRHO-SYNTAX`(`_,__GRHO-SYNTAX`(#token("a","Id"),`@__GRHO-SYNTAX`(`\\__GRHO-SYNTAX`(#token("b","Id")))),`@__GRHO-SYNTAX`(`_!(_)_GRHO-SYNTAX`(`@__GRHO-SYNTAX`(`_|__GRHO-SYNTAX`(`Nil_GRHO-SYNTAX`(.KList),#token("true","Bool"))),`_,__GRHO-SYNTAX`(#token("1","Int"),`_,__GRHO-SYNTAX`(#token("0","Int"),#token("\"e\"","String")))))),`_<-__GRHO-SYNTAX`(`_,__GRHO-SYNTAX`(`@__GRHO-SYNTAX`(`_!(_)_GRHO-SYNTAX`(#token("c","Id"),`\\__GRHO-SYNTAX`(#token("d","Id")))),#token("e","Id")),`@__GRHO-SYNTAX`(#token("1","Int")))),`_|__GRHO-SYNTAX`(`_!(_)_GRHO-SYNTAX`(#token("a","Id"),`_,__GRHO-SYNTAX`(`\\__GRHO-SYNTAX`(#token("b","Id")),`\\__GRHO-SYNTAX`(#token("d","Id")))),`_!(_)_GRHO-SYNTAX`(#token("c","Id"),`*__GRHO-SYNTAX`(#token("e","Id"))))))
+
+*/

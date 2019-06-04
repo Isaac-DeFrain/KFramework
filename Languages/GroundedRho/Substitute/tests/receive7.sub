@@ -1,0 +1,10 @@
+// Receive - complex name sub
+
+    #sub( @{@1!(Nil)} ; @a!(\b) ; for( a,@\b <- @a!(\b) ){ a!(\b) } )
+
+/*
+Output:
+
+    for ( a , @ \ b <- @ ( ( @ 1 ) ! ( Nil ) ) ) { a ! ( \ b ) }
+
+*/
