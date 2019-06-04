@@ -1,0 +1,29 @@
+// Receive Kind
+
+    #kind( for( a,b,@\c <- @1 ; @{@2!(\d)} <- @3 ){ Nil } )
+
+/*
+Output:
+{ "receive" : { 
+    "multi" : { 
+      0 : { "chan" : { "quote" : { "int" : 1 } } , 
+            "listen" : { 
+              0 : { "namevar" : a } , 
+              1 : { "namevar" : b } , 
+              2 : { "quote" : { "procvar" : \ c } } 
+            } 
+          } , 
+      1 : { "chan" : { "quote" : { "int" : 3 } } , 
+            "listen" : { 
+              "quote" : { 
+                "send" : { 
+                  "linear" : { "chan" : { "quote" : { "int" : 2 } } , "msg" : { "procvar" : \ d } } 
+                } 
+              }
+            }
+          }
+    } , 
+    "cont" : Nil 
+  } 
+}
+*/

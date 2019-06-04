@@ -1,0 +1,39 @@
+// Set Kind
+
+    #kind( Set( @Nil!(for(@2<!@5){ true } | "a") | { 1:"a" , 2:"b" , 3:"c" } ) )
+
+/*
+Output:
+{ "set" : { 
+    "par" : { 
+          0 : { "send" : { 
+                "linear" : { 
+                  "chan" : { "quote" : { "nil" : Nil } } , 
+                   "msg" : { "par" : { 
+                                 0 : { "receive" : { 
+                                        "single" : { 
+                                            "peek" : { 
+                                             "chan" : { "quote" : { "int" : 5 } } , 
+                                           "listen" : { "quote" : { "int" : 2 } } 
+                                            } 
+                                          } , 
+                                       "cont" : true 
+                                       } 
+                                     } , 
+                                 1 : { "string" : "a" } 
+                             }
+                           }
+                         }
+                       }
+              } ,
+      1 : { "map" : { 
+              "key" : { "int" : 1 } , "value" : { "string" : "a" } , 
+              "key" : { "int" : 2 } , "value" : { "string" : "b" } , 
+              "key" : { "int" : 3 } , "value" : { "string" : "c" } 
+                    } 
+          }
+        }
+  }
+}
+
+*/

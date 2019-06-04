@@ -1,0 +1,50 @@
+// Receive Kind
+
+    #kind( for( a,b,c <- @1 ; d,e <- @2 ; f,g,h <- @3 if *a % 2 != 1 ){ Nil } )
+
+/*
+Output:
+
+{ "receive" : { 
+    "multi" : { 
+      "guarded" : { 
+        0 : { "chan" : { 
+                "quote" : { "int" : 1 } 
+                } , 
+                "listen" : { 
+                  "names" : { 
+                    0 : { "namevar" : a } , 
+                    1 : { "namevar" : b } , 
+                    2 : { "namevar" : c } 
+                  } 
+                } 
+              } , 
+        1 : { "chan" : { 
+                "quote" : { "int" : 2 } 
+                } , 
+                "listen" : { 
+                  "names" : { 
+                    0 : { "namevar" : d } , 
+                    1 : { "namevar" : e } 
+                  } 
+                } 
+              } , 
+        2 : { "chan" : { 
+                "quote" : { "int" : 3 } 
+                } , 
+                "listen" : { 
+                  "names" : { 
+                    0 : { "namevar" : f } , 
+                    1 : { "namevar" : g } , 
+                    2 : { "namevar" : h } 
+                  } 
+                } 
+              } 
+        } , 
+      "guard" : #kind( * a % 2 != 1 ) // need to finish #kind(Exp)
+    } , 
+  "cont" : Nil 
+  } 
+}
+
+*/

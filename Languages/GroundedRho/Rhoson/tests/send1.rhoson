@@ -1,0 +1,18 @@
+// Send Kind
+
+    #kind( x!!( ) )
+
+/*
+Output:
+
+{ "send" : { 
+    "persist" : { 
+      "chan" : { 
+        "namevar" : x 
+      } , 
+      "msg" : EmptyP 
+    } 
+  } 
+}
+
+*/
