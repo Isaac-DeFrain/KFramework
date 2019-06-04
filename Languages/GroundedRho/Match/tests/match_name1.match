@@ -1,0 +1,10 @@
+// Name match
+
+    #match( y ; @ \a )
+
+/*
+Output: 
+
+    true
+
+*/
