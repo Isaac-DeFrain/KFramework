@@ -1,12 +1,41 @@
 // Match
 
-  match @Nil!("Hello") {
-    x!("Hello") :=> 1
-    @Nil!(\x) :=> 2
-    @Nil!("hello") :=> 3
+  match { @Nil!("Hello") } {
+        { x!("hello") }    :=> [ 1 , *x ]
+        { x!(\x) }         :=> [ { "chan":*x } , { "msg":\x } ]
+        { @Nil!("hello") } :=> 3
+        { @Nil!("Hello") } :=> 4
   }
 
 /*
-Output: Nil
-  (output should be 1 but structural type inclusion is not yet defined for grho)
+Output:
+Result ==K <T>
+  <activity>
+    <task>
+      <k>
+        [ { "chan" : Nil } , { "msg" : "Hello" } ]
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    match { ( @ Nil ) ! ( "Hello" ) } { ( { x ! ( "hello" ) } :=> [ 1 , * x ] ) { x ! ( \ x ) } :=> [ { "chan" : * x } , { "msg" : \ x } ] { ( @ Nil ) ! ( "hello" ) } :=> 3 { ( @ Nil ) ! ( "Hello" ) } :=> 4 }
+  </original>
+  <freeVars>
+    .Set
+  </freeVars>
+  <deBruijnified>
+    #deBruijn( 0 ; match { ( @ Nil ) ! ( "Hello" ) } { ( { x ! ( "hello" ) } :=> [ 1 , * x ] ) { x ! ( \ x ) } :=> [ { "chan" : * x } , { "msg" : \ x } ] { ( @ Nil ) ! ( "hello" ) } :=> 3 { ( @ Nil ) ! ( "Hello" ) } :=> 4 } ; .Map )
+  </deBruijnified>
+</T>
 */
