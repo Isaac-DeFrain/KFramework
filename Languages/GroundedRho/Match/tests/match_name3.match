@@ -1,0 +1,10 @@
+// Name match
+
+    #match( @{ 1 | Nil } ; @1 )
+
+/*
+Output: 
+
+    true
+
+*/
