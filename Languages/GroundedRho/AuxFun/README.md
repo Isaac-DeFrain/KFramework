@@ -1,3 +1,5 @@
 # Auxiliary Functions for Grho
 
-These are the auxiliary functions used in `.../grho.k`. Mostly they are used for computing lengths/sizes of objects and destructuring terms for the Grho configuration.
+`auxfun.k` defines several auxiliary functions used in `GRHO`. Mostly they are used for computing lengths/sizes of objects and destructuring or combining terms for the Grho configuration.
+
+See `/tests` for examples.
