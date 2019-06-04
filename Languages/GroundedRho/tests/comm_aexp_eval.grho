@@ -4,14 +4,14 @@
 
 /*
 Output:
-<T>
-    <threads>
-      <thread>
+  Result ==K <T>
+    <activity>
+      <task>
         <k>
           6
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -62,22 +62,25 @@ Output:
     <nextLoc>
       0
     </nextLoc>
+    <original>
+      ( @ Nil ) ! ( 1 ) | for ( y <- @ Nil ) { * y + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
+    <deBruijnified>
       ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
-    </deBruijn>
+    </deBruijnified>
   </T>
 #Or
   Result ==K <T>
-    <threads>
-      <thread>
+    <activity>
+      <task>
         <k>
           42
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -128,22 +131,25 @@ Output:
     <nextLoc>
       0
     </nextLoc>
+    <original>
+      ( @ Nil ) ! ( 1 ) | for ( y <- @ Nil ) { * y + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
+    <deBruijnified>
       ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
-    </deBruijn>
+    </deBruijnified>
   </T>
 #Or
   Result ==K <T>
-    <threads>
-      <thread>
+    <activity>
+      <task>
         <k>
           42
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -194,22 +200,25 @@ Output:
     <nextLoc>
       0
     </nextLoc>
+    <original>
+      ( @ Nil ) ! ( 1 ) | for ( y <- @ Nil ) { * y + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
+    <deBruijnified>
       ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
-    </deBruijn>
+    </deBruijnified>
   </T>
 #Or
   Result ==K <T>
-    <threads>
-      <thread>
+    <activity>
+      <task>
         <k>
           43
         </k>
-      </thread>
-    </threads>
+      </task>
+    </activity>
     <tuplespace>
       <sends>
         <send>
@@ -260,11 +269,14 @@ Output:
     <nextLoc>
       0
     </nextLoc>
+    <original>
+      ( @ Nil ) ! ( 1 ) | for ( y <- @ Nil ) { * y + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+    </original>
     <freeVars>
       .Set
     </freeVars>
-    <deBruijn>
+    <deBruijnified>
       ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ Nil ) { * boundN( 0 ) + 5 } | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
-    </deBruijn>
+    </deBruijnified>
   </T>
 */

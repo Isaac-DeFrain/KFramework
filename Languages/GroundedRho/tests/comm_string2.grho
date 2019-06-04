@@ -1,0 +1,66 @@
+// String - race condition
+
+    new x in { x!("Hello ", "funny") | for( y,a <- x ){ for( z,b <- x ){ *z ++ *b ++ " person " ++ "you're " ++ *a } } | x!("Goodbye ",  "cool") }
+
+/*
+Output:
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "Goodbye cool person you're funny"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        .SendCellBag
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      1
+    </nextLoc>
+    <original>
+      new x in { x ! ( "Hello " , "funny" ) | for ( y , a <- x ) { for ( z , b <- x ) { * z ++ * b ++ " person " ++ "you're " ++ * a } } | x ! ( "Goodbye " , "cool" ) }
+    </original>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijnified>
+      new boundN( 0 ) in { boundN( 0 ) ! ( "Hello " , "funny" ) | for ( boundN( 1 ) , boundN( 2 ) <- boundN( 0 ) ) { for ( boundN( 3 ) , boundN( 4 ) <- boundN( 0 ) ) { * boundN( 3 ) ++ * boundN( 4 ) ++ " person " ++ "you're " ++ * boundN( 2 ) } } | boundN( 0 ) ! ( "Goodbye " , "cool" ) }
+    </deBruijnified>
+  </T>
+#Or
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "Hello funny person you're cool"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        .SendCellBag
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      1
+    </nextLoc>
+    <original>
+      new x in { x ! ( "Hello " , "funny" ) | for ( y , a <- x ) { for ( z , b <- x ) { * z ++ * b ++ " person " ++ "you're " ++ * a } } | x ! ( "Goodbye " , "cool" ) }
+    </original>
+    <freeVars>
+      .Set
+    </freeVars>
+    <deBruijnified>
+      new boundN( 0 ) in { boundN( 0 ) ! ( "Hello " , "funny" ) | for ( boundN( 1 ) , boundN( 2 ) <- boundN( 0 ) ) { for ( boundN( 3 ) , boundN( 4 ) <- boundN( 0 ) ) { * boundN( 3 ) ++ * boundN( 4 ) ++ " person " ++ "you're " ++ * boundN( 2 ) } } | boundN( 0 ) ! ( "Goodbye " , "cool" ) }
+    </deBruijnified>
+  </T>
+*/
