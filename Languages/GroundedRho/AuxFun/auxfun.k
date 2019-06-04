@@ -4,6 +4,8 @@
 TODO:
  - #toK( RhoList/RhoMap/RhoSet ) => List/Map/Set to utilize builtin functionality for methods
  - #fromK( List/Map/Set ) => RhoList/RhoMap/RhoSet
+
+ - #length( RhoKVPairs ), #length( ConcatExp ), & #length( InterpMaps )
 */
 
 require "../grho.k"
@@ -42,6 +44,7 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Procs ";" Proc  ")" [function]  // #append(_;_): Procs x Proc ---------> Procs
                   | "#append" "(" Proc  ";" Procs ")" [function]  // #append(_;_): Proc  x Procs --------> Procs
                   | "#append" "(" Procs ";" Procs ")" [function]  // #append(_;_): Procs x Procs --------> Procs
+                  | "#par2procs(" Par   ")"           [function]
 
   syntax   Name ::= "#chan"   "("   Send  ")"         [function]  //     #chan(_): Send -------> Name
                   | "#chan"   "(" Receive ")"         [function]  //     #chan(_): Receive ----> Name
@@ -62,6 +65,11 @@ module AUXFUN-SYNTAX
                   | "#append" "(" Names ";" Names ")" [function]
                   | "#dec"    "(" New     ")"         [function]
 
+  syntax RhoKVPairs ::= "#appendKV(" RhoKVPair  ";" RhoKVPair  ")" [function]
+                      | "#appendKV(" RhoKVPairs ";" RhoKVPair  ")" [function]
+                      | "#appendKV(" RhoKVPair  ";" RhoKVPairs ")" [function]
+                      | "#appendKV(" RhoKVPairs ";" RhoKVPairs ")" [function]
+
 // Input Guards
   syntax   BExp ::= "#guard" "(" Receive ")"          [function]
 
@@ -71,6 +79,9 @@ module AUXFUN-SYNTAX
 
   syntax RhoList ::= "#slice(" RhoList "," Int "," Int ")" [function]
                    | "#truncate(" RhoList "," Int ")"      [function]
+
+// Substitution
+  syntax    Map ::= "#mapSub(" Set ")" [function]
 
 // Par Normalization
   syntax   Proc ::= "#normPar("   Proc ")" [function, poly(0,1)]
@@ -86,6 +97,7 @@ module AUXFUN-SYNTAX
 // De Bruijn indexing
   syntax  Proc ::= "#val2Key(" Proc ";" Map ")" [function]
   syntax  Name ::= "#val2Key(" Name ";" Map ")" [function]
+
 
 // Predicates
   syntax   Bool ::= Int   "#in" RhoTuple      [function]
@@ -210,6 +222,7 @@ module AUXFUN
 //---------------
 //--- #append ---
 //---------------
+  // Names
   rule #append( A:Name           ; B:Name  ) => A,B
   rule #append( A:Name , B:Name  ; C:Name  ) => A,#append(B;C)
   rule #append( A:Name , B:Names ; C:Name  ) => A,#append(B;C)
@@ -217,6 +230,7 @@ module AUXFUN
   rule #append( A:Name , B:Name  ; C:Names ) => A,#append(B;C)
   rule #append( A:Name , B:Names ; C:Names ) => A,#append(B;C)
 
+  // Procs
   rule #append( A:Proc           ; B:Proc  ) => A,B
   rule #append( A:Proc , B:Proc  ; C:Proc  ) => A,#append(B;C)
   rule #append( A:Proc , B:Procs ; C:Proc  ) => A,#append(B;C)
@@ -224,11 +238,19 @@ module AUXFUN
   rule #append( A:Proc , B:Proc  ; C:Procs ) => A,#append(B;C)
   rule #append( A:Proc , B:Procs ; C:Procs ) => A,#append(B;C)
 
+  // RhoKVPairs
+  rule #appendKV( A:RhoKVPair ; B:RhoKVPair  ) => A,B
+  rule #appendKV( A:RhoKVPair ; B:RhoKVPairs ) => A,B
+  rule #appendKV( A:RhoKVPair , B:RhoKVPair  ; C:RhoKVPair  ) => A,#appendKV(B;C)
+  rule #appendKV( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair  ) => A,#appendKV(B;C)
+  rule #appendKV( A:RhoKVPair , B:RhoKVPair  ; C:RhoKVPairs ) => A,#appendKV(B;C)
+  rule #appendKV( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPairs ) => A,#appendKV(B;C)
 //-------------
 //--- #bind ---
 //-------------
 // Reconstruct listen from listen info
-/*  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
+/*
+  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
   rule #bind ( A:Name ; B:Names ;; 0 ) => B <- A
   rule #bind ( A:Name ; B:Name  ;; 1 ) => B <= A
   rule #bind ( A:Name ; B:Names ;; 1 ) => B <= A
@@ -239,7 +261,7 @@ module AUXFUN
 //--- #in ---
 //-----------
 // Int #in RhoTuple
-  rule A:Int #in ( B:Int           ) => A ==Int B
+  rule A:Int #in ( B:Int          ,) => A ==Int B
   rule A:Int #in ( B:Int , C:Int   ) => A ==Int B orBool A ==Int C
   rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in (C)
 
@@ -374,15 +396,15 @@ module AUXFUN
   
   rule #bvar( B:Bind _:Guard ) => #bvar(B)
 
-  // multiple bindings -- TODO: is this right?
-  rule #bvar( B:Lbind ; C:Lbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar( B:Lbind ; C:Lbinds ) => #bvar(B) , #bvar(C)
+  // multiple bindings
+  rule #bvar( B:Lbind ; C:Lbind  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Lbind ; C:Lbinds ) => #append(#bvar(B);#bvar(C))
 
-  rule #bvar( B:Rbind ; C:Rbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar( B:Rbind ; C:Rbinds ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Rbind ; C:Rbind  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Rbind ; C:Rbinds ) => #append(#bvar(B);#bvar(C))
 
-  rule #bvar( B:Pbind ; C:Pbind  ) => #bvar(B) , #bvar(C)
-  rule #bvar( B:Pbind ; C:Pbinds ) => #bvar(B) , #bvar(C)
+  rule #bvar( B:Pbind ; C:Pbind  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Pbind ; C:Pbinds ) => #append(#bvar(B);#bvar(C))
   
   rule #bvar( B:Binds _:Guard ) => #bvar(B)
   
@@ -470,6 +492,13 @@ module AUXFUN
   rule Set( A:Proc ) #union Set( B:Proc , C:Proc ) => #if A ==K B
 */
 
+//---------------
+//--- #mapSub ---
+//---------------
+  rule #mapSub( .Set ) => .Map
+  rule #mapSub( SetItem( A:Name ) S:Set ) => A |-> @sub #mapSub(S)
+  rule #mapSub( SetItem( A:Proc ) S:Set ) => A |->  sub #mapSub(S)
+
 //------------------
 //--- #normPar ---
 //------------------
@@ -513,12 +542,18 @@ module AUXFUN
 //--- #val2Key ---
 //----------------
 // requires each KV pair of the form: Proc |-> Proc or Name |-> Name & requested value uniquely in values(Map)
-  rule #val2Key( A:Proc ; B:Proc |-> A M:Map ) => B // if value matches, return key
+  rule #val2Key( A:Proc ; B:Proc |-> A _:Map ) => B // if value matches, return key
   rule #val2Key( A:Proc ; _:Proc |-> C:Proc M:Map ) => #val2Key(A;M) requires A =/=K C // if value doesn't match, traverse map
   rule #val2Key( A:Proc ; _:Name |-> _:Name M:Map ) => #val2Key(A;M) // if value has wrong type, traverse map
 
   rule #val2Key( A:Name ; B:Name |-> A _:Map ) => B // if value matches, return key
   rule #val2Key( A:Name ; _:Name |-> C:Name M:Map ) => #val2Key(A;M) requires A =/=K C // if value doesn't match, traverse map
   rule #val2Key( A:Name ; _:Proc |-> _:Proc M:Map ) => #val2Key(A;M) // if value has wrong type, traverse map
+
+//------------------
+//--- #par2procs ---
+//------------------
+  rule #par2procs( A:Proc | B:Proc ) => A,B requires notBool (isPar(A) orBool isPar(B))
+  rule #par2procs( A:Proc | B:Par  ) => A,#par2procs(B) requires notBool isPar(A)
 
 endmodule
