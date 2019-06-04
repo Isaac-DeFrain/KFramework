@@ -1,0 +1,10 @@
+// Multiple string concats
+
+    "Hello" ++ " friend." ++ " Have" ++ " a good" ++ " day!" 
+
+/*
+Output:
+
+    "Hello friend. Have a good day!"
+
+*/

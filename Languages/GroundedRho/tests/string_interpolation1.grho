@@ -1,0 +1,10 @@
+// String interpolation
+
+    "Hello ${name}" %% { "a":"b" , "ab":"bc" , Nil:1 , "name":"${Gary}" , "stuff":"something" } %% { "Gary":"${Isaac}" } %% { "Isaac":"${Tomislav}" } %% { "Tomislav":"Jim" }
+
+/*
+Output:
+
+    "Hello Jim"
+
+*/
