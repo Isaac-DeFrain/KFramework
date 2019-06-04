@@ -1,0 +1,12 @@
+// Send
+
+    @"a"!( 0 , 1 , 2 , 3 )
+
+/* Output:
+
+    ( @ "a" ) ! ( 0 , ( 1 , 2 , 3 ) )
+
+KAST:
+    `<k>`(`_!(_)_GRHO-SYNTAX`(`@__GRHO-SYNTAX`(#token("\"a\"","String")),`_,__GRHO-SYNTAX`(#token("0","Int"),`_,__GRHO-SYNTAX`(#token("1","Int"),`_,__GRHO-SYNTAX`(#token("2","Int"),#token("3","Int"))))))
+
+*/
