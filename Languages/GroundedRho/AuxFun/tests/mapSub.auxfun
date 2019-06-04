@@ -1,0 +1,16 @@
+// #mapSub function
+
+    #mapSub( SetItem(a) SetItem(x) SetItem(\b) SetItem(e) SetItem(\c) SetItem(d) SetItem(\x) )
+
+/*
+Output:
+
+  \ b |-> sub
+  \ c |-> sub
+  \ x |-> sub
+    a |-> @ sub
+    d |-> @ sub
+    e |-> @ sub
+    x |-> @ sub
+
+*/
