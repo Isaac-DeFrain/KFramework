@@ -347,7 +347,7 @@ module GRHO-SYNTAX
 
 // Pattern
   syntax          ProcPat ::= "{" ProcPat "}" [bracket]
-                            > WildThing
+                            > WildCard
                             > NewPat          // New pattern
                             | CollectionPat   // Collection pattern
                             > EvalPat         // Evaluation pattern
@@ -801,7 +801,7 @@ module GRHO
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
                   <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)  </bnum>  // number of binding variables
+                  <bnum> #lislen(R)  </bnum>  // number of binding variables
                   <rtype> #rtype(R) </rtype>  // receive type
                   <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
                   <cont>   #cont(R)  </cont>  // continuation
@@ -812,7 +812,7 @@ module GRHO
        (.Bag => <rec>
                   <rchan>  #chan(R) </rchan>  // receiving channel
                   <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
-                  <bnum>   #bnum(R)  </bnum>  // number of variables to bind
+                  <bnum> #lislen(R)  </bnum>  // number of variables to bind
                   <rtype> #rtype(R) </rtype>  // receive type
                   <cont>   #cont(R)  </cont>  // continuation
                   <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
