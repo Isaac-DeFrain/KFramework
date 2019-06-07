@@ -129,6 +129,7 @@ module COMM
     => #union( S ; SetItem(A;B;;I) SetItem(C;D;;J) T )
 
 // Included In predicate -- for comparing Set & Set
+  rule #includedIn( _:Set ; .Set ) => true
   // recursively branch inclusion to individual elements
   rule #includedIn( SetItem( A:Name ; B:Proc  ;; I:Int ) S:Set ; T:Set )
     => #includedIn( SetItem(A;B;;I) ; T ) orBool #includedIn(S;T) requires notBool S <=Set .Set
@@ -153,6 +154,7 @@ module COMM
   rule #includedIn( SetItem( _:Name ; _:Proc  ;; _:Int ) ; SetItem( _:Name ; _:Names ;; _:Int ) ) => false
 
 // Included Within predicate -- for comparing Set & Set( Set )
+  rule #includedWithin( _:Set ; .Set ) => true
   rule #includedWithin( A:Set ; SetItem( B:Set ) C:Set ) => #includedIn(A;B) orBool #includedWithin(A;C)
 
 // Subtract
