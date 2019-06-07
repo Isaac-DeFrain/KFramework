@@ -1,0 +1,9 @@
+// For #isIn - par
+
+  type[ x | Bool | Int | Int ]
+
+/*
+  Output:
+  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] ;; type[ "leaf" ;; "int" ;; 2 ] ]
+  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ]
+*/

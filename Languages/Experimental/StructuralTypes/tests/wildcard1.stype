@@ -1,0 +1,8 @@
+// Type - tuple
+
+ type[ for( WildName <- @{1:2} ){ WildProc /\ Int } ]
+
+/*
+  Output:
+  type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "map" ;; type[ "kvpair" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "leaf" ;; "int" ;; 2 ] ] ;; type[ #truncate ] ] ;; type[ #truncate ] ] ] ;; type[ "and" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ] ]
+*/

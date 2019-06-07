@@ -1,0 +1,10 @@
+// Listen map - single listen receive
+
+  #lisMap( for(  <= @"chan" ){ Nil } )
+
+/*
+Output:
+
+    0 |-> EmptyN
+
+*/

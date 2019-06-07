@@ -1,0 +1,11 @@
+// Receive bundle set
+
+    #RecSet( x!(1,2) | for( a <- x ; b,c <- y ; @\d <- z ){ Nil } | for( @1 <! x ; @1 <! x ){ Nil } | [ for(b<-a){Nil} , 0 ] )
+
+/*
+Output:
+
+  SetItem ( SetItem ( x ; @ 1 ;; 2 ) )
+  SetItem ( SetItem ( x ; a ;; 1 ) SetItem ( y ; b , c ;; 1 ) SetItem ( z ; @ \ d ;; 1 ) )
+
+*/

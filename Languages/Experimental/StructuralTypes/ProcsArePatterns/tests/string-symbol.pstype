@@ -1,0 +1,7 @@
+// Type rewrite - symbol string
+
+  type[ "@" ]
+
+/*
+  Output: type[ "leaf" ;; "string" ;; "@" ]
+*/

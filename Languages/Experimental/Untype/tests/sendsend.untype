@@ -1,0 +1,8 @@
+// Untype - type[ x ! ( x ! ( * x ) ) ]
+
+  type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ]
+
+/*
+  Output:
+  untype[ x ! ( x ! ( * x ) ) ]
+*/

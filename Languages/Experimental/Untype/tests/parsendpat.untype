@@ -1,0 +1,8 @@
+// Untype - parsendpat: type[ @Nil!(*x) | chanName!(Nil) ]
+
+  type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; chanName ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
+
+/*
+  Output:
+  untype[ @ Nil ! ( * x ) | chanName ! ( Nil ) ]
+*/

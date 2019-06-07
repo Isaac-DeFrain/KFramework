@@ -1,0 +1,8 @@
+// Type - send pattern
+
+ type[ @x!(y) ]
+
+/*
+  Output:
+  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ]
+*/

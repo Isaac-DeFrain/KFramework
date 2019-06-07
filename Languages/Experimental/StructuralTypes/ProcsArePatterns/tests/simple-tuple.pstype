@@ -1,0 +1,8 @@
+// Structural Type - simpletype tuple
+
+  type[ Tuple ]
+
+/*
+  Output:
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Tuple ) ] ;; type[ #truncate ] ]
+*/

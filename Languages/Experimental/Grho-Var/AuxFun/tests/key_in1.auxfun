@@ -1,0 +1,7 @@
+// Size of map
+
+  #key_in( @3!(3) ; { 1:2 , 2:3 , 3:2 , "a":5 , true:*x , @3!(3):Nil } )
+
+/*
+  Output: true
+*/

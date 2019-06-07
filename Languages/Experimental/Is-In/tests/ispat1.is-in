@@ -1,0 +1,6 @@
+// Structural type inclusion for pattern-matching
+// Is the map { WildName!(for( WildName <! @chan1 ){ @Nil!(WildProc)}) : WildProc , WildName!(WildProc) | WildProc : WildProc , ... x:y } in Pattern?
+
+  #isPat type[ "mappat" ;; type[ "kvpats" ;; type[ "kvpat" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "receive" ;; type[ "peek" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; chan1 ] ;; type[ #truncate ] ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ;; type[ "kvpat" ;; type[ "par" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ] ;; type[ "kvpair" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "procvar" ;; y ] ] ]
+
+// Output: true

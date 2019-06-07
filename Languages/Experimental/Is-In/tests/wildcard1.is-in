@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - *WildName not included in WildProc
+
+   type[ "eval" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[#truncate] ]
+   #isIn
+   type[ "leaf" ;; "wildcard" ;; "proc" ]
+
+// Output: true

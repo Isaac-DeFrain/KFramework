@@ -1,0 +1,1 @@
+ #compare( 3 | true | "a" ; "a" | 3 | true )

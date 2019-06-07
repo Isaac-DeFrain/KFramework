@@ -1,0 +1,10 @@
+// Send bundle set
+
+    #SendSet( x!(1,2) | for( a <- x ; b,c <- y ; @\d <- z ){ Nil } | for( @1 <! @{ new y in {*y} } ; @1 <! @{ new x in {*x} } ){ Nil } | [ for(b<-a){Nil} , 0 ] )
+
+/*
+Output:
+
+  SetItem ( x ; 1 , 2 ;; 1 )
+
+*/

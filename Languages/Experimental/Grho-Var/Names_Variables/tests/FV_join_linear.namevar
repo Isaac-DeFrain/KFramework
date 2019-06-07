@@ -1,0 +1,10 @@
+// Free variables
+
+  FV( for( @Nil <- @1 ; y , @\z <- u ){ *y | \z } )
+
+/*
+Output:
+
+    SetItem ( u : name )
+
+*/

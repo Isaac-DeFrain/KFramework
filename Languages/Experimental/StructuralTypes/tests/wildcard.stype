@@ -1,0 +1,8 @@
+// Type - receive patterns
+
+ type[ for( @WildName!(WildProc) <- @x ){ @ContSendChan!(WildProc) } ]
+
+/*
+  Output:
+  type[ "receive" ;; type[ "lbind" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; ContSendChan ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ]
+*/

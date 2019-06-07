@@ -1,0 +1,7 @@
+// Binding Variables of binds
+
+  #bvar ( a <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; s,t <- x )
+
+/*
+  Output: a , b , c , d , e , f , g , a1 , a2 , a , s , t
+*/

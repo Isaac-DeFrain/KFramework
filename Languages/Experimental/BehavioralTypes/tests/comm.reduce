@@ -1,0 +1,108 @@
+// Reduce - one step reductions
+
+  x!(1) | x!(2) | y!("y") | for( z <- x ){ *z } | for( z <- y ){ *z } | for( z <- x ){ *z + 2 }
+
+/*
+  Output:
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        1
+      </how>
+    </Reaction>
+    <Repar>
+      1 | for ( z <- y ) { * z } | for ( z <- x ) { * z } | y ! ( "y" ) | x ! ( 2 )
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        1
+      </how>
+    </Reaction>
+    <Repar>
+      2 | for ( z <- y ) { * z } | for ( z <- x ) { * z } | x ! ( 1 ) | y ! ( "y" )
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+#Or
+  Result ==K <T>
+    <Threads>
+      .ThreadCellBag
+    </Threads>
+    <Tuplespace>
+      <Sends>
+        .SendCellBag
+      </Sends>
+      <Receives>
+        .RecCellBag
+      </Receives>
+    </Tuplespace>
+    <Reaction>
+      <who>
+        .
+      </who>
+      <what>
+        .
+      </what>
+      <where>
+        .
+      </where>
+      <how>
+        1
+      </how>
+    </Reaction>
+    <Repar>
+      "y" | for ( z <- x ) { * z } | for ( z <- x ) { * z } | x ! ( 2 ) | x ! ( 1 )
+    </Repar>
+    <Store>
+      .
+    </Store>
+  </T>
+*/

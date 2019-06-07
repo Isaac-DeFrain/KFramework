@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - false | x matches ~ x
+
+   type[ "par" ;; type[ "leaf" ;; "bool" ;; false ] ;; type[ "leaf" ;; "procvar" ;; x ] ]
+   #isIn
+   type[ "notpat" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ]
+
+// Output: true

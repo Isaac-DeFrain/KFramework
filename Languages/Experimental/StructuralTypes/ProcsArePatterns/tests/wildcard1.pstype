@@ -1,0 +1,8 @@
+// Structural Type - pattern
+
+ type[ for( WildName <- @{1:true} ){ WildProc /\ Int } ]
+
+/*
+  Output:
+  
+*/

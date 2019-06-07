@@ -1,0 +1,8 @@
+// Process variables - par
+
+ V( { @ pv1 }!(nv1!( * nv2 )) | for( pv3 <- { @ pv2 } ){ for( pv2 <- nv3 ){ * @ { for( nv4 <- @Nil ){ * nv4 } | pv4 } } } )
+
+ /*
+Output:
+
+ */

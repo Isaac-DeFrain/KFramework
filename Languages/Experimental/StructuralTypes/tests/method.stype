@@ -1,0 +1,8 @@
+// Type - method
+
+  type[ (1,2,3,4).nth( ) ]
+
+/*
+  Output:
+  type[ "method" ;; type[ "tuple" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "procs" ;; type[ "leaf" ;; "int" ;; 2 ] ;; type[ "procs" ;; type[ "leaf" ;; "int" ;; 3 ] ;; type[ "leaf" ;; "int" ;; 4 ] ] ] ] ;; type[ "methodargs" ;; type[ "leaf" ;; "method" ;; nth ] ;; type[ "empty" ;; "method" ;; "arg" ] ] ]
+*/

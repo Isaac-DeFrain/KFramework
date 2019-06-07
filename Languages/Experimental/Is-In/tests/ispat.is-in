@@ -1,0 +1,5 @@
+// Structural type inclusion for pattern-matching - #isPat
+
+  #isPat type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool )] ;; type[ #truncate ] ]
+
+// Output: true

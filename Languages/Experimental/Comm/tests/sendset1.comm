@@ -1,0 +1,10 @@
+// Send bundle set
+
+    #SendSet( x!(1) | x!(1) | x!(1) | for( a <- x ; b,c <- y ; @\d <- z ){ Nil } | for( @1 <! x ; @1 <! x ){ Nil } )
+
+/*
+Output:
+
+  SetItem ( x ; 1 ;; 3 )
+
+*/

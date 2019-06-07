@@ -1,0 +1,8 @@
+// Type - variable and wildcards
+
+  type[ @x!(y) /\ WildProc | WildName!(*unforgeable(12)) ]
+
+/*
+  Output:
+  type[ "par" ;; type[ "and" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "eval" ;; type[ "leaf" ;; "unforgeable" ;; 12 ] ;; type[ #truncate ] ] ;; type[ #truncate ] ] ] ]
+*/

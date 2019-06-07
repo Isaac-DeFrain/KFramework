@@ -1,0 +1,8 @@
+// Structural type inclusion for pattern-matching
+// Subtypes: 1 | true matches Int | Bool
+
+   type[ "par" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "leaf" ;; "bool" ;; true ] ]
+   #isIn
+   type[ "par" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ #truncate ] ] ]
+
+// Output: true

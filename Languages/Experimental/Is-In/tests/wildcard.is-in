@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - @true matches WildName
+
+   type[ "quote" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ #truncate ] ]
+   #isIn
+   type[ "leaf" ;; "wildcard" ;; "name" ]
+
+// Output: true

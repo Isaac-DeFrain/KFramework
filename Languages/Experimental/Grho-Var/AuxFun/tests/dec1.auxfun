@@ -1,0 +1,7 @@
+// Name declaration
+
+  #dec( new @Nil , a , b , name in { {1:2 , 2:3 , 3:2 , "a":5 , true:*x , Nil:@3!(3)} } )
+
+/*
+  Output: @Nil , a , b , name
+*/

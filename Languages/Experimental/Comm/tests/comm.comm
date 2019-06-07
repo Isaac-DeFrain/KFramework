@@ -1,0 +1,10 @@
+// #comm predicate
+
+    #comm( x!(1) | x!(2) | for( @2 <- x ){ Nil } )
+
+/*
+Output:
+
+    true
+
+*/

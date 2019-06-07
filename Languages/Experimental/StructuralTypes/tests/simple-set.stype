@@ -1,0 +1,8 @@
+// Structural Type - simpletype set
+
+  type[ Set ]
+
+/*
+  Output:
+  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Set ) ] ;; type[ #truncate ] ]
+*/

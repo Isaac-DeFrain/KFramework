@@ -1,0 +1,7 @@
+// Chan occurrences in linear join
+
+  #chanmany ( x : a,b <- x ; c <- y ; d,e,f <- z ; a,b <- x ; a <- x )
+
+/*
+  Output: 3
+*/

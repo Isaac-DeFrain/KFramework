@@ -1,0 +1,3 @@
+// comm string
+
+  x!("a") | for( y <- x ){ *y + "b" }

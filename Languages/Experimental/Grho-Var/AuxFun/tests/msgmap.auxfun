@@ -1,0 +1,12 @@
+// Message map - single msg send
+
+  #msgMap( @"chan"!(\a , *b , 12) )
+
+/*
+Output:
+
+  * b |-> 1
+   12 |-> 2
+  \ a |-> 0
+
+*/

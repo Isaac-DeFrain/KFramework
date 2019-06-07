@@ -1,0 +1,8 @@
+// Type - send pattern
+
+ type[ for( @(a,b,c) <- @"chan" ; @y <- @x ; WildName <- @1 ){ Nil } ]
+
+/*
+  Output:
+  type[ "receives" ;; type[ "lbinds" ;; type[ "lbind" ;; type[ "quote" ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; a ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; b ] ;; type[ "leaf" ;; "procvar" ;; c ] ] ] ;; type[ #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "string" ;; "chan" ] ;; type[ #truncate ] ] ] ;; type[ "lbinds" ;; type[ "lbind" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "lbind" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ #truncate ] ] ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
+*/

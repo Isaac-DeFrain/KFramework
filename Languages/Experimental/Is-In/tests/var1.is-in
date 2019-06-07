@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - var
+
+  type[ "leaf" ;; "procvar" ;; x1 ]
+  #isIn
+  type[ "leaf" ;; "procvar" ;; x1 ]
+
+// Output: true

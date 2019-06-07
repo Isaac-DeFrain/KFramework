@@ -1,0 +1,7 @@
+// Binding Variables of bind
+
+  #bvar ( # <- x )
+
+/*
+  Output: Empty
+*/

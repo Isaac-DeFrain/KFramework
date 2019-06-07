@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - @WildProc matches WildName
+
+   type[ "quote" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ]
+   #isIn
+   type[ "leaf" ;; "wildcard" ;; "name" ]
+
+// Output: true

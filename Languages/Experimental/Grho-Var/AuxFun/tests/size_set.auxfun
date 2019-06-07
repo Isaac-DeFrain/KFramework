@@ -1,0 +1,7 @@
+// Size of set
+
+  #size Set( 1 , 3 , "a" , true , @3!(3) )
+
+/*
+  Output: 5
+*/

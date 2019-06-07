@@ -1,0 +1,5 @@
+// Counting appearances in a parallel composition
+
+    #parcount( 3 ; "a" | 3 | true | 3 | 2 | "3" )
+
+// Output: 2

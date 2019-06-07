@@ -1,0 +1,7 @@
+// Structural type inclusion for pattern-matching - 2 matches Int /\ 2
+
+   type[ "leaf" ;; "int" ;; 2 ]
+   #isIn
+   type[ "andpat" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ;; type[ "leaf" ;; "int" ;; 2 ] ]
+
+// Output: true

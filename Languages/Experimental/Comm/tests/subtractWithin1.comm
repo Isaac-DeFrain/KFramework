@@ -1,0 +1,10 @@
+// Subtract from within function
+
+    #simplify( #subtractWithin( SetItem( x ; 1 ;; 2 ) SetItem( x ; 3 ;; 2 ) ; SetItem( SetItem( x ; @3 ;; 1 ) ) ) )
+
+/*
+Output:
+
+    .Set
+
+*/

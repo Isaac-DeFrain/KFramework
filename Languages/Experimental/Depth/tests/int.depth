@@ -1,0 +1,7 @@
+// Depth - int
+
+  #depth( type[ "leaf" ;; "int" ;; 12 ] )
+
+/*
+Output: 1
+*/

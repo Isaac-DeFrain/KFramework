@@ -1,0 +1,10 @@
+// #includedWithin predicate
+
+    #includedWithin( SetItem ( x ; 1 ;; 3 ) ;  SetItem ( SetItem ( x ; @ 1 ;; 2 ) ) )
+
+/*
+Output:
+
+    true
+
+*/

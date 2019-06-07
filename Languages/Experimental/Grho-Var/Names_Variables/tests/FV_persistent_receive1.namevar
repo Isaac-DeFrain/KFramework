@@ -1,0 +1,10 @@
+// Free Variables
+
+  FV( new a , z in { for( x , y <= a ){ @{x!(Nil)}!(*z) | for( z <- @"a" ){ *y } } } )
+
+/*
+Output:
+
+    .Set
+
+*/

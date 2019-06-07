@@ -1,0 +1,8 @@
+// Type - eval uri unforgeable
+
+  type[ * { @{@x!(uri("uri") | * unforgeable(42))} } ]
+
+/*
+  Output:
+  type[ "eval" ;; type[ "quote" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "par" ;; type[ "uri" ;; type[ "leaf" ;; "string" ;; "uri" ] ;; type[ #truncate ] ] ;; type[ "eval" ;; type[ "unforgeable" ;; type[ "leaf" ;; "int" ;; 42 ] ;; type[ #truncate ] ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ;; type[ #truncate ] ]
+*/

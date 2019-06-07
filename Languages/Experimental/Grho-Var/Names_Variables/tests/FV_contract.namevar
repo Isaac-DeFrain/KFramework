@@ -1,0 +1,12 @@
+// Free Variables - contract
+
+  FV( contract Name ( x , y ) = { @{x!(Nil)}!(*z) | for( z <- @"a" ){ *y } } )
+
+/*
+Output:
+
+    SetItem ( * z : proc )
+    SetItem ( Name : name )
+    SetItem ( z : name )
+
+*/
