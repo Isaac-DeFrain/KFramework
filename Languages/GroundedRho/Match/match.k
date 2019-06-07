@@ -119,8 +119,8 @@ module MATCH
   rule #match( _:RhoSet ; A:Proc ) => false requires notBool isRhoSet(A)
 
   // RhoTuple matches RhoTuple (if underlying Procs match), nothing else matches RhoTuple
-  rule #match( tuple( A:Proc  ) ; tuple( B:Proc  ) ) => #match(A;B)
-  rule #match( tuple( A:Procs ) ; tuple( B:Procs ) ) => #matchif(A;B)
+  rule #match( ( A:Proc  ,) ; ( B:Proc  ,) ) => #match(A;B)
+  rule #match( ( A:Procs ,) ; ( B:Procs ,) ) => #matchif(A;B)
   rule #match( A:Proc ; _:RhoTuple ) => false requires notBool isRhoTuple(A)
   rule #match( _:RhoTuple ; A:Proc ) => false requires notBool isRhoTuple(A)
 
