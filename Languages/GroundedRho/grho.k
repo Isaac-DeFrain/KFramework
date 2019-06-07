@@ -24,7 +24,7 @@ TODO:
    - x!?(v).
     ⟦x!?(v).⟧ = x!?(v);0
 
- - Sequential let expressions: let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
+ - Sequential/nested let expressions: let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
    ⟦let ptrn_1 ← v_1 ; ... ; ptrn_n ← v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 ← x_1 ){ ⟦let ptrn_2 ← v_2 ; ... ; ptrn_n ← v_n in P ⟧ } }
 
  - Simultaneous let expressions: let ptrn_1 ← v_1 & ... & ptrn_m ← v m in P
@@ -61,11 +61,6 @@ module GRHO-SYNTAX
   syntax            Names ::= Name "," Name
                             | Name "," Names [right]
 
-// For pattern binding
-//  syntax          NamePat ::= Name | Pattern
-//  syntax         NamePats ::= NamePat "," NamePat
-//                            | NamePat "," NamePats
-
 //-----------------
 //--- PROCESSES ---
 //-----------------
@@ -78,9 +73,8 @@ module GRHO-SYNTAX
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
-                            > Exp             // Arithmetic & Boolean expressions
-                            > Match           // Process matching
-                            > Select          // Nondeterministic selection
+                            > Exp             // Arith, Bool, & String expressions
+                            > Matching        // Match & Select
                             > Receive         // Receive messages
                             | Contract        // Contract
                             | Invocation      // Contract invocation
@@ -112,17 +106,23 @@ module GRHO-SYNTAX
   syntax            Guard ::= "if" BExp
 
   // Linear listen
-  syntax            Lbind ::= Names "<-" Name
-                            | Name  "<-" Name
-                            |       "<-" Name
+  syntax            Lbind ::= NamePats "<-" Name
+                            | NamePat  "<-" Name
+                            | Names    "<-" Name
+                            | Name     "<-" Name
+                            |          "<-" Name
   // Peek listen
-  syntax            Pbind ::= Names "<!" Name
-                            | Name  "<!" Name
-                            |       "<!" Name
+  syntax            Pbind ::= NamePats "<!" Name
+                            | NamePat  "<!" Name
+                            | Names    "<!" Name
+                            | Name     "<!" Name
+                            |          "<!" Name
   // Repeated/Persistent listen
-  syntax            Rbind ::= Names "<=" Name
-                            | Name  "<=" Name
-                            |       "<=" Name
+  syntax            Rbind ::= NamePats "<=" Name
+                            | NamePat  "<=" Name
+                            | Names    "<=" Name
+                            | Name     "<=" Name
+                            |          "<=" Name
 
   syntax             Bind ::= Lbind | Pbind | Rbind
   syntax      GuardedBind ::= Bind Guard
@@ -134,11 +134,11 @@ module GRHO-SYNTAX
   syntax  GuardedMultiRec ::= "for" "(" GuardedBinds ")" "{" Proc "}"
 
   syntax           Lbinds ::= Lbind ";" Lbind
-                            | Lbind ";" Lbinds
+                            | Lbind ";" Lbinds [right]
   syntax           Pbinds ::= Pbind ";" Pbind
-                            | Pbind ";" Pbinds
+                            | Pbind ";" Pbinds [right]
   syntax           Rbinds ::= Rbind ";" Rbind
-                            | Rbind ";" Rbinds
+                            | Rbind ";" Rbinds [right]
 
   syntax            Binds ::= Lbinds | Pbinds | Rbinds
   syntax     GuardedBinds ::= Binds Guard // instead Lbinds Guard | Pbinds Guard | Rbinds Guard?
@@ -160,15 +160,16 @@ module GRHO-SYNTAX
   syntax              New ::= "new" Name  "in" "{" Proc "}"
                             | "new" Names "in" "{" Proc "}"
 
-// Match
+// Matching
+  syntax         Matching ::= Match | Select
+  // Match
   syntax            Match ::= "match" "{" Proc "}" "{" MatchCases "}"
                             | "match" "{" Proc "}" "{" MatchCase  "}"
-  // TODO: make MatchCase ::= "{" "{" PrcoPat "}" ":=>" Proc "}"
+
   syntax        MatchCase ::= "{" Proc "}" "|=>" Proc
   syntax       MatchCases ::= MatchCase MatchCase
                             | MatchCase MatchCases
-
-// Select
+  // Select
   syntax            Select ::= "select" "{" Branch   "}"
                              | "select" "{" Branches "}"
 
@@ -220,9 +221,8 @@ module GRHO-SYNTAX
                             | "Set(" ")"
 
   // Process tuples
-  syntax         RhoTuple ::= "(" Procs ")"  [klabel(tuple)]
-                            | "(" Proc ",)"
-                         // | "(" ")"        [klabel(tuple)]
+  syntax         RhoTuple ::= "(" Procs ",)"
+                            | "(" Proc  ",)"
 
 // Ground terms
   syntax           Ground ::= Bool | Int | String // built-in
@@ -328,8 +328,291 @@ module GRHO-SYNTAX
   syntax        EmptyProc ::= "EmptyP"
 
 // Patterns
-//  syntax          Pattern ::= "#"
-//                            | "@" "#"
+  syntax        ProcOrPat ::= Proc | ProcPat
+
+  syntax         WildCard ::= "\\_" // instead of _
+
+// Name Pattern
+  syntax          NamePat ::= "{" NamePat "}" [bracket]
+                            | WildCard
+                            | "@" ProcPat
+
+  // Name patterns -- include Names???
+    // NamePats contain at least one NamePat, i.e. they cannot all be Names
+  syntax         NamePats ::= NamePat "," NamePat
+                            | Name    "," NamePat
+                            | NamePat "," Name
+                            | Name    "," NamePats [right]
+                            | NamePat "," NamePats [right]
+
+// Pattern
+  syntax          ProcPat ::= "{" ProcPat "}" [bracket]
+                            > WildThing
+                            > NewPat          // New pattern
+                            | CollectionPat   // Collection pattern
+                            > EvalPat         // Evaluation pattern
+//                            > MethodPat       // Method pattern
+//                            > ExpPat          // Arith, Bool, & String pattern
+                            > MatchingPat     // Match & Select pattern
+                            > RecPat          // Receive pattern
+//                            | ContractPat     // Contract pattern
+//                            | InvocationPat   // Contract invocation pattern
+                            | SendPat         // Send pattern
+//                            | BundlePat       // Bundle pattern
+                            > CondPat         // If...then(...else) pattern
+                            > ParPat          // Par pattern
+
+// syntax         ProcOrPat ::= Proc | ProcPat
+
+// Patterns
+  // cannot be all Procs
+  syntax         ProcPats ::= Proc    "," ProcPat
+                            | ProcPat "," Proc
+                            | Proc    "," ProcPats [right]
+                            | ProcPat "," ProcPats [right]
+
+// Parallel composition pattern
+  syntax           ParPat ::= ProcPat "|" Proc     [right]
+                            | Proc    "|" ProcPat  [right]
+                            | ProcPat "|" ProcPat  [right]
+
+// Receive Pattern
+  syntax           RecPat ::= SRecPat | MRecPat
+  // Single listen receive pattern
+  syntax          SRecPat ::= "for" "(" Bind    ")" "{" ProcPat "}"
+                            | "for" "(" BindPat ")" "{" ProcPat "}"
+                            | "for" "(" BindPat ")" "{" Proc    "}"
+                            | GSRecPat
+  syntax         GSRecPat ::= "for" "(" GuardedBind ")" "{" ProcPat "}"
+                            | "for" "(" GBindPat    ")" "{" ProcPat "}"
+                            | "for" "(" GBindPat    ")" "{" Proc    "}"
+
+  // Linear listen pattern
+  syntax         LbindPat ::= NamePats "<-" NamePat
+                            | NamePat  "<-" NamePat
+                            | Names    "<-" NamePat
+                            | Name     "<-" NamePat
+                            |          "<-" NamePat
+  // Peek listen pattern
+  syntax         PbindPat ::= NamePats "<!" NamePat
+                            | NamePat  "<!" NamePat
+                            | Names    "<!" NamePat
+                            | Name     "<!" NamePat
+                            |          "<!" NamePat
+  // Repeated listen pattern
+  syntax         RbindPat ::= NamePats "<=" NamePat
+                            | NamePat  "<=" NamePat
+                            | Names    "<=" NamePat
+                            | Name     "<=" NamePat
+                            |          "<=" NamePat
+
+  syntax          BindPat ::= LbindPat | PbindPat | RbindPat
+  syntax         GBindPat ::= BindPat Guard
+  syntax       AnyBindPat ::= BindPat | GBindPat
+
+  // Multiple listen receive patterns
+  syntax          MRecPat ::= "for" "(" Binds    ")" "{" ProcPat "}"
+                            | "for" "(" BindPats ")" "{" ProcPat "}"
+                            | "for" "(" BindPats ")" "{" Proc    "}"
+                            | GMRecPat
+  syntax         GMRecPat ::= "for" "(" GuardedBinds ")" "{" ProcPat "}"
+                            | "for" "(" GBindPats    ")" "{" ProcPat "}"
+                            | "for" "(" GBindPats    ")" "{" Proc    "}"
+
+  syntax        LbindPats ::= Lbind    ";" LbindPat
+                            | LbindPat ";" Lbind
+                            | LbindPat ";" LbindPat
+                            | Lbind    ";" LbindPats [right]
+                            | LbindPat ";" LbindPats [right]
+  syntax        PbindPats ::= Pbind    ";" PbindPat
+                            | PbindPat ";" Pbind
+                            | PbindPat ";" PbindPat
+                            | Pbind    ";" PbindPats [right]
+                            | PbindPat ";" PbindPats [right]
+  syntax        RbindPats ::= Rbind    ";" RbindPat
+                            | RbindPat ";" Rbind
+                            | RbindPat ";" RbindPat
+                            | Rbind    ";" RbindPats [right]
+                            | RbindPat ";" RbindPats [right]
+
+  syntax         BindPats ::= LbindPats | PbindPats | RbindPats
+  syntax        GBindPats ::= BindPats Guard
+  syntax      AnyBindPats ::= BindPats | GBindPats
+
+// Send Pattern
+  syntax          SendPat ::= CSendPat | USendPat
+  // Consumable send pattern
+  syntax         CSendPat ::= WildCard "!"  "("          ")"
+                            | WildCard "!"  "(" Proc     ")"
+                            | WildCard "!"  "(" ProcPat  ")"
+                            | WildCard "!"  "(" Procs    ")"
+                            | WildCard "!"  "(" ProcPats ")"
+                            |     Name "!"  "(" ProcPat  ")"
+                            |     Name "!"  "(" ProcPats ")"
+  // Unconsumable send pattern
+  syntax         USendPat ::= WildCard "!!" "("          ")"
+                            | WildCard "!!" "(" Proc     ")"
+                            | WildCard "!!" "(" ProcPat  ")"
+                            | WildCard "!!" "(" Procs    ")"
+                            | WildCard "!!" "(" ProcPats ")"
+                            |     Name "!!" "(" ProcPat  ")"
+                            |     Name "!!" "(" ProcPats ")"
+// Eval pattern -- Q: does this cover anything less than ProcPat + *NameVar
+  syntax          EvalPat ::= "*" NamePat
+
+// New pattern
+  syntax           NewPat ::= "new" Name  "in" "{" ProcPat "}"
+                            | "new" Names "in" "{" ProcPat "}"
+
+// Matching pattern
+  // Match pattern
+  syntax      MatchingPat ::= MatchPat | SelectPat
+
+  syntax         MatchPat ::= "match" "{" Proc    "}" "{" MCasePat   "}"
+                            | "match" "{" ProcPat "}" "{" MatchCase  "}"
+                            | "match" "{" ProcPat "}" "{" MCasePat   "}"
+                            | "match" "{" Proc    "}" "{" MCasePats  "}"
+                            | "match" "{" ProcPat "}" "{" MatchCases "}"
+                            | "match" "{" ProcPat "}" "{" MCasePats  "}"
+
+  syntax         MCasePat ::= "{" ProcPat "}" "|=>" Proc    // match pattern and return process
+                            | "{" ProcPat "}" "|=>" ProcPat // match pattern and return pattern
+  syntax        MCasePats ::= MCasePat MCasePat
+                            | MCasePat MCasePats
+
+  // Select pattern
+  syntax        SelectPat ::= "select" "{" BranchPat  "}"
+                            | "select" "{" BranchPats "}"
+
+  syntax        BranchPat ::= "{" LbindPat "}" "|=>" Proc
+                            | "{" Lbind    "}" "|=>" ProcPat
+                            | "{" LbindPat "}" "|=>" ProcPat
+  syntax       BranchPats ::= BranchPat BranchPat
+                            | BranchPat BranchPats
+
+// Conditional
+  syntax          CondPat ::= IfThenPat | ElsePat
+
+  syntax        IfThenPat ::= "if" "(" BExp ")" ProcPat [strict(1)]
+  syntax          ElsePat ::= IfThenPat "else" Proc
+                            | IfThen    "else" ProcPat
+                            | IfThenPat "else" ProcPat
+
+/*
+// TODO: Patternize?
+// Contract - syntactic sugar for persistent receive
+  syntax         Contract ::= "contract" Name "(" Names ")" "=" "{" Proc "}"
+                            | "contract" Name "(" Name  ")" "=" "{" Proc "}"
+                            | "contract" Name "(" ")" "=" "{" Proc "}"
+
+// Contract Invocation
+  // keyword "invoke" added to disambiguate from NewUri
+  syntax       Invocation ::= "invoke" Name "(" Procs ")"
+                            | "invoke" Name "(" Proc  ")"
+                            | "invoke" Name "(" ")"
+*/
+// Collection pattern -- Q: no Map or Set patterns because they're unordered?
+  syntax    CollectionPat ::= ListPat | /*MapPat | SetPat |*/ TuplePat
+
+  // RhoList pattern
+  syntax          ListPat ::= "[" Procs "," "..." ProcPat "]"
+                            | "[" Proc  "," "..." ProcPat "]"
+// Q: any advantage to including these?
+//                            | "[" ProcPats "]"
+//                            | "[" ProcPat  "]"
+//                            | "[" ProcPats "," "..." ProcPat "]"
+//                            | "[" ProcPat  "," "..." ProcPat "]"
+/*
+  // Process maps
+  syntax           RhoMap ::= "{" RhoKVPairs "}"
+                            | "{" RhoKVPair  "}"
+                            | "{" "}"
+
+  syntax        RhoKVPair ::= Proc ":" Proc
+  syntax       RhoKVPairs ::= RhoKVPair "," RhoKVPair
+                            | RhoKVPair "," RhoKVPairs
+
+  // Process sets
+  syntax           RhoSet ::= "Set(" Procs ")"
+                            | "Set(" Proc  ")"
+                            | "Set(" ")"
+*/
+  // Process tuples
+  syntax         TuplePat ::= "(" Proc  "," "..." ProcPat ",)"
+                            | "(" Procs "," "..." ProcPat ",)"
+// Q: any advantage to including these?
+//                            | "(" ProcPats ",)"
+//                            | "(" ProcPat  ",)"
+//                            | "(" ProcPats "," "..." ProcPat ",)"
+//                            | "(" ProcPat  "," "..." ProcPat ",)"
+
+/*
+// Q: Expressions patterns?
+  syntax              Exp ::= "{" Exp "}" [bracket]
+                            | AExp
+                            | StringExp
+                            > BExp
+
+
+// Arithmetic
+  syntax         IntOrVar ::= Int | ProcVar | Eval
+  syntax             AExp ::= "{" AExp "}" [bracket]
+                            > IntOrVar
+                            > "-" AExp       [strict]
+                            > AExp "%" AExp  [strict] // mod reduction
+                            > AExp "*" AExp  [strict, left]
+                            | AExp "/" AExp  [strict, left]
+                            > AExp "+" AExp  [strict, left]
+                            | AExp "-" AExp  [strict, left]
+
+// String
+  syntax      StringOrVar ::= String | ProcVar | Eval
+  syntax        StringExp ::= "{" StringExp "}" [bracket]
+                            > StringOrVar
+                            | Concat  // string concatenation
+                            | Interp  // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
+
+  syntax           Concat ::= StringOrVar ConcatExp
+  syntax        ConcatExp ::= "++" StringOrVar
+                            | "++" StringOrVar ConcatExp
+
+  syntax           Interp ::= StringOrVar "%%" InterpMaps
+  syntax       InterpMaps ::= RhoMap
+                            | RhoMap "%%" InterpMaps
+
+// Boolean
+  syntax             BExp ::= "{" BExp "}"   [bracket]
+                            > Bool                // boolean output
+                            | ProcVar             // e.g. \x == Proc or not \x
+                            | Eval                // e.g. *x == Proc or not *x
+                            > AExp "<=" AExp      [seqstrict]
+                            | AExp "<"  AExp      [seqstrict]
+                            | AExp ">=" AExp      [seqstrict]
+                            > AExp ">"  AExp      [seqstrict]
+                            | Name "==" Name      // name equivalence
+                            | Name "!=" Name      // not ( Name == Name )
+                            | Proc "==" Proc      // structural equivalence
+                            | Proc "!=" Proc      // not ( Proc == Proc )
+                            > "not" BExp          [strict]
+                            > BExp "and" BExp     [strict(1), right]
+                            > BExp "or"  BExp     [strict(1), right]
+                            > Proc "matches" Proc // P matches Q is syntactic sugar for: match P { { Q :=> true } { P :=> false } }
+
+// Q: Bundle patterns?
+  syntax           Bundle ::= "bundle+" "{" ProcPat "}"   // write-only
+                            | "bundle-" "{" ProcPat "}"   // read-only
+                            | "bundle0" "{" ProcPat "}"   // neither read/write
+                            | "bundle"  "{" ProcPat "}"   // both read/write
+
+// Q: Method patterns?
+  syntax          MethPat ::= Proc    NEMethArgPats
+                            | ProcPat MethodAndArgs
+                            | ProcPat MethArgPats
+  syntax    NEMethArgPats ::= "." Method "(" ProcPats ")"
+                            | "." Method "(" ProcPat  ")"
+  syntax      MethArgPats ::= NEMethArgPats
+                            | "." Method "(" ")"
+*/
 
 // For De Bruijn indices & alpha/structural equivalence
   syntax             Name ::= BoundName
@@ -345,7 +628,6 @@ module GRHO-SYNTAX
 
 // For substitution
   syntax              Sub ::= "sub"
-  syntax             Name ::= "@" Sub
   syntax             Proc ::= Sub
 
 // Builtins are processes too
