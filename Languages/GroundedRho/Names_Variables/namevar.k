@@ -217,12 +217,10 @@ module NAMEVAR
   rule #V( Set( P:Proc  ) ) => #V(P)
   rule #V( Set( ) ) => .Set
   // RhoTuple
-  rule  V( tuple( P:Procs ) ) =>  V(P)
-  rule  V( tuple( P:Proc  ) ) =>  V(P)
-//  rule  V( ( ) ) => .Set
-  rule #V( tuple( P:Procs ) ) => #V(P)
-  rule #V( tuple( P:Proc  ) ) => #V(P)
-//  rule #V( ( ) ) => .Set
+  rule  V( ( P:Procs ,) ) =>  V(P)
+  rule  V( ( P:Proc  ,) ) =>  V(P)
+  rule #V( ( P:Procs ,) ) => #V(P)
+  rule #V( ( P:Proc  ,) ) => #V(P)
 
 // Variable Reference
   rule  V( =  X:ProcVar ) => SetItem(X : proc)
@@ -385,8 +383,8 @@ module NAMEVAR
 
   // Collections
     // RhoTuple
-  rule FV+( tuple( P:Procs ) ) => FV+(P)
-  rule FV+( tuple( P:Proc  ) ) => FV+(P)
+  rule FV+( ( P:Procs ,) ) => FV+(P)
+  rule FV+( ( P:Proc  ,) ) => FV+(P)
 //  rule FV+( ( ) ) => .Set
     // RhoList
   rule FV+( [ P:Procs ] ) => FV+(P)
@@ -568,12 +566,10 @@ module NAMEVAR
 
 // Collections
   // RhoTuple
-  rule  FV( tuple( P:Procs ) ) =>  FV(P)
-  rule  FV( tuple( P:Proc  ) ) =>  FV(P)
-//  rule  FV( ( ) ) => .Set
-  rule #FV( tuple( P:Procs ) ) => #FV(P)
-  rule #FV( tuple( P:Proc  ) ) => #FV(P)
-//  rule #FV( ( ) ) => .Set
+  rule  FV( ( P:Procs ,) ) =>  FV(P)
+  rule  FV( ( P:Proc  ,) ) =>  FV(P)
+  rule #FV( ( P:Procs ,) ) => #FV(P)
+  rule #FV( ( P:Proc  ,) ) => #FV(P)
   // RhoList
   rule  FV( [ P:Procs ] ) =>  FV(P)
   rule  FV( [ P:Proc  ] ) =>  FV(P)
