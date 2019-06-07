@@ -434,8 +434,8 @@ module ALPHA
 
   // RhoTuple
 //  rule #deBruijn( _:Int ; ( ) ; _:Map ) => ( )
-  rule #deBruijn( I:Int ;      ( P:Proc ,) ; Mem:Map ) =>      ( #deBruijn(I;P;Mem) ,)
-  rule #deBruijn( I:Int ; tuple( P:Procs ) ; Mem:Map ) => tuple( #deBruijn(I;P;Mem)  )
+  rule #deBruijn( I:Int ; ( P:Proc  ,) ; Mem:Map ) => ( #deBruijn(I;P;Mem) ,)
+  rule #deBruijn( I:Int ; ( P:Procs ,) ; Mem:Map ) => ( #deBruijn(I;P;Mem) ,)
 
 // Quotes -- just goes inside (just like eval)
   rule #deBruijn( I:Int ; @P:Proc ; Mem:Map ) => @ #deBruijn(I;P;Mem)
@@ -790,8 +790,8 @@ module ALPHA
 
   // RhoTuple
 //  rule #deBruijn( _:Int , _:Int ; ( ) ; _:Map ) => ( )
-  rule #deBruijn( I:Int , J:Int ;      ( P:Proc ,) ; Mem:Map ) =>      ( #deBruijn(I,J;P;Mem) ,)
-  rule #deBruijn( I:Int , J:Int ; tuple( P:Procs ) ; Mem:Map ) => tuple( #deBruijn(I,J;P;Mem)  )
+  rule #deBruijn( I:Int , J:Int ; ( P:Proc  ,) ; Mem:Map ) => ( #deBruijn(I,J;P;Mem) ,)
+  rule #deBruijn( I:Int , J:Int ; ( P:Procs ,) ; Mem:Map ) => ( #deBruijn(I,J;P;Mem) ,)
 
 // Quotes -- just goes inside (just like eval)
   rule #deBruijn( I:Int , J:Int ; @P:Proc ; Mem:Map ) => @ #deBruijn(I,J;P;Mem)
