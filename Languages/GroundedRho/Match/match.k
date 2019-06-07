@@ -11,18 +11,6 @@ module MATCH-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
 
-// #check predicate checks that the input types match
-  syntax   Bool ::= "#check(" Proc  ";" Proc  ")" [function]
-                  | "#check(" Name  ";" Name  ")" [function]
-                  | "#check(" Procs ";" Procs ")" [function]
-                  | "#check(" Names ";" Names ")" [function]
-
-// #checkNmatch predicate calls #check then calls #match
-  syntax   Bool ::= "#checkNmatch(" Proc  ";" Proc  ")" [function]
-                  | "#checkNmatch(" Name  ";" Name  ")" [function]
-                  | "#checkNmatch(" Procs ";" Procs ")" [function]
-                  | "#checkNmatch(" Names ";" Names ")" [function]
-
 // #match predicate checks that the terms match
   syntax   Bool ::= "#match("   Proc  ";" Proc  ")" [function]
                   | "#match("   Name  ";" Name  ")" [function]
@@ -43,46 +31,8 @@ module MATCH
   import AUXFUN
   import SUB
 
-//  K-REFLECTION 
-// contains the #sort(K) syntax but doesn't return the sort/type of a term even with KResult ::= String
+//  syntax KResult ::= Bool
 
-  syntax KResult ::= Bool
-/*
-// Is there a good way to capture the right type inclusions without going through every pair individually???
-// Check then match
-  rule #checkNmatch( A:Name  ; B:Name  ) => #if #check(A;B) #then #match(A;B) #else false #fi
-  rule #checkNmatch( A:Names ; B:Names ) => #if #length(A) ==Int #length(B)
-                                            #then #if #check(A;B)
-                                                  #then #match(A;B)
-                                                  #else false
-                                                  #fi
-                                            #else false
-                                            #fi
-  rule #checkNmatch( A:Proc  ; B:Proc  ) => #if #check(A;B) #then #match(A;B) #else false #fi
-  rule #checkNmatch( A:Procs ; B:Procs ) => #if #length(A) ==Int #length(B)
-                                            #then #if #check(A;B)
-                                                  #then #match(A;B)
-                                                  #else false
-                                                  #fi
-                                            #else false
-                                            #fi
-
-// Check types
-  // Names
-  rule #check( A:Name ; A ) => true  // same Names match
-  rule #check( _:Name ; B:Name ) => true requires isNameVar(B)  // any Name matches a NameVar
-  rule #check( A:Name , B:Name  ; C:Name , D:Name  ) => #check(A;C) andBool #check(B;D) 
-  rule #check( A:Name , B:Names ; C:Name , D:Names ) => #if #check(A;C)
-                                                        #then #check(B;D)
-                                                        #else false
-                                                        #fi
-  rule #check( A:Proc ; B:Proc ) => #sort(A) ==String #sort(B)
-  rule #check( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #check(A;C) andBool #check(B;D)
-  rule #check( A:Proc , B:Procs ; C:Proc , D:Procs ) => #if #check(A;C)
-                                                        #then #check(B;D)
-                                                        #else false
-                                                        #fi
-*/
 // #matchif
   rule #matchif( A:Names ; B:Names ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:Procs ; B:Procs ) => #length(A) ==Int #length(B) andBool #match(A;B)
@@ -92,6 +42,7 @@ module MATCH
   rule #match( A:Name    ;  B:NameVar ) => true // any Name matches a NameVar
   rule #match( A:Name    ; @B:ProcVar ) => true // any Name matches a @ProcVar
   rule #match( A:NameVar ;  B:Name    ) => true requires isNameVar(B) // NameVar can only match a NameVar...
+  rule #match( @EmptyP   ;  EmptyN    ) => true // empty send/empty listen matching
   rule #match( A:Name    ;  B:Name    ) => false [owise]
 
 // Process matching
