@@ -288,12 +288,11 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; Set( C:Proc , D:Procs ) ) => Set( #sub(A;B;C) , #sub(A;B;D) )
 
   // RhoTuple
-//  rule #sub( _:Proc ; _:Proc ; ( ) ) => ( )
-  rule #sub( A:Proc ; B:Proc ; tuple( C:Proc  ) ) => tuple( #sub(A;B;C) )
-  rule #sub( A:Proc ; B:Proc ; tuple( C:Procs ) ) => tuple( #sub(A;B;C) )
+  rule #sub( A:Proc ; B:Proc ; ( C:Proc  ,) ) => ( #sub(A;B;C) ,)
+  rule #sub( A:Proc ; B:Proc ; ( C:Procs ,) ) => ( #sub(A;B;C) ,)
 
 // sub Proc for Proc in New
-  rule #sub( A:Proc ; B:ProcVar ; P:New ) => #if (@B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
+  rule #sub( A:Proc ; B:ProcVar ; P:New ) => #if (@B #in (#dec(P))) #then P #else #subNew(A;B;P) #fi
 
   rule #subNew( A:Proc ; B:Proc ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
   rule #subNew( A:Proc ; B:Proc ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
@@ -541,11 +540,11 @@ module SUB
 
     // RhoTuple
 //  rule #sub( _:Name ; _:Name ; ( ) ) => ( )
-  rule #sub( A:Name ; B:Name ; tuple( C:Proc  ) ) => tuple( #sub(A;B;C) )
-  rule #sub( A:Name ; B:Name ; tuple( C:Procs ) ) => tuple( #sub(A;B;C) )
+  rule #sub( A:Name ; B:Name ; ( C:Proc  ,) ) => ( #sub(A;B;C) ,)
+  rule #sub( A:Name ; B:Name ; ( C:Procs ,) ) => ( #sub(A;B;C) ,)
 
   // sub Name for Name in New -- if substitution variable is bound, no substitution occurs, else substitute in Proc
-  rule #sub( A:Name ; B:NameVar ; P:New ) => #if (B #in #dec(P)) #then P #else #subNew(A;B;P) #fi
+  rule #sub( A:Name ; B:NameVar ; P:New ) => #if (B #in (#dec(P))) #then P #else #subNew(A;B;P) #fi
 
   rule #subNew( A:Name ; B:Name ; new C:Name  in { D:Proc } ) => new C in { #sub(A;B;D) }
   rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
