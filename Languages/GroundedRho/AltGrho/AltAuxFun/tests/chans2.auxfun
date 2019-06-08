@@ -1,7 +1,0 @@
-// Chans of peek binds
-
-  #chans ( a <! x ; b,c <! y ; d,e,f,g <! z ; a1,a2 <! x1 ; a <! y ; a1,a2,a3 <! chan )
-
-/*
-  Output: x , y , z , x1 , y , chan
-*/

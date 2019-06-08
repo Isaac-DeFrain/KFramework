@@ -1,7 +1,0 @@
-// Number of binding variables
-
-  #bnum ( a,b,c,d,e,f,g <- x )
-
-/*
-  Output: 7
-*/

@@ -1,8 +1,0 @@
-type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ]
-
-// Output:
-// <T>
-//   <k>
-//
-//   </k>
-// </T>

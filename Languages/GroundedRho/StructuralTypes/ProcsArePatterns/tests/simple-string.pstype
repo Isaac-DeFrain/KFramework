@@ -1,8 +1,0 @@
-// Structural Type - simpletype string
-
-  type[ String ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( String ) ] ;; type[ #truncate ] ]
-*/

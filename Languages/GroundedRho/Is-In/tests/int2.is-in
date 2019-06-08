@@ -1,7 +1,0 @@
-// Structural type inclusion for pattern-matching - int
-
-  type[ 42 ]
-  #isIn
-  type[ "leaf" ;; "int" ;; 42 ]
-
-// Output: true

@@ -1,8 +1,0 @@
-// New
-
-  new x , y , z in { x!(3 + 5) | y!("a") | z!(*x,Nil,3) | for( @a <- x ; b <- y ){a | *b} | for( a <! x ; @b,@Nil,@3 <! z ){ (*a,b) } } | for( a <- x ){"no unforgeable names here"}
-
-/*
-  Output:
-
-*/

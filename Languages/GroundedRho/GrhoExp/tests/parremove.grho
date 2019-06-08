@@ -1,5 +1,0 @@
-// Counting appearances in a parallel composition
-
-    #parremove( 3 ; "a" | 3 | true | 3 | 2 | "3" )
-
-// Output: 2

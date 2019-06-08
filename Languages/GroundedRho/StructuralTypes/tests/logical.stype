@@ -1,8 +1,0 @@
-// Type - logical pattern
-
-  type[ ~ { * WildName | WildProc /\ WildName!(WildProc) \/ WildProc } ]
-
-/*
-  Output:
-  type[ "not" ;; type[ "or" ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ #truncate ] ] ;; type[ "and" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ;; type[ #truncate ] ]
-*/

@@ -1,7 +1,0 @@
-// Structural type inclusion for pattern-matching - string
-
-  type[ "leaf" ;; "string" ;; "hello" ]
-  #isIn
-  type[ "leaf" ;; "string" ;; "Isaac" ]
-
-// Output: false

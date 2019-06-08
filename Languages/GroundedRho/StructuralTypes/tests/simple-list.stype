@@ -1,8 +1,0 @@
-// Structural Type - simpletype list
-
-  type[ List ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( List ) ] ;; type[ #truncate ] ]
-*/

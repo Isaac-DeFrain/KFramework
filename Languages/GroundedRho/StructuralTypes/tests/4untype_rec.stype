@@ -1,3 +1,0 @@
-// For untype - receive
-
-  type[ for( y <- @{ @Nil!("nil") } ){ 0 } ]

@@ -1,7 +1,0 @@
-// Quote proc lists
-
-  #quotes ( x!(Nil) , *y , *z , *a , Nil )
-
-/*
-  Output: @ ( x!(Nil) ) , @ * y , @ * z , @ * a , @ Nil
-*/

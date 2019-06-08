@@ -1,5 +1,0 @@
-// Structural type inclusion for pattern-matching - uri
-
-  type[ "leaf" ;; "uri" ;; "cat" ] #isIn type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Uri ) ] ;; type[ #truncate ] ]
-
-// Output: true

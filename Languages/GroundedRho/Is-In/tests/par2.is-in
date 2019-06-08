@@ -1,9 +1,0 @@
-// Structural type inclusion for pattern-matching
-// Par:
-//      x | false | 1 | 2 matches x | Int | Bool | 1
-
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "leaf" ;; "bool" ;; false ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] ;; type[ "leaf" ;; "int" ;; 2 ] ]
-  #isIn
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ] ] ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ]
-
-// Output: true

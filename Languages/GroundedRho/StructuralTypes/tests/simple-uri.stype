@@ -1,8 +1,0 @@
-// Structural Type - simpletype uri
-
-  type[ Uri ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Uri ) ] ;; type[ #truncate ] ]
-*/

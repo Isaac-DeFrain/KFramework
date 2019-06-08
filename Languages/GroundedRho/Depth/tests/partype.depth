@@ -1,3 +1,0 @@
-// Depth - par
-
-  #depth( type[ "par" ;; type[ "par" ;; type[ "send" ;; type[ "quote" ;; type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "leaf" ;; "string" ;; "a" ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] )

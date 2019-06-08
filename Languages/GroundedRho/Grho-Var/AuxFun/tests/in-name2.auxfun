@@ -1,5 +1,0 @@
-// #in names predicate
-
-  @Nil #in EmptyMsg
-
-// Output: false

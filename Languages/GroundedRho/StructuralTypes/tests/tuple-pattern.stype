@@ -1,8 +1,0 @@
-// Type - tuple pattern
-
- type[ ( WildName!(for( WildName <! @chan ){ @Nil!(WildProc)}) , ... x ) ]
-
-/*
-  Output:
-  type[ "tuplepat" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "pattuple" ;; type[ "receive" ;; type[ "peek" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; chan ] ;; type[ #truncate ] ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ;; type[ "pattuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "procvar" ;; x ] ]
-*/

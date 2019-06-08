@@ -1,9 +1,0 @@
-// Explicit binding occurrences of binds
-
-  #bindocce ( t <- x ; a <- x ; t <- x  )
-
-/*
-  Output:
-  SetItem ( x ; a ;; 1 )
-  SetItem ( x ; t ;; 2 )
-*/

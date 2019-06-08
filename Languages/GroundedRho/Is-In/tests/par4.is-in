@@ -1,9 +1,0 @@
-// Structural type inclusion for pattern-matching
-// Par:
-//      a | b | c | d | e matches c | b | e | a | d
-
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; a ] ;; type[ "leaf" ;; "procvar" ;; b ] ] ;; type[ "leaf" ;; "procvar" ;; c ] ] ;; type[ "leaf" ;; "procvar" ;; d ] ] ;; type[ "leaf" ;; "procvar" ;; e ] ]
-  #isIn
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; c ] ;; type[ "leaf" ;; "procvar" ;; b ] ] ;; type[ "leaf" ;; "procvar" ;; e ] ] ;; type[ "leaf" ;; "procvar" ;; a ] ] ;; type[ "leaf" ;; "procvar" ;; d ] ]
-
-// Output: false !!!!! why?

@@ -1,3 +1,0 @@
-// toString Function - symbol string
-
- toString( x!(Nil) | for( y <- @Nil ){ Nil } )

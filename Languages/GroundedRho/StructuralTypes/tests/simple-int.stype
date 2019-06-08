@@ -1,8 +1,0 @@
-// Type - simpletype int
-
-  type[ Int ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Int ) ] ;; type[ #truncate ] ]
-*/

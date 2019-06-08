@@ -1,8 +1,0 @@
-// For untype - wildcard
-
-  type[ WildName!(WildProc) ]
-
-/*
-  Output:
-  type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ]
-*/

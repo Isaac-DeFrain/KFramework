@@ -1,8 +1,0 @@
-// Type - contract
-
- type[ contract @x(@y,@z) = { Nil } ]
-
-/*
-  Output:
-  type[ "contract" ;; type[ "pbind" ;; type[ "names" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; z ] ;; type[ #truncate ] ] ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
-*/

@@ -1,8 +1,0 @@
-// Type - conditional pattern
-
- type[ if (true and 1 <= 2 + 3) then WildProc else WildName!(Nil) ]
-
-/*
-  Output:
-  type[ "else" ;; type[ "ifthen" ;; type[ "and" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ "leq" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "plus" ;; type[ "leaf" ;; "int" ;; 2 ] ;; type[ "leaf" ;; "int" ;; 3 ] ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ]
-*/

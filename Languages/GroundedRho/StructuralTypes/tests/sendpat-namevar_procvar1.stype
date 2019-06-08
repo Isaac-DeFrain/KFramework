@@ -1,8 +1,0 @@
-// Type - send pattern
-
- type[ @x!( unforgeable(1)!(0) | for( @(a,b,c)  <- @Nil ){ 1 } ) ]
-
-/*
-  Output:
-  type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "par" ;; type[ "send" ;; type[ "unforgeable" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "int" ;; 0 ] ;; type[ #truncate ] ] ] ;; type[ "receive" ;; type[ "lbind" ;; type[ "quote" ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; a ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; b ] ;; type[ "leaf" ;; "procvar" ;; c ] ] ] ;; type[ #truncate ] ] ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "int" ;; 1 ] ] ] ;; type[ #truncate ] ] ]
-*/

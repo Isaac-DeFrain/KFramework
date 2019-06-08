@@ -1,7 +1,0 @@
-// Structural type inclusion for pattern-matching - bool
-
-  type[ "leaf" ;; "bool" ;; false ]
-  #isIn
-  type[ "leaf" ;; "bool" ;; true ]
-
-// Output: false

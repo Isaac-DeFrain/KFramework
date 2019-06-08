@@ -1,3 +1,0 @@
-// Send channels - send
-
-  SC( @"schan1"!(svar1!(*var) | rvar1(npat1){Nil}) | @"schan2"!(Nil) )

@@ -1,8 +1,0 @@
-// Type - method get
-
-  type[ Set(1,x,y,4,z).get(x,y,2) ]
-
-/*
-  Output:
-  type[ "method" ;; type[ "set" ;; type[ "leaf" ;; "int" ;; 1 ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ "procs" ;; type[ "leaf" ;; "int" ;; 4 ] ;; type[ "leaf" ;; "procvar" ;; z ] ] ] ] ] ;; type[ "methodandargs" ;; type[ "leaf" ;; "method" ;; get ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ "procs" ;; type[ "leaf" ;; "procvar" ;; y ] ;; type[ "leaf" ;; "int" ;; 2 ] ] ] ] ]
-*/

@@ -1,5 +1,0 @@
-// Length of join send id list
-
-  12 #in ( 1 , 2 , 3 , 5 , 7 )
-
-// Output: false

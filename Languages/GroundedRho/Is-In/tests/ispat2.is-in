@@ -1,6 +1,0 @@
-// Structural type inclusion for pattern-matching - pattern
-// "bool" /\ Nil
-
-  #isPat type[ "andpat" ;; type[ "leaf" ;; "string" ;; bool ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ]
-
-// Output: true

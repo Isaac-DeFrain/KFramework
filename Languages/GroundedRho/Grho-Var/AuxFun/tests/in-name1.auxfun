@@ -1,5 +1,0 @@
-// #in names predicate
-
- @{@Nil!(Nil)} #in @1 , x , @{@Nil!(Nil)} , @42 , @(1,2,3) , @{1:2 , 3:true}
-
-// Output: true

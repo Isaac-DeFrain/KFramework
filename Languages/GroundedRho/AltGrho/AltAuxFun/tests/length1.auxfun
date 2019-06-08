@@ -1,9 +1,0 @@
-// Length of name list
-
-  #length ( a , @x , @6 , @{@Nil!(Nil,1)} )
-
-/*
-  Output: 
-  
-    4 , .Ids  // not sure why the ", .Ids" appears, but it can still be used in int addition
-*/

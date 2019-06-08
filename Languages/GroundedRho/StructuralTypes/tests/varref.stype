@@ -1,8 +1,0 @@
-// Type - variable reference
-
-  type[ =: x ]
-
-/*
-  Output:
-  type[ "varref" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ]
-*/

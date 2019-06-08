@@ -1,5 +1,0 @@
-// Structural type inclusion for pattern-matching - unforgeable
-
-   type[ "par" ;; type[ "leaf" ;; "int" ;; 17 ] ;; type[ "leaf" ;; "string" ;; "unforgeable" ] ] #isIn type[ "leaf" ;; "unforgeable" ;; 17 ]
-
-// Output: false

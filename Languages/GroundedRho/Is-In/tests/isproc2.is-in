@@ -1,5 +1,0 @@
-// Structural type inclusion for pattern-matching - x is a Process
-
-  #isProc type[ "leaf" ;; "procvar" ;; x ]
-
-// Output: true

@@ -1,7 +1,0 @@
-// Type rewrite
-
-  #type( @ Nil )
-
-/*
-  Output: type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ]
-*/

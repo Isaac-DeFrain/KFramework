@@ -1,9 +1,0 @@
-// For untype - type[ x!(Nil) | y!( *z | @"a"!(42) ) ]
-
-
-  type[ "par" ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; x ] ;; type[ "leaf" ;; "nil" ;; "Nil" ] ] ;; type[ "send" ;; type[ "leaf" ;; "namevar" ;; y ] ;; type[ "par" ;; type[ "eval" ;; type[ "leaf" ;; "namevar" ;; z ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "string" ;; "a" ] ;; type[ "leaf" ;; "truncate" ;; #truncate ] ] ;; type[ "leaf" ;; "int" ;; 42 ] ] ] ] ]
-
-/*
-  Output:
-  untype[ x ! ( Nil ) | y ! ( * z | { @ "a" } ! ( 42 ) ) ]
-*/

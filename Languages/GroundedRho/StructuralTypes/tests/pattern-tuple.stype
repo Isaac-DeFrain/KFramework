@@ -1,8 +1,0 @@
-// Type - pattern tuple
-
- type[ ( WildName!(for( WildName <! @chan1 ){ @Nil!(WildProc)}) , WildName!(x) , WildProc , for( WildName <= @chan2 ){ WildProc } ) ]
-
-/*
-  Output:
-  type[ "pattuple" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "pattuple" ;; type[ "receive" ;; type[ "peek" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; chan1 ] ;; type[ #truncate ] ] ] ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ] ;; type[ "pattuple" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ #truncate ] ] ] ] ;; type[ #truncate ] ] ] ;; type[ "procpats" ;; type[ "send" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "tuple" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ] ;; type[ "procpats" ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ;; type[ "receive" ;; type[ "pbind" ;; type[ "leaf" ;; "wildcard" ;; "name" ] ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; chan2 ] ;; type[ #truncate ] ] ] ;; type[ "leaf" ;; "wildcard" ;; "proc" ] ] ] ] ]
-*/

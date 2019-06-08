@@ -1,9 +1,0 @@
-// Process variables - send
-
-  PV( @"a"!(x!(z) | for( y <- u ){ for( @u <- a ){ u } } ) )
-
-/*
-Output:
-  SetItem ( u )
-  SetItem ( z )
-*/

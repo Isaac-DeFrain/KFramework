@@ -1,7 +1,0 @@
-// Type - int
-
-  type[ 5 + 7 ]
-
-/*
-  Output: type[ "leaf" ;; "int" ;; 12 ]
-*/

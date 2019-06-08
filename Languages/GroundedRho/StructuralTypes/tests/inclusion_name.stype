@@ -1,5 +1,0 @@
-// Structural type inclusion for pattern-matching
-
-   @{@1!(Nil)} #isIn @{@Int!(WildProc)}
-
-// Output: true

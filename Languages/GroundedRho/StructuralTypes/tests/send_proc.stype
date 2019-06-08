@@ -1,8 +1,0 @@
-// Type - send
-
- type[ @{@{@x!(true)}!(42)}!("myString") ]
-
-/*
-  Output:
-  type[ "send" ;; type[ "quote" ;; type[ "send" ;; type[ "quote" ;; type[ "send" ;; type[ "quote" ;; type[ "leaf" ;; "procvar" ;; x ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "bool" ;; true ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "int" ;; 42 ] ;; type[ #truncate ] ] ] ;; type[ #truncate ] ] ;; type[ "tuple" ;; type[ "leaf" ;; "string" ;; "myString" ] ;; type[ #truncate ] ] ]
-*/

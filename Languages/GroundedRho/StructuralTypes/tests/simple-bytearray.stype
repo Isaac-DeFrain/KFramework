@@ -1,8 +1,0 @@
-// Structural Type - simpletype bytearray
-
-  type[ ByteArray ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( ByteArray ) ] ;; type[ #truncate ] ]
-*/

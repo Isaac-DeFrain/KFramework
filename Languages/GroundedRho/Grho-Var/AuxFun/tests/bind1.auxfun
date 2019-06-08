@@ -1,7 +1,0 @@
-// Bind reconstruction
-
-  #bind ( x ; a,b,c,d,e ;; 1 )
-
-/*
-  Output: a,b,c,d,e <= x
-*/

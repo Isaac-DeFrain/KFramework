@@ -1,3 +1,0 @@
-// Grounded rho - repeated join
-
-  for( a,b <= x ; c,d,e <= y ){ (*a,*b,*c,*d,*e) }

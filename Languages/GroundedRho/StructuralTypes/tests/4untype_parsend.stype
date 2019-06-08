@@ -1,3 +1,0 @@
-// For untype - par send, send par
-
-  type[ x!(Nil) | y!( *z | @"a"!(42) ) ]

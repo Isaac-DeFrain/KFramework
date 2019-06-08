@@ -1,5 +1,0 @@
-// Structural type inclusion for pattern-matching - Nil matches WildProc
-
-   Nil #isIn WildProc
-
-// Output: true

@@ -1,8 +1,0 @@
-// Type - simpletype map
-
-  type[ Map ]
-
-/*
-  Output:
-  type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Map ) ] ;; type[ #truncate ] ]
-*/

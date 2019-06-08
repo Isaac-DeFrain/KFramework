@@ -1,6 +1,0 @@
-// Structural type inclusion for pattern-matching - #isProc
-
-  #isProc type[ "simpletype" ;; type[ "leaf" ;; "string" ;; toString( Bool ) ] ;; type[ #truncate ] ]
-
-
-// Output: false

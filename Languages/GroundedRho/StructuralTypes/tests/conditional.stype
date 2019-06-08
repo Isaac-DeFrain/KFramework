@@ -1,8 +1,0 @@
-// Type - conditional
-
- type[ if (true and false) then Nil ]
-
-/*
-  Output:
-  type[ "false" ;; type[ "leaf" ;; "nil" ;; "Nil" ] ;; type[ #truncate ] ]
-*/

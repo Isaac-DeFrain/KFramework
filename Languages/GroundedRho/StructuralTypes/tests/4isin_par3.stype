@@ -1,9 +1,0 @@
-// For #isIn - par
-
-  type[ c | b | e | a | d ]
-
-/*
-  Output:
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; a ] ;; type[ "leaf" ;; "procvar" ;; b ] ] ;; type[ "leaf" ;; "procvar" ;; c ] ] ;; type[ "leaf" ;; "procvar" ;; d ] ] ;; type[ "leaf" ;; "procvar" ;; e ] ]
-  type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "par" ;; type[ "leaf" ;; "procvar" ;; c ] ;; type[ "leaf" ;; "procvar" ;; b ] ] ;; type[ "leaf" ;; "procvar" ;; e ] ] ;; type[ "leaf" ;; "procvar" ;; a ] ] ;; type[ "leaf" ;; "procvar" ;; d ] ]
-*/

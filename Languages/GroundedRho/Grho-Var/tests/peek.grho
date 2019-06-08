@@ -1,3 +1,0 @@
-// Grounded rho - peek
-
-  x!(1,"a",Nil) | for( a,b,c <! x ){(*a,*b,*c)}
