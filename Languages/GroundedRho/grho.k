@@ -685,35 +685,37 @@ module GRHO
         $PGM                                            // parsed original program
       </original>                                       //
       <OGfreevar color="pink">                          //
-        FV($PGM)                                        // set of free variables of original program
+        FV($PGM)                                        // set of kind free variables of original program
       </OGfreevar>                                      //
       <OGdeBruijn color="pink">                         //
         #deBruijn(0;$PGM;.Map)                          // De Bruijn indexed original program
       </OGdeBruijn>                                     //
     </T>                                                //
 
-  syntax KResult ::= Ground | Eval | List | Map | Set   // final output of strict operations
+// TODO: This is only needed for strict operations
+  syntax KResult ::= Ground | Eval | List | Map | Set   // final output type of strict operations
 
 // Free variable execution guard
-//  syntax KItem ::= "Error: FreeVars!"
+//  syntax KItem ::= "Error: Free Variables!"
 // Remove free variable error guard if program is closed
 //  rule <k> (Error: FreeVars! ~> P:Proc) => P </k>
 //       <free> .Set </free>
 
 // Arithmetic & Boolean expressions are evaluated as soon as they can be
-  // Arithmetic expressions
+  // Arithmetic expressions -- evaluated immediately
   rule I:Int + J:Int => I +Int J                     [anywhere, structural] // addition
   rule I:Int - J:Int => I -Int J                     [anywhere, structural] // subtraction
   rule I:Int * J:Int => I *Int J                     [anywhere, structural] // multiplication
   rule I:Int / J:Int => I /Int J requires J =/=Int 0 [anywhere, structural] // division
   rule I:Int % J:Int => I %Int J requires J =/=Int 0 [anywhere, structural] // modular reduction
   rule - I:Int => 0 -Int I                           [anywhere, structural] // negation
-  
-  // string concatenation
-  rule S:String ++ T:String => S +String T [anywhere, structural]
+
+  // String expressions -- evaluated immediately
+    // concatenation
+  rule S:String ++ T:String             => S +String T [anywhere, structural]
   rule S:String ++ T:String U:ConcatExp => S +String T U [anywhere, structural]
-  // string interpolation: "begin${key}rest" %% { ..., key:value ,... } => "begin" ++ "value" ++ "rest"
-  rule S:String %% R:RhoMap => #interpolate(S;R) [anywhere, structural]
+    // interpolation: "begin${key}rest" %% { ..., key:value ,... } => "begin" ++ "value" ++ "rest"
+  rule S:String %% R:RhoMap                 => #interpolate(S;R) [anywhere, structural]
   rule S:String %% R:RhoMap %% T:InterpMaps => #interpolate(S;R) %% T [anywhere, structural]
 
   // Boolean expressions
@@ -722,7 +724,7 @@ module GRHO
   rule I1:Int >= I2:Int => I1 >=Int I2 [anywhere, structural]
   rule I1:Int >  I2:Int => I1  >Int I2 [anywhere, structural]
   rule not B:Bool => notBool B         [anywhere, structural]
-    // short-circuited
+    // short-circuited semantics
   rule true  and B:Bool => B     [anywhere, structural]
   rule false and _:Bool => false [anywhere, structural]
   rule true  or  _:Bool => true  [anywhere, structural]
