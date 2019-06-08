@@ -1,6 +1,6 @@
 // Names and Variables for RHO CALCULUS with additional Ground terms
 
-// TODO: how to handle BoundName & BoundProc
+// TODO: Patterns
 
 require "domains.k"
 require "../grho.k"
@@ -12,8 +12,12 @@ module NAMEVAR-SYNTAX
 // Arguments
   syntax     Arg ::= Name
                    | Names
+                   | NamePat
+                   | NamePats
                    | Proc
                    | Procs
+                   | ProcPat
+                   | ProcPats
                    | RhoKVPair
                    | RhoKVPairs
                    | AnyBind
@@ -40,7 +44,6 @@ module NAMEVAR-SYNTAX
                    | "V("     Arg  ")" [function] // variables
                    | "LV("    Arg  ")" [function] // listening variables
                    | "LV+("   Arg  ")" [function] // auxiliary for bound variables
-                   | "ILV("   Arg  ")" [function] // indexed listening variables
 
 // Unkind Sets
   syntax     Set ::= "#FV("   Arg  ")" [function] // free variables
@@ -52,7 +55,6 @@ module NAMEVAR-SYNTAX
                    | "#SN("   Arg  ")" [function] // send names
                    | "#V("    Arg  ")" [function] // variables
                    | "#LV("   Arg  ")" [function] // listening variables
-                   | "#ILV("  Arg  ")" [function] // indexed listening variables
                    | "#RN+("  Arg  ")" [function] // nested receive names
 
 // For sets...
@@ -76,6 +78,10 @@ module NAMEVAR
   rule #V( _:Ground    ) => .Set
   rule #V( B:BoundProc ) => .Set
 
+// Pattern
+  rule  V( \_ ) => .Set
+  rule #V( \_ ) => .Set
+
 // ProcVar
   rule  V( X:ProcVar ) => SetItem(X : proc)
   rule #V( X:ProcVar ) => SetItem(X)
@@ -95,13 +101,24 @@ module NAMEVAR
   rule  V( @P:ProcVar   ) => SetItem(@P : name) SetItem(P : proc)
   rule #V( @P:ProcVar   ) => SetItem( P )
 
-  rule  V( @P:Proc ) =>  V(P) requires notBool (isProcVar(P) orBool isBoundProc(P))
-  rule #V( @P:Proc ) => #V(P) requires notBool isProcVar(P)
+  rule  V( @P:Proc    ) =>  V(P) requires notBool (isProcVar(P) orBool isBoundProc(P))
+  rule  V( @P:ProcPat ) =>  V(P)
+  rule #V( @P:Proc    ) => #V(P) requires notBool isProcVar(P)
+  rule #V( @P:ProcPat ) => #V(P)
 
   rule  V( A:Name , B:Name  ) =>  V(A)  V(B)
   rule  V( A:Name , B:Names ) =>  V(A)  V(B)
   rule #V( A:Name , B:Name  ) => #V(A) #V(B)
   rule #V( A:Name , B:Names ) => #V(A) #V(B)
+
+  rule  V( A:Name    , B:NamePat  ) =>  V(A)  V(B)
+  rule  V( A:NamePat , B:Name     ) =>  V(A)  V(B)
+  rule  V( A:Name    , B:NamePats ) =>  V(A)  V(B)
+  rule  V( A:NamePat , B:NamePats ) =>  V(A)  V(B)
+  rule #V( A:Name    , B:NamePat  ) => #V(A) #V(B)
+  rule #V( A:NamePat , B:Name     ) => #V(A) #V(B)
+  rule #V( A:Name    , B:NamePats ) => #V(A) #V(B)
+  rule #V( A:NamePat , B:NamePats ) => #V(A) #V(B)
 
 // Receives, Binds, Contracts
   // Guard variables should be contained in the listening variables, i.e. #FV(Guard) <=Set #BV(Rec)
@@ -114,24 +131,36 @@ module NAMEVAR
   rule #V( for( B:Binds           ) { P:Proc } ) => #V(B)  #V(P)
   rule #V( for( B:Binds if G:BExp ) { P:Proc } ) => #V(B) (#V(G) #V(P))
   // single bind
-  rule  V( Y:Names <- X:Name ) =>  V(X)  V(Y)
-  rule  V( Y:Name  <- X:Name ) =>  V(X)  V(Y)
-  rule  V(         <- X:Name ) =>  V(X)
-  rule  V( Y:Names <! X:Name ) =>  V(X)  V(Y)
-  rule  V( Y:Name  <! X:Name ) =>  V(X)  V(Y)
-  rule  V(         <! X:Name ) =>  V(X)
-  rule  V( Y:Names <= X:Name ) =>  V(X)  V(Y)
-  rule  V( Y:Name  <= X:Name ) =>  V(X)  V(Y)
-  rule  V(         <= X:Name ) =>  V(X)
-  rule #V( Y:Names <- X:Name ) => #V(X) #V(Y)
-  rule #V( Y:Name  <- X:Name ) => #V(X) #V(Y)
-  rule #V(         <- X:Name ) => #V(X)
-  rule #V( Y:Names <! X:Name ) => #V(X) #V(Y)
-  rule #V( Y:Name  <! X:Name ) => #V(X) #V(Y)
-  rule #V(         <! X:Name ) => #V(X)
-  rule #V( Y:Names <= X:Name ) => #V(X) #V(Y)
-  rule #V( Y:Name  <= X:Name ) => #V(X) #V(Y)
-  rule #V(         <= X:Name ) => #V(X)
+  rule  V( Y:NamePats <- X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:NamePat  <- X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Names    <- X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Name     <- X:Name ) =>  V(X)  V(Y)
+  rule  V(            <- X:Name ) =>  V(X)
+  rule  V( Y:NamePats <! X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:NamePat  <! X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Names    <! X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Name     <! X:Name ) =>  V(X)  V(Y)
+  rule  V(            <! X:Name ) =>  V(X)
+  rule  V( Y:NamePats <= X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:NamePat  <= X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Names    <= X:Name ) =>  V(X)  V(Y)
+  rule  V( Y:Name     <= X:Name ) =>  V(X)  V(Y)
+  rule  V(            <= X:Name ) =>  V(X)
+  rule #V( Y:NamePats <- X:Name ) => #V(X) #V(Y)
+  rule #V( Y:NamePat  <- X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Names    <- X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Name     <- X:Name ) => #V(X) #V(Y)
+  rule #V(            <- X:Name ) => #V(X)
+  rule #V( Y:NamePats <! X:Name ) => #V(X) #V(Y)
+  rule #V( Y:NamePat  <! X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Names    <! X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Name     <! X:Name ) => #V(X) #V(Y)
+  rule #V(            <! X:Name ) => #V(X)
+  rule #V( Y:NamePats <= X:Name ) => #V(X) #V(Y)
+  rule #V( Y:NamePat  <= X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Names    <= X:Name ) => #V(X) #V(Y)
+  rule #V( Y:Name     <= X:Name ) => #V(X) #V(Y)
+  rule #V(            <= X:Name ) => #V(X)
   // multiple binds
   rule  V( A:Lbind ; B:Lbind  ) =>  V(A)  V(B)
   rule  V( A:Lbind ; B:Lbinds ) =>  V(A)  V(B)
