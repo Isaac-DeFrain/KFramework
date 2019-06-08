@@ -1,4 +1,4 @@
-// Structural & Name Equivalence for Grounded Rho Calculus
+// Structural & Name Equivalence for Rholang
 
 require "../grho.k"
 require "../AlphaEquiv/alpha.k"
@@ -6,21 +6,27 @@ require "../AlphaEquiv/alpha.k"
 module STRUCT-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
-  
-  syntax   Bool ::= "#structEq("  Proc  ";" Proc  ")" [function]
-                  | "#nameEq("    Name  ";" Name  ")" [function]
-//                  | "#nameEq("    Names ";" Names ")" [function]
-  syntax    Int ::= "#parCount("  Proc  ";" Proc  ")" [function]
+
+// Structural equivalence relation
+  syntax   Bool ::=   "#structEq(" Proc  ";" Proc  ")" [function]
+                  |   "#structEq(" Procs ";" Procs ")" [function]
+                  | "#structEqif(" Procs ";" Procs ")" [function]
+
+// Name equivalence relation
+  syntax   Bool ::=   "#nameEq(" Name  ";" Name  ")" [function]
+                  |   "#nameEq(" Names ";" Names ")" [function]
+                  | "#nameEqif(" Names ";" Names ")" [function]
+
+// par normalization functions
+  syntax    Int ::=  "#parCount(" Proc  ";" Proc  ")" [function]
   syntax   Proc ::= "#parRemove(" Proc  ";" Proc  ")" [function]
-  syntax    Set ::= "#setify("    Proc  ")"           [function]
+  syntax    Set ::=    "#setify(" Proc  ")"           [function]
 
 endmodule
 
 module STRUCT
   import STRUCT-SYNTAX
   import ALPHA
-
-  syntax KResult ::= Proc | Name | Bool
 
 // counts number of appearances of a nonPar Proc in a Par
 // first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
@@ -53,15 +59,22 @@ module STRUCT
        #fi requires notBool isPar(A)
 
 // checks par set equlaity of deBruijnified Procs
-  rule #structEq( P:Proc ; Q:Proc ) => #setify(#deBruijn(0;P;.Map)) <=Set #setify(#deBruijn(0;Q;.Map))
-                                       andBool #setify(#deBruijn(0;Q;.Map)) <=Set #setify(#deBruijn(0;P;.Map))
+  rule #structEq( A:Proc ; B:Proc ) => #setify(#deBruijn(0;A;.Map)) <=Set #setify(#deBruijn(0;B;.Map))
+                                       andBool #setify(#deBruijn(0;B;.Map)) <=Set #setify(#deBruijn(0;A;.Map))
+  rule #structEq( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #structEq(A;C) andBool #structEq(B;D)
+  rule #structEq( A:Proc , B:Procs ; C:Proc , D:Procs ) => #structEq(A;C) andBool #structEq(B;D)
+
+  rule #structEqif( A:Procs ; B:Procs ) => #length(A) ==Int #length(B) andBool #structEq(A;B)
 
   // mainly for NameVars
   rule #nameEq( A:Name ; B:Name ) => A ==K B requires notBool isQuote(A)
   rule #nameEq( A:Name ; A ) => true
   rule #nameEq( @P:Proc ; @Q:Proc ) => #structEq(P;Q) [owise]
+
   // several Names
-//  rule #nameEq( A:Name , B:Name ; C:Name , D:Name  ) => #nameEq(A;C) andBool #nameEq(B;D)
-//  rule #nameEq( A:Name , B:Name ; C:Name , D:Names ) => #nameEq(A;C) andBool #nameEq(B;D)
+  rule #nameEq( A:Name , B:Name  ; C:Name , D:Name  ) => #nameEq(A;C) andBool #nameEq(B;D)
+  rule #nameEq( A:Name , B:Names ; C:Name , D:Names ) => #nameEq(A;C) andBool #nameEq(B;D)
+
+  rule #nameEqif( A:Names ; B:Names ) => #length(A) ==Int #length(B) andBool #nameEq(A;B)
 
 endmodule
