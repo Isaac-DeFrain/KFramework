@@ -166,7 +166,8 @@ module GRHO-SYNTAX
   syntax            Match ::= "match" "{" Proc "}" "{" MatchCases "}"
                             | "match" "{" Proc "}" "{" MatchCase  "}"
 
-  syntax        MatchCase ::= "{" Proc "}" "|=>" Proc
+  syntax        MatchCase ::= "{" Proc    "}" "|=>" Proc
+                            | "{" ProcPat "}" "|=>" Proc
   syntax       MatchCases ::= MatchCase MatchCase
                             | MatchCase MatchCases
   // Select
@@ -345,7 +346,7 @@ module GRHO-SYNTAX
                             | Name    "," NamePats [right]
                             | NamePat "," NamePats [right]
 
-// Pattern
+// Pattern -- TODO: precedence???
   syntax          ProcPat ::= "{" ProcPat "}" [bracket]
                             > WildCard
                             > NewPat          // New pattern
@@ -360,6 +361,8 @@ module GRHO-SYNTAX
                             | SendPat         // Send pattern
 //                            | BundlePat       // Bundle pattern
                             > CondPat         // If...then(...else) pattern
+                            | PatExp          // Pattern expression
+                            | SimplePat       // simple types
                             > ParPat          // Par pattern
 
 // syntax         ProcOrPat ::= Proc | ProcPat
@@ -497,6 +500,20 @@ module GRHO-SYNTAX
   syntax          ElsePat ::= IfThenPat "else" Proc
                             | IfThen    "else" ProcPat
                             | IfThenPat "else" ProcPat
+
+  syntax           PatExp ::= "~" ProcPat
+                            | "~" Proc
+                            > ProcPat "/\\" ProcPat [right]
+                            | ProcPat "/\\" Proc    [right]
+                            | Proc    "/\\" ProcPat [right]
+                            | Proc    "/\\" Proc    [right]
+                            > ProcPat "\\/" ProcPat [right]
+                            | ProcPat "\\/" Proc    [right]
+                            | Proc    "\\/" ProcPat [right]
+                            | Proc    "\\/" Proc    [right]
+
+  syntax        SimplePat ::= "Bool" | "Int" | "String"
+                            | "List" | "Map" | "Set" | "Tuple" | "Unforgeable" | "Uri"
 
 /*
 // TODO: Patternize?
@@ -665,7 +682,7 @@ module GRHO
           <send color="cyan" multiplicity="*">          //
             <schan> .K </schan>                         // sending channel (many messages on same channel)
             <msg>   .K   </msg>                         // sent message
-            <tuple> .K </tuple>                         // equals N if N-tuple - for arity matching
+            <arity> .K </arity>                         // number of messages - for arity matching
             <stype> .K </stype>                         // 0 for single send (consumed), 1 for persistent send (not consumed)
           </send>                                       //
         </sends>                                        //
@@ -688,7 +705,7 @@ module GRHO
         FV($PGM)                                        // set of kind free variables of original program
       </OGfreevar>                                      //
       <OGdeBruijn color="pink">                         //
-        #deBruijn(0;$PGM;.Map)                          // De Bruijn indexed original program
+        #deBruijn($PGM)                                 // De Bruijn indexed original program
       </OGdeBruijn>                                     //
     </T>                                                //
 
@@ -792,7 +809,7 @@ module GRHO
        (.Bag => <send>
                   <schan>   #chan(S) </schan>  // sending channel
                   <msg>      #msg(S)   </msg>  // sending message(s)
-                  <tuple> #msglen(S) </tuple>  // number of messages
+                  <arity> #msglen(S) </arity>  // number of messages
                   <stype>  #stype(S) </stype>  // send type
                 </send>)
 
@@ -840,7 +857,7 @@ module GRHO
   (<send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>) 
@@ -860,7 +877,7 @@ module GRHO
   (<send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
@@ -881,7 +898,7 @@ module GRHO
   (<send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
@@ -901,7 +918,7 @@ module GRHO
   (<send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 0       </stype>              // linear send
    </send> => .Bag)                        //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
@@ -922,7 +939,7 @@ module GRHO
    <send>                                  //DON'T consume persistent send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
    </send>                                 //
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
@@ -942,7 +959,7 @@ module GRHO
    <send>                                  //DON'T consume persistent send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> 1       </stype>              // persistent send
    </send>                                 //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
@@ -963,7 +980,7 @@ module GRHO
    <send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Proc    </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
    </send>                                 // 
    (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
@@ -983,7 +1000,7 @@ module GRHO
    <send>                                  //consume single send
      <schan> Z:Name  </schan>              // channel Z
      <msg>   Q:Procs   </msg>              // message(s) Q
-     <tuple> N       </tuple>              // number of messages matches number of names to bind
+     <arity> N       </arity>              // number of messages matches number of names to bind
      <stype> _       </stype>              // any kind of send
    </send>                                 //
    (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
