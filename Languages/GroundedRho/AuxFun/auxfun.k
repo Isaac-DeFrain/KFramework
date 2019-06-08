@@ -117,8 +117,6 @@ endmodule
 module AUXFUN
   import AUXFUN-SYNTAX
 
-  syntax KResult ::= Int | Name | Names | Proc | Procs
-
 // Sends
   rule #chan( N:Name !  ( ) ) => N
   rule #chan( N:Name !  ( _:Proc  ) ) => N
