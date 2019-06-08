@@ -1,4 +1,4 @@
-// De Bruijn Index & Alpha Equisubence for Grounded Rho Calculus
+// De Bruijn Index & Alpha Equisubence for Rholang
 // Need to call #deBruijn(0;$PGM;.Map) at the beginning of program execution
 
 /*
@@ -7,6 +7,7 @@ TODO:
  - more tests for substitutions in continuations for listens on chan
  - create #mapify: function which computes the final deBruijn map of a Name
  - add remaining productions - MultiRecs, Conditional, Bundles, 
+ - extend compositional definition
 */
 
 require "../grho.k"
@@ -17,66 +18,71 @@ module ALPHA-SYNTAX
   import GRHO-SYNTAX
 
 // Top level Procs
-  syntax         Proc ::= "#deBruijn(" Int ";" Proc  ";" Map ")" [function, poly(0,2)]
-                        | "#dBound("   Int ";" Proc  ";" Map ")" [function, poly(0,2)]
+  syntax         Proc ::= "#deBruijn(" Int  ";" Proc  ";" Map ")" [function, poly(0,2)]
+                        |   "#dBound(" Int  ";" Proc  ";" Map ")" [function, poly(0,2)]
+                        | "#deBruijn(" Proc ")" [function, poly(0,1)]
+/*
+// To be deleted:
                         | "new" Name  "in" "{" DBProc "}"        [function]
                         | "new" Names "in" "{" DBProc "}"        [function]
 
   // New name declarations
   syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ";" Map ")" [function]
                         | "#deBruijn(" Int ";" Names ";" Proc ";" Map ")" [function]
-
+*/
   syntax        Procs ::= "#deBruijn(" Int ";" Procs ";" Map ")" [function]
-                        | "#dBound("   Int ";" Procs ";" Map ")" [function]
+                        |   "#dBound(" Int ";" Procs ";" Map ")" [function]
 
 // Nested Procs
   syntax         Proc ::= "#deBruijn(" Int "," Int ";" Proc  ";" Map ")" [function, poly(0,3)]
-                        | "#dBound("   Int "," Int ";" Proc  ";" Map ")" [function, poly(0,3)]
+                        |   "#dBound(" Int "," Int ";" Proc  ";" Map ")" [function, poly(0,3)]
 
   syntax       DBProc ::= "#deBruijn(" Int "," Int ";" Name  ";" Proc ";" Map ")" [function]
                         | "#deBruijn(" Int "," Int ";" Names ";" Proc ";" Map ")" [function]
 
   syntax        Procs ::= "#deBruijn(" Int "," Int  ";" Procs ";" Map ")" [function]
-                        | "#dBound("   Int "," Int  ";" Procs ";" Map ")" [function]
+                        |   "#dBound(" Int "," Int  ";" Procs ";" Map ")" [function]
 
 // Top level Names
   syntax         Name ::= "#deBruijn(" Int ";" Name  ";" Map ")" [function]
-                        | "#dBound("   Int ";" Name  ";" Map ")" [function]
+                        |   "#dBound(" Int ";" Name  ";" Map ")" [function]
 
   syntax        Names ::= "#deBruijn(" Int ";" Names ";" Map ")" [function]
-                        | "#dBound("   Int ";" Names ";" Map ")" [function]
+                        |   "#dBound(" Int ";" Names ";" Map ")" [function]
 
 // Nested Names
   syntax         Name ::= "#deBruijn(" Int "," Int ";" Name  ";" Map ")" [function]
-                        | "#dBound("   Int "," Int ";" Name  ";" Map ")" [function]
+                        |   "#dBound(" Int "," Int ";" Name  ";" Map ")" [function]
 
   syntax        Names ::= "#deBruijn(" Int "," Int ";" Names ";" Map ")" [function]
-                        | "#dBound("   Int "," Int ";" Names ";" Map ")" [function]
+                        |   "#dBound(" Int "," Int ";" Names ";" Map ")" [function]
 
 // Recursive functions
   // can Lbind, Pbind, Rbind be combined into a single Bind with [poly]???
-  syntax        Lbind ::= "#dBound("   Int         ";;" Lbind  ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Lbind  ";;" Map ")" [function]
-  syntax       Lbinds ::= "#dBound("   Int         ";;" Lbinds ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Lbinds ";;" Map ")" [function]
-  syntax        Pbind ::= "#dBound("   Int         ";;" Pbind  ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Pbind  ";;" Map ")" [function]
-  syntax       Pbinds ::= "#dBound("   Int         ";;" Pbinds ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Pbinds ";;" Map ")" [function]
-  syntax        Rbind ::= "#dBound("   Int         ";;" Rbind  ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Rbind  ";;" Map ")" [function]
-  syntax       Rbinds ::= "#dBound("   Int         ";;" Rbinds ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" Rbinds ";;" Map ")" [function]
-  syntax  GuardedBind ::= "#dBound("   Int         ";;" GuardedBind  ";;" Map ")" [function, poly(0,2)]
-                        | "#dBound("   Int "," Int ";;" GuardedBind  ";;" Map ")" [function, poly(0,3)]
-  syntax GuardedBinds ::= "#dBound("   Int         ";;" GuardedBinds ";;" Map ")" [function]
-                        | "#dBound("   Int "," Int ";;" GuardedBinds ";;" Map ")" [function]
+  syntax        Lbind ::= "#dBound(" Int         ";;" Lbind  ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Lbind  ";;" Map ")" [function]
+  syntax       Lbinds ::= "#dBound(" Int         ";;" Lbinds ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Lbinds ";;" Map ")" [function]
+  syntax        Pbind ::= "#dBound(" Int         ";;" Pbind  ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Pbind  ";;" Map ")" [function]
+  syntax       Pbinds ::= "#dBound(" Int         ";;" Pbinds ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Pbinds ";;" Map ")" [function]
+  syntax        Rbind ::= "#dBound(" Int         ";;" Rbind  ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Rbind  ";;" Map ")" [function]
+  syntax       Rbinds ::= "#dBound(" Int         ";;" Rbinds ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" Rbinds ";;" Map ")" [function]
+  syntax  GuardedBind ::= "#dBound(" Int         ";;" GuardedBind  ";;" Map ")" [function, poly(0,2)]
+                        | "#dBound(" Int "," Int ";;" GuardedBind  ";;" Map ")" [function, poly(0,3)]
+  syntax GuardedBinds ::= "#dBound(" Int         ";;" GuardedBinds ";;" Map ")" [function]
+                        | "#dBound(" Int "," Int ";;" GuardedBinds ";;" Map ")" [function]
 
+  // KV pairs
   syntax    RhoKVPair ::= "#deBruijn(" Int ";"         RhoKVPair  ";" Map ")" [function]
                         | "#deBruijn(" Int "," Int ";" RhoKVPair  ";" Map ")" [function]
   syntax   RhoKVPairs ::= "#deBruijn(" Int ";"         RhoKVPairs ";" Map ")" [function]
                         | "#deBruijn(" Int "," Int ";" RhoKVPairs ";" Map ")" [function]
 
+  // String expressions
   syntax    ConcatExp ::= "#dBconcat(" Int ";"         ConcatExp  ";" Map ")" [function]
                         | "#dBconcat(" Int "," Int ";" ConcatExp  ";" Map ")" [function]
   syntax   InterpMaps ::= "#dBinterp(" Int ";"         InterpMaps ";" Map ")" [function]
@@ -105,12 +111,28 @@ module ALPHA
   import ALPHA-SYNTAX
   import SUB
 
-  syntax KResult ::= Name | Names | Proc | Procs | Bool
+  rule #deBruijn( P:Proc ) => #deBruijn(0;P;.Map)
 
 //----------------------------
 //--- Top Level Constructs ---
 //----------------------------
+// single name declaration
+  rule #deBruijn( I:Int ; new A:NameVar in { P:Proc } ; Mem:Map ) 
+    => new boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);A;P) ; updateMap( Mem , A |-> boundN(I) ) ) }
+// handles several name declarations all at once
+  rule #deBruijn( I:Int ; new A:Names in { P:Proc } ; Mem:Map )
+    => new #dBound(I;A;.Map) in { #deBruijn( I +Int #length(A) ; #sub(#sub(#mapify(I;A;.Map);A);A;P) ; updateMap( Mem , #mapify(I;A;.Map) ) ) }
 
+// Nested
+  // single name declaration
+  rule #deBruijn( I:Int , J:Int ; new A:NameVar in { P:Proc } ; Mem:Map ) 
+    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);A;P) ; updateMap( Mem , A |-> boundN(I,J) ) ) }
+  // handles several name declarations all at once
+  rule #deBruijn( I:Int , J:Int ; new A:Names in { P:Proc } ; Mem:Map )
+    => new #dBound(I,J;A;.Map) in { #deBruijn( I,J +Int #length(A) ; #sub(#sub(#mapify(I,J;A;.Map);A);A;P) ; updateMap( Mem , #mapify(I,J;A;.Map) ) ) }
+
+/*
+// To be deleted:
 // New Name Declarations - update mem map
   rule #deBruijn( I:Int ; new M:NameVar in { P:Proc } ; Mem:Map )
     => new boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
@@ -213,6 +235,7 @@ module ALPHA
   rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
     => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
        requires M in keys(Mem)
+*/
 
 // Ground & Bound Terms
   rule #deBruijn( _:Int ; A:Ground    ; _:Map ) => A
@@ -488,6 +511,9 @@ module ALPHA
 //-------------------------
 //--- Nested Constructs ---
 //-------------------------
+
+/*
+// To be deleted:
 // New Name Declarations - update mem map
   rule #deBruijn( I:Int , J:Int ; new M:NameVar in { P:Proc } ; Mem:Map )
     => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
@@ -579,6 +605,7 @@ module ALPHA
   rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
     => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
        requires M in keys(Mem)
+*/
 
 // Ground & bound terms
   rule #deBruijn( _:Int , _:Int ; A:Ground    ; _:Map ) => A
@@ -789,7 +816,6 @@ module ALPHA
   rule #deBruijn( I:Int , J:Int ; Set( P:Procs ) ; Mem:Map ) => Set( #deBruijn(I,J;P;Mem) )
 
   // RhoTuple
-//  rule #deBruijn( _:Int , _:Int ; ( ) ; _:Map ) => ( )
   rule #deBruijn( I:Int , J:Int ; ( P:Proc  ,) ; Mem:Map ) => ( #deBruijn(I,J;P;Mem) ,)
   rule #deBruijn( I:Int , J:Int ; ( P:Procs ,) ; Mem:Map ) => ( #deBruijn(I,J;P;Mem) ,)
 
@@ -1284,8 +1310,8 @@ module ALPHA
   rule #mapify( _:Int ; @sub        ; Mem:Map ) => Mem
 
   // several Names
-  rule #mapify( I:Int ; A:Name , B:Name  ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
-  rule #mapify( I:Int ; A:Name , B:Names ; Mem:Map ) => updateMap( Mem , #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));B;Mem) )
+  rule #mapify( I:Int ; A:Name , B:Name  ; Mem:Map ) => updateMap( Mem , updateMap( #mapify(I;A;Mem) , #mapify(I +Int size(#FV(A));B;Mem) ) )
+  rule #mapify( I:Int ; A:Name , B:Names ; Mem:Map ) => updateMap( Mem , updateMap( #mapify(I;A;Mem) , #mapify(I +Int size(#FV(A));B;Mem) ) )
 
 // Proc
   rule #mapify( _:Int ; _:Ground    ; Mem:Map ) => Mem
