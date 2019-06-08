@@ -1,0 +1,8 @@
+// Guarded receive
+
+    new x,a in { x!(41,*a) | x!(40) | for( \_ <- x ){ 1 } }
+
+/*
+Output:
+
+*/
