@@ -17,8 +17,12 @@ module AUXFUN-SYNTAX
 // Length of object lists
   syntax    Int ::= "#length(" Name     ")" [function]
                   | "#length(" Names    ")" [function]
+                  | "#length(" NamePat  ")" [function]
+                  | "#length(" NamePats ")" [function]
                   | "#length(" Proc     ")" [function]
                   | "#length(" Procs    ")" [function]
+                  | "#length(" ProcPat  ")" [function]
+                  | "#length(" ProcPats ")" [function]
                   | "#length(" AnyBinds ")" [function]
   syntax    Int ::=   "#size(" RhoMap   ")" [function]
                   |   "#size(" RhoSet   ")" [function]
@@ -59,6 +63,10 @@ module AUXFUN-SYNTAX
                   | "#bvar(" AnyBinds ")" [function]  // #bvar(_): AnyBinds ---> Names
                   | "#bvar(" Receive  ")" [function]  // #bvar(_): Receive ----> Names
                   |  "#dec(" New      ")" [function]
+
+  syntax  NamePat ::= "#bvar(" AnyBind ")" [function]
+  syntax NamePats ::= "#bvar(" AnyBind ")" [function]
+
   // Input Guards
   syntax   BExp ::= "#guard(" Receive ")" [function]
 
@@ -300,16 +308,30 @@ module AUXFUN
   rule #length( _:Proc , _:Proc  ) => 2
   rule #length( _:Proc , P:Procs ) => 1 +Int #length(P)
 
+// ProcPats
+  rule #length( _:ProcPat ) => 1
+  rule #length( _:Proc    , _:ProcPat  ) => 2
+  rule #length( _:ProcPat , _:Proc     ) => 2
+  rule #length( _:Proc    , P:ProcPats ) => 1 +Int #length(P)
+  rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
+
 // RhoList
   rule #length( [ ] ) => 0
   rule #length( [ P:Proc  ] ) => #length(P)
   rule #length( [ P:Procs ] ) => #length(P)
 
-// Name(s)
+// Names
   rule #length( EmptyN ) => 0
   rule #length( A:Name ) => 1 requires A =/=K EmptyN
   rule #length( _:Name , _:Name  ) => 2
   rule #length( _:Name , N:Names ) => 1 +Int #length(N)
+
+// NamePats
+  rule #length( _:NamePat ) => 1
+  rule #length( _:Name    , _:NamePat  ) => 2
+  rule #length( _:NamePat , _:NamePat  ) => 2
+  rule #length( _:Name    , N:NamePat  ) => 1 +Int #length(N)
+  rule #length( _:NamePat , N:NamePat  ) => 1 +Int #length(N)
 
 //--- Binds ---
 // Binds - number of listens in a join
@@ -341,15 +363,21 @@ module AUXFUN
 //--- #chan ---
 //-------------
 // Bind
-  rule #chan(         <- N:Name ) => N
-  rule #chan( _:Name  <- N:Name ) => N
-  rule #chan( _:Names <- N:Name ) => N
-  rule #chan(         <= N:Name ) => N
-  rule #chan( _:Name  <= N:Name ) => N
-  rule #chan( _:Names <= N:Name ) => N
-  rule #chan(         <! N:Name ) => N
-  rule #chan( _:Name  <! N:Name ) => N
-  rule #chan( _:Names <! N:Name ) => N
+  rule #chan(            <- N:Name ) => N
+  rule #chan( _:Name     <- N:Name ) => N
+  rule #chan( _:Names    <- N:Name ) => N
+  rule #chan( _:NamePat  <- N:Name ) => N
+  rule #chan( _:NamePats <- N:Name ) => N
+  rule #chan(            <= N:Name ) => N
+  rule #chan( _:Name     <= N:Name ) => N
+  rule #chan( _:Names    <= N:Name ) => N
+  rule #chan( _:NamePat  <= N:Name ) => N
+  rule #chan( _:NamePats <= N:Name ) => N
+  rule #chan(            <! N:Name ) => N
+  rule #chan( _:Name     <! N:Name ) => N
+  rule #chan( _:Names    <! N:Name ) => N
+  rule #chan( _:NamePat  <! N:Name ) => N
+  rule #chan( _:NamePats <! N:Name ) => N
   
   rule #chan( B:Bind _:Guard ) => #chan(B)
 
@@ -369,15 +397,21 @@ module AUXFUN
 //--- #lislen ---
 //-------------
 // number of binding variables in a listen
-  rule #lislen(         <- N:Name ) => 0
-  rule #lislen( _:Name  <- _:Name ) => 1
-  rule #lislen( N:Names <- _:Name ) => #length(N)
-  rule #lislen(         <= N:Name ) => 0
-  rule #lislen( _:Name  <= _:Name ) => 1
-  rule #lislen( N:Names <= _:Name ) => #length(N)
-  rule #lislen(         <! N:Name ) => 0
-  rule #lislen( _:Name  <! _:Name ) => 1
-  rule #lislen( N:Names <! _:Name ) => #length(N)
+  rule #lislen(            <- _:Name ) => 0
+  rule #lislen( _:Name     <- _:Name ) => 1
+  rule #lislen( N:Names    <- _:Name ) => #length(N)
+  rule #lislen( _:NamePat  <- _:Name ) => 1
+  rule #lislen( N:NamePats <- _:Name ) => #length(N)
+  rule #lislen(            <= _:Name ) => 0
+  rule #lislen( _:Name     <= _:Name ) => 1
+  rule #lislen( N:Names    <= _:Name ) => #length(N)
+  rule #lislen( _:NamePat  <= _:Name ) => 1
+  rule #lislen( N:NamePats <= _:Name ) => #length(N)
+  rule #lislen(            <! _:Name ) => 0
+  rule #lislen( _:Name     <! _:Name ) => 1
+  rule #lislen( N:Names    <! _:Name ) => #length(N)
+  rule #lislen( _:NamePat  <! _:Name ) => 1
+  rule #lislen( N:NamePats <! _:Name ) => #length(N)
   
   rule #lislen( B:Bind _:Guard ) => #lislen(B)
 
@@ -385,9 +419,11 @@ module AUXFUN
 //--- #bvar ---
 //-------------
 // binding variables
-  rule #bvar(         <- N:Name ) => EmptyN
-  rule #bvar( N:Name  <- _:Name ) => N
-  rule #bvar( N:Names <- _:Name ) => N
+  rule #bvar(            <- N:Name ) => EmptyN
+  rule #bvar( N:Name     <- _:Name ) => N
+  rule #bvar( N:Names    <- _:Name ) => N
+  rule #bvar( N:NamePat  <- _:Name ) => N
+  rule #bvar( N:NamePats <- _:Name ) => N
   rule #bvar(         <= N:Name ) => EmptyN
   rule #bvar( N:Name  <= _:Name ) => N
   rule #bvar( N:Names <= _:Name ) => N
