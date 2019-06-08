@@ -1,6 +1,6 @@
 // De Bruijn levels
 
-    #deBruijn( 0 ; new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) } ; .Map )
+    #deBruijn( new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) } )
   
 /* Output: 
    

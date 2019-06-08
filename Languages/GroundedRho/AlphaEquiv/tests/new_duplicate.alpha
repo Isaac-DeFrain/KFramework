@@ -1,6 +1,6 @@
 // Duplicated name declarations shadow
 
-  new x,x,y in { y!( *x ) }
+    #deBruijn( new x,x,y in { y!( *x ) } )
   
 /*
 Output: 

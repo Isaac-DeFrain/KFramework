@@ -1,10 +1,12 @@
 // Alpha equivalence
 // structurally equiv, not alpha equiv
 
-  new a,b in {*a | *b} #alpha new a,b in {*b | *a}
+    new a,b in {*a | *b} #alpha new a,b in {*b | *a}
   
 /*
-Output: false
+Output:
+
+    false
 
     #deBruijn( 0 ; new a,b in {*a | *b} ) =>* new bound( 0 ) , bound( 1 ) in { * bound( 0 ) | * bound( 1 ) }
 
