@@ -1,7 +1,6 @@
-// SUBSTITUTION FOR GRHO
+// Substitution for Rholang
 /*
 TODO:
- - sub EmptyN for EmptyN
  - add remaining features - Methods, Bundles, Match
  - more testing
  - sub for Uri for #match
@@ -116,8 +115,6 @@ module SUB
   import SUB-SYNTAX
   import AUXFUN
   import NAMEVAR
-
-  syntax KResult ::= Name | Names | Proc | Procs
 
 // BoundName/Proc subs for ALPHA
   // requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
