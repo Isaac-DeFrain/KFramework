@@ -1,6 +1,6 @@
-// #comm predicate
+// #comm predicate -- polyadic messages
 
-    #comm( x!(1) | x!(2) | for( @2 <- x ){ Nil } )
+    #comm( x!(1,2) | x!(3,3) | for( @2,a <- x ){ *a } )
 
 /*
 Output:
