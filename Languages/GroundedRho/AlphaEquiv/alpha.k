@@ -1,5 +1,5 @@
 // De Bruijn Index & Alpha Equisubence for Rholang
-// Need to call #deBruijn(0;$PGM;.Map) at the beginning of program execution
+// Need to call #deBruijn($PGM) in program to index
 
 /*
 TODO:
@@ -21,15 +21,7 @@ module ALPHA-SYNTAX
   syntax         Proc ::= "#deBruijn(" Int  ";" Proc  ";" Map ")" [function, poly(0,2)]
                         |   "#dBound(" Int  ";" Proc  ";" Map ")" [function, poly(0,2)]
                         | "#deBruijn(" Proc ")" [function, poly(0,1)]
-/*
-// To be deleted:
-                        | "new" Name  "in" "{" DBProc "}"        [function]
-                        | "new" Names "in" "{" DBProc "}"        [function]
 
-  // New name declarations
-  syntax       DBProc ::= "#deBruijn(" Int ";" Name  ";" Proc ";" Map ")" [function]
-                        | "#deBruijn(" Int ";" Names ";" Proc ";" Map ")" [function]
-*/
   syntax        Procs ::= "#deBruijn(" Int ";" Procs ";" Map ")" [function]
                         |   "#dBound(" Int ";" Procs ";" Map ")" [function]
 
@@ -130,112 +122,6 @@ module ALPHA
   // handles several name declarations all at once
   rule #deBruijn( I:Int , J:Int ; new A:Names in { P:Proc } ; Mem:Map )
     => new #dBound(I,J;A;.Map) in { #deBruijn( I,J +Int #length(A) ; #sub(#sub(#mapify(I,J;A;.Map);A);A;P) ; updateMap( Mem , #mapify(I,J;A;.Map) ) ) }
-
-/*
-// To be deleted:
-// New Name Declarations - update mem map
-  rule #deBruijn( I:Int ; new M:NameVar in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:NameVar , N:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:NameVar , N:Names in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:NameVar ( _:Uri ) in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:NameVar ( _:Uri ) , N:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-
-  rule #deBruijn( I:Int ; new M:NameVar ( _:Uri ) , N:Names in { P:Proc } ; Mem:Map )
-    => new boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-  
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  // shadow and update Mem for already declared names
-  rule new A:Name in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);M;P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I)) in { #deBruijn( I +Int 1 ; N ; #sub(boundN(I);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I) ) ) }
-       requires M in keys(Mem)
-*/
 
 // Ground & Bound Terms
   rule #deBruijn( _:Int ; A:Ground    ; _:Map ) => A
@@ -511,102 +397,6 @@ module ALPHA
 //-------------------------
 //--- Nested Constructs ---
 //-------------------------
-
-/*
-// To be deleted:
-// New Name Declarations - update mem map
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar , N:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar , N:Names in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar ( _:Uri ) in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar ( _:Uri ) , N:Name in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  rule #deBruijn( I:Int , J:Int ; new M:NameVar ( _:Uri ) , N:Names in { P:Proc } ; Mem:Map )
-    => new boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-  
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Name in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new A , boundN(I,J) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Name ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);M;P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires notBool (M in keys(Mem))
-  rule new A:Names in { #deBruijn( I:Int , J:Int ; M:NameVar ( _:Uri ) , N:Names ; P:Proc ; Mem:Map ) } 
-    => new #append(A ; boundN(I,J)) in { #deBruijn( I,J +Int 1 ; N ; #sub(boundN(I,J);#sub(Mem;M);P) ; updateMap( Mem , M |-> boundN(I,J) ) ) }
-       requires M in keys(Mem)
-*/
-
 // Ground & bound terms
   rule #deBruijn( _:Int , _:Int ; A:Ground    ; _:Map ) => A
   rule #deBruijn( _:Int , _:Int ; A:BoundName ; _:Map ) => A
