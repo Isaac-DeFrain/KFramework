@@ -1,6 +1,6 @@
-// Preliminary pattern-matching for GRHO
-// Types must be the same for match to be successful
-// Lengths of messages are checked in GRHO
+// Preliminary Pattern-Matching Predicate for Rholang
+  // Types must be the same for match to be successful
+  // Lengths are checked only once
 
 require "domains.k"
 require "../AuxFun/auxfun.k"
@@ -12,14 +12,14 @@ module MATCH-SYNTAX
   import GRHO-SYNTAX
 
 // #match predicate checks that the terms match
-  syntax   Bool ::= "#match("   Proc  ";" Proc  ")" [function]
-                  | "#match("   Name  ";" Name  ")" [function]
-                  | "#match("   Procs ";" Procs ")" [function]
-                  | "#match("   Names ";" Names ")" [function]
+  syntax   Bool ::=   "#match(" Proc  ";" Proc  ")" [function]
+                  |   "#match(" Name  ";" Name  ")" [function]
+                  |   "#match(" Procs ";" Procs ")" [function]
+                  |   "#match(" Names ";" Names ")" [function]
                   | "#matchif(" Procs ";" Procs ")" [function]
                   | "#matchif(" Names ";" Names ")" [function]
-                  | "#match(" ConcatExp  ";" ConcatExp  ")" [function]
-                  | "#match(" InterpMaps ";" InterpMaps ")" [function]
+                  |   "#match(" ConcatExp  ";" ConcatExp  ")" [function]
+                  |   "#match(" InterpMaps ";" InterpMaps ")" [function]
 
   syntax   Bool ::= "#match(" RhoKVPair  ";" RhoKVPair  ")" [function]
                   | "#match(" RhoKVPairs ";" RhoKVPairs ")" [function]
@@ -30,8 +30,6 @@ module MATCH
   import MATCH-SYNTAX
   import AUXFUN
   import SUB
-
-//  syntax KResult ::= Bool
 
 // #matchif
   rule #matchif( A:Names ; B:Names ) => #length(A) ==Int #length(B) andBool #match(A;B)
