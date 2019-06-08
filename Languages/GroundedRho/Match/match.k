@@ -12,17 +12,28 @@ module MATCH-SYNTAX
   import GRHO-SYNTAX
 
 // #match predicate checks that the terms match
+// Name & Proc
   syntax   Bool ::=   "#match(" Proc  ";" Proc  ")" [function]
                   |   "#match(" Name  ";" Name  ")" [function]
                   |   "#match(" Procs ";" Procs ")" [function]
                   |   "#match(" Names ";" Names ")" [function]
                   | "#matchif(" Procs ";" Procs ")" [function]
                   | "#matchif(" Names ";" Names ")" [function]
-                  |   "#match(" ConcatExp  ";" ConcatExp  ")" [function]
-                  |   "#match(" InterpMaps ";" InterpMaps ")" [function]
 
-  syntax   Bool ::= "#match(" RhoKVPair  ";" RhoKVPair  ")" [function]
+// subexpressions
+  syntax   Bool ::= "#match(" ConcatExp  ";" ConcatExp  ")" [function]
+                  | "#match(" InterpMaps ";" InterpMaps ")" [function]
+                  | "#match(" RhoKVPair  ";" RhoKVPair  ")" [function]
                   | "#match(" RhoKVPairs ";" RhoKVPairs ")" [function]
+
+// Patterns
+  syntax   Bool ::= "#match(" ProcPat ";" Proc    ")" [function]
+                  | "#match(" Proc    ";" ProcPat ")" [function]
+                  | "#match(" ProcPat ";" ProcPat ")" [function]
+                  | "#match(" NamePat ";" Name    ")" [function]
+                  | "#match(" Name    ";" NamePat ")" [function]
+                  | "#match(" NamePat ";" NamePat ")" [function]
+
 
 endmodule
 
@@ -37,18 +48,18 @@ module MATCH
 
 // Name matching
   rule #match( A:Name    ;  A ) => true // any Name matches itself
-  rule #match( A:Name    ;  B:NameVar ) => true // any Name matches a NameVar
-  rule #match( A:Name    ; @B:ProcVar ) => true // any Name matches a @ProcVar
-  rule #match( A:NameVar ;  B:Name    ) => true requires isNameVar(B) // NameVar can only match a NameVar...
+  rule #match( _:Name    ;  _:NameVar ) => true // any Name matches a NameVar
+  rule #match( _:Name    ; @_:ProcVar ) => true // any Name matches a @ProcVar
+  rule #match( _:NameVar ;  B:Name    ) => true requires isNameVar(B) // NameVar can only match a NameVar...
   rule #match( @EmptyP   ;  EmptyN    ) => true // empty send/empty listen matching
-  rule #match( A:Name    ;  B:Name    ) => false [owise]
+  rule #match( _:Name    ;  _:Name    ) => false [owise]
 
 // Process matching
   rule #match( A:Proc    ;  A ) => true // any Proc matches itself
-  rule #match( A:Proc    ;  B:ProcVar ) => true // any Proc matches a ProcVar
-  rule #match( A:Proc    ; *B:NameVar ) => true // any Proc matches a *NameVar
-  rule #match( A:ProcVar ;  B:Proc    ) => true requires isProcVar(B) // ProcVar can only match a ProcVar
-  rule #match( A:Proc    ;  B:Proc    ) => false [owise]
+  rule #match( _:Proc    ;  _:ProcVar ) => true // any Proc matches a ProcVar
+  rule #match( _:Proc    ; *_:NameVar ) => true // any Proc matches a *NameVar
+  rule #match( _:ProcVar ;  B:Proc    ) => true requires isProcVar(B) // ProcVar can only match a ProcVar
+  rule #match( _:Proc    ;  _:Proc    ) => false [owise]
 
 // same is true of WildCard
 
@@ -208,9 +219,36 @@ module MATCH
 
 // several Names
   rule #match( A:Name , B:Name  ; C:Name , D:Name  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Names ; C:Name , D:Names ) => #length(B) ==Int #length(D) andBool #match(A;C) andBool #match(B;D)
+  rule #match( A:Name , B:Names ; C:Name , D:Names ) => #match(A;C) andBool #match(B;D) // length is checked beforehand
   rule #match( _:Name , _:Name  ; _:Name , _:Names ) => false [owise] // two Names can't match more than two
   rule #match( _:Name , _:Names ; _:Name , _:Name  ) => false [owise] // more than two Names can't match two
+
+//------------------------
+//--- Pattern Matching ---
+//------------------------
+// Patterns cannot match concrete
+  rule #match( _:ProcPat ; _:Proc ) => false
+  rule #match( _:NamePat ; _:Name ) => false
+
+// Name Pattern
+  // every Name matches WildCard
+  rule #match( _:Name    ; \_    ) => true
+
+// Process Pattern
+  // every Proc matches WildCard
+  rule #match( _:Proc   ; \_     ) => true
+
+  rule #match( _:Bool        ; B:SimplePat ) => B ==K Bool
+  rule #match( _:Int         ; B:SimplePat ) => B ==K Int
+  rule #match( _:String      ; B:SimplePat ) => B ==K String
+  rule #match( _:RhoList     ; B:SimplePat ) => B ==K List
+  rule #match( _:RhoMap      ; B:SimplePat ) => B ==K Map
+  rule #match( _:RhoSet      ; B:SimplePat ) => B ==K Set
+  rule #match( _:RhoTuple    ; B:SimplePat ) => B ==K Tuple
+  rule #match( _:Unforgeable ; B:SimplePat ) => B ==K Unforgeable
+  rule #match( _:Uri         ; B:SimplePat ) => B ==K Uri
+
+
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
