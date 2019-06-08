@@ -1,0 +1,10 @@
+// WildCard match -- name
+
+    #match( @{ true | 1 | @0!(*x) } ; \_ )
+
+/*
+Output: 
+
+    true
+
+*/

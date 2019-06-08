@@ -1,0 +1,10 @@
+// WildCard match -- proc
+
+    #match( true | 1 | @0!(*x) ; \_ )
+
+/*
+Output: 
+
+    true
+
+*/
