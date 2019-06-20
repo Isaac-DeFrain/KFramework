@@ -1,0 +1,118 @@
+// Receive -- listen pattern
+
+    new x,a,b in { x!(41,a!(1)) | x!(42,*b) | x!(40) | for( \_ , \_ <- x ){ "comm" } }
+
+/*
+Output:
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "comm"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            40
+          </msg>
+          <arity>
+            1
+          </arity>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            41 , @ unforgeable( 1 ) ! ( 1 )
+          </msg>
+          <arity>
+            2
+          </arity>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      3
+    </nextLoc>
+    <original>
+      new x , a , b in { x ! ( 41 , a ! ( 1 ) ) | x ! ( 42 , * b ) | x ! ( 40 ) | for ( \_ , \_ <- x ) { "comm" } }
+    </original>
+    <OGfreevar>
+      .Set
+    </OGfreevar>
+    <OGdeBruijn>
+      new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , boundN( 1 ) ! ( 1 ) ) | boundN( 0 ) ! ( 42 , * boundN( 2 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ , \_ <- boundN( 0 ) ) { "comm" } }
+    </OGdeBruijn>
+  </T>
+#Or
+  Result ==K <T>
+    <activity>
+      <task>
+        <k>
+          "comm"
+        </k>
+      </task>
+    </activity>
+    <tuplespace>
+      <sends>
+        <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            40
+          </msg>
+          <arity>
+            1
+          </arity>
+          <stype>
+            0
+          </stype>
+        </send> <send>
+          <schan>
+            @ unforgeable( 0 )
+          </schan>
+          <msg>
+            42 , unforgeable( 2 )
+          </msg>
+          <arity>
+            2
+          </arity>
+          <stype>
+            0
+          </stype>
+        </send>
+      </sends>
+      <receives>
+        .RecCellBag
+      </receives>
+    </tuplespace>
+    <nextLoc>
+      3
+    </nextLoc>
+    <original>
+      new x , a , b in { x ! ( 41 , a ! ( 1 ) ) | x ! ( 42 , * b ) | x ! ( 40 ) | for ( \_ , \_ <- x ) { "comm" } }
+    </original>
+    <OGfreevar>
+      .Set
+    </OGfreevar>
+    <OGdeBruijn>
+      new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 0 ) ! ( 41 , boundN( 1 ) ! ( 1 ) ) | boundN( 0 ) ! ( 42 , * boundN( 2 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ , \_ <- boundN( 0 ) ) { "comm" } }
+    </OGdeBruijn>
+  </T>
+*/

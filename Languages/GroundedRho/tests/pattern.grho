@@ -1,0 +1,51 @@
+// Receive -- listen pattern
+
+    new x in { for( \_ , b <- x ){ *b } }
+
+/*
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      <rec>
+        <rchan>
+          @ unforgeable( 0 )
+        </rchan>
+        <bvars>
+          \_ , b
+        </bvars>
+        <bnum>
+          2
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          * b
+        </cont>
+      </rec>
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new x in { for ( \_ , b <- x ) { * b } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) in { #deBruijn( 1 ; for ( \_ , b <- boundN( 0 ) ) { * b } ; x |-> boundN( 0 ) ) }
+  </OGdeBruijn>
+</T>
+*/

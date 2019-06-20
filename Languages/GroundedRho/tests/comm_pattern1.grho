@@ -1,0 +1,52 @@
+// Receive -- listen pattern
+
+    new x,a in { x!(41,*a) | x!(40) | for( \_ , b <- x ){ *b } }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        unforgeable( 1 )
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          40
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    2
+  </nextLoc>
+  <original>
+    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ , b <- x ) { * b } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | #deBruijn( 2 ; for ( \_ , b <- boundN( 0 ) ) { * b } ; a |-> boundN( 1 )
+    x |-> boundN( 0 ) ) }
+  </OGdeBruijn>
+</T>
+[Warning] Critical: missing SMTLib translation for #match(_;_)_MATCH-SYNTAX
+(missing SMTLib translation for #match(_;_)_MATCH-SYNTAX)
+*/
