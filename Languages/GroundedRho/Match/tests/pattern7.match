@@ -1,0 +1,10 @@
+// Pattern match
+
+    #match( true,1,Int ; Bool,1,Int )
+
+/*
+Output: 
+
+    true
+
+*/

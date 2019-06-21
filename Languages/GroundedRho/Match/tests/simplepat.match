@@ -1,0 +1,10 @@
+// Simple pattern match
+
+    #match( Bool , Uri , Int , ( Int , Bool , String ,) ; Bool , Uri , Int, Tuple )
+
+/*
+Output: 
+
+    true
+
+*/

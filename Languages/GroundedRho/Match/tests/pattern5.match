@@ -1,0 +1,10 @@
+// Pattern match
+
+    #match( @2!(Bool,1,(2,)) ; @Int!(Int,Int,Bool) \/ @Int!(Bool,Int,Tuple) /\ @2!(\_,\_,\_) )
+
+/*
+Output: 
+
+    true
+
+*/
