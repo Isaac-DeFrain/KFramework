@@ -3,8 +3,8 @@
   #setify(Nil | Nil | Nil)
   
 /*
-Output: because Nil | Nil | Nil == Nil
+Output: because Nil | Nil | Nil == Nil and #setify(P) ==K .Set for all P:Proc == Nil
 
-    SetItem ( Nil , 1 )
+    .Set
 
 */

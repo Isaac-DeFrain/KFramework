@@ -1,0 +1,24 @@
+// Structurally Equivalent Sets
+
+  #structEq( 
+  
+    SetItem ( 1 )
+    SetItem ( 2 )
+    SetItem ( 3 | "a" )
+    SetItem ( @1 ! ( 2 | 3 ) )
+    SetItem ( { 1 : 2 | Nil , Nil | 3 : Nil } )
+    ;
+    SetItem ( 1 | Nil )
+    SetItem ( 2 )
+    SetItem ( "a" | 3 | Nil )
+    SetItem ( @{Nil | 1} ! ( 3 | 2 | Nil ) )
+    SetItem ( { 1 : 2 , 3 : Nil } )
+
+    )
+
+/*
+Output:
+
+    true
+
+*/
