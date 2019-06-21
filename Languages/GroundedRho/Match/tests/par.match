@@ -1,0 +1,14 @@
+// Par match
+
+    #match(
+
+      @{true} ! ( x!(\a) ) | 1 | "a" | 1 | "a" ;
+      "a" | 1 | 1 | 1 | 1 | 2 | "a" | x ! ( * y )
+    )
+
+/*
+Output: 
+
+    true
+
+*/
