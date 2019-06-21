@@ -1,8 +1,49 @@
-// Guarded receive
+// Receive -- wildcard listen
 
     new x,a in { x!(41,*a) | x!(40) | for( \_ <- x ){ 1 } }
 
 /*
 Output:
-
+<T>
+  <activity>
+    <task>
+      <k>
+        1
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          41 , unforgeable( 1 )
+        </msg>
+        <arity>
+          2
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    2
+  </nextLoc>
+  <original>
+    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ <- x ) { 1 } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ <- boundN( 0 ) ) { 1 } }
+  </OGdeBruijn>
+</T>
 */
