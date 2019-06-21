@@ -1,16 +1,16 @@
 // Comm predicate
 
-require "../../GroundedRho/grho.k"
-require "../../GroundedRho/AuxFun/auxfun.k"
-require "../../GroundedRho/Match/match.k"
-require "../../GroundedRho/StructuralEquiv/struct.k"
+require "../grho.k"
+require "../AuxFun/auxfun.k"
+require "../Match/match.k"
+require "../StructuralEquiv/struct.k"
 
 module COMM-SYNTAX
   import GRHO-SYNTAX
 
 // Set constructors
   syntax        Set ::= "#SendSet(" Proc  ")" [function] // constructs Send set
-                      |  "#RecSet("  Proc ")" [function] // constructs Receive set
+                      |  "#RecSet(" Proc  ")" [function] // constructs Receive set
                       | "#BindSet(" Bind  ")" [function] // constructs Bind set
                       | "#BindSet(" Binds ")" [function] // constructs set of Bind sets
 
@@ -31,10 +31,14 @@ module COMM-SYNTAX
   syntax       Bool ::= "#comm(" Proc ")" [function]
 
 // Set elements
-  syntax      KItem ::= Name ";" Name  ";;" Int // represents binding/listen in for( Name  <- Name ){ ... }
-                      | Name ";" Names ";;" Int // represents binding/listen in for( Names <- Name ){ ... }
-                      | Name ";" Proc  ";;" Int // represents channel & message in Name!(Proc)
-                      | Name ";" Procs ";;" Int // represents channel & message in Name!(Procs)
+  syntax      KItem ::= Name ";" Name     ";;" Int // represents binding/listen in for( Name     <- Name ){ ... }
+                      | Name ";" Names    ";;" Int // represents binding/listen in for( Names    <- Name ){ ... }
+                      | Name ";" NamePat  ";;" Int // represents binding/listen in for( NamePat  <- Name ){ ... }
+                      | Name ";" NamePats ";;" Int // represents binding/listen in for( NamePats <- Name ){ ... }
+                      | Name ";" Proc     ";;" Int // represents channel & message in Name!(Proc)
+                      | Name ";" Procs    ";;" Int // represents channel & message in Name!(Procs)
+                      | Name ";" ProcPat  ";;" Int // represents channel & message in Name!(ProcPat)
+                      | Name ";" ProcPats ";;" Int // represents channel & message in Name!(ProcPats)
 //                      | Name ";" Name  ";;" Int ";;" Int // linear/peek/repeated receives???
 //                      | Name ";" Names ";;" Int ";;" Int // linear/peek/repeated receives???
 //                      | Name ";" Proc  ";;" Int ";;" Int // consumable & unconsumable sends???
@@ -48,6 +52,8 @@ module COMM
   import AUXFUN
   import MATCH
   import STRUCT
+
+  syntax KResult ::= Set
 
 //----------------
 //--- Send Set ---
@@ -71,18 +77,13 @@ module COMM
 //-------------------
 //--- Receive Set ---
 //-------------------
-// Rec
+// Rec -- TODO: add guarded
   rule #RecSet( for( A:Lbind  ){ _:Proc } ) => SetItem( #BindSet(A) )
   rule #RecSet( for( A:Pbind  ){ _:Proc } ) => SetItem( #BindSet(A) )
   rule #RecSet( for( A:Rbind  ){ _:Proc } ) => SetItem( #BindSet(A) )
-  rule #RecSet( for( A:Lbind ; B:Lbind  ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
-  rule #RecSet( for( A:Lbind ; B:Lbinds ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
-  rule #RecSet( for( A:Pbinds ){ P:Proc } ) => SetItem( #BindSet(A) )
-  rule #RecSet( for( A:Pbind ; B:Pbind  ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
-  rule #RecSet( for( A:Pbind ; B:Pbinds ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
-  rule #RecSet( for( A:Rbinds ){ P:Proc } ) => SetItem( #BindSet(A) )
-  rule #RecSet( for( A:Rbind ; B:Rbind  ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
-  rule #RecSet( for( A:Rbind ; B:Rbinds ){ P:Proc } ) => SetItem( #union(#BindSet(A);#BindSet(B)) )
+  rule #RecSet( for( A:Lbinds ){ _:Proc } ) => SetItem( #BindSet(A) )
+  rule #RecSet( for( A:Pbinds ){ _:Proc } ) => SetItem( #BindSet(A) )
+  rule #RecSet( for( A:Rbinds ){ _:Proc } ) => SetItem( #BindSet(A) )
 
 // Par
   // only includes one copy if there is more than one listen-equivalent receive
@@ -95,15 +96,21 @@ module COMM
 //----------------
 //--- Bind Set ---
 //----------------
-  rule #BindSet( A:Names <- B:Name ) => SetItem(B;A;;1)
-  rule #BindSet( A:Name  <- B:Name ) => SetItem(B;A;;1)
-  rule #BindSet(         <- B:Name ) => SetItem(B;EmptyN;;1)
-  rule #BindSet( A:Names <= B:Name ) => SetItem(B;A;;1)
-  rule #BindSet( A:Name  <= B:Name ) => SetItem(B;A;;1)
-  rule #BindSet(         <= B:Name ) => SetItem(B;EmptyN;;1)
-  rule #BindSet( A:Names <! B:Name ) => SetItem(B;A;;1)
-  rule #BindSet( A:Name  <! B:Name ) => SetItem(B;A;;1)
-  rule #BindSet(         <! B:Name ) => SetItem(B;EmptyN;;1)
+  rule #BindSet( A:NamePats <- B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:NamePat  <- B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Names    <- B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Name     <- B:Name ) => SetItem(B;A;;1)
+  rule #BindSet(            <- B:Name ) => SetItem(B;EmptyN;;1)
+  rule #BindSet( A:NamePats <= B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:NamePat  <= B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Names    <= B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Name     <= B:Name ) => SetItem(B;A;;1)
+  rule #BindSet(            <= B:Name ) => SetItem(B;EmptyN;;1)
+  rule #BindSet( A:NamePats <! B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:NamePat  <! B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Names    <! B:Name ) => SetItem(B;A;;1)
+  rule #BindSet( A:Name     <! B:Name ) => SetItem(B;A;;1)
+  rule #BindSet(            <! B:Name ) => SetItem(B;EmptyN;;1)
 
   rule #BindSet( A:Lbind ; B:Lbind  ) => #union(#BindSet(A);#BindSet(B))
   rule #BindSet( A:Lbind ; B:Lbinds ) => #union(#BindSet(A);#BindSet(B))
@@ -255,7 +262,6 @@ module COMM
              #else #subtractWithin(S; SetItem(C) T )
              #fi
        #fi
-
 
 //-------------
 //--- #comm ---
