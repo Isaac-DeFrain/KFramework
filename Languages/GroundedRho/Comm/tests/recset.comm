@@ -1,6 +1,6 @@
 // Receive bundle set
 
-    #RecSet( x!(1,2) | for( a <- x ; b,c <- y ; @\d <- z ){ Nil } | for( @1,@2 <! @{ new y in {*y} } ; @1,@2 <! @{ new x in {*x} } ){ Nil } | [ for(b<-a){Nil} , 0 ] )
+    #RecSet( x!(1,2) | for( a <- x ; b,c <- x ; @\d <- z ){ Nil } | for( @1,@2 <! @{ new y in {*y} } ; @1,@2 <! @{ new x in {*x} } ){ Nil } | [ for(b<-a){Nil} , 0 ] )
 
 /*
 Output:
