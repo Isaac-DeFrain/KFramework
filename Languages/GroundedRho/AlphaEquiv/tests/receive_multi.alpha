@@ -1,0 +1,20 @@
+// Multi receive indexing
+
+    #deBruijn( new x,y,z in { for( a,b <- x ; c <- y ; d,e,f <- z if *a+*d == *c ){ a!(*d | *x) | b!(*e) | c!(*f) } } )
+//                 0,1,2           3,4    0   5    1   6,7,8    2     3  6     5    3   6    0     4   7    5   8
+  
+/*
+Output: 
+
+    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { 
+
+      for ( boundN( 3 ) , boundN( 4 ) <- boundN( 0 ) ; 
+            boundN( 5 ) <- boundN( 1 ) ; 
+            boundN( 6 ) , boundN( 7 ) , boundN( 8 ) <- boundN( 2 ) if * boundN( 3 ) + * boundN( 6 ) == * boundN( 5 ) ) { 
+
+        boundN( 3 ) ! ( * boundN( 6 ) | * boundN( 0 ) ) | boundN( 4 ) ! ( * boundN( 7 ) ) | boundN( 5 ) ! ( * boundN( 8 ) ) 
+
+      }
+    }
+
+*/
