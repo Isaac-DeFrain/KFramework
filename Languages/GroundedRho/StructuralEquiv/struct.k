@@ -121,13 +121,13 @@ module STRUCT
 
     // RhoMap
   rule #structEq( A:RhoMap ; B:RhoMap ) => #structEq(#rho2map(A);#rho2map(B))
-  rule #structEq( A:Proc   ; _:RhoMap ) => false requires notBool isRhoMap(A)
-  rule #structEq( _:RhoMap ; A:Proc   ) => false requires notBool isRhoMap(A)
+  rule #structEq( A:Proc   ; _:RhoMap ) => false requires notBool (isRhoMap(A) orBool isPar(A))
+  rule #structEq( _:RhoMap ; A:Proc   ) => false requires notBool (isRhoMap(A) orBool isPar(A))
 
     // RhoSet
   rule #structEq( A:RhoSet ; B:RhoSet ) => #structEq(#rho2set(A);#rho2set(B))
-  rule #structEq( A:Proc   ; _:RhoSet ) => false requires notBool isRhoSet(A)
-  rule #structEq( _:RhoSet ; A:Proc   ) => false requires notBool isRhoSet(A)
+  rule #structEq( A:Proc   ; _:RhoSet ) => false requires notBool (isRhoSet(A) orBool isPar(A))
+  rule #structEq( _:RhoSet ; A:Proc   ) => false requires notBool (isRhoSet(A) orBool isPar(A))
 
     // RhoTuple
   rule #structEq( ( A:Proc  ,) ; ( B:Proc  ,) ) =>   #structEq(A;B)
@@ -139,8 +139,8 @@ module STRUCT
 //--- #SeqSetIn --
 //----------------
 // Structural equivalence of sets
-  rule #structEq( A:Set ; B:Set ) => #SeqSetIn(A;B) andBool #SeqSetIn(B;A) // requires notBool (isRhoSet(A) orBool isRhoSet(B))
-  rule #structEq( A:Map ; B:Map ) => #SeqMapIn(A;B) andBool #SeqMapIn(B;A) // requires notBool (isRhoMap(A) orBool isRhoMap(B))
+  rule #structEq( A:Set ; B:Set ) => #SeqSetIn(A;B) andBool #SeqSetIn(B;A)
+  rule #structEq( A:Map ; B:Map ) => #SeqMapIn(A;B) andBool #SeqMapIn(B;A)
 
   // left arg set empty
   rule #SeqSetIn(  .Set ; _:Set ) => true
