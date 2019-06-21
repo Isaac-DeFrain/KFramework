@@ -1,0 +1,10 @@
+// Messages of Send
+
+    #msg( @\_ !( \_ , \_ , \x , 2 ) )
+
+/*
+Output:
+
+    \_ , \_ , \x , 2
+
+*/

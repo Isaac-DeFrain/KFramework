@@ -1,0 +1,10 @@
+// Message of Send
+
+    #msg( @{ @2!( \_ | 3 ) }!( ) )
+
+/*
+Output:
+
+    EmptyP
+
+*/

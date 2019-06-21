@@ -1,0 +1,10 @@
+// Message of Send
+
+    #msg( @"chan"!( ) )
+
+/*
+Output:
+
+    EmptyP
+
+*/
