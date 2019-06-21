@@ -1,0 +1,10 @@
+// Pattern match
+
+    #match( true ; ~ \_ )
+
+/*
+Output: 
+
+    false
+
+*/
