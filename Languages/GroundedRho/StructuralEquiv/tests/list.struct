@@ -1,0 +1,8 @@
+// List
+
+  #rho2list( [ 1 , 2 , 1 | Nil , "fourth" , x!(\c) , { 1:2 , 3:Nil } ] )
+  
+/*
+Output:
+AssertionError
+*/

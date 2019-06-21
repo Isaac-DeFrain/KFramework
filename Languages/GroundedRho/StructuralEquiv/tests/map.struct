@@ -1,0 +1,23 @@
+// Structurally Equivalent Map Inclusion
+  // KV pair included in Map if it is struct equiv to KV pair
+
+  #SeqMapIn( 
+  
+    "a" | 3 | Nil |-> @{Nil | 1} ! ( 3 | 2 | Nil )
+    [1,2 | 0] |-> true
+    ;
+    1 |-> 2
+    Nil | [1,0 | 2] |-> true
+    3 | "a" |-> @1 ! ( 2 | 3 )
+
+    )
+
+/*
+Output:
+
+[Error] Internal: Uncaught exception thrown of type AssertionError.
+Please rerun your program with the --debug flag to generate a stack trace, and
+file a bug report at https://github.com/kframework/k/issues (unexpected
+concatenated termorg.kframework.backend.java.kil.Bottom@3383649e)
+
+*/
