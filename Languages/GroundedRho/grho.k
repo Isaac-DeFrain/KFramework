@@ -1420,31 +1420,7 @@ module GRHO
   rule #isName( A:Name ) => #FV(A) ==K .Set
   rule #isName( A:K    ) => false [owise]
 
-// Relation to built-ins
-//  syntax List ::= "#rho2list(" RhoList ")"    [function]
 /*
-// Collections
-  rule L:RhoList => #makeList(L)
-  rule #rho2list([ ]) => .List
-  rule #rho2list([ P:Proc ]) => ListItem(P)
-  rule #rho2list([ P:Proc , Q:Proc  ]) => ListItem(P) ListItem(Q)
-  rule #rho2list([ P:Proc , Q:Procs ]) => ListItem(P) #rho2list([Q])
-  rule P:Proc . M:Method (  )
-
-  // RhoMaps are interpreted as built-in Maps
-  //  context HOLE:RhoMap => #makeMap(HOLE)
-  rule { }:RhoMap => .Map                                       [anywhere, structural]
-  rule { P:Proc : Q:Proc } => P |-> Q                           [anywhere, structural]
-  rule { P:Proc : Q:Proc , R:Proc : S:Proc } => P |-> Q R |-> S [anywhere, structural]
-  rule { P:Proc : Q:Proc , R:RhoKVPairs    } => P |-> Q {R}     [anywhere, structural]
-
-  // RhoSets are interpreted as built-in Sets
-  //  context HOLE:RhoSet => #makeSet(HOLE)
-  rule Set( ) => .Set                                   [anywhere, structural]
-  rule Set( P:Proc ) => SetItem(P)                      [anywhere, structural]
-  rule Set( P:Proc , Q:Proc  ) => SetItem(P) SetItem(Q) [anywhere, structural]
-  rule Set( P:Proc , Q:Procs ) => SetItem(P) Set(Q)     [anywhere, structural]
-
 // Methods
   // add
 
