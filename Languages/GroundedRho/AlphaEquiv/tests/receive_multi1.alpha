@@ -1,0 +1,36 @@
+// Multi receive indexing
+
+    #deBruijn( new x,y,z in { for( a,@{for(x,y<-b1;z<-b2){*x|*y|*z}} <- x ; c <- y ; d,e,@{f!(\g)} <- z if *a+*d == *c-\g ){ a!(*d | \g) | b1!(*b2 | *e) | c!(*f) } } )
+
+// need to sub indexed free variables in for(x,y<-b1;z<-b2){*x|*y|*z} in the continuation of the outer for-comprehension
+/*
+x = 0
+y = 1
+z = 2
+a = 3
+b1= 4
+b2= 5
+c = 6
+d = 7
+e = 8
+f = 9
+\g= 10
+  x = 1,0
+  y = 1,1
+  z = 1,2
+
+
+Output: 
+
+new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in {
+
+  for ( boundN( 3 ) , @ for ( boundN( 1 , 0 ) , boundN( 1 , 1 ) <- boundN( 4 ) ; boundN( 1 , 2 ) <- boundN( 5 ) ) {
+
+                          * boundN( 1 , 0 ) | * boundN( 1 , 1 ) | * boundN( 1 , 2 ) } <- boundN( 0 ) ;
+        boundN( 6 ) <- boundN( 1 ) ;
+        boundN( 7 ) , boundN( 8 ) , @ ( boundN( 9 ) ! ( boundP( 10 ) ) ) <- boundN( 2 )
+        if * boundN( 3 ) + * boundN( 7 ) == * boundN( 6 ) - boundP( 10 ) ) {
+
+    boundN( 3 ) ! ( * boundN( 7 ) | boundP( 10 ) ) | b1 ! ( * b2 | * boundN( 8 ) ) | boundN( 6 ) ! ( * boundN( 9 ) ) } }
+
+*/
