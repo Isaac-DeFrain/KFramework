@@ -1,0 +1,10 @@
+// #comm predicate -- polyadic messages
+
+    #comm( x!(2,["list", "strings"] | x!(3,3) | for( @2,a <- x ){ *a } )
+
+/*
+Output:
+
+    true
+
+*/

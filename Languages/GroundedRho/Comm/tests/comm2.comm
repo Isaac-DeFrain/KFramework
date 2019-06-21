@@ -1,11 +1,11 @@
 // #comm predicate -- monadic messages
   // no comm because 3 was not sent on x
 
-    #comm( x!(1) | x!(3) | for( @3 <- x ){ Nil } )
+    #comm( x!(1) | x!(2) | for( @3 <- x ){ Nil } | @3!(*x) )
 
 /*
 Output:
 
-    true
+    false
 
 */

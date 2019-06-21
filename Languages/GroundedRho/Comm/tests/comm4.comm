@@ -1,0 +1,11 @@
+// #comm predicate -- polyadic messages
+
+    #BindSet( a <- x ; b,c <- x )
+
+/*
+Output:
+
+  SetItem ( x ; a ;; 1 )
+  SetItem ( x ; b , c ;; 1 )
+
+*/
