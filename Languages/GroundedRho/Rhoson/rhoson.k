@@ -47,6 +47,8 @@ module RHOSON
   import RHOSON-SYNTAX
   import AUXFUN
 
+  syntax KResult ::= RhoMap
+
 //-------------
 //--- #kind ---
 //-------------
