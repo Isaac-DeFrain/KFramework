@@ -1,0 +1,10 @@
+// De Morgan's law
+
+    #match( ~List /\ ~Tuple ; ~ { List \/ Tuple } )
+
+/*
+Output: 
+
+    true
+
+*/
