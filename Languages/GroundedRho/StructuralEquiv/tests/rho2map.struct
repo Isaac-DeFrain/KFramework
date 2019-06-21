@@ -1,0 +1,12 @@
+// RhoMap to Map
+
+  #rho2map( { "a" | 3 | Nil : @{Nil | 1} ! ( 3 | 2 | Nil ) , [1,2 | 0] : true } )
+
+
+/*
+Output:
+
+  ( "a" | 3 | Nil ) |-> ( @ Nil | 1 ) ! ( 3 | { 2 | Nil } )
+  [ 1 , 2 | 0 ] |-> true
+
+*/
