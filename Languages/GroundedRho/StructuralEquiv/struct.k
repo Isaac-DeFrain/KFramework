@@ -112,6 +112,43 @@ module STRUCT
   rule #structEq( A:Name !! ( B:Procs ) ; C:Name !! ( D:Procs ) ) => #nameEq(A;C) andBool #structEqif(B;D)
   rule #structEq( _:Proc ; _:Send ) => false [owise]
 
+  // Receive -- checks equivalence of listening variables, channels, and continuations
+    // SRec
+  rule #structEq( for( Y:NamePats <- X:Name ){ P:Proc } ; for( V:NamePats <- U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:NamePat  <- X:Name ){ P:Proc } ; for( V:NamePat  <- U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Names    <- X:Name ){ P:Proc } ; for( V:Names    <- U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Name     <- X:Name ){ P:Proc } ; for( V:Name     <- U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for(            <- X:Name ){ P:Proc } ; for(            <- U:Name ){ Q:Proc } )
+    => #nameEq(X;U) andBool #structEq(P;Q)
+
+  rule #structEq( for( Y:NamePats <! X:Name ){ P:Proc } ; for( V:NamePats <! U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:NamePat  <! X:Name ){ P:Proc } ; for( V:NamePat  <! U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Names    <! X:Name ){ P:Proc } ; for( V:Names    <! U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Name     <! X:Name ){ P:Proc } ; for( V:Name     <! U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for(            <! X:Name ){ P:Proc } ; for(            <! U:Name ){ Q:Proc } )
+    => #nameEq(X;U) andBool #structEq(P;Q)
+
+  rule #structEq( for( Y:NamePats <= X:Name ){ P:Proc } ; for( V:NamePats <= U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:NamePat  <= X:Name ){ P:Proc } ; for( V:NamePat  <= U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Names    <= X:Name ){ P:Proc } ; for( V:Names    <= U:Name ){ Q:Proc } )
+    => #nameEqif(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for( Y:Name     <= X:Name ){ P:Proc } ; for( V:Name     <= U:Name ){ Q:Proc } )
+    => #nameEq(Y;V) andBool #nameEq(X;U) andBool #structEq(P;#sub(Y;V;Q))
+  rule #structEq( for(            <= X:Name ){ P:Proc } ; for(            <= U:Name ){ Q:Proc } )
+    => #nameEq(X;U) andBool #structEq(P;Q)
+
+    // MRec -- TODO
+
   // Collection
     // RhoList
   rule #structEq( [ ] ; [ ] ) => true
@@ -134,7 +171,6 @@ module STRUCT
   rule #structEq( ( A:Procs ,) ; ( B:Procs ,) ) => #structEqif(A;B)
   rule #structEq( _:RhoTuple   ; _:RhoTuple   ) => false [owise]
 
-// #structEq(Map;Map) , #structEq( {A:Proc,I:Int} S:Set ; T:Set ) => #SeqSetIn({A,I};T) andBool #SeqSetIn(S;T)
 //----------------
 //--- #SeqSetIn --
 //----------------
@@ -142,12 +178,13 @@ module STRUCT
   rule #structEq( A:Set ; B:Set ) => #SeqSetIn(A;B) andBool #SeqSetIn(B;A)
   rule #structEq( A:Map ; B:Map ) => #SeqMapIn(A;B) andBool #SeqMapIn(B;A)
 
+// Structural equivalence set inclusion
   // left arg set empty
   rule #SeqSetIn(  .Set ; _:Set ) => true
   // right arg set empty
   rule #SeqSetIn( A:Set ;  .Set ) => false requires A =/=K .Set
 
-// TODO: turn each element into least order seq term so this can become syntactic equality
+// TODO: turn each element into least order seq term so this can become syntactic equality i.e. normalize term
   // #SeqSetIn( {e} S:Set ; T:Set ) => #SeqSetIn({e};T) and #SeqSetIn(S;T)
   // each element of the left arg set must be contained in the right arg set
   // and-branch over all left arg set elements:
@@ -194,10 +231,10 @@ module STRUCT
 //--- Built-ins ---
 //-----------------
 // #rho2list -- throws [Error] Internal: Uncaught exception thrown of type AssertionError.
-//  rule #rho2list( [ ] ) => .List
-//  rule #rho2list( [ A:Proc ] ) => ListItem(A)
-//  rule #rho2list( [ A:Proc , B:Proc  ] ) => ListItem(A) #rho2list([B])
-//  rule #rho2list( [ A:Proc , B:Procs ] ) => ListItem(A) #rho2list([B])
+  rule #rho2list( [ ] ) => .List
+  rule #rho2list( [ A:Proc ] ) => ListItem(A)
+  rule #rho2list( [ A:Proc , B:Proc  ] ) => ListItem(A) #rho2list([B])
+  rule #rho2list( [ A:Proc , B:Procs ] ) => ListItem(A) #rho2list([B])
 
 // #rho2map
 // produces Map with unique keys for structurally equivalent keys in RhoMap
