@@ -1,0 +1,10 @@
+// Map translation
+
+    #map2rho( 1|*a |-> \x \b |-> *e \c |-> *d | Nil )
+
+/*
+Output:
+
+    { 1 | * a : \ x , \ c : * d | Nil , \ b : * e }
+
+*/

@@ -1,0 +1,10 @@
+// List translation
+
+    #list2rho( ListItem(1|*a) ListItem(\x) ListItem(\b) ListItem(*e) ListItem(\c) ListItem(*d | Nil) )
+
+/*
+Output:
+
+    [ 1 | * a , \ x , \ b , * e , \ c , * d | Nil ]
+
+*/

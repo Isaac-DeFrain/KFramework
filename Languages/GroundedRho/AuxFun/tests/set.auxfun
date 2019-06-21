@@ -1,0 +1,10 @@
+// Set translation
+
+    #set2rho( SetItem(*a) SetItem(*x) SetItem(\b) SetItem(*e) SetItem(\c) SetItem(*d) SetItem(\x | 3) )
+
+/*
+Output:
+
+    Set( * a , \ x | 3 , \ c , \ b , * d , * e , * x )
+
+*/
