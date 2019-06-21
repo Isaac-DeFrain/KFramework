@@ -1,0 +1,15 @@
+// Listening variables
+
+    #LV( a , b <- x ; c <- x ; d , e , f <- z )
+
+/*
+Output:
+
+  SetItem ( a )
+  SetItem ( b )
+  SetItem ( c )
+  SetItem ( d )
+  SetItem ( e )
+  SetItem ( f )
+
+*/
