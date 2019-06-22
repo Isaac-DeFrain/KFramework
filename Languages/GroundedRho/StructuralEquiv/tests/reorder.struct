@@ -1,0 +1,10 @@
+// Reorder
+
+  #reorder( 1 , 3 , 2 , true , false , "a" )
+
+/*
+Output:
+
+    false , true , 1 , 2 , 3 , "a"
+
+*/
