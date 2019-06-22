@@ -5,6 +5,7 @@ TODO:
  - NonPar Proc
  - #structEq(ConSend;ConSend), #structEq(UnconSend;UnconSend)
  - Patterns
+ - Normalize before checking structural equiv (then notBool isPar(...) and notBool isEval(...) can be removed)
 */
 
 require "../grho.k"
@@ -36,18 +37,32 @@ module STRUCT-SYNTAX
 // par normalization functions
   syntax    Int ::=  "#parCount(" Proc  ";" Proc  ")" [function]
   syntax   Proc ::= "#parRemove(" Proc  ";" Proc  ")" [function]
+                  | "#removeNil(" Proc  ")"           [function]
   syntax    Set ::=    "#setify(" Proc  ")"           [function]
 
-// Translation to built-ins -- other half in AuxFun
-  syntax     List ::= "#rho2list(" RhoList ")" [function]
-  syntax      Map ::=  "#rho2map(" RhoMap  ")" [function]
-  syntax      Set ::=  "#rho2set(" RhoSet  ")" [function]
+  syntax   Bool ::=   "#order(" Proc ";" Proc  ")" [function]
+  syntax   Proc ::= "#parnorm(" Proc ")" [function]
+                  | "#reorder(" Proc ")" [function]
+                  | "#reorder(" Proc ";" Proc  ";" Proc  ")" [function] // #reorder(Nil;A:Proc;Nil) => A
+  syntax  Procs ::= "#reorder(" Procs ")" [function]
+                  | "#reorder(" Proc ";" Proc  ";" Proc  ")" [function] // #reorder(A:Proc;B:Proc;Nil) => A,B or B,A
+                  | "#reorder(" Proc ";" Proc  ";" Procs ")" [function]
+                  | "#reorder(" Proc ";" Procs ";" Proc  ")" [function]
+                  | "#reorder(" Proc ";" Procs ";" Procs ")" [function]
 
-  syntax     Bool ::=    "#structEqs(" Proc ";" Procs      ")" [function]
-                    | "#key_structEq(" Proc ";" RhoKVPair  ")" [function]
-                    | "#key_structEq(" Proc ";" RhoKVPairs ")" [function]
-                    | "#SeqSetIn(" Set ";" Set ")" [function]
-                    | "#SeqMapIn(" Map ";" Map ")" [function]
+
+// Translation to built-ins -- other half in AuxFun
+  syntax   List ::= "#rho2list(" RhoList ")" [function]
+  syntax    Map ::=  "#rho2map(" RhoMap  ")" [function]
+  syntax    Set ::=  "#rho2set(" RhoSet  ")" [function]
+
+  syntax   Bool ::=    "#structEqs(" Proc ";" Procs      ")" [function] // seq of left arg against all right arg Procs
+                  | "#key_structEq(" Proc ";" RhoKVPair  ")" [function] // seq of left arg with key of RhoKVPair
+                  | "#key_structEq(" Proc ";" RhoKVPairs ")" [function] // seq of left arg against all keys of RhoKVPairs
+                  | "#SeqSetIn(" Set ";" Set ")" [function] // structural equivalence Set inclusion
+                  | "#SeqMapIn(" Map ";" Map ")" [function] // structural equivalence Map inclusion
+
+//
 
 endmodule
 
@@ -55,7 +70,7 @@ module STRUCT
   import STRUCT-SYNTAX
   import ALPHA
 
-  syntax KResult ::= Proc /*| Bool | Int | Set <: Proc*/
+  syntax KResult ::= Proc | Procs | Bool | Int | Set
 
 // counts number of structurally eq appearances of a nonPar Proc in a Par
 // first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
@@ -88,9 +103,76 @@ module STRUCT
          #fi 
        #fi requires notBool isPar(A)
 
-// TODO: #structEq( A:Proc ; B:Proc ) => #ProcSeq(A;B) requires notBool
+// Order
+// #removeNil( Nil | Proc ) => Proc
+  rule #removeNil( A:Proc ) => A requires notBool isPar(A)
+  rule #removeNil( A:Proc | Nil ) => A requires notBool isPar(A)
+  rule #removeNil( A:Proc | B:Proc ) => #if A ==K Nil #then #removeNil(B) #else A | #removeNil(B) #fi requires notBool isPar(A)
+
+  rule #order( A:Proc ; A ) => true // reflexive
+  rule #order( A:Proc ; Nil    ) => A ==K Nil
+  rule #order( Nil    ; _:Proc ) => true
+  rule #order( _:Bool ; A:Proc ) => true  requires notBool (A ==K Nil orBool isBool(A))
+  rule #order( A:Proc ; _:Bool ) => false requires notBool (A ==K Nil orBool isBool(A))
+  rule #order( true   ; A:Bool ) => notBool A
+  rule #order( false  ; A:Bool ) => A
+  rule #order( _:Int  ; A:Proc ) => true  requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A))
+  rule #order( A:Proc ; _:Int  ) => false requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A))
+  rule #order( I:Int  ; J:Int  ) => I <=Int J
+  rule #order( _:String ; A:Proc   ) => true  requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A))
+  rule #order( A:Proc   ; _:String ) => false requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A))
+  rule #order( A:String ; B:String ) => String2Int(A) <=Int String2Int(B)
+
+// con't #order
+
+// Reorder
+  // check order of left arg against all middle args and insert
+  // applied after #removeNil -- so no Nils will be present
+    // begin reordering
+    // #reorder( Proc[s] )
+  rule #reorder(   Nil   ) => .K
+  rule #reorder( A:Proc  ) => A requires notBool (isPar(A) orBool A==K Nil)
+  rule #reorder( A:Procs ) => #reorder(Nil;Nil;A)
+    // #reorder( Nil ; Nil ; Procs )
+  rule #reorder( Nil ; Nil ; A:Proc , B:Proc  ) => #reorder(Nil;A;B) requires A =/=K Nil andBool B =/=K Nil
+  rule #reorder( Nil ; Nil ; A:Proc , B:Procs ) => #reorder(Nil;A;B) requires A =/=K Nil
+    // #reorder( Nil ; Proc /\ ~Nil ; Proc[s] /\ ~Nil )
+  rule #reorder( Nil ; A:Proc ; B:Proc           ) => #reorder(B;A;Nil) requires A =/=K Nil andBool B =/=K Nil
+  rule #reorder( Nil ; A:Proc ; B:Proc , C:Proc  ) => #reorder(B;A;C)   requires A =/=K Nil andBool B =/=K Nil andBool C =/=K Nil
+  rule #reorder( Nil ; A:Proc ; B:Proc , C:Procs ) => #reorder(B;A;C)   requires A =/=K Nil andBool B =/=K Nil
+    // #reorder( Nil ; Procs ; Proc[s] )
+  rule #reorder( Nil ; A:Procs ; Nil ) => A
+  rule #reorder( Nil ; A:Proc , B:Proc  ; C:Proc           ) => #reorder(C;A,B;Nil) requires C =/=K Nil
+  rule #reorder( Nil ; A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #reorder(C;A,B;D)   requires C =/=K Nil andBool D =/=K Nil
+  rule #reorder( Nil ; A:Proc , B:Proc  ; C:Proc , D:Procs ) => #reorder(C;A,B;D)   requires C =/=K Nil
+  rule #reorder( Nil ; A:Proc , B:Procs ; C:Proc           ) => #reorder(C;A,B;Nil) requires C =/=K Nil
+  rule #reorder( Nil ; A:Proc , B:Procs ; C:Proc , D:Proc  ) => #reorder(C;A,B;D)   requires C =/=K Nil andBool D =/=K Nil
+  rule #reorder( Nil ; A:Proc , B:Procs ; C:Proc , D:Procs ) => #reorder(C;A,B;D)   requires C =/=K Nil
+    // #reorder( Proc /\ ~Nil ; Proc /\ ~Nil \/ Procs ; Nil )
+  rule #reorder( A:Proc ; B:Proc ; Nil )
+    => #if #order(A;B) #then A,B #else B,A #fi
+       requires A =/=K Nil andBool B =/=K Nil
+  rule #reorder( A:Proc ; B:Proc , C:Proc ; Nil )
+    => #if #order(A;B) #then #append(A;B,C) #else #append(B;#reorder(A;C;Nil)) #fi
+       requires A =/=K Nil andBool C =/=K Nil
+  rule #reorder( A:Proc ; B:Proc , C:Procs ; Nil )
+    => #if #order(A;B) #then #append(A;B,C) #else #append(B;#reorder(A;C;Nil)) #fi
+       requires A =/=K Nil andBool C =/=K Nil
+    // #reorder( Proc ; Proc /\ ~Nil ; Proc /\ ~Nil \/ Procs )
+  rule #reorder( A:Proc ; B:Proc ; C:Proc           ) => #reorder(C;#reorder(A;B;Nil);Nil) requires A =/=K Nil andBool B =/=K Nil andBool C =/=K Nil
+  rule #reorder( A:Proc ; B:Proc ; C:Proc , D:Proc  ) => #reorder(C;#reorder(A;B;Nil);D)   requires A =/=K Nil andBool B =/=K Nil andBool C =/=K Nil andBool D =/=K Nil
+  rule #reorder( A:Proc ; B:Proc ; C:Proc , D:Procs ) => #reorder(C;#reorder(A;B;Nil);D)   requires A =/=K Nil andBool B =/=K Nil andBool C =/=K Nil
+    // #reorder( Proc ; Procs ; Proc /\ ~Nil \/ Procs )
+  rule #reorder( A:Proc ; B:Procs ; C:Proc           ) => #reorder(C;#reorder(A;B;Nil);Nil) requires A =/=K Nil andBool C =/=K Nil
+  rule #reorder( A:Proc ; B:Procs ; C:Proc , D:Proc  ) => #reorder(C;#reorder(A;B;Nil);D)   requires A =/=K Nil andBool C =/=K Nil andBool D =/=K Nil
+  rule #reorder( A:Proc ; B:Procs ; C:Proc , D:Procs ) => #reorder(C;#reorder(A;B;Nil);D)   requires A =/=K Nil andBool C =/=K Nil
+
+  // Par normalize
+  rule #parnorm( A:Par  ) => #procs2par(#reorder(#par2procs(#removeNil(A))))
+  rule #parnorm( A:Proc ) => A requires notBool isPar(A)
+
 // checks par set structural equality of deBruijnified Procs
-  rule #structEq( A:Proc ; B:Proc ) => #setify(#deBruijn(0;A;.Map)) ==K #setify(#deBruijn(0;B;.Map))
+  rule #structEq( A:Proc ; B:Proc ) => #setify(#deBruijn(A)) ==K #setify(#deBruijn(B))
        requires isPar(A) orBool isPar(B)
   rule #structEq( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #structEq(A;C) andBool #structEq(B;D)
   rule #structEq( A:Proc , B:Procs ; C:Proc , D:Procs ) => #structEq(A;C) andBool #structEq(B;D)
@@ -110,7 +192,8 @@ module STRUCT
   rule #structEq( A:Name !! (         ) ; C:Name !! (         ) ) => #nameEq(A;C)
   rule #structEq( A:Name !! ( B:Proc  ) ; C:Name !! ( D:Proc  ) ) => #nameEq(A;C) andBool   #structEq(B;D)
   rule #structEq( A:Name !! ( B:Procs ) ; C:Name !! ( D:Procs ) ) => #nameEq(A;C) andBool #structEqif(B;D)
-  rule #structEq( _:Proc ; _:Send ) => false [owise]
+  rule #structEq( A:Proc ; _:Send ) => false requires notBool (isSend(A) orBool isPar(A) orBool isEval(A))
+  rule #structEq( _:Send ; A:Proc ) => false requires notBool (isSend(A) orBool isPar(A) orBool isEval(A))
 
   // Receive -- checks equivalence of listening variables, channels, and continuations
     // SRec
