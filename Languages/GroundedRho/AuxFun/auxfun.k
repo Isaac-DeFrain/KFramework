@@ -122,7 +122,10 @@ module AUXFUN-SYNTAX
                      | "#guard(" GBindPat  ")" [function]
                      | "#guard(" GBindPats ")" [function]
 
-  syntax     Procs ::= "#par2procs(" Par ")" [function]
+  syntax      Proc ::= "#par2procs(" Proc  ")" [function]
+                     | "#procs2par(" Proc  ")" [function]
+                     | "#procs2par(" Procs ")" [function]
+  syntax     Procs ::= "#par2procs(" Proc  ")" [function]
 
   syntax     Names ::= "#quotes(" Procs ")"           [function]
                      | "#append(" Name  ";" Name  ")" [function]
@@ -1137,6 +1140,12 @@ module AUXFUN
 //------------------
   rule #par2procs( A:Proc | B:Proc ) => A,B requires notBool (isPar(A) orBool isPar(B))
   rule #par2procs( A:Proc | B:Par  ) => A,#par2procs(B) requires notBool isPar(A)
+  rule #par2procs( A:Proc ) => A requires notBool isPar(A)
+
+  rule #procs2par( A:Proc ) => A
+  rule #procs2par( A:Proc , B:Proc  ) => A | B
+  rule #procs2par( A:Proc , B:Procs ) => A | #procs2par(B)
+
 
 //-----------------
 //--- Built-ins ---
