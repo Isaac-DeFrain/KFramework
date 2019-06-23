@@ -186,7 +186,11 @@ module AUXFUN-SYNTAX
                      |   "#set2Par(" Set  ")"          [function]
                      | "#removePar(" Proc ";" Proc ")" [function]
                      |    "#parDup(" Proc ";" Int  ")" [function]
-  syntax       Set ::=   "#par2Set(" Proc ")"          [function]
+                     | "#set2procs(" Set  ")" [function]
+  syntax     Procs ::= "#set2procs(" Set  ")" [function]
+  syntax       Set ::=   "#par2Set(" Proc  ")"         [function]
+                     | "#procs2set(" Proc  ")"         [function]
+                     | "#procs2set(" Procs ")"         [function]
   syntax       Int ::=  "#countPar(" Proc ";" Proc ")" [function]
 
 // String Interpolation
@@ -1142,10 +1146,19 @@ module AUXFUN
   rule #par2procs( A:Proc | B:Par  ) => A,#par2procs(B) requires notBool isPar(A)
   rule #par2procs( A:Proc ) => A requires notBool isPar(A)
 
+// #procs2par
   rule #procs2par( A:Proc ) => A
   rule #procs2par( A:Proc , B:Proc  ) => A | B
   rule #procs2par( A:Proc , B:Procs ) => A | #procs2par(B)
 
+//------------------
+//--- #set2procs ---
+//------------------
+  rule #set2procs( SetItem( A:Proc ) ) => A
+  rule #set2procs( SetItem( A:Proc ) S:Set ) => A , #set2procs(S) requires S =/=K .Set
+// #procs2set
+  rule #procs2set( A:Proc ) => SetItem(A)
+  rule #procs2set( A:Proc , B:Proc ) => SetItem(A) #procs2set(B)
 
 //-----------------
 //--- Built-ins ---
@@ -1167,6 +1180,7 @@ module AUXFUN
   rule #map2rho( A:Proc |-> B:Proc ) => {A:B}
   rule #map2rho( A:Proc |-> B:Proc C:Map ) => #unionMap({A:B};#map2rho(C)) requires C =/=K .Map
 
+  // check if each right arg element is seq to a left arg element
   rule #unionMap( { } ; A:RhoMap ) => A
   rule #unionMap( A:RhoMap ; { } ) => A
   rule #unionMap( { A:RhoKVPair  } ; { B:RhoKVPair  } ) => {#append(A;B)}
@@ -1181,6 +1195,7 @@ module AUXFUN
 
   rule #unionSet( Set( ) ; A:RhoSet ) => A
   rule #unionSet( A:RhoSet ; Set( ) ) => A
+  // check if each right arg element is seq to a left arg element
   rule #unionSet( Set( A:Proc  ) ; Set( B:Proc  ) ) => Set(#append(A;B))
   rule #unionSet( Set( A:Procs ) ; Set( B:Proc  ) ) => Set(#append(A;B))
   rule #unionSet( Set( A:Proc  ) ; Set( B:Procs ) ) => Set(#append(A;B))
