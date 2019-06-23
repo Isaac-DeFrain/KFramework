@@ -1,24 +1,77 @@
-// Red-Black Rho Calculus
+// Red-Black Polyadic Rho Calculus
+
+requires "domains.k"
 
 module RBRHO-SYNTAX
+  import DOMAINS
 
-  syntax   ProcR ::= "NilR"
-                   | ProcB
-                   | "for" "(" NameR "<-" NameR ")" "{" ProcR "}"
-                   | NameR "!" "(" ProcR ")"
-                   | ProcR "|" ProcR
-                   | "*" NameR
+// Variables
+  syntax     Var ::= Id
+  syntax    Vars ::= Var
+                   | Var "," Vars [right]
 
-  syntax   NameR ::= "@" ProcR
+// Red Calculus
+  syntax   ProcR ::= RedNil | RecR | SendR | EvalR > ParR
 
-  syntax   ProcB ::= "NilB"
-                   | ProcR
-                   | "for" "(" NameB "<-" NameB ")" "{" ProcB "}"
-                   | NameB "!" "(" ProcB ")"
-                   | ProcB "|" ProcB
-                   | "*" NameB
+  syntax  RedNil ::= "NilR"
+  syntax   SendR ::= NameR "!" "(" ProcRs ")"
+  syntax    RecR ::= "for" "(" NameRs "<-" NameR ")" "{" ProcR "}"
+  syntax   EvalR ::= "*" NameR
+  syntax    ParR ::= ProcR "|" ProcR [right]
 
-  syntax   NameB ::= "@" ProcB
+  // Red Procs
+  syntax  ProcRs ::= ProcR
+                   | ProcR "," ProcRs [right]
+
+  // Red Names
+  syntax   NameR ::= "@" ProcR | Var
+  syntax  NameRs ::= NameR | Vars
+                   | NameR "," NameRs [right]
+
+// Black Calculus
+  syntax   ProcB ::= BlkNil | RecB | SendB | EvalB > ParB
+
+  syntax  BlkNil ::= "NilB"
+  syntax   SendB ::= NameB "!" "(" ProcBs ")"
+  syntax    RecB ::= "for" "(" NameBs "<-" NameB ")" "{" ProcB "}"
+  syntax   EvalB ::= "*" NameB
+  syntax    ParB ::= ProcB "|" ProcB [right]
+
+  // Black Procs
+  syntax  ProcBs ::= ProcB
+                   | ProcB "," ProcBs [right]
+
+  // Black Names
+  syntax   NameB ::= "@" ProcB | Var
+  syntax  NameBs ::= NameB | Vars
+                   | NameB "," NameBs [right]
+
+//--------------------------
+//--- Red-Black Calculus ---
+//--------------------------
+  syntax  ProcRB ::= ProcB | ProcR
+                   | RecRB | SendRB
+                   > ParRB
+
+  syntax  SendRB ::= SendB | SendR
+                   | NameRB "!" "(" ProcRBs ")"
+  syntax   RecRB ::= RecB | RecR
+                   | "for" "(" NameRBs "<-" NameRB ")" "{" ProcRB "}"
+  syntax  EvalRB ::= EvalB | EvalR
+                   | "*" NameRB
+  syntax   ParRB ::= ParB | ParR
+                   | ProcRB "|" ProcRB [right]
+
+  // Red-Black Procs
+  syntax ProcRBs ::= ProcRB | ProcBs | ProcRs
+                   | ProcB "," ProcRBs [right]
+                   | ProcR "," ProcRBs [right]
+
+  // Red-Black Procs
+  syntax  NameRB ::= NameB  | NameR  | Var
+  syntax NameRBs ::= NameRB | NameBs | NameRs | Vars
+                   | NameB "," NameRBs [right]
+                   | NameR "," NameRBs [right]
 
 endmodule
 
@@ -26,89 +79,3 @@ module RBRHO
   import RBRHO-SYNTAX
 
 endmodule
-
-/*
-$ kompile rbrho.k --backend java --debug
-org.kframework.CircularityException: ProcB < ProcR < ProcB
-	at org.kframework.POSet.constructAndThrowCycleException(POSet.scala:49)
-	at org.kframework.POSet.$anonfun$constructAndThrowCycleException$2(POSet.scala:51)
-	at org.kframework.POSet.$anonfun$constructAndThrowCycleException$2$adapted(POSet.scala:51)
-	at scala.collection.immutable.HashSet$HashSet1.foreach(HashSet.scala:320)
-	at org.kframework.POSet.constructAndThrowCycleException(POSet.scala:51)
-	at org.kframework.POSet.$anonfun$transitiveClosure$1(POSet.scala:32)
-	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:234)
-	at scala.collection.immutable.Map$Map2.foreach(Map.scala:146)
-	at scala.collection.TraversableLike.map(TraversableLike.scala:234)
-	at scala.collection.TraversableLike.map$(TraversableLike.scala:227)
-	at scala.collection.AbstractTraversable.map(Traversable.scala:104)
-	at org.kframework.POSet.transitiveClosure(POSet.scala:28)
-	at org.kframework.POSet.<init>(POSet.scala:57)
-	at org.kframework.POSet$.apply(POSet.scala:148)
-	at org.kframework.definition.Sorting.computeSubsortPOSet(outer.scala:64)
-	at org.kframework.definition.Sorting.computeSubsortPOSet$(outer.scala:59)
-	at org.kframework.definition.Module.computeSubsortPOSet(outer.scala:89)
-	at org.kframework.definition.Module.subsorts$lzycompute(outer.scala:247)
-	at org.kframework.definition.Module.subsorts(outer.scala:247)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:54)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:49)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:38)
-	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
-	at scala.collection.convert.Wrappers$IteratorWrapper.forEachRemaining(Wrappers.scala:26)
-	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:658)
-	at org.kframework.kompile.Kompile.lambda$checkDefinition$12(Kompile.java:220)
-	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
-	at scala.collection.convert.Wrappers$IteratorWrapper.forEachRemaining(Wrappers.scala:26)
-	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:658)
-	at org.kframework.kompile.Kompile.checkDefinition(Kompile.java:220)
-	at org.kframework.kompile.Kompile.run(Kompile.java:111)
-	at org.kframework.kompile.KompileFrontEnd.run(KompileFrontEnd.java:70)
-	at org.kframework.main.FrontEnd.main(FrontEnd.java:52)
-	at org.kframework.main.Main.runApplication(Main.java:118)
-	at org.kframework.main.Main.runApplication(Main.java:107)
-	at org.kframework.main.Main.main(Main.java:53)
-org.kframework.CircularityException: ProcB < ProcR < ProcB
-	at org.kframework.POSet.constructAndThrowCycleException(POSet.scala:49)
-	at org.kframework.POSet.$anonfun$constructAndThrowCycleException$2(POSet.scala:51)
-	at org.kframework.POSet.$anonfun$constructAndThrowCycleException$2$adapted(POSet.scala:51)
-	at scala.collection.immutable.HashSet$HashSet1.foreach(HashSet.scala:320)
-	at org.kframework.POSet.constructAndThrowCycleException(POSet.scala:51)
-	at org.kframework.POSet.$anonfun$transitiveClosure$1(POSet.scala:32)
-	at scala.collection.TraversableLike.$anonfun$map$1(TraversableLike.scala:234)
-	at scala.collection.immutable.Map$Map2.foreach(Map.scala:146)
-	at scala.collection.TraversableLike.map(TraversableLike.scala:234)
-	at scala.collection.TraversableLike.map$(TraversableLike.scala:227)
-	at scala.collection.AbstractTraversable.map(Traversable.scala:104)
-	at org.kframework.POSet.transitiveClosure(POSet.scala:28)
-	at org.kframework.POSet.<init>(POSet.scala:57)
-	at org.kframework.POSet$.apply(POSet.scala:148)
-	at org.kframework.definition.Sorting.computeSubsortPOSet(outer.scala:64)
-	at org.kframework.definition.Sorting.computeSubsortPOSet$(outer.scala:59)
-	at org.kframework.definition.Module.computeSubsortPOSet(outer.scala:89)
-	at org.kframework.definition.Module.subsorts$lzycompute(outer.scala:247)
-	at org.kframework.definition.Module.subsorts(outer.scala:247)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:54)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:49)
-	at org.kframework.compile.checks.CheckSortTopUniqueness.check(CheckSortTopUniqueness.java:38)
-	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
-	at scala.collection.convert.Wrappers$IteratorWrapper.forEachRemaining(Wrappers.scala:26)
-	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:658)
-	at org.kframework.kompile.Kompile.lambda$checkDefinition$12(Kompile.java:220)
-	at java.base/java.util.Iterator.forEachRemaining(Iterator.java:133)
-	at scala.collection.convert.Wrappers$IteratorWrapper.forEachRemaining(Wrappers.scala:26)
-	at java.base/java.util.Spliterators$IteratorSpliterator.forEachRemaining(Spliterators.java:1801)
-	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:658)
-	at org.kframework.kompile.Kompile.checkDefinition(Kompile.java:220)
-	at org.kframework.kompile.Kompile.run(Kompile.java:111)
-	at org.kframework.kompile.KompileFrontEnd.run(KompileFrontEnd.java:70)
-	at org.kframework.main.FrontEnd.main(FrontEnd.java:52)
-	at org.kframework.main.Main.runApplication(Main.java:118)
-	at org.kframework.main.Main.runApplication(Main.java:107)
-	at org.kframework.main.Main.main(Main.java:53)
-[Error] Internal: Uncaught exception thrown of type CircularityException.
-Please rerun your program with the --debug flag to generate a stack trace, and
-file a bug report at https://github.com/kframework/k/issues (ProcB < ProcR <
-ProcB)
-*/
