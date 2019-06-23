@@ -1,0 +1,10 @@
+// Order
+
+  #order( new a,b,c in { *a | *b | *c } ; new b,a,c in { *a | *b | *c } )
+
+/*
+Output:
+
+    true
+
+*/
