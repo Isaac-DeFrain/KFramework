@@ -44,6 +44,7 @@ module STRUCT-SYNTAX
                   |   "#order(" Procs ";" Procs ")" [function]
                   |   "#order(" Name  ";" Name  ")" [function]
                   |   "#order(" Names ";" Names ")" [function]
+                  | "#orderif(" Procs ";" Procs ")" [function]
                   | "#orderif(" Names ";" Names ")" [function]
   syntax   Proc ::= "#parnorm(" Proc ")" [function]
                   | "#reorder(" Proc ")" [function]
@@ -65,8 +66,6 @@ module STRUCT-SYNTAX
                   | "#key_structEq(" Proc ";" RhoKVPairs ")" [function] // seq of left arg against all keys of RhoKVPairs
                   | "#SeqSetIn(" Set ";" Set ")" [function] // structural equivalence Set inclusion
                   | "#SeqMapIn(" Map ";" Map ")" [function] // structural equivalence Map inclusion
-
-//
 
 endmodule
 
@@ -107,11 +106,42 @@ module STRUCT
          #fi 
        #fi requires notBool isPar(A)
 
-// Order
+// Order -- think of #order( A:Proc ; B:Proc ) as order(A) <= order(B) for some order(_): Proc -> Real
 // #removeNil( Nil | Proc ) => Proc
-  rule #removeNil( A:Proc ) => A requires notBool isPar(A)
+  rule #removeNil( A:Proc ) => A requires notBool isPar(A) // TODO: extend to NonPar Proc and Name
   rule #removeNil( A:Proc | Nil ) => A requires notBool isPar(A)
-  rule #removeNil( A:Proc | B:Proc ) => #if A ==K Nil #then #removeNil(B) #else A | #removeNil(B) #fi requires notBool isPar(A)
+  rule #removeNil( A:Proc | B:Proc ) => #if A ==K Nil
+                                        #then #removeNil(B)
+                                        #else A | #removeNil(B) #fi
+                                        requires notBool (isPar(A) orBool B ==K Nil)
+
+  // check length first
+  rule #orderif( A:Procs ; B:Procs ) => #length(A) ==Int #length(B) andBool #order(A;B)
+  rule #orderif( A:Names ; B:Names ) => #length(A) ==Int #length(B) andBool #order(A;B)
+
+  // dictionary order
+  rule #order( A:Proc , B:Proc ; C:Proc , D:Proc ) => #if #order(A;C)
+                                                      #then #if #order(C;A)
+                                                            #then #order(B;D)
+                                                            #else true #fi
+                                                      #else false #fi
+  rule #order( A:Proc , B:Procs ; C:Proc , D:Procs ) => #if #order(A;C)
+                                                        #then #if #order(C;A)
+                                                              #then #order(B;D)
+                                                              #else true #fi
+                                                        #else false #fi
+
+  rule #order( A:Name , B:Name ; C:Name , D:Name ) => #if #order(A;C)
+                                                      #then #if #order(C;A)
+                                                            #then #order(B;D)
+                                                            #else true #fi
+                                                      #else false #fi
+
+  rule #order( A:Name , B:Names ; C:Name , D:Names ) => #if #order(A;C)
+                                                        #then #if #order(C;A)
+                                                              #then #order(B;D)
+                                                              #else true #fi
+                                                        #else false #fi
 
   rule #order( A:Proc ; A ) => true // reflexive
   // Ground
@@ -130,7 +160,7 @@ module STRUCT
     // String
   rule #order( _:String ; A:Proc   ) => true  requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A))
   rule #order( A:Proc   ; _:String ) => false requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A))
-  rule #order( A:String ; B:String ) => String2Int(A) <=Int String2Int(B)
+  rule #order( A:String ; B:String ) => #set2procs(#procs2set(A,B)) ==K (A,B)
     // Unforgeable
   rule #order( _:Unforgeable ; A:Proc   ) => true
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A) orBool isUnforgeable(A))
@@ -142,44 +172,46 @@ module STRUCT
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A) orBool isUnforgeable(A) orBool isUri(A))
   rule #order( A:Proc ; _:Uri  ) => false
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A) orBool isString(A) orBool isUnforgeable(A) orBool isUri(A))
-  rule #order( A:Uri ; B:Uri ) => String2Int(toString(A)) <=Int String2Int(toString(B))
+  rule #order( A:Uri ; B:Uri ) => #set2procs(#procs2set(A,B)) ==K (A,B)
 
-  // Variables
+  // Variables -- need mapping from 
   rule #order( _:ProcVar ; A:Proc ) => true
-       requires notBool (A ==K Nil orBool isGround(A))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
   rule #order( A:Proc ; _:ProcVar ) => false
-       requires notBool (A ==K Nil orBool isGround(A))
-  rule #order( A:ProcVar ; B:ProcVar ) => String2Int(toString(A)) <=Int String2Int(toString(B))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
+  rule #order( A:ProcVar ; B:ProcVar ) => #set2procs(#procs2set(A,B)) ==K (A,B)
     // Eval
   rule #order( *_:NameVar ; A:Proc ) => true
-       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A))
   rule #order( A:Proc ; *_:NameVar ) => false
-       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
-  rule #order( *A:NameVar ; *B:NameVar ) => String2Int(toString(A)) <=Int String2Int(toString(B))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A))
+  rule #order( *A:NameVar ; *B:NameVar ) => #set2procs(#procs2set(*A,*B)) ==K (*A,*B)
 
-  // VarRef -- TODO
+  // VarRef
+  rule #order( _:VarRef ; A:Proc ) => true
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A) orBool isVarRef(A))
+  rule #order( A:Proc ; _:VarRef ) => false
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A) orBool isVarRef(A))
+  rule #order( = *A:NameVar ; = *B:NameVar ) => #order(A;B)
+  rule #order( =  A:ProcVar ; =  B:ProcVar ) => #order(A;B)
 
   // New
   rule #order( _:New ; A:Proc ) => true
-       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A) orBool isVarRef(A) orBool isNew(A))
   rule #order( A:Proc ; _:New ) => false
-       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A))
+       requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A) orBool isEval(A) orBool isVarRef(A) orBool isNew(A))
   rule #order( new A:Name in { B:Proc } ; new C:Name in { D:Proc } )
     => #if #order(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
-             #else true
-             #fi
-       #else false
-       #fi
+             #else true #fi
+       #else false #fi
   rule #order( new A:Names in { B:Proc } ; new C:Names in { D:Proc } )
-    => #if #orderif(A;C) // TODO
+    => #if #orderif(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
-             #else true
-             #fi
-       #else false
-       #fi
+             #else true #fi
+       #else false #fi
 
 // TODO
   // MethodProc: Proc . Method ( Args ) dictionary order by Method , Args , Proc
@@ -194,7 +226,7 @@ module STRUCT
 
 // TODO: #order( Name[s] )
   rule #order( @A:Proc   ; @B:Proc   ) => #order(A;B)
-  rule #order( A:NameVar ; B:NameVar ) => String2Int(toString(A)) <=Int String2Int(toString(B))
+  rule #order( A:NameVar ; B:NameVar ) => #set2procs(#procs2set(*A,*B)) ==K (*A,*B)
   rule #order( @A:Proc   ; B:NameVar ) => #order(A;*B)
   rule #order( A:NameVar ; @B:Proc   ) => #order(*A;B)
 
@@ -231,13 +263,11 @@ module STRUCT
                                             requires A =/=K Nil andBool B =/=K Nil
   rule #reorder( A:Proc ; B:Proc , C:Proc  ; Nil ) => #if #order(A;B)
                                                       #then #append(A;B,C)
-                                                      #else #append(B;#reorder(A;C;Nil))
-                                                      #fi
+                                                      #else #append(B;#reorder(A;C;Nil)) #fi
                                                       requires A =/=K Nil andBool C =/=K Nil
   rule #reorder( A:Proc ; B:Proc , C:Procs ; Nil ) => #if #order(A;B)
                                                       #then #append(A;B,C)
-                                                      #else #append(B;#reorder(A;C;Nil))
-                                                      #fi
+                                                      #else #append(B;#reorder(A;C;Nil)) #fi
                                                       requires A =/=K Nil andBool C =/=K Nil
     // #reorder( Proc ; Proc /\ ~Nil ; Proc /\ ~Nil \/ Procs )
   rule #reorder( A:Proc ; B:Proc ; C:Proc           ) => #reorder(C;#reorder(A;B;Nil);Nil) requires A =/=K Nil andBool B =/=K Nil andBool C =/=K Nil
@@ -407,13 +437,11 @@ module STRUCT
   rule #rho2map( { A:Proc : B:Proc , C:RhoKVPair } )
     => #if #key_structEq(A;C)
        #then #rho2map({C}) // forget about KV pair if the key is struct eq to another key
-       #else A |-> B #rho2map({C})
-       #fi
+       #else A |-> B #rho2map({C}) #fi
   rule #rho2map( { A:Proc : B:Proc , C:RhoKVPairs } )
     => #if #key_structEq(A;C)
        #then #rho2map({C})
-       #else A |-> B #rho2map({C})
-       #fi
+       #else A |-> B #rho2map({C}) #fi
 
 // #rho2set
   rule #rho2set( Set( ) ) => .Set
