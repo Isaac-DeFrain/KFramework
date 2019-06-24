@@ -34,33 +34,35 @@ module NAMEVAR-SYNTAX
   syntax    Kind ::= "name" | "proc"
 
 // Kind Sets
-  syntax     Set ::= "FV("    Arg  ")" [function] // free variables
+  syntax     Set ::=  "FV("   Arg  ")" [function] // free variables
                    | "FV+("   Arg  ")" [function] // auxiliary for bound variables
-                   | "BV("    Arg  ")" [function] // bound variables
-                   | "RV("    Arg  ")" [function] // receive variables
+                   |  "BV("   Arg  ")" [function] // bound variables
+                   |  "RV("   Arg  ")" [function] // receive variables
                    | "RV+("   Arg  ")" [function] // auxiliary for bound variables
-                   | "RN("    Arg  ")" [function] // receive names
-                   | "SV("    Arg  ")" [function] // send variables
+                   |  "RN("   Arg  ")" [function] // receive names
+                   |  "SV("   Arg  ")" [function] // send variables
                    | "SV+("   Arg  ")" [function] // auxiliary for bound variables
-                   | "SN("    Arg  ")" [function] // send names
-                   | "V("     Arg  ")" [function] // variables
-                   | "LV("    Arg  ")" [function] // listening variables
+                   |  "SN("   Arg  ")" [function] // send names
+                   |   "V("   Arg  ")" [function] // variables
+                   |  "LV("   Arg  ")" [function] // listening variables
                    | "LV+("   Arg  ")" [function] // auxiliary for bound variables
 
 // Unkind Sets
-  syntax     Set ::= "#FV("   Arg  ")" [function] // free variables
-                   | "#DV("   Arg  ")" [function] // declared variables
-                   | "#BV("   Arg  ")" [function] // bound variables
-                   | "#RV("   Arg  ")" [function] // receive variables
-                   | "#RN("   Arg  ")" [function] // receive names
-                   | "#SV("   Arg  ")" [function] // send variables
-                   | "#SN("   Arg  ")" [function] // send names
-                   | "#V("    Arg  ")" [function] // variables
-                   | "#LV("   Arg  ")" [function] // listening variables
+  syntax     Set ::=  "#FV("  Arg  ")" [function] // free variables
+                   |  "#DV("  Arg  ")" [function] // declared variables
+                   |  "#BV("  Arg  ")" [function] // bound variables
+                   |  "#RV("  Arg  ")" [function] // receive variables
+                   |  "#RN("  Arg  ")" [function] // receive names
+                   |  "#SV("  Arg  ")" [function] // send variables
+                   |  "#SN("  Arg  ")" [function] // send names
+                   |   "#V("  Arg  ")" [function] // variables
+                   |  "#LV("  Arg  ")" [function] // listening variables
                    | "#RN+("  Arg  ")" [function] // nested receive names
+                   |  "#NV("  Arg  ")" [function] // free Name variables
+                   |  "#PV("  Arg  ")" [function] // free Proc variables
 
 // For sets...
-syntax     KItem ::= Arg
+syntax     KItem ::= Arg | NameVar | ProcVar
                    | Arg ":" Kind
 
 endmodule
@@ -84,6 +86,9 @@ module NAMEVAR
   rule  V( \_ ) => .Set
   rule #V( \_ ) => .Set
 
+  rule  V( _:SimplePat ) => .Set
+  rule #V( _:SimplePat ) => .Set
+
 // ProcVar
   rule  V( X:ProcVar ) => SetItem(X : proc)
   rule #V( X:ProcVar ) => SetItem(X)
@@ -98,6 +103,7 @@ module NAMEVAR
 
   rule  V( @P:BoundProc ) => SetItem(@P : name) SetItem(P : proc) // ???
   rule  V(  B:BoundName ) => SetItem( B : name) // ???
+  rule #V( @B:BoundProc ) => .Set // ???
   rule #V(  B:BoundName ) => .Set // ???
     // can use @P as Name or P as Proc
   rule  V( @P:ProcVar   ) => SetItem(@P : name) SetItem(P : proc)
@@ -354,7 +360,7 @@ module NAMEVAR
   rule  V( *X:NameVar   ) => SetItem(*X : proc) SetItem(X : name)
   rule  V( *X:BoundName ) => SetItem(*X : proc) SetItem(X : name) // ???
   rule  V( *X:NamePat   ) => V(X)
-  rule #V( *X:Name ) => #V(X) requires notBool (isNameVar(X) orBool isBoundName(X))
+  rule #V( *X:Name ) => #V(X) requires notBool isNameVar(X)
   rule #V( *X:NameVar   ) => SetItem(X)
   rule #V( *X:NamePat   ) => #V(X)
 
@@ -538,6 +544,8 @@ module NAMEVAR
   rule #V( A:Proc matches B:Proc    ) => #V(A) #V(B)
   rule #V( A:Proc matches B:ProcPat ) => #V(A) #V(B)
 
+// TODO: other Pattern expressions
+
 //----------------------
 //--- Free Variables ---
 //----------------------
@@ -550,8 +558,20 @@ module NAMEVAR
   rule FV+( _:BoundName ) => .Set
   rule FV+( _:BoundProc ) => .Set
 
-  // WildCard
+// Pattern
   rule FV+( \_ ) => .Set
+  rule FV+( _:SimplePat ) => .Set
+
+  // PatExp
+  rule FV+( ~ A:Proc    ) => FV+(A)
+  rule FV+( ~ A:ProcPat ) => FV+(A)
+  rule FV+( A:Proc    /\ B:ProcPat ) => FV+(A) FV+(B)
+  rule FV+( A:ProcPat /\ B:Proc    ) => FV+(A) FV+(B)
+  rule FV+( A:ProcPat /\ B:ProcPat ) => FV+(A) FV+(B)
+  rule FV+( A:Proc    \/ B:ProcPat ) => FV+(A) FV+(B)
+  rule FV+( A:ProcPat \/ B:Proc    ) => FV+(A) FV+(B)
+  rule FV+( A:ProcPat \/ B:ProcPat ) => FV+(A) FV+(B)
+
 
   // ProcVar
   rule FV+( X:ProcVar ) => SetItem(X : proc) SetItem(@X : name)
@@ -1156,6 +1176,20 @@ module NAMEVAR
   rule  FV( P:Proc , Q:Procs ) =>  FV(P)  FV(Q)
   rule #FV( P:Proc , Q:Proc  ) => #FV(P) #FV(Q)
   rule #FV( P:Proc , Q:Procs ) => #FV(P) #FV(Q)
+
+// ProcPat
+  // SimplePat
+  rule #FV( _:SimplePat ) => .Set
+
+  // PatExp
+  rule #FV( ~ A:Proc    ) => #FV(A)
+  rule #FV( ~ A:ProcPat ) => #FV(A)
+  rule #FV( A:Proc    /\ B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:ProcPat /\ B:Proc    ) => #FV(A) #FV(B)
+  rule #FV( A:ProcPat /\ B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:Proc    \/ B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:ProcPat \/ B:Proc    ) => #FV(A) #FV(B)
+  rule #FV( A:ProcPat \/ B:ProcPat ) => #FV(A) #FV(B)
 
 // ProcPats
   rule  FV( P:Proc    , Q:ProcPat  ) =>  FV(P)  FV(Q)
@@ -2023,5 +2057,20 @@ module NAMEVAR
   rule #RN+( A:Proc | B:Proc ) => #RN+(A) #RN+(B) requires notBool isPar(A)
 
   rule #RN+( A:Proc ) => .Set requires notBool (isReceive(A) orBool isPar(A))
+
+//------------------------------
+//--- Name/Process Variables ---
+//------------------------------
+  rule #NV( P:Proc    ) => #NV(#FV(P)) requires notBool isSet(P)
+  rule #NV( P:ProcPat ) => #NV(#FV(P))
+  rule #NV( .Set ) => .Set
+  rule #NV(  SetItem( A:NameVar ) S:Set ) => SetItem(A) #NV(S)
+  rule #NV(  SetItem( _:ProcVar ) S:Set ) => #NV(S)
+
+  rule #PV( P:Proc    ) => #PV(#FV(P)) requires notBool isSet(P)
+  rule #PV( P:ProcPat ) => #PV(#FV(P))
+  rule #PV( .Set ) => .Set
+  rule #PV(  SetItem( A:ProcVar ) S:Set ) => SetItem(A) #PV(S)
+  rule #PV(  SetItem( _:NameVar ) S:Set ) => #PV(S)
 
 endmodule
