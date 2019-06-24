@@ -1,0 +1,11 @@
+// Free Proc Variables
+
+  #PV( for( @{for( y <- x ){ Nil }} <- @Nil ){ y!(*x) | a!(\a | \b) } )
+
+/*
+Output:
+
+    SetItem( \ a )
+    SetItem( \ b )
+
+*/

@@ -1,0 +1,11 @@
+// Free Name Variables
+
+  #NV( for( @{for( y <- x ){ Nil }} <- @Nil ){ y!(*x) | a!(\a | \b) } )
+
+/*
+Output:
+
+    SetItem( a )
+    SetItem( y )
+
+*/
