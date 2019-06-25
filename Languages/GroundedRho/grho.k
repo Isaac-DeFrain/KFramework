@@ -1,66 +1,4 @@
 // RHO CALCULUS with Bool, Int, String ground terms and Rholang features in a polyadic style
-/*
-TODO:
- - Matching (patterns & wildcard)
- - add TypedName ::= Name [":" Proc ]
- - Method semantics
- - Invocation semantics - syntactic sugar for cell pattern(?)
- - NativeChan semantics
-
-**V1.1 features**
- - New & improved for-comprehension:
-   for( ptrn 11 <- src 11 & ... & ptrn 1n <- src 1n ;
-        ...
-        ptrn m1 <- src m1 & ... & ptrn mn <- src mn ;
-      ){P}
-   where src ::= x | x?! | x!?( a 1 , ..., a k ) and ‘&’ replaces the old meaning of ‘;’
-   ⟦for( ptrn ← x?! ){P}⟧ = for( ( ptrn, r ) ← x ){ r!() | ⟦P⟧ }
-   ⟦for( ptrn ← x!?( a 1 , ..., a k )){P}⟧ = new r in { x!( a 1 , ..., a k , *r) | for( ptrn ← r ){ ⟦P⟧ } }
-
- - Sequential output (pattern?):
-   - x!?(v);P
-    ⟦x!?(v);P⟧ = new r in x!((v,*r)) | for( _ ← r ){ ⟦P⟧ }
-   - x!?(v).
-    ⟦x!?(v).⟧ = x!?(v);0
-
-  syntax  SeqOutput ::= Name "!?" "(" [Proc[s]] ")" ";" Proc
-                      | Name "!?" "(" [Proc[s]] ")" "."
-  rule A:Name !?(         ) ; C:Proc => new !X:NameVar in { A!(*!X)            | for( \_ <- !X ){ C } } [structural]
-  rule A:Name !?( B:Proc  ) ; C:Proc => new !X:NameVar in { A!(B,*!X)          | for( \_ <- !X ){ C } } [structural]
-  rule A:Name !?( B:Procs ) ; C:Proc => new !X:NameVar in { A!(#append(B,*!X)) | for( \_ <- !X ){ C } } [structural]
-
- - Sequential/nested let expressions: 
-    let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
-   ⟦let ptrn_1 ← v_1 ; ... ; ptrn_n ← v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 ← x_1 ){ ⟦let ptrn_2 ← v_2 ; ... ; ptrn_n ← v_n in P ⟧ } }
-
-  syntax      LetBind ::= "let" Lbind
-  syntax  SeqLetBinds ::= LetBind ";" LetBind
-                        | LetBind ";" SeqLetBinds [right]
-  syntax  SimLetBinds ::= LetBind "&" LetBind
-                        | LetBind "&" SimLetBinds [right]
-  syntax   SeqSimLets ::= LetBind     ";" SimLetBind
-                        | LetBind     ";" SimLetBinds
-                        | SimLetBind  ";" SeqLetBinds ....
-                        | SimLetBinds ";" SimLetBinds
-                        | SimLetBinds ";" SeqSimLets [right]
-  syntax       LetExp ::= LetBind "in" Proc
-                        | SeqLetBinds "in" Proc
-                        | SimLetBinds "in" Proc
-                        | SeqSimLets  "in" Proc
-  syntax         Proc ::= LetExp
-
-// Sequential Let Binds
-  rule let A:Lbind in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ P } }
-  rule let A:Lbind ; let B:Lbind  in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ let B in P } }
-  rule let A:Lbind ; let B:Lbinds in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ let B in P } }
-
- - Simultaneous let expressions: 
-    let ptrn_1 ← v_1 & ... & ptrn_m ← v m in P
-   ⟦let ptrn_1 ← v_1 & ... & ptrn_n ← v_n in P ⟧ = new x_1 , ... , x_n in { x_1 !(v_1) | ... | x_n!(v_n) | for( ptrn_1 ← x_1 & ... & ptrn_n ← x_n ){ ⟦P⟧ }
-
-// Simultaneous Let Binds
-  rule 
-*/
 
 require "domains.k"
 require "AuxFun/auxfun.k"
@@ -74,14 +12,16 @@ module GRHO-SYNTAX
   import DOMAINS
 
 // Variables
-  syntax             Var ::= Id
+  syntax              Var ::= Id
+  syntax             Vars ::= Var
+                            | Var "," Vars [right]
 
 //-------------
 //--- NAMES ---
 //-------------
   syntax             Name ::= Quote
-                            | NameVar  // name variable
-                            | EmptyName
+                            | NameVar   // name variable
+                            | EmptyName // listen for empty message
                             | NewUri
   syntax            Quote ::= "@" Proc
   syntax          NameVar ::= Var
@@ -89,7 +29,8 @@ module GRHO-SYNTAX
   syntax           NewUri ::= NameVar "(" Uri ")"
 
 // Several Names
-  syntax            Names ::= Name "," Name
+  syntax            Names ::= Name // "," Name
+                            | Vars
                             | Name "," Names [right]
 
 //-----------------
@@ -99,7 +40,7 @@ module GRHO-SYNTAX
   syntax             Proc ::= "{" Proc "}"    [bracket]
                             > New             // New name declaration(s)
                             > Ground          // Ground terms - Bool, Int, Nil, String, Uri
-                            | Collection      // Data structures - List, Map, Set, Tuple
+                            | Collection      // Data structures - RhoList, RhoMap, RhoSet, RhoTuple
                             | ProcVar         // Process variable
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
@@ -117,7 +58,8 @@ module GRHO-SYNTAX
   syntax          ProcVar ::= "\\" Var
 
 // Several Processes
-  syntax            Procs ::= Proc "," Proc
+  syntax            Procs ::= Proc // "," Proc
+                            | Vars
                             | Proc "," Procs [right]
 
 // Parallel composition
@@ -177,7 +119,7 @@ module GRHO-SYNTAX
  // Any Bind
   syntax             Bind ::= Lbind  | Pbind  | Rbind
   syntax            GBind ::= GLbind | GPbind | GRbind
-  syntax          AnyBind ::= Bind | GBind
+  syntax          AnyBind ::= Bind   | GBind
 
   // Multiple Receive
   syntax             MRec ::= GMRec  // Guarded multi receive
@@ -232,8 +174,8 @@ module GRHO-SYNTAX
   syntax             Eval ::= "*" Name
 
 // New - creates fresh unforgeable names
-  syntax              New ::= "new" Name  "in" "{" Proc "}"
-                            | "new" Names "in" "{" Proc "}"
+  syntax              New ::= "new" Names "in" "{" Proc "}"
+                            | "new" Name  "in" "{" Proc "}"
 
 // Matching
   syntax         Matching ::= Match | Select
@@ -243,15 +185,15 @@ module GRHO-SYNTAX
 
   syntax        MatchCase ::= "{" Proc    "}" "|=>" Proc
                             | "{" ProcPat "}" "|=>" Proc
-  syntax       MatchCases ::= MatchCase MatchCase
+  syntax       MatchCases ::= MatchCase
                             | MatchCase MatchCases
   // Select
-  syntax           Select ::= "select" "{" Branch   "}"
-                            | "select" "{" Branches "}"
+  syntax           Select ::= "select" "{" Branches "}"
+                            | "select" "{" Branch   "}"
 
   syntax           Branch ::= "{" Lbind  "}" "|=>" Proc
                             | "{" Lbinds "}" "|=>" Proc
-  syntax         Branches ::= Branch Branch
+  syntax         Branches ::= Branch
                             | Branch Branches
 
 // Variable Reference - allows for shadowing
@@ -293,8 +235,8 @@ module GRHO-SYNTAX
                             | "{" "}"
 
   syntax        RhoKVPair ::= Proc ":" Proc
-  syntax       RhoKVPairs ::= RhoKVPair "," RhoKVPair
-                            | RhoKVPair "," RhoKVPairs
+  syntax       RhoKVPairs ::= RhoKVPair
+                            | RhoKVPair "," RhoKVPairs [right]
 
   // Process sets
   syntax           RhoSet ::= "Set(" Procs ")"
@@ -308,7 +250,7 @@ module GRHO-SYNTAX
 // Ground terms
   syntax           Ground ::= "Nil" // stopped process
                             | Bool | Int | String // built-in
-                            | Unforgeable | Uri
+                            | Unforgeable | Uri   // storage & OCap
   syntax      Unforgeable ::= "unforgeable(" Int ")"
 
   syntax              Uri ::= "`" NativeChan "`"
@@ -329,11 +271,11 @@ module GRHO-SYNTAX
   syntax             AExp ::= "{" AExp "}" [bracket]
                             > IntOrVar
                             > "-" AExp       [strict]
-                            > AExp "%" AExp  [strict] // mod reduction
-                            > AExp "*" AExp  [strict, left]
-                            | AExp "/" AExp  [strict, left]
-                            > AExp "+" AExp  [strict, left]
-                            | AExp "-" AExp  [strict, left]
+                            > AExp "%" AExp  [strict(2)] // mod reduction
+                            > AExp "*" AExp  [strict, right]
+                            | AExp "/" AExp  [strict, right]
+                            > AExp "+" AExp  [strict, right]
+                            | AExp "-" AExp  [strict, right]
 
 // String
   syntax      StringOrVar ::= String | ProcVar | Eval
@@ -353,8 +295,8 @@ module GRHO-SYNTAX
 // Boolean
   syntax             BExp ::= "{" BExp "}"   [bracket]
                             > Bool                // boolean output
-                            | ProcVar             // e.g. \x == Proc, not \x, etc.
-                            | Eval                // e.g. *x == Proc, not *x, etc.
+                            | ProcVar             // e.g. \x == @0!(1), not \x, etc.
+                            | Eval                // e.g. *x == @0!(1), not *x, etc.
                             > AExp "<=" AExp      [seqstrict]
                             | AExp "<"  AExp      [seqstrict]
                             | AExp ">=" AExp      [seqstrict]
@@ -369,15 +311,11 @@ module GRHO-SYNTAX
                             > Proc "matches" Proc // [| P matches Q |] = match P { { Q |=> true } { P |=> false } }
                             | Proc "matches" ProcPat
 
-// Bundles
+// Bundles -- cannot be destructured with pattern-matching
   syntax           Bundle ::= "bundle+{" Proc "}" // write-only
                             | "bundle-{" Proc "}" // read-only
                             | "bundle0{" Proc "}" // neither read/write
                             |  "bundle{" Proc "}" // both read/write
-
-// #isProc Predicate
-  syntax             Bool ::= "#isProc(" K ")" // tests if term has type Proc and no free variables
-                            | "#isName(" K ")" // tests if term has type Name and no free variables
 
 // Methods
   syntax       MethodProc ::= Proc MethodAndArgs
@@ -406,9 +344,8 @@ module GRHO-SYNTAX
                             | "confine"      // semantics? - confine variables? - args?
 
 // For empty content & args
-  syntax             Proc ::= EmptyProc
+  syntax             Proc ::= EmptyProc // sending empty message; empty Proc arg
   syntax        EmptyProc ::= "EmptyP"
-
 
 //----------------
 //--- Patterns ---
@@ -422,7 +359,7 @@ module GRHO-SYNTAX
 // WildCard
   syntax         WildCard ::= "\\_" // instead of _
 // WildCards
-  syntax        WildCards ::= WildCard "," WildCard
+  syntax        WildCards ::= WildCard
                             | WildCard "," WildCards [right]
 
 // Name pattern
@@ -435,14 +372,15 @@ module GRHO-SYNTAX
   syntax         QuotePat ::= "@" ProcPat
 
 // Simple Name pattern
-  syntax    SimpleNamePat ::= "ConcreteName" | "NamePattern"
-//                          | "Name" | "Quote" | "NameVar" // other 
+  syntax    SimpleNamePat ::=    "ConcreteName" | "FreeVarName" | "NameContext" 
+                            |  "Name" | "Quote" | "NameVar"
+                            | "ConcreteNamePat" | "FreeVarNamePat" // other 
 
 // Name patterns
   // NamePats contain at least one WildCard, i.e. they cannot all be Names
-  syntax         NamePats ::= NamePat "," NamePat
-                            | Name    "," NamePat
-                            | NamePat "," Name
+  syntax         NamePats ::= NamePat // "," NamePat
+//                            | Name    "," NamePat
+//                            | NamePat "," Name
                             | Name    "," NamePats [right]
                             | NamePat "," Names    [right]
                             | NamePat "," NamePats [right]
@@ -452,6 +390,7 @@ module GRHO-SYNTAX
 // Pattern -- TODO: precedence
   syntax          ProcPat ::= "{" ProcPat "}" [bracket]
                             > WildCard
+                            > PatExp          // Pattern expression
                             > NewPat          // New pattern
                             | CollectionPat   // Collection pattern
                             | SimplePat       // simple types
@@ -466,14 +405,13 @@ module GRHO-SYNTAX
 //                            | BundlePat       // Bundle pattern
                             > CondPat         // If...then(...else) pattern
                             > ParPat          // Par pattern
-                            > PatExp          // Pattern expression
 //                            > Proc
 
 // Patterns
   // cannot be all Procs, i.e. contains at least one WildCard
-  syntax         ProcPats ::= Proc     "," ProcPat
-                            | ProcPat  "," Proc
-                            | ProcPat  "," ProcPat
+  syntax         ProcPats ::= ProcPat //  "," ProcPat
+//                            | ProcPat  "," Proc
+//                            | Proc     "," ProcPat
                             | Proc     "," ProcPats [right]
                             | ProcPat  "," Procs    [right]
                             | ProcPat  "," ProcPats [right]
@@ -629,8 +567,8 @@ module GRHO-SYNTAX
   syntax          EvalPat ::= "*" NamePat
 
 // New pattern
-  syntax           NewPat ::= "new" Name  "in" "{" ProcPat "}"
-                            | "new" Names "in" "{" ProcPat "}"
+  syntax           NewPat ::= "new" Names "in" "{" ProcPat "}"
+                            | "new" Name  "in" "{" ProcPat "}"
 
 // Matching pattern
   // Match pattern
@@ -647,9 +585,9 @@ module GRHO-SYNTAX
   syntax         MCasePat ::= "{" ProcPat "}" "|=>" ProcPat // match pattern and return pattern
                             | "{" Proc    "}" "|=>" ProcPat // match process and return pattern
   // MCasePats has at least one pattern-returning MCasePat so there are no collisions with MatchCases
-  syntax        MCasePats ::= MCasePat  MCasePat
-                            | MatchCase MCasePat
-                            | MCasePat  MatchCase
+  syntax        MCasePats ::= MCasePat  // MCasePat
+//                            | MatchCase MCasePat
+                            | MCasePat  MatchCases
                             | MatchCase MCasePats
                             | MCasePat  MCasePats
 
@@ -664,9 +602,9 @@ module GRHO-SYNTAX
                             | "{" LbindPat  "}" "|=>" ProcPat
                             | "{" LbindPats "}" "|=>" ProcPat
   // BranchPats has at least one pattern-returning BrachPat so there are no collisions with Branches
-  syntax       BranchPats ::= BranchPat BranchPat
-                            | Branch    BranchPat
-                            | BranchPat Branch
+  syntax       BranchPats ::= BranchPat // BranchPat
+//                            | Branch    BranchPat
+//                            | BranchPat Branch
                             | Branch    BranchPats
                             | BranchPat BranchPats
 
@@ -700,56 +638,73 @@ module GRHO-SYNTAX
 // Simple pattern
   syntax        SimplePat ::= "Bool" | "Int" | "String"
                             | "List" | "Map" | "Set" | "Tuple" | "Unforgeable" | "Uri"
-                            | "ConcreteProc" | "ProcPattern"
-//--TODO                    | "Proc" | "Ground" | "Par" | "Send" | "Receive" // other Proc constructors
-//                          | "ProcPat" | //other ProcPat constructors
+                            | "ConcreteProc" | "FreeVarProc" | "ProcContext"
+                            | "Proc" | "Ground" | "Par" | "Send" | "Receive" // other Proc constructors
+                            | "ConcreteProcPat" | "FreeVarProcPat" //other ProcPat constructors
 
 // Contract pattern
-  syntax      ContractPat ::= "contract" Name    "(" Names    ")" "=" "{" ProcPat "}"
-                            | "contract" Name    "(" Name     ")" "=" "{" ProcPat "}"
-                            | "contract" Name    "("          ")" "=" "{" ProcPat "}"
-                            | "contract" Name    "(" NamePats ")" "=" "{" ProcPat "}"
-                            | "contract" Name    "(" NamePat  ")" "=" "{" ProcPat "}"
+  syntax      ContractPat ::= "contract" NamePat "(" NamePats ")" "=" "{" ProcPat "}"
                             | "contract" NamePat "(" NamePats ")" "=" "{" Proc    "}"
-                            | "contract" NamePat "(" NamePat  ")" "=" "{" Proc    "}"
-                            | "contract" NamePat "(" Names    ")" "=" "{" Proc    "}"
-                            | "contract" NamePat "(" Name     ")" "=" "{" Proc    "}"
-                            | "contract" NamePat "("          ")" "=" "{" Proc    "}"
-                            | "contract" NamePat "(" NamePats ")" "=" "{" ProcPat "}"
-                            | "contract" NamePat "(" NamePat  ")" "=" "{" ProcPat "}"
                             | "contract" NamePat "(" Names    ")" "=" "{" ProcPat "}"
-                            | "contract" NamePat "(" Name     ")" "=" "{" ProcPat "}"
+                            | "contract" NamePat "(" Names    ")" "=" "{" Proc    "}"
                             | "contract" NamePat "("          ")" "=" "{" ProcPat "}"
+                            | "contract" NamePat "("          ")" "=" "{" Proc    "}"
+                            | "contract" Name    "(" NamePats ")" "=" "{" ProcPat "}"
+                            | "contract" Name    "(" Names    ")" "=" "{" ProcPat "}"
+                            | "contract" Name    "("          ")" "=" "{" ProcPat "}"
+//                            | "contract" Name    "(" Name     ")" "=" "{" ProcPat "}"
+//                            | "contract" Name    "(" NamePat  ")" "=" "{" ProcPat "}"
+//                            | "contract" NamePat "(" NamePat  ")" "=" "{" Proc    "}"
+//                            | "contract" NamePat "(" Name     ")" "=" "{" Proc    "}"
+//                            | "contract" NamePat "(" NamePat  ")" "=" "{" ProcPat "}"
+//                            | "contract" NamePat "(" Name     ")" "=" "{" ProcPat "}"
 
 /*
 // TODO: Patternize?
 // Contract Invocation
-  syntax    InvocationPat ::= "invoke" Name "(" Procs ")"
-                            | "invoke" Name "(" Proc  ")"
-                            | "invoke" Name "(" ")"
+  syntax    InvocationPat ::= "invoke" NamePat "(" ProcPats ")"
+                            | "invoke" NamePat "(" Procs    ")"
+                            | "invoke" Name    "(" ProcPats ")"
+                            | "invoke" NamePat "(" ")"
 */
 // Collection pattern -- TODO: MapPat & SetPat
   syntax    CollectionPat ::= ListPat | /*MapPat | SetPat |*/ TuplePat
 
-  // RhoList pattern
-  syntax          ListPat ::= "[" ProcPats "..." ProcPat "]"
-                            | "[" ProcPat  "..." ProcPat "]"
-                            | "[" Procs    "..." ProcPat "]"
-                            | "[" Proc     "..." ProcPat "]"
-                            | "[" ProcPat  "]" // for List matching
-                            | "[" ProcPats "]" // for List matching
+  // RhoList pattern -- bind Procs to ProcVar???
+  syntax          ListPat ::= "[" ProcPats "..." ProcVar "]" // match each Pat and bind remainder as RhoList to ProcVar
+                            | "[" ProcPat  "..." ProcVar "]" // match Pat and bind remainder as RhoList to ProcVar
+                            | "[" Procs    "..." ProcVar "]" // match each Proc and bind remainder as RhoList to ProcVar
+                            | "[" Proc     "..." ProcVar "]" // match Proc and bind remainder as RhoList to ProcVar
+                            | "[" ProcPat  "]" // match List pattern
+                            | "[" ProcPats "]" // match List pattern
 
-// MapPat
+  // RhoMap pattern -- TODO: bind RhoKVPairs to ProcVar???
+  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}" // match each Pat and bind remainder as RhoMap to ProcVar
+                            | "{" ProcPat  "..." ProcVar "}" // match Pat and bind remainder as RhoMap to ProcVar
+                            | "{" Procs    "..." ProcVar "}" // match each Proc and bind remainder as RhoMap to ProcVar
+                            | "{" Proc     "..." ProcVar "}" // match Proc and bind remainder as RhoMap to ProcVar
+                            | "{" RhoKVPairPats "}"
+                            | "{" RhoKVPairPat  "}"
+    // RhoKVPairPat
+  syntax     RhoKVPairPat ::= Proc    ":" ProcPat
+                            | ProcPat ":" Proc
+                            | ProcPat ":" ProcPat
+  syntax    RhoKVPairPats ::= RhoKVPairPat
+                            | RhoKVPair    "," RhoKVPairPats
+                            | RhoKVPairPat "," RhoKVPairs
+                            | RhoKVPairPat "," RhoKVPairPats
 
-// SetPat
+  // RhoSet pattern -- bind Procs to ProcVar???
+  syntax           SetPat ::= "Set(" ProcPats "..." ProcVar ")" // match each Pat and bind remainder as RhoSet to ProcVar
+                            | "Set(" ProcPat  "..." ProcVar ")" // match Pat and bind remainder as RhoSet to ProcVar
+                            | "Set(" Procs    "..." ProcVar ")" // match each Proc and bind remainder as RhoSet to ProcVar
+                            | "Set(" Proc     "..." ProcVar ")" // match Proc and bind remainder as RhoSet to ProcVar
+                            | "Set(" ProcPats ")"
+                            | "Set(" ProcPat  ")"
 
   // RhoTuple pattern
-  syntax         TuplePat ::= "(" ProcPats "..." ProcPat ",)" // match each Pat at the head, then match remaining list to ProcPat
-                            | "(" ProcPat  "..." ProcPat ",)" // match each Pat at the head, then match remaining list to ProcPat
-                            | "(" Procs    "..." ProcPat ",)"
-                            | "(" Proc     "..." ProcPat ",)"
-                            | "(" ProcPat  ",)" // for Tuple matching
-                            | "(" ProcPats ",)" // for Tuple matching
+  syntax         TuplePat ::= "(" ProcPats ",)"
+                            | "(" ProcPat  ",)"
 
 /*
 // Q: Expressions patterns?
@@ -761,14 +716,20 @@ module GRHO-SYNTAX
 
 // Arithmetic
   syntax        IntOrWild ::= Int | WildCard
-  syntax             AExp ::= "{" AExp "}" [bracket]
-                            > IntOrVar
-                            > "-" AExp       [strict]
-                            > AExp "%" AExp  [strict] // mod reduction
-                            > AExp "*" AExp  [strict, left]
-                            | AExp "/" AExp  [strict, left]
-                            > AExp "+" AExp  [strict, left]
-                            | AExp "-" AExp  [strict, left]
+  syntax          AExpPat ::= "{" AExpPat "}" [bracket]
+                            > IntOrWild
+                            > "-" AExpPat
+                            > AExpPat "%" AExp    // mod reduction
+                            > AExpPat "*" AExp    [right]
+                            | AExp    "*" AExpPat [right]
+                            | AExpPat "*" AExpPat [right]
+                            | AExpPat "/" AExp    [right]
+                            | AExp    "/" AExpPat [right]
+                            | AExpPat "/" AExpPat [right]
+                            > AExpPat "+" AExp    [right]
+                            | AExp    "+" AExpPat [right]
+                            | AExpPat "+" AExp    [right]
+                            | AExpPat "-" AExpPat [right]
 
 // String
   syntax     StringOrWild ::= String | WildCard
@@ -777,13 +738,16 @@ module GRHO-SYNTAX
                             | ConcatPat
                             | InterpPat
 
-  syntax        ConcatPat ::= StringOrWild ConcatExpPat
-  syntax     ConcatExpPat ::= "++" StringOrWild
-                            | "++" StringOrWild ConcatExp
+  syntax        ConcatPat ::= String ConcatExpPat
+                            | WildCard ConcatExp
+  syntax     ConcatExpPat ::= "++" WildCard
+                            > "++" StringOrWild ConcatExpPat
 
   syntax        InterpPat ::= StringOrWild "%%" InterpMapPats
+                            | WildCard     "%%" InterpMaps
   syntax    InterpMapPats ::= RhoMapPat
                             | RhoMapPat "%%" InterpMapPats
+                            > RhoMap    "%%" InterpMapPats
 
 // Boolean
   syntax          BExpPat ::= "{" BExpPat "}"   [bracket]
@@ -803,12 +767,6 @@ module GRHO-SYNTAX
                             > BExp "or"  BExp     [strict(1), right]
                             > Proc "matches" Proc // P matches Q is syntactic sugar for: match P { { Q :=> true } { P :=> false } }
 
-// Q: Bundle patterns?
-  syntax        BundlePat ::= "bundle+" "{" ProcPat "}"   // write-only
-                            | "bundle-" "{" ProcPat "}"   // read-only
-                            | "bundle0" "{" ProcPat "}"   // neither read/write
-                            | "bundle"  "{" ProcPat "}"   // both read/write
-
 // Q: Method patterns?
   syntax          MethPat ::= Proc    NEMethArgPats
                             | ProcPat MethodAndArgs
@@ -818,6 +776,14 @@ module GRHO-SYNTAX
   syntax      MethArgPats ::= NEMethArgPats
                             | "." Method "(" ")"
 */
+
+// 
+  syntax           Bool ::=    "#isConcreteName(" K ")" [function] // #FV( Name    ) ==K .Set
+                          | "#isConcreteNamePat(" K ")" [function] // #FV( NamePat ) ==K .Set
+                          |    "#isConcreteProc(" K ")" [function] // #FV( Proc    ) ==K .Set
+                          | "#isConcreteProcPat(" K ")" [function] // #FV( ProcPat ) ==K .Set
+                          |     "#isProcContext(" K ")" [function] // size(#PV( Proc )) ==Int 1 andBool size(#NV( Proc )) ==Int 0
+                          |     "#isNameContext(" K ")" [function] // size(#PV( Proc )) ==Int 0 andBool size(#NV( Proc )) ==Int 1
 
 // For De Bruijn indices & alpha/structural equivalence
   syntax             Name ::= BoundName
@@ -835,10 +801,8 @@ module GRHO-SYNTAX
   syntax              Sub ::= "sub"
   syntax             Proc ::= Sub
 
-// Builtins are processes too
+// Built-ins are processes too
   syntax             Proc ::= List | Map | Set
-//  syntax              Map ::= RhoMap
-//  syntax              Set ::= RhoSet
 
 // For K
   syntax            KItem ::= Name | Names | Proc | Procs | RhoKVPair
@@ -898,7 +862,7 @@ module GRHO
     </T>                                                //
 
 // TODO: This is only needed for strict operations
-  syntax KResult ::= Ground | Eval | List | Map | Set   // final output type of strict operations
+  syntax KResult ::= Ground | Proc | List | Map | Set   // final output type of strict operations
 
 // Free variable execution guard
 //  syntax KItem ::= "Error: Free Variables!"
@@ -988,7 +952,7 @@ module GRHO
 
 // Syntactic sugar - contract desugars into unconsumable receive
   rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
-  rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
+//  rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
   rule contract X:Name (         ) = { P:Proc } => for(   <= X ){ P }  [anywhere, structural]
 
 // Par Operator Semantics - concurrent execution of processes
@@ -1414,11 +1378,23 @@ module GRHO
   rule ~ ~ P:ProcPat => P [anywhere, structural]
 
 // Predicates for closed terms
-  rule #isProc( A:Proc ) => #FV(A) ==K .Set
-  rule #isProc( A:K    ) => false [owise]
+  rule #isConcreteProc( A:Proc ) => #FV(A) ==K .Set
+  rule #isConcreteProc( A:K    ) => false [owise]
 
-  rule #isName( A:Name ) => #FV(A) ==K .Set
-  rule #isName( A:K    ) => false [owise]
+  rule #isConcreteName( A:Name ) => #FV(A) ==K .Set
+  rule #isConcreteName( A:K    ) => false [owise]
+
+  rule #isConcreteNamePat( A:Name ) => #FV(A) ==K .Set
+  rule #isConcreteNamePat( A:K    ) => false [owise]
+
+  rule #isConcreteProcPat( A:Name ) => #FV(A) ==K .Set
+  rule #isConcreteProcPat( A:K    ) => false [owise]
+
+  rule #isProcContext( A:Proc ) => size(#PV(A)) ==Int size(#FV(A))
+  rule #isProcContext( A:K    ) => false [owise]
+
+  rule #isNameContext( A:Proc ) => size(#NV(A)) ==Int size(#FV(A))
+  rule #isNameContext( A:K    ) => false [owise]
 
 /*
 // Methods
@@ -1496,5 +1472,71 @@ module GRHO
   rule for( @ ( A:Procs ) <= X:Name ){ P:Proc } => for( #quotes(A) <= X ){ P } [anywhere, structural]
   rule for( @ ( A:Procs ) <! X:Name ){ P:Proc } => for( #quotes(A) <! X ){ P } [anywhere, structural]
   rule for( @ ( A:Procs ) << X:Name ){ P:Proc } => for( #quotes(A) << X ){ P } [anywhere, structural]
+*/
+/*
+TODO:
+ - Matching (patterns & wildcard)
+ - add TypedName ::= Name [":" Proc ]
+ - Method semantics
+ - Invocation semantics - syntactic sugar for cell pattern(?)
+ - NativeChan semantics
+
+**V1.1 features**
+ - New & improved for-comprehension:
+   for( ptrn 11 <- src 11 & ... & ptrn 1n <- src 1n ;
+        ...
+        ptrn m1 <- src m1 & ... & ptrn mn <- src mn ;
+      ){P}
+   where src ::= x | x?! | x!?( a 1 , ..., a k ) and ‘&’ replaces the old meaning of ‘;’
+   ⟦for( ptrn ← x?! ){P}⟧ = for( ( ptrn, r ) ← x ){ r!() | ⟦P⟧ }
+   ⟦for( ptrn ← x!?( a 1 , ..., a k )){P}⟧ = new r in { x!( a 1 , ..., a k , *r) | for( ptrn ← r ){ ⟦P⟧ } }
+
+ - Sequential output (pattern?):
+   - x!?(v);P
+    ⟦x!?(v);P⟧ = new r in x!((v,*r)) | for( _ ← r ){ ⟦P⟧ }
+   - x!?(v).
+    ⟦x!?(v).⟧ = x!?(v);0
+
+  syntax  SeqOutput ::= Name "!?" "(" [Proc[s]] ")" ";" Proc
+                      | Name "!?" "(" [Proc[s]] ")" "."
+  rule A:Name !?(         ) ; C:Proc => new !X:NameVar in { A!(*!X)            | for( \_ <- !X ){ C } } [structural]
+  rule A:Name !?( B:Proc  ) ; C:Proc => new !X:NameVar in { A!(B,*!X)          | for( \_ <- !X ){ C } } [structural]
+  rule A:Name !?( B:Procs ) ; C:Proc => new !X:NameVar in { A!(#append(B,*!X)) | for( \_ <- !X ){ C } } [structural]
+
+ - Sequential/nested let expressions: 
+    let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
+   ⟦let ptrn_1 ← v_1 ; ... ; ptrn_n ← v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 ← x_1 ){ ⟦let ptrn_2 ← v_2 ; ... ; ptrn_n ← v_n in P ⟧ } }
+
+  syntax      LetBind ::= "let" Lbind
+  syntax  SeqLetBinds ::= LetBind ";" LetBind
+                        | LetBind ";" SeqLetBinds [right]
+  syntax  SimLetBinds ::= LetBind "&" LetBind
+                        | LetBind "&" SimLetBinds [right]
+  syntax   SeqSimLets ::= LetBind     ";" SimLetBind
+                        | LetBind     ";" SimLetBinds
+                        | SimLetBind  ";" SeqLetBinds ....
+                        | SimLetBinds ";" SimLetBinds
+                        | SimLetBinds ";" SeqSimLets [right]
+  syntax       LetExp ::= LetBind "in" Proc
+                        | SeqLetBinds "in" Proc
+                        | SimLetBinds "in" Proc
+                        | SeqSimLets  "in" Proc
+  syntax         Proc ::= LetExp
+
+// Sequential Let Binds
+  rule let A:Lbind in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ P } }
+  rule let A:Lbind ; let B:Lbind  in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ let B in P } }
+  rule let A:Lbind ; let B:Lbinds in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ let B in P } }
+
+ - Simultaneous let expressions: 
+    let ptrn_1 ← v_1 & ... & ptrn_m ← v m in P
+   ⟦let ptrn_1 ← v_1 & ... & ptrn_n ← v_n in P ⟧ = new x_1 , ... , x_n in { x_1 !(v_1) | ... | x_n!(v_n) | for( ptrn_1 ← x_1 & ... & ptrn_n ← x_n ){ ⟦P⟧ }
+
+// Simultaneous Let Binds
+  rule 
+
+// Receive peek (Sneak?): 
+  syntax Send ::= Name "??" "(" Proc[s] ")"
+  "rule" X:Name ??( P:Proc[s] ) | for( Y:NamePats <? Z:Name ){ Q:Proc } | R:Proc => for(Y<?Z){Q} | #sub(@P;Y;Q)
 */
 endmodule
