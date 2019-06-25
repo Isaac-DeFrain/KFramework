@@ -1065,6 +1065,7 @@ module SUB
 //-----------------
 //--- #subGuard ---
 //-----------------
+// length(P) == length(N) 
   rule #subGuard( P:Proc  ; N:Name     ; B:BExp ) => #sub(@P;N;B)
   rule #subGuard( P:Proc  ; N:NamePat  ; B:BExp ) => #sub(@P;N;B)
   rule #subGuard( P:Procs ; N:Names    ; B:BExp ) => #sub(#quotes(P);N;B)
@@ -1078,8 +1079,10 @@ module SUB
   rule #sub( A:Proc ; A ; P:ProcPat ) => P
 
 // Fundamental cases -- WildCard
-  rule #sub( _:Proc    ; _:Proc ; \_        ) => \_
-  rule #sub( _:Name    ; _:Name ; \_        ) => \_
+  rule #sub( _:Proc    ; _:Proc    ; \_        ) => \_
+  rule #sub( _:Proc    ; _:ProcPat ; \_        ) => \_
+  rule #sub( _:Name    ; _:Name    ; \_        ) => \_
+  rule #sub( _:Name    ; _:NamePat ; \_        ) => \_
   rule #sub( _:ProcPat ; \_     ; A:ProcPat ) => A
   rule #sub( _:ProcPat ; \_     ; A:Proc    ) => A
   rule #sub( _:Proc    ; \_     ; A:ProcPat ) => A
@@ -1125,71 +1128,124 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:Name    !! ( D:ProcPat  ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:Name    !! ( D:ProcPats ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
+// sub Proc for SimplePat
+  rule #sub( A:Proc ; Bool        ; C:Proc ) => #if        isBool(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Int         ; C:Proc ) => #if         isInt(A) #then C #else .K #fi
+  rule #sub( A:Proc ; String      ; C:Proc ) => #if      isString(A) #then C #else .K #fi
+  rule #sub( A:Proc ; List        ; C:Proc ) => #if     isRhoList(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Map         ; C:Proc ) => #if      isRhoMap(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Set         ; C:Proc ) => #if      isRhoSet(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Tuple       ; C:Proc ) => #if    isRhoTuple(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Unforgeable ; C:Proc ) => #if isUnforgeable(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Uri         ; C:Proc ) => #if         isUri(A) #then C #else .K #fi
+
+// sub Proc for ProcPat in Proc
+//  rule #sub( _:Proc ; ~ _:Proc    ; C:Proc ) => C
+  rule #sub( A:Proc ;       B:Proc /\ Bool         ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Bool         ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Int          ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Int          ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ String       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ String       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ List         ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ List         ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Map          ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Map          ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Set          ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Set          ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Tuple        ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Tuple        ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Unforgeable  ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Uri          ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;       B:Proc /\ ConcreteProc ; C:Proc ) => #if #match(A;ConcreteProc) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;         Bool /\ B:Proc       ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;         Bool /\ B:ProcPat    ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;          Int /\ B:Proc       ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Int /\ B:ProcPat    ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;       String /\ B:Proc       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       String /\ B:ProcPat    ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;         List /\ B:Proc       ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;         List /\ B:ProcPat    ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;          Map /\ B:Proc       ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Map /\ B:ProcPat    ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;          Set /\ B:Proc       ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Set /\ B:ProcPat    ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;        Tuple /\ B:Proc       ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;        Tuple /\ B:ProcPat    ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;  Unforgeable /\ B:Proc       ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;          Uri /\ B:Proc       ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ; ConcreteProc /\ B:Proc       ; C:Proc ) => #if #match(A;ConcreteProc) #then #sub(A;B;C) #else C #fi
+
+  rule #sub( @A:Proc ; @B:ProcPat ; C:Proc ) => #sub(A;B;C)
+
 // sub Procs for ProcPats
-  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc , B:Proc  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:ProcPat , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc , B:Proc  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc , B:Procs ; C:ProcPat , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
 
 // sub Procs for ProcPats
-  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Proc     ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:Procs    ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc    , B:ProcPats ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:Procs    ; C:ProcPat , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Proc     ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:Proc     ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:Proc    , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Proc     ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPat  ; C:ProcPat , D:ProcPat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:Procs    ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc    , B:ProcPats ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:Procs    ; C:ProcPat , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Proc    , B:ProcPats ; C:ProcPat , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ; E:Name ) => #sub(B;D;#sub(A;C;E))
 
 // sub Names for NamePats
-  rule #sub( A:Name , B:Name  ; C:NamePat , D:Name     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Name  ; C:Name    , D:NamePat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Name  ; C:NamePat , D:NamePat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Name  ; C:NamePat , D:Name     ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Name  ; C:Name    , D:NamePat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Name  ; C:NamePat , D:NamePat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:NamePat , D:Name     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:Name    , D:NamePat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:NamePat , D:NamePat  ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:Name    , B:Names    ; C:NamePat , D:Names    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:Name    , B:Names    ; C:Name    , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:Name    , B:Names    ; C:NamePat , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:Name    , B:NamePats ; C:NamePat , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:NamePat , D:Name     ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:Name    , D:NamePat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:Name , B:Name  ; C:NamePat , D:NamePat  ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:Name ) => #sub(B;D;#sub(A;C;E))
+// TODO: finish
 
 // sub Names for NamePats
   rule #sub( A:NamePat , B:Name     ; C:NamePat , D:Name     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
