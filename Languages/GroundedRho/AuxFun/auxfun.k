@@ -86,8 +86,11 @@ module AUXFUN-SYNTAX
                      |  "#dec(" NewPat     ")" [function]
 
   syntax     Names ::= "#chan(" AnyBinds    ")" [function]
+                     | "#chan(" Send        ")" [function]
+                     | "#chan(" SendPat     ")" [function]
                      | "#chan(" Receive     ")" [function]
                      | "#chan(" RecPat      ")" [function]
+                     | "#chan(" AnyBind     ")" [function]
                      | "#bvar(" AnyBind     ")" [function]
                      | "#bvar(" AnyBinds    ")" [function]
                      | "#bvar(" AnyBindPat  ")" [function]
@@ -127,12 +130,14 @@ module AUXFUN-SYNTAX
                      | "#procs2par(" Procs ")" [function]
   syntax     Procs ::= "#par2procs(" Proc  ")" [function]
 
+  syntax      Name ::= "#quotes(" Proc  ")"           [function]
   syntax     Names ::= "#quotes(" Procs ")"           [function]
                      | "#append(" Name  ";" Name  ")" [function]
                      | "#append(" Names ";" Name  ")" [function]
                      | "#append(" Name  ";" Names ")" [function]
                      | "#append(" Names ";" Names ")" [function]
 
+  syntax   NamePat ::= "#quotes(" ProcPat  ")"              [function]
   syntax  NamePats ::= "#quotes(" ProcPats ")"              [function]
                      | "#append(" Name     ";" NamePat  ")" [function]
                      | "#append(" Names    ";" NamePat  ")" [function]
@@ -737,12 +742,12 @@ module AUXFUN
 //--- #size ---
 //-------------
   rule #size( Set( ) ) => 0
-  rule #size( Set( P:Proc  ) ) => #length(P)
+//  rule #size( Set( P:Proc  ) ) => #length(P)
   rule #size( Set( P:Procs ) ) => #length(P)
   
   rule #size( { } ) => 0
   rule #size( { _:Proc : _:Proc } ) => 1
-  rule #size( { _:Proc : _:Proc , _:RhoKVPair  } ) => 2
+//  rule #size( { _:Proc : _:Proc , _:RhoKVPair  } ) => 2
   rule #size( { _:Proc : _:Proc , R:RhoKVPairs } ) => 1 +Int #size({R})
 
 //---------------
@@ -751,36 +756,36 @@ module AUXFUN
 // Procs
   rule #length( EmptyP ) => 0
   rule #length( A:Proc ) => 1 requires A =/=K EmptyP
-  rule #length( _:Proc , _:Proc  ) => 2
+//  rule #length( _:Proc , _:Proc  ) => 2
   rule #length( _:Proc , P:Procs ) => 1 +Int #length(P)
 
 // ProcPats
   rule #length( _:ProcPat ) => 1
-  rule #length( _:Proc    , _:ProcPat  ) => 2
-  rule #length( _:ProcPat , _:Proc     ) => 2
-  rule #length( _:ProcPat , _:ProcPat  ) => 2
+//  rule #length( _:Proc    , _:ProcPat  ) => 2
+//  rule #length( _:ProcPat , _:Proc     ) => 2
+//  rule #length( _:ProcPat , _:ProcPat  ) => 2
   rule #length( _:Proc    , P:ProcPats ) => 1 +Int #length(P)
   rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
   rule #length( _:ProcPat , P:Procs    ) => 1 +Int #length(P)
 
 // RhoList
   rule #length( [ ] ) => 0
-  rule #length( [ P:Proc     ] ) => #length(P)
+//  rule #length( [ P:Proc     ] ) => #length(P)
   rule #length( [ P:Procs    ] ) => #length(P)
-  rule #length( [ P:ProcPat  ] ) => #length(P)
+//  rule #length( [ P:ProcPat  ] ) => #length(P)
   rule #length( [ P:ProcPats ] ) => #length(P)
 
 // Names
   rule #length( EmptyN ) => 0
   rule #length( A:Name ) => 1 requires A =/=K EmptyN
-  rule #length( _:Name , _:Name  ) => 2
+//  rule #length( _:Name , _:Name  ) => 2
   rule #length( _:Name , N:Names ) => 1 +Int #length(N)
 
 // NamePats
   rule #length( _:NamePat ) => 1
-  rule #length( _:Name    , _:NamePat  ) => 2
-  rule #length( _:NamePat , _:Name     ) => 2
-  rule #length( _:NamePat , _:NamePat  ) => 2
+//  rule #length( _:Name    , _:NamePat  ) => 2
+//  rule #length( _:NamePat , _:Name     ) => 2
+//  rule #length( _:NamePat , _:NamePat  ) => 2
   rule #length( _:Name    , N:NamePats ) => 1 +Int #length(N)
   rule #length( _:NamePat , N:NamePats ) => 1 +Int #length(N)
   rule #length( _:NamePat , N:Names    ) => 1 +Int #length(N)
@@ -818,19 +823,19 @@ module AUXFUN
 //-------------
 // Bind
   rule #chan(            <- N:Name ) => N
-  rule #chan( _:Name     <- N:Name ) => N
+//  rule #chan( _:Name     <- N:Name ) => N
   rule #chan( _:Names    <- N:Name ) => N
-  rule #chan( _:NamePat  <- N:Name ) => N
+//  rule #chan( _:NamePat  <- N:Name ) => N
   rule #chan( _:NamePats <- N:Name ) => N
   rule #chan(            <= N:Name ) => N
-  rule #chan( _:Name     <= N:Name ) => N
+//  rule #chan( _:Name     <= N:Name ) => N
   rule #chan( _:Names    <= N:Name ) => N
-  rule #chan( _:NamePat  <= N:Name ) => N
+//  rule #chan( _:NamePat  <= N:Name ) => N
   rule #chan( _:NamePats <= N:Name ) => N
   rule #chan(            <! N:Name ) => N
-  rule #chan( _:Name     <! N:Name ) => N
+//  rule #chan( _:Name     <! N:Name ) => N
   rule #chan( _:Names    <! N:Name ) => N
-  rule #chan( _:NamePat  <! N:Name ) => N
+//  rule #chan( _:NamePat  <! N:Name ) => N
   rule #chan( _:NamePats <! N:Name ) => N
   // Guraded
   rule #chan( B:Lbind _:Guard ) => #chan(B)
@@ -851,19 +856,19 @@ module AUXFUN
 
 // BindPat
   rule #chan(            <- N:NamePat ) => N
-  rule #chan( _:Name     <- N:NamePat ) => N
+//  rule #chan( _:Name     <- N:NamePat ) => N
   rule #chan( _:Names    <- N:NamePat ) => N
-  rule #chan( _:NamePat  <- N:NamePat ) => N
+//  rule #chan( _:NamePat  <- N:NamePat ) => N
   rule #chan( _:NamePats <- N:NamePat ) => N
   rule #chan(            <= N:NamePat ) => N
-  rule #chan( _:Name     <= N:NamePat ) => N
+//  rule #chan( _:Name     <= N:NamePat ) => N
   rule #chan( _:Names    <= N:NamePat ) => N
-  rule #chan( _:NamePat  <= N:NamePat ) => N
+//  rule #chan( _:NamePat  <= N:NamePat ) => N
   rule #chan( _:NamePats <= N:NamePat ) => N
   rule #chan(            <! N:NamePat ) => N
-  rule #chan( _:Name     <! N:NamePat ) => N
+//  rule #chan( _:Name     <! N:NamePat ) => N
   rule #chan( _:Names    <! N:NamePat ) => N
-  rule #chan( _:NamePat  <! N:NamePat ) => N
+//  rule #chan( _:NamePat  <! N:NamePat ) => N
   rule #chan( _:NamePats <! N:NamePat ) => N
   // Guraded
   rule #chan( B:LbindPat _:Guard ) => #chan(B)
@@ -902,42 +907,42 @@ module AUXFUN
 //-------------
 // number of binding variables in a listen
 // Bind
-  rule #lislen(            <- _:Name ) => 0
-  rule #lislen( _:Name     <- _:Name ) => 1
+//  rule #lislen(            <- _:Name ) => 0
+//  rule #lislen( _:Name     <- _:Name ) => 1
   rule #lislen( N:Names    <- _:Name ) => #length(N)
-  rule #lislen( _:NamePat  <- _:Name ) => 1
+//  rule #lislen( _:NamePat  <- _:Name ) => 1
   rule #lislen( N:NamePats <- _:Name ) => #length(N)
-  rule #lislen(            <= _:Name ) => 0
-  rule #lislen( _:Name     <= _:Name ) => 1
+//  rule #lislen(            <= _:Name ) => 0
+//  rule #lislen( _:Name     <= _:Name ) => 1
   rule #lislen( N:Names    <= _:Name ) => #length(N)
-  rule #lislen( _:NamePat  <= _:Name ) => 1
+//  rule #lislen( _:NamePat  <= _:Name ) => 1
   rule #lislen( N:NamePats <= _:Name ) => #length(N)
-  rule #lislen(            <! _:Name ) => 0
-  rule #lislen( _:Name     <! _:Name ) => 1
+//  rule #lislen(            <! _:Name ) => 0
+//  rule #lislen( _:Name     <! _:Name ) => 1
   rule #lislen( N:Names    <! _:Name ) => #length(N)
-  rule #lislen( _:NamePat  <! _:Name ) => 1
+//  rule #lislen( _:NamePat  <! _:Name ) => 1
   rule #lislen( N:NamePats <! _:Name ) => #length(N)
   // Guraded
   rule #lislen( B:Lbind _:Guard ) => #lislen(B)
   rule #lislen( B:Pbind _:Guard ) => #lislen(B)
   rule #lislen( B:Rbind _:Guard ) => #lislen(B)
 // BindPat
-  rule #lislen(            <- _:NamePat ) => 0
-  rule #lislen( _:Name     <- _:NamePat ) => 1
+//  rule #lislen(            <- _:NamePat ) => 0
+//  rule #lislen( _:Name     <- _:NamePat ) => 1
   rule #lislen( N:Names    <- _:NamePat ) => #length(N)
-  rule #lislen( _:NamePat  <- _:NamePat ) => 1
+//  rule #lislen( _:NamePat  <- _:NamePat ) => 1
   rule #lislen( N:NamePats <- _:NamePat ) => #length(N)
-  rule #lislen(            <= _:NamePat ) => 0
-  rule #lislen( _:Name     <= _:NamePat ) => 1
+//  rule #lislen(            <= _:NamePat ) => 0
+//  rule #lislen( _:Name     <= _:NamePat ) => 1
   rule #lislen( N:Names    <= _:NamePat ) => #length(N)
-  rule #lislen( _:NamePat  <= _:NamePat ) => 1
+//  rule #lislen( _:NamePat  <= _:NamePat ) => 1
   rule #lislen( N:NamePats <= _:NamePat ) => #length(N)
-  rule #lislen(            <! _:NamePat ) => 0
-  rule #lislen( _:Name     <! _:NamePat ) => 1
+//  rule #lislen(            <! _:NamePat ) => 0
+//  rule #lislen( _:Name     <! _:NamePat ) => 1
   rule #lislen( N:Names    <! _:NamePat ) => #length(N)
-  rule #lislen( _:NamePat  <! _:NamePat ) => 1
+//  rule #lislen( _:NamePat  <! _:NamePat ) => 1
   rule #lislen( N:NamePats <! _:NamePat ) => #length(N)
-  // Guraded
+  // Guarded
   rule #lislen( B:LbindPat _:Guard ) => #lislen(B)
   rule #lislen( B:PbindPat _:Guard ) => #lislen(B)
   rule #lislen( B:RbindPat _:Guard ) => #lislen(B)
@@ -948,19 +953,19 @@ module AUXFUN
 // binding variables
 // Bind
   rule #bvar(            <- _:Name ) => EmptyN
-  rule #bvar( N:Name     <- _:Name ) => N
+//  rule #bvar( N:Name     <- _:Name ) => N
   rule #bvar( N:Names    <- _:Name ) => N
-  rule #bvar( N:NamePat  <- _:Name ) => N
+//  rule #bvar( N:NamePat  <- _:Name ) => N
   rule #bvar( N:NamePats <- _:Name ) => N
   rule #bvar(            <= _:Name ) => EmptyN
-  rule #bvar( N:Name     <= _:Name ) => N
+//  rule #bvar( N:Name     <= _:Name ) => N
   rule #bvar( N:Names    <= _:Name ) => N
-  rule #bvar( N:NamePat  <= _:Name ) => N
+//  rule #bvar( N:NamePat  <= _:Name ) => N
   rule #bvar( N:NamePats <= _:Name ) => N
   rule #bvar(            <! _:Name ) => EmptyN
-  rule #bvar( N:Name     <! _:Name ) => N
+//  rule #bvar( N:Name     <! _:Name ) => N
   rule #bvar( N:Names    <! _:Name ) => N
-  rule #bvar( N:NamePat  <! _:Name ) => N
+//  rule #bvar( N:NamePat  <! _:Name ) => N
   rule #bvar( N:NamePats <! _:Name ) => N
   // Guraded
   rule #bvar( B:Lbind _:Guard ) => #bvar(B)
@@ -1021,15 +1026,14 @@ module AUXFUN
 //---------------
 //--- #quotes ---  
 //---------------
-  rule #quotes( A:Proc , B:Proc  ) => @A , @B
+  rule #quotes( A:Proc ) => @A
   rule #quotes( A:Proc , B:Procs ) => @A , #quotes(B)
 
-  rule #quotes( A:Proc    , B:ProcPat  ) => @A , @B
-  rule #quotes( A:ProcPat , B:Proc     ) => @A , @B
-  rule #quotes( A:ProcPat , B:ProcPat  ) => @A , @B
-  rule #quotes( A:Proc    , B:ProcPats ) => @A , #quotes(B)
-  rule #quotes( A:ProcPat , B:ProcPats ) => @A , #quotes(B)
-  rule #quotes( A:ProcPat , B:Procs    ) => @A , #quotes(B)
+  rule #quotes( \_ ) => \_
+  rule #quotes( A:ProcPat ) => @A requires notBool isWildCard(A)
+  rule #quotes( A:Proc    , B:ProcPats ) => #quotes(A) , #quotes(B)
+  rule #quotes( A:ProcPat , B:Procs    ) => #quotes(A) , #quotes(B)
+  rule #quotes( A:ProcPat , B:ProcPats ) => #quotes(A) , #quotes(B)
 
 //--------------------
 //--- #interpolate ---
