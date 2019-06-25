@@ -695,8 +695,17 @@ module ALPHA
   rule #dBound( I:Int ;  _:NameVar ; _:Map   ) => boundN(I)
   rule #dBound( I:Int ; @P:ProcVar ; _:Map   ) => @ boundP(I)
   rule #dBound( I:Int ; @P:Proc    ; Mem:Map ) => @ #dBound(I;P;Mem) requires notBool isProcVar(P)
+  rule #dBound( I:Int ; @P:ProcPat ; Mem:Map ) => @ #dBound(I;P;Mem) requires notBool isProcVar(P)
   rule #dBound( _:Int ;  B:BoundName ; _:Map ) => B
   rule #dBound( _:Int ; \_           ; _:Map ) => \_
+
+  rule #dBound( _:Int ; A:SimplePat  ; _:Map ) => A
+  rule #dBound( I:Int ; A:Proc    /\ B:ProcPat ; Mem:Map ) => #dBound(I;A;Mem) /\ #dBound(I;B;Mem)
+  rule #dBound( I:Int ; A:ProcPat /\ B:Proc    ; Mem:Map ) => #dBound(I;A;Mem) /\ #dBound(I;B;Mem)
+  rule #dBound( I:Int ; A:ProcPat /\ B:ProcPat ; Mem:Map ) => #dBound(I;A;Mem) /\ #dBound(I;B;Mem)
+  rule #dBound( I:Int ; A:Proc    \/ B:ProcPat ; Mem:Map ) => #dBound(I;A;Mem) \/ #dBound(I;B;Mem)
+  rule #dBound( I:Int ; A:ProcPat \/ B:Proc    ; Mem:Map ) => #dBound(I;A;Mem) \/ #dBound(I;B;Mem)
+  rule #dBound( I:Int ; A:ProcPat \/ B:ProcPat ; Mem:Map ) => #dBound(I;A;Mem) \/ #dBound(I;B;Mem)
 
   // several Names
   rule #dBound( I:Int ; A:Name    , B:Name     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
@@ -884,20 +893,20 @@ module ALPHA
   rule #dBound( _:Int ; A:New ; Mem:Map ) => #deBruijn(1,0;A;.Map)
 
   // several Names -- increase index for each name (if not already bound)
-  rule #dBound( I:Int ; A:Name    , B:Name     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:Name    , B:NamePat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:NamePat , B:Name     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:NamePat , B:NamePat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:Name    , B:Name     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:Name    , B:NamePat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:NamePat , B:Name     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:NamePat , B:NamePat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:Name    , B:Names    ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:Name    , B:NamePats ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:NamePat , B:Names    ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:NamePat , B:NamePats ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
 
   // several Procs -- increase index for each name (if not already bound)
-  rule #dBound( I:Int ; A:Proc    , B:Proc     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:Proc    , B:ProcPat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:ProcPat , B:Proc     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
-  rule #dBound( I:Int ; A:ProcPat , B:ProcPat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:Proc    , B:Proc     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:Proc    , B:ProcPat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:ProcPat , B:Proc     ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
+//  rule #dBound( I:Int ; A:ProcPat , B:ProcPat  ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:Proc    , B:Procs    ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:Proc    , B:ProcPats ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
   rule #dBound( I:Int ; A:ProcPat , B:Procs    ; Mem:Map ) => #dBound(I;A;Mem) , #dBound(I +Int size(#FV(A));B;Mem)
@@ -1284,8 +1293,27 @@ module ALPHA
   rule #mapify( I:Int ; A:Proc matches B:Proc    ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
 //  rule #mapify( I:Int ; A:Proc matches B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
 
-// Nested #mapify
+// Pattern
+  rule #mapify( _:Int ; _:SimplePat ; _:Map ) => .Map
+
+  rule #mapify( I:Int ; ~ A:Proc    ; Mem:Map ) => #mapify(I;A;Mem)
+  rule #mapify( I:Int ; ~ A:ProcPat ; Mem:Map ) => #mapify(I;A;Mem)
+  rule #mapify( I:Int ; A:Proc    /\ B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:ProcPat /\ B:Proc    ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:ProcPat /\ B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:Proc    \/ B:Proc    ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:Proc    \/ B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:ProcPat \/ B:Proc    ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+  rule #mapify( I:Int ; A:ProcPat \/ B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I;B;Mem)
+
+  // NamePat
+rule #mapify( I:Int ; @A:ProcPat ; Mem:Map ) => #mapify(I;A;Mem)
+
+//----------------------
+//--- Nested #mapify ---
+//----------------------
   rule #mapify( _:Int , _:Int ; \_ ; Mem:Map ) => Mem
+  rule #mapify( _:Int , _:Int ; _:SimplePat ; Mem:Map ) => Mem
   // Name
   rule #mapify( I:Int , J:Int ; A:NameVar   ; Mem:Map ) => updateMap( Mem , A |-> boundN(I,J) )
   rule #mapify( _:Int , _:Int ; _:BoundName ; Mem:Map ) => Mem
@@ -1381,6 +1409,7 @@ module ALPHA
 //---------------
 //--- #dBsize ---
 //---------------
+// sum of sizes of listening variables and bound channel variables -- for #deBruijn
   rule #dBsize( A:Lbind     ) => size(#LV(A)) +Int size(#BV(#chan(A)))
   rule #dBsize( A:Pbind     ) => size(#LV(A)) +Int size(#BV(#chan(A)))
   rule #dBsize( A:Rbind     ) => size(#LV(A)) +Int size(#BV(#chan(A)))
@@ -1409,6 +1438,7 @@ module ALPHA
 //-------------------
 //--- #dBoundSize ---
 //-------------------
+// sum of sizes of listening variables & receive variables (i.e. free channel variables)
   rule #dBoundSize( A:Lbind     ) => size(#LV(A)) +Int size(#RV(A))
   rule #dBoundSize( A:Pbind     ) => size(#LV(A)) +Int size(#RV(A))
   rule #dBoundSize( A:Rbind     ) => size(#LV(A)) +Int size(#RV(A))
