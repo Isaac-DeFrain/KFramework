@@ -1,6 +1,6 @@
 // Receive -- wildcard listen
 
-    new x,a in { x!(41,*a) | x!(40) | for( \_ <- x ){ 1 } }
+    new x,a in { x!(*a,41) | x!(41) | for( @{\a /\ Unforgeable},@{\c /\ Int} <- x ){ [ 1 + \c , \a ] } }
 
 /*
 Output:
@@ -8,7 +8,7 @@ Output:
   <activity>
     <task>
       <k>
-        1
+        [ 42 , unforgeable( 1 ) ]
       </k>
     </task>
   </activity>
@@ -19,10 +19,10 @@ Output:
           @ unforgeable( 0 )
         </schan>
         <msg>
-          41 , unforgeable( 1 )
+          41
         </msg>
         <arity>
-          2
+          1
         </arity>
         <stype>
           0
@@ -37,13 +37,13 @@ Output:
     2
   </nextLoc>
   <original>
-    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ <- x ) { 1 } }
+    new x , a in { x ! ( * a , 41 ) | x ! ( 41 ) | for ( @ \ a /\ Unforgeable , @ \ c /\ Int <- x ) { [ 1 + \ c , \ a ] } }
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
   <OGdeBruijn>
-    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ <- boundN( 0 ) ) { 1 } }
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( * boundN( 1 ) , 41 ) | boundN( 0 ) ! ( 41 ) | for ( @ boundP( 2 ) /\ Unforgeable , @ boundP( 3 ) /\ Int <- boundN( 0 ) ) { [ 1 + boundP( 3 ) , boundP( 2 ) ] } }
   </OGdeBruijn>
 </T>
 */
