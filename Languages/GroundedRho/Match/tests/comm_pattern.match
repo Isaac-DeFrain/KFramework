@@ -1,0 +1,10 @@
+// Receive -- wildcard listen
+
+    #match( @unforgeable(0),@41 ; @Unforgeable,@{\c /\ Int} )
+
+/*
+Output:
+
+    true
+
+*/
