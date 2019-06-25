@@ -1,0 +1,10 @@
+// SimplePat
+
+  #sub( @{2} ; @{\a /\ Bool } ; true and \a )
+
+/*
+Output: 
+
+    true and \ a
+
+*/

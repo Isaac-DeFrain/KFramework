@@ -1,0 +1,10 @@
+// Receive -- wildcard listen
+
+    #subGuard( 41 ; @{\c /\ Int} ; \c > 40 )
+
+/*
+Output:
+
+    41 > 40
+
+*/

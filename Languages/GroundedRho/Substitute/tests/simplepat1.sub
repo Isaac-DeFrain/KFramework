@@ -1,0 +1,10 @@
+// SimplePat
+
+  #sub( @{true} ; @{\a /\ Int } ; 1 + \a )
+
+/*
+Output: 
+
+    1 + \ a
+
+*/
