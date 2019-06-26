@@ -528,8 +528,9 @@ module NAMEVAR
   rule  V( A:Proc !=  B:Proc ) =>  V(A)  V(B)
   rule  V( A:Name ==  B:Name ) =>  V(A)  V(B)
   rule  V( A:Name !=  B:Name ) =>  V(A)  V(B)
-  rule  V( A:Proc matches B:Proc    ) => V(A) V(B)
-  rule  V( A:Proc matches B:ProcPat ) => V(A) V(B)
+  rule  V( A:Proc    matches B:Proc    ) => V(A) V(B)
+  rule  V( A:Proc    matches B:ProcPat ) => V(A) V(B)
+  rule  V( A:ProcPat matches B:ProcPat ) => V(A) V(B)
   rule #V( not B:BExp        ) => #V(B)
   rule #V( A:BExp and B:BExp ) => #V(A) #V(B)
   rule #V( A:BExp or  B:BExp ) => #V(A) #V(B)
@@ -541,8 +542,9 @@ module NAMEVAR
   rule #V( A:Proc !=  B:Proc ) => #V(A) #V(B)
   rule #V( A:Name ==  B:Name ) => #V(A) #V(B)
   rule #V( A:Name !=  B:Name ) => #V(A) #V(B)
-  rule #V( A:Proc matches B:Proc    ) => #V(A) #V(B)
-  rule #V( A:Proc matches B:ProcPat ) => #V(A) #V(B)
+  rule #V( A:Proc    matches B:Proc    ) => #V(A) #V(B)
+  rule #V( A:Proc    matches B:ProcPat ) => #V(A) #V(B)
+  rule #V( A:ProcPat matches B:ProcPat ) => #V(A) #V(B)
 
 // TODO: other Pattern expressions
 
@@ -760,8 +762,9 @@ module NAMEVAR
   rule FV+( A:Proc !=  B:Proc ) => FV+(A) FV+(B)
   rule FV+( A:Name ==  B:Name ) => FV+(A) FV+(B)
   rule FV+( A:Name !=  B:Name ) => FV+(A) FV+(B)
-  rule FV+( A:Proc matches B:Proc    ) => FV+(A) FV+(B)
-  rule FV+( A:Proc matches B:ProcPat ) => FV+(A) FV+(B)
+  rule FV+( A:Proc    matches B:Proc    ) => FV+(A) FV+(B)
+  rule FV+( A:Proc    matches B:ProcPat ) => FV+(A) FV+(B)
+  rule FV+( A:ProcPat matches B:ProcPat ) => FV+(A) FV+(B)
 
   // Names
   rule FV+( A:Name , B:Name  ) => FV+(A) FV+(B)
@@ -791,11 +794,13 @@ module NAMEVAR
   rule  FV( _:BoundProc ) => .Set
   rule  FV(   sub       ) => .Set
   rule  FV(   \_        ) => .Set
+  rule  FV( _:SimplePat ) => .Set
   rule #FV( _:Ground    ) => .Set
   rule #FV( _:BoundName ) => .Set
   rule #FV( _:BoundProc ) => .Set
   rule #FV(   sub       ) => .Set
   rule #FV(   \_        ) => .Set
+  rule #FV( _:SimplePat ) => .Set
 
 // NameVar
   rule  FV( X:NameVar ) => SetItem(X : name)
@@ -1135,8 +1140,9 @@ module NAMEVAR
   rule  FV( A:Proc !=  B:Proc ) => FV(A) FV(B)
   rule  FV( A:Name ==  B:Name ) => FV(A) FV(B)
   rule  FV( A:Name !=  B:Name ) => FV(A) FV(B)
-  rule  FV( A:Proc matches B:Proc    ) => FV(A) FV(B)
-  rule  FV( A:Proc matches B:ProcPat ) => FV(A) FV(B)
+  rule  FV( A:Proc    matches B:Proc    ) => FV(A) FV(B)
+  rule  FV( A:Proc    matches B:ProcPat ) => FV(A) FV(B)
+  rule  FV( A:ProcPat matches B:ProcPat ) => FV(A) FV(B)
   rule #FV( not B:BExp        ) => #FV(B)
   rule #FV( A:BExp and B:BExp ) => #FV(A) #FV(B)
   rule #FV( A:BExp or  B:BExp ) => #FV(A) #FV(B)
@@ -1148,8 +1154,9 @@ module NAMEVAR
   rule #FV( A:Proc !=  B:Proc ) => #FV(A) #FV(B)
   rule #FV( A:Name ==  B:Name ) => #FV(A) #FV(B)
   rule #FV( A:Name !=  B:Name ) => #FV(A) #FV(B)
-  rule #FV( A:Proc matches B:Proc    ) => #FV(A) #FV(B)
-  rule #FV( A:Proc matches B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:Proc    matches B:Proc    ) => #FV(A) #FV(B)
+  rule #FV( A:Proc    matches B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:ProcPat matches B:ProcPat ) => #FV(A) #FV(B)
 
 // Names
   rule  FV( X:Name , Y:Name  ) =>  FV(X)  FV(Y)
@@ -1182,11 +1189,23 @@ module NAMEVAR
   rule #FV( _:SimplePat ) => .Set
 
   // PatExp
+  rule  FV( ~ A:Proc    ) =>  FV(A)
+  rule  FV( ~ A:ProcPat ) =>  FV(A)
+  rule  FV( A:Proc    /\ B:Proc    ) =>  FV(A)  FV(B)
+  rule  FV( A:Proc    /\ B:ProcPat ) =>  FV(A)  FV(B)
+  rule  FV( A:ProcPat /\ B:Proc    ) =>  FV(A)  FV(B)
+  rule  FV( A:ProcPat /\ B:ProcPat ) =>  FV(A)  FV(B)
+  rule  FV( A:Proc    \/ B:Proc    ) =>  FV(A)  FV(B)
+  rule  FV( A:Proc    \/ B:ProcPat ) =>  FV(A)  FV(B)
+  rule  FV( A:ProcPat \/ B:Proc    ) =>  FV(A)  FV(B)
+  rule  FV( A:ProcPat \/ B:ProcPat ) =>  FV(A)  FV(B)
   rule #FV( ~ A:Proc    ) => #FV(A)
   rule #FV( ~ A:ProcPat ) => #FV(A)
+  rule #FV( A:Proc    /\ B:Proc    ) => #FV(A) #FV(B)
   rule #FV( A:Proc    /\ B:ProcPat ) => #FV(A) #FV(B)
   rule #FV( A:ProcPat /\ B:Proc    ) => #FV(A) #FV(B)
   rule #FV( A:ProcPat /\ B:ProcPat ) => #FV(A) #FV(B)
+  rule #FV( A:Proc    \/ B:Proc    ) => #FV(A) #FV(B)
   rule #FV( A:Proc    \/ B:ProcPat ) => #FV(A) #FV(B)
   rule #FV( A:ProcPat \/ B:Proc    ) => #FV(A) #FV(B)
   rule #FV( A:ProcPat \/ B:ProcPat ) => #FV(A) #FV(B)
