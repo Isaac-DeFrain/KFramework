@@ -29,8 +29,8 @@ module GRHO-SYNTAX
   syntax           NewUri ::= NameVar "(" Uri ")"
 
 // Several Names
-  syntax            Names ::= Name // "," Name
-                            | Vars
+  syntax            Names ::= Name
+                            > Vars
                             | Name "," Names [right]
 
 //-----------------
@@ -58,7 +58,7 @@ module GRHO-SYNTAX
   syntax          ProcVar ::= "\\" Var
 
 // Several Processes
-  syntax            Procs ::= Proc // "," Proc
+  syntax            Procs ::= Proc
                             | Vars
                             | Proc "," Procs [right]
 
@@ -305,11 +305,12 @@ module GRHO-SYNTAX
                             | Name "!=" Name      // [| A:Name != B:Name |] = not ( A == B )
                             | Proc "==" Proc      // structural equivalence
                             | Proc "!=" Proc      // [| A:Proc != B:Proc |] = not ( A == B )
+                            > Proc    "matches" Proc // [| P matches Q |] = match P { { Q |=> true } { P |=> false } }
+                            | Proc    "matches" ProcPat
+                            | ProcPat "matches" ProcPat
                             > "not" BExp          [strict]
                             > BExp "and" BExp     [strict(1), right]
                             > BExp "or"  BExp     [strict(1), right]
-                            > Proc "matches" Proc // [| P matches Q |] = match P { { Q |=> true } { P |=> false } }
-                            | Proc "matches" ProcPat
 
 // Bundles -- cannot be destructured with pattern-matching
   syntax           Bundle ::= "bundle+{" Proc "}" // write-only
@@ -364,10 +365,32 @@ module GRHO-SYNTAX
 
 // Name pattern
   syntax          NamePat ::= "{" NamePat "}" [bracket]
-                            | WildCard
+                            > WildCard
                             | QuotePat
                             | SimpleNamePat
+                            > NamePatExp
 //                            > Name
+
+// Name Pattern expression
+  syntax       NamePatExp ::= NPatNeg > NPatAnd > NPatOr
+  // Pattern Negation
+  syntax          NPatNeg ::= "~" Name
+                            | "~" NamePat
+  // Pattern And
+  syntax          NPatAnd ::= Name    "/\\" Name
+                            | Name    "/\\" NamePat
+                            | NamePat "/\\" Name
+                            | NamePat "/\\" NamePat
+                            | Name    "/\\" NPatAnd [right]
+                            | NamePat "/\\" NPatAnd [right]
+  // Pattern Or
+  syntax           NPatOr ::= Name    "\\/" Name
+                            | Name    "\\/" NamePat
+                            | NamePat "\\/" Name
+                            | NamePat "\\/" NamePat
+                            | Name    "\\/" NPatOr  [right]
+                            | NamePat "\\/" NPatOr  [right]
+
 // Quote pattern
   syntax         QuotePat ::= "@" ProcPat
 
@@ -381,7 +404,7 @@ module GRHO-SYNTAX
   syntax         NamePats ::= NamePat // "," NamePat
 //                            | Name    "," NamePat
 //                            | NamePat "," Name
-                            | Name    "," NamePats [right]
+                            > Name    "," NamePats [right]
                             | NamePat "," Names    [right]
                             | NamePat "," NamePats [right]
                             | WildCards
@@ -862,7 +885,7 @@ module GRHO
     </T>                                                //
 
 // TODO: This is only needed for strict operations
-  syntax KResult ::= Ground | Proc | List | Map | Set   // final output type of strict operations
+  syntax KResult ::= Ground | SimplePat | Proc | List | Map | Set   // final output type of strict operations
 
 // Free variable execution guard
 //  syntax KItem ::= "Error: Free Variables!"
@@ -894,10 +917,10 @@ module GRHO
   rule I1:Int >  I2:Int => I1  >Int I2 [anywhere, structural]
   rule not B:Bool => notBool B         [anywhere, structural]
     // short-circuited semantics
-  rule true  and B:Bool => B     [anywhere, structural]
-  rule false and _:Bool => false [anywhere, structural]
-  rule true  or  _:Bool => true  [anywhere, structural]
-  rule false or  B:Bool => B     [anywhere, structural]
+  rule true  and B:BExp => B     [anywhere, structural]
+  rule false and _:BExp => false [anywhere, structural]
+  rule true  or  _:BExp => true  [anywhere, structural]
+  rule false or  B:BExp => B     [anywhere, structural]
 
 // Structural Equivalence
   // Syntactic equality of Ground terms -- checked immediately
@@ -918,9 +941,12 @@ module GRHO
 
 // Matching
   // Match
-    // "matches" binop desugars into "match" statement
-  rule P:Proc matches Q:Proc    => #match(P;Q) [structural]
-  rule P:Proc matches Q:ProcPat => #match(P;Q) [structural]
+    // "matches" binop desugars into #match function call
+  rule P:Proc    matches Q:Proc      => #match(P;Q) [structural]
+  rule P:Proc    matches Q:ProcPat   => #match(P;Q) requires notBool isSimplePat(Q) [structural]
+  rule P:Ground  matches Q:SimplePat => #match(P;Q) [anywhere, structural]
+  rule P:ProcPat matches Q:ProcPat   => #match(P;Q) [structural]
+  rule (A:Ground \/ B:Ground) matches Q:ProcPat => #match(A;Q) andBool #match(B;Q) [structural]
   rule match { P:Proc } { { Q:Proc    } |=> R:Proc } => #if #match(P;Q) #then #sub(P;Q;R) #else Nil #fi
   rule match { P:Proc } { { Q:ProcPat } |=> R:Proc } => #if #match(P;Q) #then #sub(P;Q;R) #else Nil #fi
   rule match { P:Proc } { { Q:Proc    } |=> R:Proc M:MatchCase  } => #if #match(P;Q) #then #sub(P;Q;R) #else match {P}{M} #fi
@@ -1488,8 +1514,8 @@ TODO:
         ptrn m1 <- src m1 & ... & ptrn mn <- src mn ;
       ){P}
    where src ::= x | x?! | x!?( a 1 , ..., a k ) and ‘&’ replaces the old meaning of ‘;’
-   ⟦for( ptrn ← x?! ){P}⟧ = for( ( ptrn, r ) ← x ){ r!() | ⟦P⟧ }
-   ⟦for( ptrn ← x!?( a 1 , ..., a k )){P}⟧ = new r in { x!( a 1 , ..., a k , *r) | for( ptrn ← r ){ ⟦P⟧ } }
+   ⟦for( ptrn <- x?! ){P}⟧ = for( ptrn, r <- x ){ r!() | ⟦P⟧ }
+   ⟦for( ptrn <- x!?( a 1 , ..., a k )){P}⟧ = new r in { x!( a 1 , ..., a k , *r) | for( ptrn <- r ){ ⟦P⟧ } }
 
  - Sequential output (pattern?):
    - x!?(v);P
@@ -1504,23 +1530,40 @@ TODO:
   rule A:Name !?( B:Procs ) ; C:Proc => new !X:NameVar in { A!(#append(B,*!X)) | for( \_ <- !X ){ C } } [structural]
 
  - Sequential/nested let expressions: 
-    let ptrn_1 ← v_1 ; ... ; ptrn_m ← v_m in P
-   ⟦let ptrn_1 ← v_1 ; ... ; ptrn_n ← v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 ← x_1 ){ ⟦let ptrn_2 ← v_2 ; ... ; ptrn_n ← v_n in P ⟧ } }
+    let ptrn_1 <- v_1 ; ... ; ptrn_m <- v_m in P
+   ⟦let ptrn_1 <- v_1 ; ... ; ptrn_n <- v_n in P ⟧ = new x in { x!(v_1) | for( ptrn_1 <- x_1 ){ ⟦let ptrn_2 <- v_2 ; ... ; ptrn_n <- v_n in P ⟧ } }
 
-  syntax      LetBind ::= "let" Lbind
-  syntax  SeqLetBinds ::= LetBind ";" LetBind
-                        | LetBind ";" SeqLetBinds [right]
-  syntax  SimLetBinds ::= LetBind "&" LetBind
-                        | LetBind "&" SimLetBinds [right]
-  syntax   SeqSimLets ::= LetBind     ";" SimLetBind
-                        | LetBind     ";" SimLetBinds
-                        | SimLetBind  ";" SeqLetBinds ....
-                        | SimLetBinds ";" SimLetBinds
-                        | SimLetBinds ";" SeqSimLets [right]
-  syntax       LetExp ::= LetBind "in" Proc
-                        | SeqLetBinds "in" Proc
-                        | SimLetBinds "in" Proc
-                        | SeqSimLets  "in" Proc
+  syntax         Let ::= "let" Lbind
+
+  syntax    SeqLbinds ::= Lbind
+                        | Lbind";" SeqLbinds [right]
+  syntax  SeqLetBinds ::= LetBind
+                        | "let" SeqLbinds
+
+  syntax    SimLbinds ::= Lbind
+                        | Lbind "&" SimLbinds [right]
+  syntax  SimLetBinds ::= LetBind
+                        | "let" SimLbinds
+
+  syntax SeqSimLbinds ::= Lbind
+                        | SeqLbinds
+                        | SimLbinds
+                        | Lbind     ";" SeqSimLbinds [right]
+                        | SeqLbinds ";" SeqSimLbinds [right]
+                        | SimLbinds ";" SeqSimLbinds [right]
+  syntax   SeqSimLets ::= LetBind
+                        | SimLetBinds
+                        | SeqLetBinds
+                        | SimLetBinds ";" SeqSimLets  [right]
+
+  syntax       LetExp ::= SimpleLetExp
+                        | SeqLetExp
+                        | SimLetExp
+                        | SeqSimLetExp
+  syntax  BasicLetExp ::= LetBind     "in" Proc
+  syntax    SeqLetExp ::= SeqLetBinds "in" Proc
+  syntax    SimLetExp ::= SimLetBinds "in" Proc
+  syntax SeqSimLetExp ::= SeqSimLets  "in" Proc
   syntax         Proc ::= LetExp
 
 // Sequential Let Binds
@@ -1529,8 +1572,8 @@ TODO:
   rule let A:Lbind ; let B:Lbinds in P:Proc => new !X:NameVar in { !X!(*#chan(A)) | for( #bvar(A) <- !X ){ let B in P } }
 
  - Simultaneous let expressions: 
-    let ptrn_1 ← v_1 & ... & ptrn_m ← v m in P
-   ⟦let ptrn_1 ← v_1 & ... & ptrn_n ← v_n in P ⟧ = new x_1 , ... , x_n in { x_1 !(v_1) | ... | x_n!(v_n) | for( ptrn_1 ← x_1 & ... & ptrn_n ← x_n ){ ⟦P⟧ }
+    let ptrn_1 <- v_1 & ... & ptrn_m <- v m in P
+   ⟦let ptrn_1 <- v_1 & ... & ptrn_n <- v_n in P ⟧ = new x_1 , ... , x_n in { x_1 !(v_1) | ... | x_n!(v_n) | for( ptrn_1 <- x_1 & ... & ptrn_n <- x_n ){ ⟦P⟧ }
 
 // Simultaneous Let Binds
   rule 
