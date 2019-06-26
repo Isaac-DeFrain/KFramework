@@ -1,0 +1,10 @@
+// Match for guard
+
+  #match( @"Life" , @41 ; @\a , @\b )
+
+/*
+Output: 
+
+    true
+
+*/
