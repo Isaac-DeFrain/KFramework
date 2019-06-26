@@ -1,0 +1,10 @@
+// Procs sub
+
+  #subGuard( "Life" , 41 ; @\a , @\b ; \a \/ \b matches String \/ Int )
+
+/*
+Output: 
+
+    ( "Life" \/ 41 ) matches String \/ Int
+
+*/
