@@ -728,7 +728,9 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:Proc !=  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc    matches D:Proc    ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc    matches D:ProcPat ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:ProcPat matches D:ProcPat ) => #sub(A;B;C) matches #sub(A;B;D)
 
 // sub Proc for Proc in Names
   rule #sub( A:Proc ; B:Proc ; C:Name , D:Name  ) => #sub(A;B;C) , #sub(A;B;D)
@@ -822,7 +824,12 @@ module SUB
 // Trivial cases
   rule #sub( A:Name ; A ; N:Name ) => N
   rule #sub( A:Name ; A ; P:Proc ) => P
-  rule #sub( _:Name ; _:Name ; G:Ground ) => G
+  rule #sub( _:Name ; _:Name    ; G:Ground ) => G
+  rule #sub( _:Name ; _:NamePat ; G:Ground ) => G
+
+// sub Name for Name[Pat] in SimplePat
+  rule #sub( _:Name ; _:Name    ; A:SimplePat ) => A
+  rule #sub( _:Name ; _:NamePat ; A:SimplePat ) => A
 
 // Fundamental cases
   // sub Name for NameVar in NameVar or ProcVar
@@ -987,7 +994,14 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:Name !=  D:Name ) => #sub(A;B;C) !=  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc ==  D:Proc ) => #sub(A;B;C) ==  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:Proc !=  D:Proc ) => #sub(A;B;C) !=  #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:Proc matches D:Proc ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc    matches D:Proc    ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:Proc    matches D:ProcPat ) => #sub(A;B;C) matches #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:ProcPat matches D:ProcPat ) => #sub(A;B;C) matches #sub(A;B;D)
+
+// NPatExp -- TODO: complete
+// sub Name for NPatAnd in Proc
+//  rule #sub( _:Name ; ~ _:Proc    ; C:Proc ) => C
+  rule #sub( @A:Proc ; B:Name /\ @C:SimplePat ; D:Proc ) => #sub(A;*B/\C;D)
 
 // Condtionals
   rule #sub( A:Name ; B:Name ; if (C:BExp) D:Proc   ) => if (#sub(A;B;C)) #sub(A;B;D)
@@ -1053,21 +1067,21 @@ module SUB
 //  rule #sub( M:Map ; A:Proc    , B:ProcPats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:ProcPat , B:ProcPats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
   // if variables appear as map keys, substitute value for key
-  rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Procs    ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Name |-> Val:Name M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Name |-> Val:Name M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Name |-> Val:Name M:Map ; P:ProcPats ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Procs    ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P))
+  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:ProcPats ) => #sub(M;#sub(Val;Key;P))
 
 //-----------------
 //--- #subGuard ---
 //-----------------
 // length(P) == length(N) 
-  rule #subGuard( P:Proc  ; N:Name     ; B:BExp ) => #sub(@P;N;B)
-  rule #subGuard( P:Proc  ; N:NamePat  ; B:BExp ) => #sub(@P;N;B)
+  rule #subGuard( P:Proc  ; N:Name     ; B:BExp ) => #sub(@P;N;B) //
+  rule #subGuard( P:Proc  ; N:NamePat  ; B:BExp ) => #sub(@P;N;B) //
   rule #subGuard( P:Procs ; N:Names    ; B:BExp ) => #sub(#quotes(P);N;B)
   rule #subGuard( P:Procs ; N:NamePats ; B:BExp ) => #sub(#quotes(P);N;B)
 
@@ -1139,6 +1153,91 @@ module SUB
   rule #sub( A:Proc ; Unforgeable ; C:Proc ) => #if isUnforgeable(A) #then C #else .K #fi
   rule #sub( A:Proc ; Uri         ; C:Proc ) => #if         isUri(A) #then C #else .K #fi
 
+// SimplePat -- sub invariant
+  rule #sub( _:Name    ; _:Name    ; A:SimplePat ) => A
+  rule #sub( _:Name    ; _:NamePat ; A:SimplePat ) => A
+  rule #sub( _:NamePat ; _:NamePat ; A:SimplePat ) => A
+  rule #sub( _:Proc    ; _:Proc    ; A:SimplePat ) => A
+  rule #sub( _:Proc    ; _:ProcPat ; A:SimplePat ) => A
+  rule #sub( _:ProcPat ; _:ProcPat ; A:SimplePat ) => A
+
+// sub into PatExp
+  // PatNeg
+  rule #sub( A:Name    ; B:Name    ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:Name    ; B:NamePat ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:NamePat ; B:NamePat ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:Name    ; B:Name    ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  rule #sub( A:Name    ; B:NamePat ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  rule #sub( A:NamePat ; B:NamePat ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  rule #sub( A:Proc    ; B:Proc    ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:Proc    ; B:ProcPat ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:ProcPat ; B:ProcPat ; ~ C:Proc    ) => ~ #sub(A;B;C)
+  rule #sub( A:Proc    ; B:Proc    ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  rule #sub( A:Proc    ; B:ProcPat ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  rule #sub( A:ProcPat ; B:ProcPat ; ~ C:ProcPat ) => ~ #sub(A;B;C)
+  // PatAnd
+  rule #sub( A:Name    ; B:Name    ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:Proc    /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:Proc    /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:ProcPat /\ D:Proc    ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:ProcPat /\ D:ProcPat ) => #sub(A;B;C) /\ #sub(A;B;D)
+  // PatOr
+  rule #sub( A:Name    ; B:Name    ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:Name    ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Name    ; B:NamePat ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:NamePat ; B:NamePat ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:Proc    \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:Proc    \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:ProcPat \/ D:Proc    ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:Proc    ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:Proc    ; B:ProcPat ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+  rule #sub( A:ProcPat ; B:ProcPat ; C:ProcPat \/ D:ProcPat ) => #sub(A;B;C) \/ #sub(A;B;D)
+
+// sub Name for NamePat
+  rule #sub(  A:NameVar ; @B:ProcPat ; C:Name    ) => #sub(*A;B;C) requires notBool  isWildCard(B)
+  rule #sub( @A:Proc    ; @B:ProcPat ; C:Name    ) => #sub( A;B;C) requires notBool  isWildCard(B)
+  rule #sub(  A:NameVar ; @B:ProcPat ; C:NamePat ) => #sub(*A;B;C) requires notBool  isWildCard(B)
+  rule #sub( @A:Proc    ; @B:ProcPat ; C:NamePat ) => #sub( A;B;C) requires notBool  isWildCard(B)
+  rule #sub(  A:NameVar ; @B:ProcPat ; C:Proc    ) => #sub(*A;B;C) requires notBool  isWildCard(B)
+  rule #sub( @A:Proc    ; @B:ProcPat ; C:Proc    ) => #sub( A;B;C) requires notBool  isWildCard(B)
+  rule #sub(  A:NameVar ; @B:ProcPat ; C:ProcPat ) => #sub(*A;B;C)
+       requires notBool (isWildCard(B) orBool isSimplePat(C) orBool isPatExp(C))
+  rule #sub( @A:Proc    ; @B:ProcPat ; C:ProcPat ) => #sub( A;B;C)
+       requires notBool (isWildCard(B) orBool isSimplePat(C) orBool isPatExp(C))
+
 // sub Proc for ProcPat in Proc
 //  rule #sub( _:Proc ; ~ _:Proc    ; C:Proc ) => C
   rule #sub( A:Proc ;       B:Proc /\ Bool         ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
@@ -1175,8 +1274,6 @@ module SUB
 //  rule #sub( A:Proc ;  Unforgeable /\ B:Proc       ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Uri /\ B:Proc       ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ; ConcreteProc /\ B:Proc       ; C:Proc ) => #if #match(A;ConcreteProc) #then #sub(A;B;C) #else C #fi
-
-  rule #sub( @A:Proc ; @B:ProcPat ; C:Proc ) => #sub(A;B;C)
 
 // sub Procs for ProcPats
 //  rule #sub( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ; E:Proc ) => #sub(B;D;#sub(A;C;E))
