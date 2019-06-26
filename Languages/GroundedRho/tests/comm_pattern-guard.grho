@@ -1,0 +1,49 @@
+// Receive -- wildcard listen
+
+    new x in { x!("Life",41) | x!(41) | for( a,@{\b /\ Int} <- x if *a matches String ){ { *a : \b } } }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        { "Life" : 41 }
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          41
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new x in { x ! ( "Life" , 41 ) | x ! ( 41 ) | for ( a , @ \ b /\ Int <- x if * a matches String ) { { * a : \ b } } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( "Life" , 41 ) | boundN( 0 ) ! ( 41 ) | for ( boundN( 1 ) , @ ( boundP( 2 ) /\ Int ) <- boundN( 0 ) if * boundN( 1 ) matches String ) { { * boundN( 1 ) : boundP( 2 ) } } }
+  </OGdeBruijn>
+</T>
+*/
