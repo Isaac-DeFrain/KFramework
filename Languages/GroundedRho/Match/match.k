@@ -126,11 +126,11 @@ module MATCH
   rule #match( for( X:NamePat  <= A:Name ){ B:Proc } ; for( Y:NamePat  <= C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:NamePats <= A:Name ){ B:Proc } ; for( Y:NamePats <= C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
-  rule #match( for(            <! A:Name ){ B:Proc } ; for(            <! C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
-  rule #match( for( X:Name     <! A:Name ){ B:Proc } ; for( Y:Name     <! C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:Names    <! A:Name ){ B:Proc } ; for( Y:Names    <! C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePat  <! A:Name ){ B:Proc } ; for( Y:NamePat  <! C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePats <! A:Name ){ B:Proc } ; for( Y:NamePats <! C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for(            <<- A:Name ){ B:Proc } ; for(            <<- C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
+  rule #match( for( X:Name     <<- A:Name ){ B:Proc } ; for( Y:Name     <<- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for( X:Names    <<- A:Name ){ B:Proc } ; for( Y:Names    <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for( X:NamePat  <<- A:Name ){ B:Proc } ; for( Y:NamePat  <<- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for( X:NamePats <<- A:Name ){ B:Proc } ; for( Y:NamePats <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
   rule #match( _:Receive ; A:Proc ) => false requires notBool (isReceive(A) orBool isProcVar(A) orBool isPar(A))
   rule #match( A:Proc ; _:Receive ) => false requires notBool (isReceive(A) orBool isPar(A))
