@@ -1,0 +1,20 @@
+// Par match
+
+    #match( @true!(@8!(*a)) | 1 | "a" ; "a" | 1 | 1 | 2 | "a" | x!(*y) )
+
+/*
+Output: 
+
+    true
+
+SetItem(@true!(@8!(*a)) , 1)
+SetItem(1 , 1)
+SetItem("a" , 1)
+
+SetItem("a" , 2)
+SetItem(1 , 2)
+SetItem(2 , 1)
+SetItem(x!(*y) , 1)
+
+
+*/
