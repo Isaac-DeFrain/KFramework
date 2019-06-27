@@ -1,6 +1,6 @@
 // Receive -- listen pattern
 
-    new x,a in { x!(41,*a) | x!(40) | for( \_ , b <- x ){ *b } }
+    new x,a in { x!(41,*a) | x!(40) | for( \_ , b <- x ){ b!!( ) } | for( <<- a ){ "yes" } }
 
 /*
 Output:
@@ -8,7 +8,7 @@ Output:
   <activity>
     <task>
       <k>
-        unforgeable( 1 )
+        "yes"
       </k>
     </task>
   </activity>
@@ -27,6 +27,19 @@ Output:
         <stype>
           0
         </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 1 )
+        </schan>
+        <msg>
+          EmptyP
+        </msg>
+        <arity>
+          0
+        </arity>
+        <stype>
+          1
+        </stype>
       </send>
     </sends>
     <receives>
@@ -37,16 +50,13 @@ Output:
     2
   </nextLoc>
   <original>
-    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ , b <- x ) { * b } }
+    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ , b <- x ) { b !! ( ) } | for ( <<- a ) { "yes" } }
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
   <OGdeBruijn>
-    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | #deBruijn( 2 ; for ( \_ , b <- boundN( 0 ) ) { * b } ; a |-> boundN( 1 )
-    x |-> boundN( 0 ) ) }
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ , boundN( 2 ) <- boundN( 0 ) ) { boundN( 2 ) !! ( ) } | for ( <<- boundN( 1 ) ) { "yes" } }
   </OGdeBruijn>
 </T>
-[Warning] Critical: missing SMTLib translation for #match(_;_)_MATCH-SYNTAX
-(missing SMTLib translation for #match(_;_)_MATCH-SYNTAX)
 */
