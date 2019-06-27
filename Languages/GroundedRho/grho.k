@@ -13,16 +13,16 @@ module GRHO-SYNTAX
 
 // Variables
   syntax              Var ::= Id
-  syntax             Vars ::= Var
-                            | Var "," Vars [right]
+//  syntax             Vars ::= Var
+//                            > Var "," Vars [right]
 
 //-------------
 //--- NAMES ---
 //-------------
   syntax             Name ::= Quote
                             | NameVar   // name variable
+                            > NewUri
                             | EmptyName // listen for empty message
-                            | NewUri
   syntax            Quote ::= "@" Proc
   syntax          NameVar ::= Var
   syntax        EmptyName ::= "EmptyN" // listening for empty messages
@@ -30,8 +30,9 @@ module GRHO-SYNTAX
 
 // Several Names
   syntax            Names ::= Name
-                            > Vars
-                            | Name "," Names [right]
+//                            > Vars // TODO: include - will be needed once Var <: Name & Var <: Proc
+//                            > Name
+                            > Name "," Names [right]
 
 //-----------------
 //--- PROCESSES ---
@@ -41,7 +42,7 @@ module GRHO-SYNTAX
                             > New             // New name declaration(s)
                             > Ground          // Ground terms - Bool, Int, Nil, String, Uri
                             | Collection      // Data structures - RhoList, RhoMap, RhoSet, RhoTuple
-                            | ProcVar         // Process variable
+                            | ProcVar         // Process variable -- TODO: change to Var
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
@@ -59,8 +60,9 @@ module GRHO-SYNTAX
 
 // Several Processes
   syntax            Procs ::= Proc
-                            | Vars
-                            | Proc "," Procs [right]
+//                            > Vars // TODO: include - will be needed once Var <: Name & Var <: Proc
+//                            > Proc
+                            > Proc "," Procs [right]
 
 // Parallel composition
   // Par should be an order-normalized, multiset of processes
@@ -98,11 +100,11 @@ module GRHO-SYNTAX
   syntax         PeekSRec ::= "for" "(" Pbind  ")" "{" Proc "}"
   syntax        GPeekSRec ::= "for" "(" GPbind ")" "{" Proc "}"
     // Peek Bind
-  syntax            Pbind ::= NamePats "<!" Name
-                            | NamePat  "<!" Name
-                            | Names    "<!" Name
-                            | Name     "<!" Name
-                            |          "<!" Name
+  syntax            Pbind ::= NamePats "<<-" Name
+                            | NamePat  "<<-" Name
+                            | Names    "<<-" Name
+                            | Name     "<<-" Name
+                            |          "<<-" Name
   // Repeat Single
   syntax  RepeatSRec ::= "for" "(" Rbind  ")" "{" Proc "}"
   syntax GRepeatSRec ::= "for" "(" GRbind ")" "{" Proc "}"
@@ -361,16 +363,16 @@ module GRHO-SYNTAX
   syntax         WildCard ::= "\\_" // instead of _
 // WildCards
   syntax        WildCards ::= WildCard
-                            | WildCard "," WildCards [right]
+                            > WildCard "," WildCards [right]
 
 // Name pattern
   syntax          NamePat ::= "{" NamePat "}" [bracket]
                             > WildCard
                             | QuotePat
                             | SimpleNamePat
-                            > NamePatExp
+//                            > NamePatExp
 //                            > Name
-
+/*
 // Name Pattern expression
   syntax       NamePatExp ::= NPatNeg > NPatAnd > NPatOr
   // Pattern Negation
@@ -390,7 +392,7 @@ module GRHO-SYNTAX
                             | NamePat "\\/" NamePat
                             | Name    "\\/" NPatOr  [right]
                             | NamePat "\\/" NPatOr  [right]
-
+*/
 // Quote pattern
   syntax         QuotePat ::= "@" ProcPat
 
@@ -407,7 +409,7 @@ module GRHO-SYNTAX
                             > Name    "," NamePats [right]
                             | NamePat "," Names    [right]
                             | NamePat "," NamePats [right]
-                            | WildCards
+                            > WildCards
 //                            | Names
 
 // Pattern -- TODO: precedence
@@ -435,10 +437,10 @@ module GRHO-SYNTAX
   syntax         ProcPats ::= ProcPat //  "," ProcPat
 //                            | ProcPat  "," Proc
 //                            | Proc     "," ProcPat
-                            | Proc     "," ProcPats [right]
+                            > Proc     "," ProcPats [right]
                             | ProcPat  "," Procs    [right]
                             | ProcPat  "," ProcPats [right]
-                            | WildCards
+                            > WildCards
 //                            | Procs
 
 // Parallel composition pattern
@@ -486,11 +488,11 @@ module GRHO-SYNTAX
                             | "for" "(" GPbindPat ")" "{" Proc    "}"
 //                            | GPeekSRec
   syntax        GPbindPat ::= PbindPat Guard
-  syntax         PbindPat ::= NamePats "<!" NamePat
-                            | NamePat  "<!" NamePat
-                            | Names    "<!" NamePat
-                            | Name     "<!" NamePat
-                            |          "<!" NamePat
+  syntax         PbindPat ::= NamePats "<<-" NamePat
+                            | NamePat  "<<-" NamePat
+                            | Names    "<<-" NamePat
+                            | Name     "<<-" NamePat
+                            |          "<<-" NamePat
   // Repeated listen pattern
   syntax    RepeatSRecPat ::= "for" "(" Rbind     ")" "{" ProcPat "}"
                             | "for" "(" RbindPat  ")" "{" ProcPat "}"
@@ -691,21 +693,21 @@ module GRHO-SYNTAX
                             | "invoke" NamePat "(" ")"
 */
 // Collection pattern -- TODO: MapPat & SetPat
-  syntax    CollectionPat ::= ListPat | /*MapPat | SetPat |*/ TuplePat
+  syntax    CollectionPat ::= ListPat | MapPat | SetPat | TuplePat
 
   // RhoList pattern -- bind Procs to ProcVar???
-  syntax          ListPat ::= "[" ProcPats "..." ProcVar "]" // match each Pat and bind remainder as RhoList to ProcVar
-                            | "[" ProcPat  "..." ProcVar "]" // match Pat and bind remainder as RhoList to ProcVar
-                            | "[" Procs    "..." ProcVar "]" // match each Proc and bind remainder as RhoList to ProcVar
-                            | "[" Proc     "..." ProcVar "]" // match Proc and bind remainder as RhoList to ProcVar
+  syntax          ListPat ::= "[" ProcPats "..." ProcVar "]" // match each Pat and bind remainder as RhoList to ProcVar?
+                            | "[" ProcPat  "..." ProcVar "]" // match Pat and bind remainder as RhoList to ProcVar?
+                            | "[" Procs    "..." ProcVar "]" // match each Proc and bind remainder as RhoList to ProcVar?
+                            | "[" Proc     "..." ProcVar "]" // match Proc and bind remainder as RhoList to ProcVar?
                             | "[" ProcPat  "]" // match List pattern
                             | "[" ProcPats "]" // match List pattern
 
   // RhoMap pattern -- TODO: bind RhoKVPairs to ProcVar???
-  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}" // match each Pat and bind remainder as RhoMap to ProcVar
-                            | "{" ProcPat  "..." ProcVar "}" // match Pat and bind remainder as RhoMap to ProcVar
-                            | "{" Procs    "..." ProcVar "}" // match each Proc and bind remainder as RhoMap to ProcVar
-                            | "{" Proc     "..." ProcVar "}" // match Proc and bind remainder as RhoMap to ProcVar
+  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}" // match each Pat and bind remainder as RhoMap to ProcVar?
+                            | "{" ProcPat  "..." ProcVar "}" // match Pat and bind remainder as RhoMap to ProcVar?
+                            | "{" Procs    "..." ProcVar "}" // match each Proc and bind remainder as RhoMap to ProcVar?
+                            | "{" Proc     "..." ProcVar "}" // match Proc and bind remainder as RhoMap to ProcVar?
                             | "{" RhoKVPairPats "}"
                             | "{" RhoKVPairPat  "}"
     // RhoKVPairPat
@@ -713,15 +715,15 @@ module GRHO-SYNTAX
                             | ProcPat ":" Proc
                             | ProcPat ":" ProcPat
   syntax    RhoKVPairPats ::= RhoKVPairPat
-                            | RhoKVPair    "," RhoKVPairPats
+                            > RhoKVPair    "," RhoKVPairPats
                             | RhoKVPairPat "," RhoKVPairs
                             | RhoKVPairPat "," RhoKVPairPats
 
   // RhoSet pattern -- bind Procs to ProcVar???
-  syntax           SetPat ::= "Set(" ProcPats "..." ProcVar ")" // match each Pat and bind remainder as RhoSet to ProcVar
-                            | "Set(" ProcPat  "..." ProcVar ")" // match Pat and bind remainder as RhoSet to ProcVar
-                            | "Set(" Procs    "..." ProcVar ")" // match each Proc and bind remainder as RhoSet to ProcVar
-                            | "Set(" Proc     "..." ProcVar ")" // match Proc and bind remainder as RhoSet to ProcVar
+  syntax           SetPat ::= "Set(" ProcPats "..." ProcVar ")" // match each Pat and bind remainder as RhoSet to ProcVar?
+                            | "Set(" ProcPat  "..." ProcVar ")" // match Pat and bind remainder as RhoSet to ProcVar?
+                            | "Set(" Procs    "..." ProcVar ")" // match each Proc and bind remainder as RhoSet to ProcVar?
+                            | "Set(" Proc     "..." ProcVar ")" // match Proc and bind remainder as RhoSet to ProcVar?
                             | "Set(" ProcPats ")"
                             | "Set(" ProcPat  ")"
 
@@ -977,9 +979,9 @@ module GRHO
        <nextLoc> L => L +Int 1 </nextLoc>
 
 // Syntactic sugar - contract desugars into unconsumable receive
-  rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
-//  rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [anywhere, structural]
-  rule contract X:Name (         ) = { P:Proc } => for(   <= X ){ P }  [anywhere, structural]
+  rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [structural]
+//rule contract X:Name ( Y:Name  ) = { P:Proc } => for( Y <= X ){ P }  [structural]
+  rule contract X:Name (         ) = { P:Proc } => for(   <= X ){ P }  [structural]
 
 // Par Operator Semantics - concurrent execution of processes
   rule <task>
@@ -1492,11 +1494,11 @@ module GRHO
 // included here (instead of in sytax module) because #quotes is defined in AUXFUN
   rule for( @ ( A:Proc  ) <- X:Name ){ P:Proc } => for( @A <- X ){ P }  [anywhere, structural]
   rule for( @ ( A:Proc  ) <= X:Name ){ P:Proc } => for( @A <= X ){ P }  [anywhere, structural]
-  rule for( @ ( A:Proc  ) <! X:Name ){ P:Proc } => for( @A <! X ){ P }  [anywhere, structural]
+  rule for( @ ( A:Proc  ) <<- X:Name ){ P:Proc } => for( @A <<- X ){ P }  [anywhere, structural]
   rule for( @ ( A:Proc  ) << X:Name ){ P:Proc } => for( @A << X ){ P }  [anywhere, structural]
   rule for( @ ( A:Procs ) <- X:Name ){ P:Proc } => for( #quotes(A) <- X ){ P } [anywhere, structural]
   rule for( @ ( A:Procs ) <= X:Name ){ P:Proc } => for( #quotes(A) <= X ){ P } [anywhere, structural]
-  rule for( @ ( A:Procs ) <! X:Name ){ P:Proc } => for( #quotes(A) <! X ){ P } [anywhere, structural]
+  rule for( @ ( A:Procs ) <<- X:Name ){ P:Proc } => for( #quotes(A) <<- X ){ P } [anywhere, structural]
   rule for( @ ( A:Procs ) << X:Name ){ P:Proc } => for( #quotes(A) << X ){ P } [anywhere, structural]
 */
 /*
