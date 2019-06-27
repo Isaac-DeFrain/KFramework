@@ -1,29 +1,29 @@
 // Peek
 
-    x!(1,"a",Nil) | for( a,b,c <! x ){(*a,*b,*c)}
+    new x in { x!(1,"a",Nil) | for( a,b,c <<- x ){ Set(*a,*b,*c) } }
 
 /*
-Output: (message stays in the tuplespace)
+Output:
 <T>
-  <threads>
-    <thread>
+  <activity>
+    <task>
       <k>
-        ( 1 , "a" , Nil )
+        Set( 1 , "a" , Nil )
       </k>
-    </thread>
-  </threads>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       <send>
         <schan>
-          x
+          @ unforgeable( 0 )
         </schan>
         <msg>
           1 , "a" , Nil
         </msg>
-        <tuple>
+        <arity>
           3
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -34,13 +34,16 @@ Output: (message stays in the tuplespace)
     </receives>
   </tuplespace>
   <nextLoc>
-    0
+    1
   </nextLoc>
-  <freeVars>
-    SetItem ( x : name )
-  </freeVars>
-  <deBruijn>
-    x ! ( 1 , ( "a" , Nil ) ) | #deBruijn( 0 ; for ( a , b , c <! x ) { ( * a , * b , * c ) } ; .Map )
-  </deBruijn>
+  <original>
+    new x in { x ! ( 1 , "a" , Nil ) | for ( a , b , c <<- x ) { Set( * a , * b , * c ) } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 1 , "a" , Nil ) | for ( boundN( 1 ) , boundN( 2 ) , boundN( 3 ) <<- boundN( 0 ) ) { Set( * boundN( 1 ) , * boundN( 2 ) , * boundN( 3 ) ) } }
+  </OGdeBruijn>
 </T>
 */
