@@ -1,0 +1,10 @@
+// Type of Send
+
+    #stype( b!!( ) )
+
+/*
+Output:
+
+    1
+
+*/
