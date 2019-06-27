@@ -296,18 +296,18 @@ module ALPHA
   // Peek
     // Single
       // unguarded
-  rule #deBruijn( I:Int ; for( <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( <! #deBruijn(I;X;Mem) ){ #deBruijn(I +Int size(#BV(X));P;Mem) }
+  rule #deBruijn( I:Int ; for( <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( <<- #deBruijn(I;X;Mem) ){ #deBruijn(I +Int size(#BV(X));P;Mem) }
   rule #deBruijn( I:Int ; for( B:Pbind   ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;#bvar(B);.Map) <! #deBruijn(I +Int size(#LV(B));#chan(B);Mem) ){
+    => for( #dBound(I;#bvar(B);.Map) <<- #deBruijn(I +Int size(#LV(B));#chan(B);Mem) ){
               #deBruijn(I +Int #dBsize(B) ;
               #sub(#mapify(I;#bvar(B);.Map);P) ;
               updateMap( Mem , #mapify(I;#bvar(B);.Map) )) } [owise]
       // guarded
-  rule #deBruijn( I:Int ; for( <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( <! #deBruijn(I;X;Mem) if #deBruijn(I +Int size(#BV(X));G;Mem) ){ #deBruijn(I +Int size(#BV(X)) +Int size(#BV(G));P;Mem) }
+  rule #deBruijn( I:Int ; for( <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( <<- #deBruijn(I;X;Mem) if #deBruijn(I +Int size(#BV(X));G;Mem) ){ #deBruijn(I +Int size(#BV(X)) +Int size(#BV(G));P;Mem) }
   rule #deBruijn( I:Int ; for( B:Pbind   if G:BExp ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I;#bvar(B);.Map) <! #deBruijn(I +Int size(#LV(B));#chan(B);Mem) if #sub(#mapify(I;#bvar(B);.Map);G) ){
+    => for( #dBound(I;#bvar(B);.Map) <<- #deBruijn(I +Int size(#LV(B));#chan(B);Mem) if #sub(#mapify(I;#bvar(B);.Map);G) ){
               #deBruijn(I +Int #dBsize(B) +Int size(#BV(G)) ;
               #sub(#mapify(I;#bvar(B);.Map);P) ;
               updateMap( Mem , #mapify(I;#bvar(B);.Map) )) } [owise]
@@ -364,9 +364,9 @@ module ALPHA
   rule #deBruijn( I:Int ;; A:Lbind ; B:Lbinds ;; Mem:Map )
     => #deBruijn(I;;A;;Mem) ; #deBruijn(I +Int #dBsize(A);;B;;Mem)
 
-  rule #deBruijn( I:Int ;; <! X:Name ;; Mem:Map ) => <! #deBruijn(I;X;Mem)
+  rule #deBruijn( I:Int ;; <<- X:Name ;; Mem:Map ) => <<- #deBruijn(I;X;Mem)
   rule #deBruijn( I:Int ;; A:Pbind   ;; Mem:Map )
-    => #dBound(I;#bvar(A);.Map) <! #deBruijn(I +Int size(#LV(A));#chan(A);Mem) [owise]
+    => #dBound(I;#bvar(A);.Map) <<- #deBruijn(I +Int size(#LV(A));#chan(A);Mem) [owise]
   rule #deBruijn( I:Int ;; A:Pbind ; B:Pbind  ;; Mem:Map )
     => #deBruijn(I;;A;;Mem) ; #deBruijn(I +Int #dBsize(A);;B;;Mem)
   rule #deBruijn( I:Int ;; A:Pbind ; B:Pbinds ;; Mem:Map )
@@ -529,17 +529,17 @@ module ALPHA
               #sub(#mapify(I,J;#bvar(B);.Map);P) ;
               updateMap( Mem , #mapify(I,J;#bvar(B);.Map) )) } [owise]
     // Peek
-  rule #deBruijn( I:Int , J:Int ; for( <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( <! #deBruijn(I,J;X;Mem) ){ #deBruijn(I,J +Int size(#BV(X));P;Mem) }
+  rule #deBruijn( I:Int , J:Int ; for( <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( <<- #deBruijn(I,J;X;Mem) ){ #deBruijn(I,J +Int size(#BV(X));P;Mem) }
   rule #deBruijn( I:Int , J:Int ; for( B:Pbind   ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;#bvar(B);.Map) <! #deBruijn(I,J +Int size(#LV(B));#chan(B);Mem) ){
+    => for( #dBound(I,J;#bvar(B);.Map) <<- #deBruijn(I,J +Int size(#LV(B));#chan(B);Mem) ){
               #deBruijn(I,J +Int #dBsize(B) ;
               #sub(#mapify(I,J;#bvar(B);.Map);P) ;
               updateMap( Mem , #mapify(I,J;#bvar(B);.Map) )) } [owise]
-  rule #deBruijn( I:Int , J:Int ; for( <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( <! #deBruijn(I,J;X;Mem) if #deBruijn(I,J +Int size(#BV(X));G;Mem) ){ #deBruijn(I,J +Int size(#BV(X)) +Int size(#BV(G));P;Mem) }
+  rule #deBruijn( I:Int , J:Int ; for( <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( <<- #deBruijn(I,J;X;Mem) if #deBruijn(I,J +Int size(#BV(X));G;Mem) ){ #deBruijn(I,J +Int size(#BV(X)) +Int size(#BV(G));P;Mem) }
   rule #deBruijn( I:Int , J:Int ; for( B:Pbind   if G:BExp ){ P:Proc } ; Mem:Map ) 
-    => for( #dBound(I,J;#bvar(B);.Map) <! #deBruijn(I,J +Int size(#LV(B));#chan(B);Mem) if #sub(#mapify(I,J;#bvar(B);.Map);G) ){
+    => for( #dBound(I,J;#bvar(B);.Map) <<- #deBruijn(I,J +Int size(#LV(B));#chan(B);Mem) if #sub(#mapify(I,J;#bvar(B);.Map);G) ){
               #deBruijn(I,J +Int #dBsize(B) +Int size(#BV(G)) ;
               #sub(#mapify(I,J;#bvar(B);.Map);P) ;
               updateMap( Mem , #mapify(I,J;#bvar(B);.Map) )) } [owise]
@@ -738,16 +738,16 @@ module ALPHA
 
   // Peek
     // unguarded
-  rule  #dBound( I:Int ;; <! X:Name  ;; Mem:Map ) =>  <! #dBound(I;X;Mem)
-  rule  #dBound( I:Int ;;    B:Pbind ;; Mem:Map ) => #dBound(1,0;#bvar(B);.Map) <! #dBound(I;#sub(Mem;#chan(B));Mem) [owise]
+  rule  #dBound( I:Int ;; <<- X:Name  ;; Mem:Map ) =>  <<- #dBound(I;X;Mem)
+  rule  #dBound( I:Int ;;    B:Pbind ;; Mem:Map ) => #dBound(1,0;#bvar(B);.Map) <<- #dBound(I;#sub(Mem;#chan(B));Mem) [owise]
   rule  #dBound( I:Int ;; A:Pbind ; B:Pbind  ;; Mem:Map ) => #dBound(I;;A;;.Map) ; #dBound+(I +Int size(#RV(A));size(#LV(A));;B;;Mem)
   rule  #dBound( I:Int ;; A:Pbind ; B:Pbinds ;; Mem:Map ) => #dBound(I;;A;;.Map) ; #dBound+(I +Int size(#RV(A));size(#LV(A));;B;;Mem)
-  rule #dBound+( I:Int ; _:Int ;; <! X:Name  ;; Mem:Map ) =>  <! #dBound(I;X;Mem)
-  rule #dBound+( I:Int ; J:Int ;; A:Pbind    ;; Mem:Map ) => #dBound(1,J;#bvar(A);.Map) <! #dBound(I;#sub(Mem;#chan(A));Mem) [owise]
+  rule #dBound+( I:Int ; _:Int ;; <<- X:Name  ;; Mem:Map ) =>  <<- #dBound(I;X;Mem)
+  rule #dBound+( I:Int ; J:Int ;; A:Pbind    ;; Mem:Map ) => #dBound(1,J;#bvar(A);.Map) <<- #dBound(I;#sub(Mem;#chan(A));Mem) [owise]
   rule #dBound+( I:Int ; J:Int ;; A:Pbind ; B:Pbind  ;; Mem:Map )
-    =>  #dBound(1,J;#bvar(A);.Map) <! #dBound(I;#chan(A);Mem) ; #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B;;Mem)
+    =>  #dBound(1,J;#bvar(A);.Map) <<- #dBound(I;#chan(A);Mem) ; #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B;;Mem)
   rule #dBound+( I:Int ; J:Int ;; A:Pbind ; B:Pbinds ;; Mem:Map )
-    =>  #dBound(1,J;#bvar(A);.Map) <! #dBound(I;#chan(A);Mem) ; #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B;;Mem)
+    =>  #dBound(1,J;#bvar(A);.Map) <<- #dBound(I;#chan(A);Mem) ; #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B;;Mem)
     // guarded
 //  rule #dBound( I:Int ;; B:Pbind  if G:BExp ;; Mem:Map )
 //    => #dBound(I;;B;;.Map) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B);.Map);G);Mem)
@@ -937,11 +937,11 @@ module ALPHA
   rule #dBound( I:Int , J:Int ;; Y:Names    <= X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <= #dBound(I,J;X;Mem)
   rule #dBound( I:Int , J:Int ;; Y:Name     <= X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <= #dBound(I,J;X;Mem)
   rule #dBound( I:Int , J:Int ;;            <= X:Name ;; Mem:Map ) =>  <= #dBound(I,J;X;Mem)
-  rule #dBound( I:Int , J:Int ;; Y:NamePats <! X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <! #dBound(I,J;X;Mem)
-  rule #dBound( I:Int , J:Int ;; Y:NamePat  <! X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <! #dBound(I,J;X;Mem)
-  rule #dBound( I:Int , J:Int ;; Y:Names    <! X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <! #dBound(I,J;X;Mem)
-  rule #dBound( I:Int , J:Int ;; Y:Name     <! X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <! #dBound(I,J;X;Mem)
-  rule #dBound( I:Int , J:Int ;;            <! X:Name ;; Mem:Map ) =>  <! #dBound(I,J;X;Mem)
+  rule #dBound( I:Int , J:Int ;; Y:NamePats <<- X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <<- #dBound(I,J;X;Mem)
+  rule #dBound( I:Int , J:Int ;; Y:NamePat  <<- X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <<- #dBound(I,J;X;Mem)
+  rule #dBound( I:Int , J:Int ;; Y:Names    <<- X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <<- #dBound(I,J;X;Mem)
+  rule #dBound( I:Int , J:Int ;; Y:Name     <<- X:Name ;; Mem:Map ) => #dBound(I +Int 1,0;Y;Mem) <<- #dBound(I,J;X;Mem)
+  rule #dBound( I:Int , J:Int ;;            <<- X:Name ;; Mem:Map ) =>  <<- #dBound(I,J;X;Mem)
     // guarded
 //  rule #dBound( I:Int , J:Int ;; B:Lbind if G:BExp ;; Mem:Map )
 //    => #dBound(I,J;;B;;Mem) if #dBound(I,J +Int size(#BV(#chan(B)));#sub(#mapify(I +Int 1,0;#bvar(B);.Map);G);Mem)
@@ -982,11 +982,11 @@ module ALPHA
   rule #dBound( I:Int , J:Int ; A:Name !  ( B:Procs    ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
   rule #dBound( I:Int , J:Int ; A:Name !  ( B:Proc     ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
   rule #dBound( I:Int , J:Int ; A:Name !  (            ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! (  )
-  rule #dBound( I:Int , J:Int ; A:Name !! ( B:ProcPats ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
-  rule #dBound( I:Int , J:Int ; A:Name !! ( B:ProcPat  ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
-  rule #dBound( I:Int , J:Int ; A:Name !! ( B:Procs    ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
-  rule #dBound( I:Int , J:Int ; A:Name !! ( B:Proc     ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! ( #dBound(I,J +Int size(#FV(A));B;Mem) )
-  rule #dBound( I:Int , J:Int ; A:Name !! (            ) ; Mem:Map ) => #dBound(I,J;A;Mem) ! (  )
+  rule #dBound( I:Int , J:Int ; A:Name !! ( B:ProcPats ) ; Mem:Map ) => #dBound(I,J;A;Mem) !!( #dBound(I,J +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name !! ( B:ProcPat  ) ; Mem:Map ) => #dBound(I,J;A;Mem) !!( #dBound(I,J +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name !! ( B:Procs    ) ; Mem:Map ) => #dBound(I,J;A;Mem) !!( #dBound(I,J +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name !! ( B:Proc     ) ; Mem:Map ) => #dBound(I,J;A;Mem) !!( #dBound(I,J +Int size(#FV(A));B;Mem) )
+  rule #dBound( I:Int , J:Int ; A:Name !! (            ) ; Mem:Map ) => #dBound(I,J;A;Mem) !!(  )
 
     // Receive -- increase nesting index for bound Names
   // linear
@@ -1077,45 +1077,45 @@ module ALPHA
 
   // peek
     // no listening variables
-  rule #dBound( I:Int , J:Int ; for(  <! X:Name ){ P:Proc } ; Mem:Map ) 
-    => for( <! #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
+  rule #dBound( I:Int , J:Int ; for(  <<- X:Name ){ P:Proc } ; Mem:Map ) 
+    => for( <<- #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
     // listening for NameVar
       // if NameVar is fresh w.r.t. Mem, do usual substitution for NameVar
       // if NameVar is not fresh w.r.t. Mem, substitute for the value associated with NameVar
-  rule #dBound( I:Int , J:Int ; for( Y:NameVar <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( boundN(I +Int 1,0) <! #dBound(I,J;X;Mem) ){ 
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <<- #dBound(I,J;X;Mem) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
         // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:NameVar <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( boundN(I +Int 1,0) <! #dBound(I,J;X;Mem) if #sub(boundN(I +Int 1,0);#sub(Mem;Y);G) ){ 
+  rule #dBound( I:Int , J:Int ; for( Y:NameVar <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( boundN(I +Int 1,0) <<- #dBound(I,J;X;Mem) if #sub(boundN(I +Int 1,0);#sub(Mem;Y);G) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(boundN(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundN(I +Int 1,0) ) ) }
     // listening for @ProcVar
       // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
       // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( @ boundP(I +Int 1,0) <! #dBound(I,J;X;Mem) ){ 
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <<- #dBound(I,J;X;Mem) ){ 
             #dBound( I,J +Int size(#FV(X)); #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
         // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @ boundP(I +Int 1,0) <! #dBound(I,J;X;Mem) if #sub(boundP(I +Int 1,0);#sub(Mem;Y);G) ){ 
+  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ boundP(I +Int 1,0) <<- #dBound(I,J;X;Mem) if #sub(boundP(I +Int 1,0);#sub(Mem;Y);G) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(boundP(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> boundP(I +Int 1,0) ) ) }
     // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( @ #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) ){ 
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
        requires notBool isProcVar(Y)
         // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @ #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){ 
+  rule #dBound( I:Int , J:Int ; for( @Y:Proc <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( @ #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
        requires notBool isProcVar(Y)
     // several Name listens
-  rule #dBound( I:Int , J:Int ; for( Y:Names <! X:Name ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <! #dBound(I +Int 1,J;X;Mem) ){ 
+  rule #dBound( I:Int , J:Int ; for( Y:Names <<- X:Name ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I +Int 1,J;X;Mem) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
         // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Names <! X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <! #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){ 
+  rule #dBound( I:Int , J:Int ; for( Y:Names <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
+    => for( #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){ 
             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
 
   // Par
@@ -1221,7 +1221,7 @@ module ALPHA
   rule #mapify( I:Int ; for(  B:Lbinds  ){ P:Proc } ; Mem:Map ) 
     => #mapify(I +Int size(#RV(B));#sub(#mapSub(#LV(B));P);updateMap(Mem,#mapify(I;#chan(B);.Map)))
 
-  rule #mapify( I:Int ; for( <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int size(#FV(X));P;Mem)
+  rule #mapify( I:Int ; for( <<- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I +Int size(#FV(X));P;Mem)
   rule #mapify( I:Int ; for(   B:Pbind ){ P:Proc } ; Mem:Map ) 
     => #mapify(I +Int size(#RV(B));#sub(#mapSub(#LV(B));P);updateMap(Mem,#mapify(I;#chan(B);.Map))) [owsie]
   rule #mapify( I:Int ; for(  B:Pbinds ){ P:Proc } ; Mem:Map ) 
@@ -1244,7 +1244,7 @@ module ALPHA
                #sub(#mapSub(#LV(B));P) ;
                updateMap( Mem , #mapify(I;#chan(B);.Map) #mapify(I +Int size(#RV(B));#sub(#mapSub(#FV(G));G);.Map) ))
 
-  rule #mapify( I:Int ; for( <! X:Name if G:BExp ){ P:Proc } ; Mem:Map ) => #mapify(I +Int size(#FV(X)) +Int size(#BV(G));P;Mem)
+  rule #mapify( I:Int ; for( <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map ) => #mapify(I +Int size(#FV(X)) +Int size(#BV(G));P;Mem)
   rule #mapify( I:Int ; for(   B:Pbind if G:BExp ){ P:Proc } ; Mem:Map )
     => #mapify(I +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B)) ;
                #sub(#mapSub(#LV(B));P) ;
@@ -1268,7 +1268,7 @@ module ALPHA
   rule #mapify( I:Int ;; A:Lbind   ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) )
   rule #mapify( I:Int ;; A:Lbind ; B:Lbind  ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
   rule #mapify( I:Int ;; A:Lbind ; B:Lbinds ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
-  rule #mapify( I:Int ;; <! X:Name ;; Mem:Map ) => updateMap( Mem , #mapify(I;X;Mem) )
+  rule #mapify( I:Int ;; <<- X:Name ;; Mem:Map ) => updateMap( Mem , #mapify(I;X;Mem) )
   rule #mapify( I:Int ;; A:Pbind   ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) )
   rule #mapify( I:Int ;; A:Pbind ; B:Pbind  ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
   rule #mapify( I:Int ;; A:Pbind ; B:Pbinds ;; Mem:Map ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
@@ -1390,7 +1390,7 @@ rule #mapify( I:Int ; @A:ProcPat ; Mem:Map ) => #mapify(I;A;Mem)
   rule #mapify( I:Int , J:Int ; for( B:Pbind   ){ P:Proc } ; Mem:Map )
     => #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#RV(B));P);updateMap(Mem,#mapify(I,J;#bvar(B);Mem))) [owise]
 
-  rule #mapify( I:Int , J:Int ; for( <! X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int size(#FV(X));P;Mem)
+  rule #mapify( I:Int , J:Int ; for( <<- X:Name ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int size(#FV(X));P;Mem)
   rule #mapify( I:Int , J:Int ; for( B:Rbind   ){ P:Proc } ; Mem:Map )
     => #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#RV(B));P);updateMap(Mem,#mapify(I,J;#bvar(B);Mem))) [owise]
     // guarded
@@ -1402,7 +1402,7 @@ rule #mapify( I:Int ; @A:ProcPat ; Mem:Map ) => #mapify(I;A;Mem)
   rule #mapify( I:Int , J:Int ; for( B:GPbind  ){ P:Proc } ; Mem:Map )
     => #mapify(I,J +Int size(#RV(B)) +Int size(#BV(#guard(B)));#sub(#mapSub(#RV(B));P);updateMap(Mem,#mapify(I,J;#bvar(B);Mem)))
 
-  rule #mapify( I:Int , J:Int ; for( <! X:Name if G:BExp ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int size(#FV(X)) +Int size(#BV(G));P;Mem)
+  rule #mapify( I:Int , J:Int ; for( <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map ) => #mapify(I,J +Int size(#FV(X)) +Int size(#BV(G));P;Mem)
   rule #mapify( I:Int , J:Int ; for( B:GRbind  ){ P:Proc } ; Mem:Map ) 
     => #mapify(I,J +Int size(#RV(B)) +Int size(#BV(#guard(B)));#sub(#mapSub(#RV(B));P);updateMap(Mem,#mapify(I,J;#bvar(B);Mem)))
 
