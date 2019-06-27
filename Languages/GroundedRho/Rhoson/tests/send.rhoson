@@ -10,10 +10,9 @@ Output:
       "msg" : { 
         0 : { "nil" : Nil } , 
         1 : { "list" : { 0 : { "int" : 1 } , 1 : { "int" : 2 } } } , 
-        2 : { "set" : SetItem ( { "int" : 2 } )  SetItem ( { "int" : 5 } ) } 
+        2 : { "set" : SetItem ( { "int" : 2 } )  SetItem ( { "int" : 5 } ) }
       } 
     } 
   } 
 }
-
 */
