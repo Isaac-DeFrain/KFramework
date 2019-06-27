@@ -832,11 +832,11 @@ module AUXFUN
   rule #chan( _:Names    <= N:Name ) => N
 //  rule #chan( _:NamePat  <= N:Name ) => N
   rule #chan( _:NamePats <= N:Name ) => N
-  rule #chan(            <! N:Name ) => N
-//  rule #chan( _:Name     <! N:Name ) => N
-  rule #chan( _:Names    <! N:Name ) => N
-//  rule #chan( _:NamePat  <! N:Name ) => N
-  rule #chan( _:NamePats <! N:Name ) => N
+  rule #chan(            <<- N:Name ) => N
+//  rule #chan( _:Name     <<- N:Name ) => N
+  rule #chan( _:Names    <<- N:Name ) => N
+//  rule #chan( _:NamePat  <<- N:Name ) => N
+  rule #chan( _:NamePats <<- N:Name ) => N
   // Guraded
   rule #chan( B:Lbind _:Guard ) => #chan(B)
   rule #chan( B:Pbind _:Guard ) => #chan(B)
@@ -865,11 +865,11 @@ module AUXFUN
   rule #chan( _:Names    <= N:NamePat ) => N
 //  rule #chan( _:NamePat  <= N:NamePat ) => N
   rule #chan( _:NamePats <= N:NamePat ) => N
-  rule #chan(            <! N:NamePat ) => N
-//  rule #chan( _:Name     <! N:NamePat ) => N
-  rule #chan( _:Names    <! N:NamePat ) => N
-//  rule #chan( _:NamePat  <! N:NamePat ) => N
-  rule #chan( _:NamePats <! N:NamePat ) => N
+  rule #chan(            <<- N:NamePat ) => N
+//  rule #chan( _:Name     <<- N:NamePat ) => N
+  rule #chan( _:Names    <<- N:NamePat ) => N
+//  rule #chan( _:NamePat  <<- N:NamePat ) => N
+  rule #chan( _:NamePats <<- N:NamePat ) => N
   // Guraded
   rule #chan( B:LbindPat _:Guard ) => #chan(B)
   rule #chan( B:PbindPat _:Guard ) => #chan(B)
@@ -907,41 +907,29 @@ module AUXFUN
 //-------------
 // number of binding variables in a listen
 // Bind
-//  rule #lislen(            <- _:Name ) => 0
-//  rule #lislen( _:Name     <- _:Name ) => 1
+  rule #lislen(            <- _:Name ) => 0
   rule #lislen( N:Names    <- _:Name ) => #length(N)
-//  rule #lislen( _:NamePat  <- _:Name ) => 1
   rule #lislen( N:NamePats <- _:Name ) => #length(N)
-//  rule #lislen(            <= _:Name ) => 0
-//  rule #lislen( _:Name     <= _:Name ) => 1
+  rule #lislen(            <= _:Name ) => 0
   rule #lislen( N:Names    <= _:Name ) => #length(N)
-//  rule #lislen( _:NamePat  <= _:Name ) => 1
   rule #lislen( N:NamePats <= _:Name ) => #length(N)
-//  rule #lislen(            <! _:Name ) => 0
-//  rule #lislen( _:Name     <! _:Name ) => 1
-  rule #lislen( N:Names    <! _:Name ) => #length(N)
-//  rule #lislen( _:NamePat  <! _:Name ) => 1
-  rule #lislen( N:NamePats <! _:Name ) => #length(N)
+  rule #lislen(            <<- _:Name ) => 0
+  rule #lislen( N:Names    <<- _:Name ) => #length(N)
+  rule #lislen( N:NamePats <<- _:Name ) => #length(N)
   // Guraded
   rule #lislen( B:Lbind _:Guard ) => #lislen(B)
   rule #lislen( B:Pbind _:Guard ) => #lislen(B)
   rule #lislen( B:Rbind _:Guard ) => #lislen(B)
 // BindPat
-//  rule #lislen(            <- _:NamePat ) => 0
-//  rule #lislen( _:Name     <- _:NamePat ) => 1
+  rule #lislen(            <- _:NamePat ) => 0
   rule #lislen( N:Names    <- _:NamePat ) => #length(N)
-//  rule #lislen( _:NamePat  <- _:NamePat ) => 1
   rule #lislen( N:NamePats <- _:NamePat ) => #length(N)
-//  rule #lislen(            <= _:NamePat ) => 0
-//  rule #lislen( _:Name     <= _:NamePat ) => 1
+  rule #lislen(            <= _:NamePat ) => 0
   rule #lislen( N:Names    <= _:NamePat ) => #length(N)
-//  rule #lislen( _:NamePat  <= _:NamePat ) => 1
   rule #lislen( N:NamePats <= _:NamePat ) => #length(N)
-//  rule #lislen(            <! _:NamePat ) => 0
-//  rule #lislen( _:Name     <! _:NamePat ) => 1
-  rule #lislen( N:Names    <! _:NamePat ) => #length(N)
-//  rule #lislen( _:NamePat  <! _:NamePat ) => 1
-  rule #lislen( N:NamePats <! _:NamePat ) => #length(N)
+  rule #lislen(            <<- _:NamePat ) => 0
+  rule #lislen( N:Names    <<- _:NamePat ) => #length(N)
+  rule #lislen( N:NamePats <<- _:NamePat ) => #length(N)
   // Guarded
   rule #lislen( B:LbindPat _:Guard ) => #lislen(B)
   rule #lislen( B:PbindPat _:Guard ) => #lislen(B)
@@ -953,20 +941,20 @@ module AUXFUN
 // binding variables
 // Bind
   rule #bvar(            <- _:Name ) => EmptyN
-//  rule #bvar( N:Name     <- _:Name ) => N
+  rule #bvar( N:Name     <- _:Name ) => N
   rule #bvar( N:Names    <- _:Name ) => N
-//  rule #bvar( N:NamePat  <- _:Name ) => N
+  rule #bvar( N:NamePat  <- _:Name ) => N
   rule #bvar( N:NamePats <- _:Name ) => N
   rule #bvar(            <= _:Name ) => EmptyN
-//  rule #bvar( N:Name     <= _:Name ) => N
+  rule #bvar( N:Name     <= _:Name ) => N
   rule #bvar( N:Names    <= _:Name ) => N
-//  rule #bvar( N:NamePat  <= _:Name ) => N
+  rule #bvar( N:NamePat  <= _:Name ) => N
   rule #bvar( N:NamePats <= _:Name ) => N
-  rule #bvar(            <! _:Name ) => EmptyN
-//  rule #bvar( N:Name     <! _:Name ) => N
-  rule #bvar( N:Names    <! _:Name ) => N
-//  rule #bvar( N:NamePat  <! _:Name ) => N
-  rule #bvar( N:NamePats <! _:Name ) => N
+  rule #bvar(            <<- _:Name ) => EmptyN
+  rule #bvar( N:Name     <<- _:Name ) => N
+  rule #bvar( N:Names    <<- _:Name ) => N
+  rule #bvar( N:NamePat  <<- _:Name ) => N
+  rule #bvar( N:NamePats <<- _:Name ) => N
   // Guraded
   rule #bvar( B:Lbind _:Guard ) => #bvar(B)
   rule #bvar( B:Pbind _:Guard ) => #bvar(B)
@@ -983,11 +971,11 @@ module AUXFUN
   rule #bvar( N:Names    <= _:NamePat ) => N
   rule #bvar( N:NamePat  <= _:NamePat ) => N
   rule #bvar( N:NamePats <= _:NamePat ) => N
-  rule #bvar(            <! _:NamePat ) => EmptyN
-  rule #bvar( N:Name     <! _:NamePat ) => N
-  rule #bvar( N:Names    <! _:NamePat ) => N
-  rule #bvar( N:NamePat  <! _:NamePat ) => N
-  rule #bvar( N:NamePats <! _:NamePat ) => N
+  rule #bvar(            <<- _:NamePat ) => EmptyN
+  rule #bvar( N:Name     <<- _:NamePat ) => N
+  rule #bvar( N:Names    <<- _:NamePat ) => N
+  rule #bvar( N:NamePat  <<- _:NamePat ) => N
+  rule #bvar( N:NamePats <<- _:NamePat ) => N
   // Guraded
   rule #bvar( B:LbindPat _:Guard ) => #bvar(B)
   rule #bvar( B:PbindPat _:Guard ) => #bvar(B)
@@ -1214,8 +1202,8 @@ module AUXFUN
   rule #bind ( A:Name ; B:Names ;; 0 ) => B <- A
   rule #bind ( A:Name ; B:Name  ;; 1 ) => B <= A
   rule #bind ( A:Name ; B:Names ;; 1 ) => B <= A
-  rule #bind ( A:Name ; B:Name  ;; 2 ) => B <! A
-  rule #bind ( A:Name ; B:Names ;; 2 ) => B <! A
+  rule #bind ( A:Name ; B:Name  ;; 2 ) => B <<- A
+  rule #bind ( A:Name ; B:Names ;; 2 ) => B <<- A
 */
 
 /*
