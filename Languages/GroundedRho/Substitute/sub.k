@@ -585,7 +585,7 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:Name !  (         ) ) => #sub(A;B;C) !  (             )
   rule #sub( A:Proc ; B:Proc ; C:Name !  ( D:Proc  ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:Name !  ( D:Procs ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc ; C:Name !! (         ) ) => #sub(A;B;C) !  (             )
+  rule #sub( A:Proc ; B:Proc ; C:Name !! (         ) ) => #sub(A;B;C) !! (             )
   rule #sub( A:Proc ; B:Proc ; C:Name !! ( D:Proc  ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:Name !! ( D:Procs ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
@@ -647,11 +647,11 @@ module SUB
   rule #subBind( A:Proc ; B:Proc ;; C:Rbind ; D:Rbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
   rule #subBind( A:Proc ; B:Proc ;; C:Rbind ; D:Rbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
     // Peek
-  rule #subBind( A:Proc ; B:Proc ;;            <! X:Name  ) =>   <! #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:Name     <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:Names    <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:NamePat  <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <! X:Name  ) => Y <! #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;;            <<- X:Name  ) =>   <<- #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:Name     <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:Names    <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:NamePat  <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <<- X:Name  ) => Y <<- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; C:Pbind ; D:Pbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
   rule #subBind( A:Proc ; B:Proc ;; C:Pbind ; D:Pbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
 
@@ -913,11 +913,11 @@ module SUB
   rule #subBind( A:Name ; B:Name ;; C:Rbind ; D:Rbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:Rbind ; D:Rbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
     // Peek
-  rule #subBind( A:Name ; B:Name ;;            <! X:Name  ) =>   <! #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:Name     <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:Names    <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:NamePat  <! X:Name  ) => Y <! #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:NamePats <! X:Name  ) => Y <! #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;;            <<- X:Name  ) =>   <<- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:Name     <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:Names    <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:NamePat  <<- X:Name  ) => Y <<- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:NamePats <<- X:Name  ) => Y <<- #sub(A;B;X)
   rule #subBind( A:Name ; B:Name ;; C:Pbind ; D:Pbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:Pbind ; D:Pbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
 
@@ -925,7 +925,7 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:Name !  (         ) ) => #sub(A;B;C) !  (             )
   rule #sub( A:Name ; B:Name ; C:Name !  ( D:Proc  ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
   rule #sub( A:Name ; B:Name ; C:Name !  ( D:Procs ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Name ; B:Name ; C:Name !! (         ) ) => #sub(A;B;C) !  (             )
+  rule #sub( A:Name ; B:Name ; C:Name !! (         ) ) => #sub(A;B;C) !! (             )
   rule #sub( A:Name ; B:Name ; C:Name !! ( D:Proc  ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Name ; B:Name ; C:Name !! ( D:Procs ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
@@ -1001,7 +1001,7 @@ module SUB
 // NPatExp -- TODO: complete
 // sub Name for NPatAnd in Proc
 //  rule #sub( _:Name ; ~ _:Proc    ; C:Proc ) => C
-  rule #sub( @A:Proc ; B:Name /\ @C:SimplePat ; D:Proc ) => #sub(A;*B/\C;D)
+//  rule #sub( @A:Proc ; B:Name /\ @C:SimplePat ; D:Proc ) => #sub(A;*B/\C;D)
 
 // Condtionals
   rule #sub( A:Name ; B:Name ; if (C:BExp) D:Proc   ) => if (#sub(A;B;C)) #sub(A;B;D)
