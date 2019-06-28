@@ -237,45 +237,29 @@ module AUXFUN
 
 // Sends
   rule #chan( N:Name    !  (            ) ) => N
-  rule #chan( N:Name    !  ( _:Proc     ) ) => N
   rule #chan( N:Name    !  ( _:Procs    ) ) => N
-  rule #chan( N:Name    !  ( _:ProcPat  ) ) => N
   rule #chan( N:Name    !  ( _:ProcPats ) ) => N
   rule #chan( N:NamePat !  (            ) ) => N
-  rule #chan( N:NamePat !  ( _:Proc     ) ) => N
   rule #chan( N:NamePat !  ( _:Procs    ) ) => N
-  rule #chan( N:NamePat !  ( _:ProcPat  ) ) => N
   rule #chan( N:NamePat !  ( _:ProcPats ) ) => N
   rule #chan( N:Name    !! (            ) ) => N
-  rule #chan( N:Name    !! ( _:Proc     ) ) => N
   rule #chan( N:Name    !! ( _:Procs    ) ) => N
-  rule #chan( N:Name    !! ( _:ProcPat  ) ) => N
   rule #chan( N:Name    !! ( _:ProcPats ) ) => N
   rule #chan( N:NamePat !! (            ) ) => N
-  rule #chan( N:NamePat !! ( _:Proc     ) ) => N
   rule #chan( N:NamePat !! ( _:Procs    ) ) => N
-  rule #chan( N:NamePat !! ( _:ProcPat  ) ) => N
   rule #chan( N:NamePat !! ( _:ProcPats ) ) => N
 
   rule #msg( _:Name    !  (            ) ) => EmptyP
-  rule #msg( _:Name    !  ( P:Proc     ) ) => P
   rule #msg( _:Name    !  ( P:Procs    ) ) => P
-  rule #msg( _:Name    !  ( P:ProcPat  ) ) => P
   rule #msg( _:Name    !  ( P:ProcPats ) ) => P
   rule #msg( _:NamePat !  (            ) ) => EmptyP
-  rule #msg( _:NamePat !  ( P:Proc     ) ) => P
   rule #msg( _:NamePat !  ( P:Procs    ) ) => P
-  rule #msg( _:NamePat !  ( P:ProcPat  ) ) => P
   rule #msg( _:NamePat !  ( P:ProcPats ) ) => P
   rule #msg( _:Name    !! (            ) ) => EmptyP
-  rule #msg( _:Name    !! ( P:Proc     ) ) => P
   rule #msg( _:Name    !! ( P:Procs    ) ) => P
-  rule #msg( _:Name    !! ( P:ProcPat  ) ) => P
   rule #msg( _:Name    !! ( P:ProcPats ) ) => P
   rule #msg( _:NamePat !! (            ) ) => EmptyP
-  rule #msg( _:NamePat !! ( P:Proc     ) ) => P
   rule #msg( _:NamePat !! ( P:Procs    ) ) => P
-  rule #msg( _:NamePat !! ( P:ProcPat  ) ) => P
   rule #msg( _:NamePat !! ( P:ProcPats ) ) => P
   
   rule #msglen( S:Send    ) => #length(#msg(S))
@@ -624,93 +608,32 @@ module AUXFUN
 //---------------
 //--- #append ---
 //---------------
-// Names
-  rule #append( A:Name           ; B:Name  ) => A,B
-  rule #append( A:Name           ; B:Names ) => A,B
-  rule #append( A:Name , B:Name  ; C:Name  ) => A,#append(B;C)
-  rule #append( A:Name , B:Name  ; C:Names ) => A,#append(B;C)
-  rule #append( A:Name , B:Names ; C:Name  ) => A,#append(B;C)
-  rule #append( A:Name , B:Names ; C:Names ) => A,#append(B;C)
-
-// NamePats
-  rule #append( A:Name                 ; B:NamePat  ) => A,B
-  rule #append( A:NamePat              ; B:Name     ) => A,B
-  rule #append( A:NamePat              ; B:NamePat  ) => A,B
+// Name[Pat]s
+  rule #append( A:Name                 ; B:Names    ) => A,B
   rule #append( A:Name                 ; B:NamePats ) => A,B
   rule #append( A:NamePat              ; B:Names    ) => A,B
   rule #append( A:NamePat              ; B:NamePats ) => A,B
-  rule #append( A:Name    , B:Name     ; C:NamePat  ) => A,#append(B;C)
-  rule #append( A:Name    , B:Name     ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:Name    , B:Names    ; C:NamePat  ) => A,#append(B;C)
+  rule #append( A:Name    , B:Names    ; C:Names    ) => A,#append(B;C)
   rule #append( A:Name    , B:Names    ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePat  ; C:Name     ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePat  ; C:Names    ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePat  ; C:NamePat  ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePat  ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:NamePat , B:Name     ; C:Name     ) => A,#append(B;C)
-  rule #append( A:NamePat , B:Name     ; C:Names    ) => A,#append(B;C)
-  rule #append( A:NamePat , B:Name     ; C:NamePat  ) => A,#append(B;C)
-  rule #append( A:NamePat , B:Name     ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePat  ; C:Name     ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePat  ; C:Names    ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePat  ; C:NamePat  ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePat  ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePats ; C:Name     ) => A,#append(B;C)
   rule #append( A:Name    , B:NamePats ; C:Names    ) => A,#append(B;C)
-  rule #append( A:Name    , B:NamePats ; C:NamePat  ) => A,#append(B;C)
   rule #append( A:Name    , B:NamePats ; C:NamePats ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePats ; C:Name     ) => A,#append(B;C)
   rule #append( A:NamePat , B:NamePats ; C:Names    ) => A,#append(B;C)
-  rule #append( A:NamePat , B:NamePats ; C:NamePat  ) => A,#append(B;C)
   rule #append( A:NamePat , B:NamePats ; C:NamePats ) => A,#append(B;C)
 
-
-// Procs
-  rule #append( A:Proc           ; B:Proc  ) => A,B
-  rule #append( A:Proc           ; B:Procs ) => A,B
-  rule #append( A:Proc , B:Proc  ; C:Proc  ) => A,#append(B;C)
-  rule #append( A:Proc , B:Proc  ; C:Procs ) => A,#append(B;C)
-  rule #append( A:Proc , B:Procs ; C:Proc  ) => A,#append(B;C)
-  rule #append( A:Proc , B:Procs ; C:Procs ) => A,#append(B;C)
-
-// ProcPats
-  rule #append( A:Proc                 ; B:ProcPat  ) => A,B
-  rule #append( A:ProcPat              ; B:Proc     ) => A,B
-  rule #append( A:ProcPat              ; B:ProcPat  ) => A,B
+// Proc[Pat]s
+  rule #append( A:Proc                 ; B:Procs    ) => A,B
   rule #append( A:Proc                 ; B:ProcPats ) => A,B
   rule #append( A:ProcPat              ; B:Procs    ) => A,B
   rule #append( A:ProcPat              ; B:ProcPats ) => A,B
-  rule #append( A:Proc    , B:Proc     ; C:ProcPat  ) => A,#append(B;C)
-  rule #append( A:Proc    , B:Proc     ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:Proc    , B:Procs    ; C:ProcPat  ) => A,#append(B;C)
+  rule #append( A:Proc    , B:Procs    ; C:Procs    ) => A,#append(B;C)
   rule #append( A:Proc    , B:Procs    ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPat  ; C:Proc     ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPat  ; C:Procs    ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPat  ; C:ProcPat  ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPat  ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:Proc     ; C:Proc     ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:Proc     ; C:Procs    ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:Proc     ; C:ProcPat  ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:Proc     ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPat  ; C:Proc     ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPat  ; C:Procs    ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPat  ; C:ProcPat  ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPat  ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPats ; C:Proc     ) => A,#append(B;C)
   rule #append( A:Proc    , B:ProcPats ; C:Procs    ) => A,#append(B;C)
-  rule #append( A:Proc    , B:ProcPats ; C:ProcPat  ) => A,#append(B;C)
   rule #append( A:Proc    , B:ProcPats ; C:ProcPats ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPats ; C:Proc     ) => A,#append(B;C)
   rule #append( A:ProcPat , B:ProcPats ; C:Procs    ) => A,#append(B;C)
-  rule #append( A:ProcPat , B:ProcPats ; C:ProcPat  ) => A,#append(B;C)
   rule #append( A:ProcPat , B:ProcPats ; C:ProcPats ) => A,#append(B;C)
 
 // RhoKVPairs
-  rule #append( A:RhoKVPair ; B:RhoKVPair  ) => A,B
   rule #append( A:RhoKVPair ; B:RhoKVPairs ) => A,B
-  rule #append( A:RhoKVPair , B:RhoKVPair  ; C:RhoKVPair  ) => A,#append(B;C)
-  rule #append( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair  ) => A,#append(B;C)
-  rule #append( A:RhoKVPair , B:RhoKVPair  ; C:RhoKVPairs ) => A,#append(B;C)
   rule #append( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPairs ) => A,#append(B;C)
 
 //-----------
@@ -732,22 +655,18 @@ module AUXFUN
 //------------
 // New name declarations
   // New
-  rule #dec( new A:Name  in { _:Proc } ) => A
   rule #dec( new A:Names in { _:Proc } ) => A
   // NewPat
-  rule #dec( new A:Name  in { _:ProcPat } ) => A
   rule #dec( new A:Names in { _:ProcPat } ) => A
 
 //-------------
 //--- #size ---
 //-------------
   rule #size( Set( ) ) => 0
-//  rule #size( Set( P:Proc  ) ) => #length(P)
   rule #size( Set( P:Procs ) ) => #length(P)
   
   rule #size( { } ) => 0
   rule #size( { _:Proc : _:Proc } ) => 1
-//  rule #size( { _:Proc : _:Proc , _:RhoKVPair  } ) => 2
   rule #size( { _:Proc : _:Proc , R:RhoKVPairs } ) => 1 +Int #size({R})
 
 //---------------
@@ -756,36 +675,26 @@ module AUXFUN
 // Procs
   rule #length( EmptyP ) => 0
   rule #length( A:Proc ) => 1 requires A =/=K EmptyP
-//  rule #length( _:Proc , _:Proc  ) => 2
   rule #length( _:Proc , P:Procs ) => 1 +Int #length(P)
 
 // ProcPats
   rule #length( _:ProcPat ) => 1
-//  rule #length( _:Proc    , _:ProcPat  ) => 2
-//  rule #length( _:ProcPat , _:Proc     ) => 2
-//  rule #length( _:ProcPat , _:ProcPat  ) => 2
   rule #length( _:Proc    , P:ProcPats ) => 1 +Int #length(P)
   rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
   rule #length( _:ProcPat , P:Procs    ) => 1 +Int #length(P)
 
 // RhoList
   rule #length( [ ] ) => 0
-//  rule #length( [ P:Proc     ] ) => #length(P)
   rule #length( [ P:Procs    ] ) => #length(P)
-//  rule #length( [ P:ProcPat  ] ) => #length(P)
   rule #length( [ P:ProcPats ] ) => #length(P)
 
 // Names
   rule #length( EmptyN ) => 0
   rule #length( A:Name ) => 1 requires A =/=K EmptyN
-//  rule #length( _:Name , _:Name  ) => 2
   rule #length( _:Name , N:Names ) => 1 +Int #length(N)
 
 // NamePats
   rule #length( _:NamePat ) => 1
-//  rule #length( _:Name    , _:NamePat  ) => 2
-//  rule #length( _:NamePat , _:Name     ) => 2
-//  rule #length( _:NamePat , _:NamePat  ) => 2
   rule #length( _:Name    , N:NamePats ) => 1 +Int #length(N)
   rule #length( _:NamePat , N:NamePats ) => 1 +Int #length(N)
   rule #length( _:NamePat , N:Names    ) => 1 +Int #length(N)
@@ -822,20 +731,14 @@ module AUXFUN
 //--- #chan ---
 //-------------
 // Bind
-  rule #chan(            <- N:Name ) => N
-//  rule #chan( _:Name     <- N:Name ) => N
-  rule #chan( _:Names    <- N:Name ) => N
-//  rule #chan( _:NamePat  <- N:Name ) => N
-  rule #chan( _:NamePats <- N:Name ) => N
-  rule #chan(            <= N:Name ) => N
-//  rule #chan( _:Name     <= N:Name ) => N
-  rule #chan( _:Names    <= N:Name ) => N
-//  rule #chan( _:NamePat  <= N:Name ) => N
-  rule #chan( _:NamePats <= N:Name ) => N
+  rule #chan(            <-  N:Name ) => N
+  rule #chan( _:Names    <-  N:Name ) => N
+  rule #chan( _:NamePats <-  N:Name ) => N
+  rule #chan(            <=  N:Name ) => N
+  rule #chan( _:Names    <=  N:Name ) => N
+  rule #chan( _:NamePats <=  N:Name ) => N
   rule #chan(            <<- N:Name ) => N
-//  rule #chan( _:Name     <<- N:Name ) => N
   rule #chan( _:Names    <<- N:Name ) => N
-//  rule #chan( _:NamePat  <<- N:Name ) => N
   rule #chan( _:NamePats <<- N:Name ) => N
   // Guraded
   rule #chan( B:Lbind _:Guard ) => #chan(B)
@@ -855,20 +758,14 @@ module AUXFUN
   rule #chan( B:Rbinds _:Guard ) => #chan(B)
 
 // BindPat
-  rule #chan(            <- N:NamePat ) => N
-//  rule #chan( _:Name     <- N:NamePat ) => N
-  rule #chan( _:Names    <- N:NamePat ) => N
-//  rule #chan( _:NamePat  <- N:NamePat ) => N
-  rule #chan( _:NamePats <- N:NamePat ) => N
-  rule #chan(            <= N:NamePat ) => N
-//  rule #chan( _:Name     <= N:NamePat ) => N
-  rule #chan( _:Names    <= N:NamePat ) => N
-//  rule #chan( _:NamePat  <= N:NamePat ) => N
-  rule #chan( _:NamePats <= N:NamePat ) => N
+  rule #chan(            <-  N:NamePat ) => N
+  rule #chan( _:Names    <-  N:NamePat ) => N
+  rule #chan( _:NamePats <-  N:NamePat ) => N
+  rule #chan(            <=  N:NamePat ) => N
+  rule #chan( _:Names    <=  N:NamePat ) => N
+  rule #chan( _:NamePats <=  N:NamePat ) => N
   rule #chan(            <<- N:NamePat ) => N
-//  rule #chan( _:Name     <<- N:NamePat ) => N
   rule #chan( _:Names    <<- N:NamePat ) => N
-//  rule #chan( _:NamePat  <<- N:NamePat ) => N
   rule #chan( _:NamePats <<- N:NamePat ) => N
   // Guraded
   rule #chan( B:LbindPat _:Guard ) => #chan(B)
@@ -940,20 +837,14 @@ module AUXFUN
 //-------------
 // binding variables
 // Bind
-  rule #bvar(            <- _:Name ) => EmptyN
-  rule #bvar( N:Name     <- _:Name ) => N
-  rule #bvar( N:Names    <- _:Name ) => N
-  rule #bvar( N:NamePat  <- _:Name ) => N
-  rule #bvar( N:NamePats <- _:Name ) => N
-  rule #bvar(            <= _:Name ) => EmptyN
-  rule #bvar( N:Name     <= _:Name ) => N
-  rule #bvar( N:Names    <= _:Name ) => N
-  rule #bvar( N:NamePat  <= _:Name ) => N
-  rule #bvar( N:NamePats <= _:Name ) => N
+  rule #bvar(            <-  _:Name ) => EmptyN
+  rule #bvar( N:Names    <-  _:Name ) => N
+  rule #bvar( N:NamePats <-  _:Name ) => N
+  rule #bvar(            <=  _:Name ) => EmptyN
+  rule #bvar( N:Names    <=  _:Name ) => N
+  rule #bvar( N:NamePats <=  _:Name ) => N
   rule #bvar(            <<- _:Name ) => EmptyN
-  rule #bvar( N:Name     <<- _:Name ) => N
   rule #bvar( N:Names    <<- _:Name ) => N
-  rule #bvar( N:NamePat  <<- _:Name ) => N
   rule #bvar( N:NamePats <<- _:Name ) => N
   // Guraded
   rule #bvar( B:Lbind _:Guard ) => #bvar(B)
@@ -961,20 +852,14 @@ module AUXFUN
   rule #bvar( B:Rbind _:Guard ) => #bvar(B)
 
 // BindPat
-  rule #bvar(            <- _:NamePat ) => EmptyN
-  rule #bvar( N:Name     <- _:NamePat ) => N
-  rule #bvar( N:Names    <- _:NamePat ) => N
-  rule #bvar( N:NamePat  <- _:NamePat ) => N
-  rule #bvar( N:NamePats <- _:NamePat ) => N
-  rule #bvar(            <= _:NamePat ) => EmptyN
-  rule #bvar( N:Name     <= _:NamePat ) => N
-  rule #bvar( N:Names    <= _:NamePat ) => N
-  rule #bvar( N:NamePat  <= _:NamePat ) => N
-  rule #bvar( N:NamePats <= _:NamePat ) => N
+  rule #bvar(            <-  _:NamePat ) => EmptyN
+  rule #bvar( N:Names    <-  _:NamePat ) => N
+  rule #bvar( N:NamePats <-  _:NamePat ) => N
+  rule #bvar(            <=  _:NamePat ) => EmptyN
+  rule #bvar( N:Names    <=  _:NamePat ) => N
+  rule #bvar( N:NamePats <=  _:NamePat ) => N
   rule #bvar(            <<- _:NamePat ) => EmptyN
-  rule #bvar( N:Name     <<- _:NamePat ) => N
   rule #bvar( N:Names    <<- _:NamePat ) => N
-  rule #bvar( N:NamePat  <<- _:NamePat ) => N
   rule #bvar( N:NamePats <<- _:NamePat ) => N
   // Guraded
   rule #bvar( B:LbindPat _:Guard ) => #bvar(B)
@@ -1063,13 +948,11 @@ module AUXFUN
 // Maps
   rule _:Proc #in_keys { }:RhoMap => false
   rule A:Proc #in_keys { Key:Proc : Val:Proc } => A ==K Key
-  rule A:Proc #in_keys { Key:Proc : Val:Proc , KV:RhoKVPair   } => A ==K Key orBool A #in_keys { KV  }
   rule A:Proc #in_keys { Key:Proc : Val:Proc , KVs:RhoKVPairs } => A ==K Key orBool A #in_keys { KVs }
   
 // Sets
   rule _:Proc #in_set Set( ) => false
   rule A:Proc #in_set Set( Elm:Proc ) => A ==K Elm
-  rule A:Proc #in_set Set( Elm1:Proc , Elm2:Proc  ) => A ==K Elm1 orBool A ==K Elm2
   rule A:Proc #in_set Set( Elm1:Proc , Rest:Procs ) => A ==K Elm1 orBool A #in_set Set( Rest )
 
 //---------------
@@ -1140,7 +1023,6 @@ module AUXFUN
 
 // #procs2par
   rule #procs2par( A:Proc ) => A
-  rule #procs2par( A:Proc , B:Proc  ) => A | B
   rule #procs2par( A:Proc , B:Procs ) => A | #procs2par(B)
 
 //------------------
@@ -1162,9 +1044,6 @@ module AUXFUN
 
   rule #concat( [ ] ; A:RhoList ) => A
   rule #concat( A:RhoList ; [ ] ) => A
-  rule #concat( [ A:Proc  ] ; [ B:Proc  ] ) => [#append(A;B)]
-  rule #concat( [ A:Procs ] ; [ B:Proc  ] ) => [#append(A;B)]
-  rule #concat( [ A:Proc  ] ; [ B:Procs ] ) => [#append(A;B)]
   rule #concat( [ A:Procs ] ; [ B:Procs ] ) => [#append(A;B)]
 
 // Map
@@ -1175,9 +1054,6 @@ module AUXFUN
   // check if each right arg element is seq to a left arg element
   rule #unionMap( { } ; A:RhoMap ) => A
   rule #unionMap( A:RhoMap ; { } ) => A
-  rule #unionMap( { A:RhoKVPair  } ; { B:RhoKVPair  } ) => {#append(A;B)}
-  rule #unionMap( { A:RhoKVPairs } ; { B:RhoKVPair  } ) => {#append(A;B)}
-  rule #unionMap( { A:RhoKVPair  } ; { B:RhoKVPairs } ) => {#append(A;B)}
   rule #unionMap( { A:RhoKVPairs } ; { B:RhoKVPairs } ) => {#append(A;B)}
 
 // Set
@@ -1188,9 +1064,6 @@ module AUXFUN
   rule #unionSet( Set( ) ; A:RhoSet ) => A
   rule #unionSet( A:RhoSet ; Set( ) ) => A
   // check if each right arg element is seq to a left arg element
-  rule #unionSet( Set( A:Proc  ) ; Set( B:Proc  ) ) => Set(#append(A;B))
-  rule #unionSet( Set( A:Procs ) ; Set( B:Proc  ) ) => Set(#append(A;B))
-  rule #unionSet( Set( A:Proc  ) ; Set( B:Procs ) ) => Set(#append(A;B))
   rule #unionSet( Set( A:Procs ) ; Set( B:Procs ) ) => Set(#append(A;B))
 
 //-------------
