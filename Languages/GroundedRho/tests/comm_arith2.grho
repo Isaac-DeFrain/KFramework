@@ -1,14 +1,18 @@
 // send plus
 
-    new x in { x!(41,true) | for( @\y,y <- x ){ \y + 1 | not *y } }
+    new x in { x!(41,true,@1!("the message")) | for( @\a,b,@{@{Int}!(\d)} <- x ){ \a + 1 | not *b | \d } }
 
 /*
 Output:
-Result ==K <T>
+<T>
   <activity>
     <task>
       <k>
         42
+      </k>
+    </task> <task>
+      <k>
+        "the message"
       </k>
     </task> <task>
       <k>
@@ -28,13 +32,13 @@ Result ==K <T>
     1
   </nextLoc>
   <original>
-    new x in { x ! ( 41 , true ) | for ( @ \ y , y <- x ) { \ y + 1 | not * y } }
+    new x in { x ! ( 41 , ( true , @ 1 ! ( "the message" ) ) ) | for ( @ \ a , b , @ ( @ Int ! ( \ d ) ) <- x ) { \ a + 1 | not * b | \ d } }
   </original>
-  <freeVars>
+  <OGfreevar>
     .Set
-  </freeVars>
-  <deBruijnified>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true ) | for ( @ boundP( 1 ) , boundN( 2 ) <- boundN( 0 ) ) { boundP( 1 ) + 1 | not * boundN( 2 ) } }
-  </deBruijnified>
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true , @ 1 ! ( "the message" ) ) | for ( @ boundP( 1 ) , boundN( 2 ) , @ ( @ Int ! ( boundP( 3 ) ) ) <- boundN( 0 ) ) { boundP( 1 ) + 1 | not * boundN( 2 ) | boundP( 3 ) } }
+  </OGdeBruijn>
 </T>
 */
