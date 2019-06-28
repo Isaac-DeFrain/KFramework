@@ -905,10 +905,10 @@ module GRHO
   rule <k> new M:NameVar ( _:Uri ) in { P:Proc } => #sub(@unforgeable(L);M;P) ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
   
-  rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
-       <nextLoc> L => L +Int 1 </nextLoc>
-  rule <k> new M:NameVar ( _:Uri ) , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
-       <nextLoc> L => L +Int 1 </nextLoc>
+//  rule <k> new M:NameVar , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
+//       <nextLoc> L => L +Int 1 </nextLoc>
+//  rule <k> new M:NameVar ( _:Uri ) , N:Name  in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
+//       <nextLoc> L => L +Int 1 </nextLoc>
        
   rule <k> new M:NameVar , N:Names in { P:Proc } => new N in {#sub(@unforgeable(L);M;P)} ...</k>
        <nextLoc> L => L +Int 1 </nextLoc>
@@ -1000,46 +1000,6 @@ module GRHO
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
      <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Name  </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of names to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>) 
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y) [comm]            // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePat  </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of names to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>) 
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y) [comm]            // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of names to bind
      <rtype> 0       </rtype>              // linear listen
@@ -1078,46 +1038,6 @@ module GRHO
     andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
 
 // Persistent listen, linear send
-  rule                                     //consume single send, keep persistent receive
-   <rec>                                   //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Name  </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 1       </rtype>              // repeated listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec>                                  //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single send, keep persistent receive
-   <rec>                                   //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePat  </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 1       </rtype>              // repeated listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec>                                  //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
   rule                                     //consume single send, keep persistent receive
    <rec>                                   //DON'T consume persistent receive
      <rchan> X:Name  </rchan>              // channel X
@@ -1162,46 +1082,6 @@ module GRHO
   rule                                     //consume single receive and keep single receive
   (<rec>                                   //consume single receive
      <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Name  </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation
-   </rec> => .Bag)                         //
-   <send>                                  //DON'T consume persistent send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 1       </stype>              // persistent send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single receive and keep single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePat  </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation
-   </rec> => .Bag)                         //
-   <send>                                  //DON'T consume persistent send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 1       </stype>              // persistent send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single receive and keep single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
      <bvars> Y:Names </bvars>              // binding variable(s) Y
      <bnum>  N:Int    </bnum>              // number of name(s) to bind
      <rtype> 0       </rtype>              // linear listen
@@ -1240,46 +1120,6 @@ module GRHO
     andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
 
 // Peek semantics
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Name  </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 2       </rtype>              // peek
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-   <send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> _       </stype>              // any kind of send
-   </send>                                 // 
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePat  </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 2       </rtype>              // peek
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-   <send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Proc    </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> _       </stype>              // any kind of send
-   </send>                                 // 
-   (.Bag => <task> <k> #sub(@Q;Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(@Q;Y)    [comm]         // checks if sent messages match the variable being listened for
-
   rule                                     //consume single send, single receive
   (<rec>                                   //consume single receive
      <rchan> X:Name  </rchan>              // channel X
