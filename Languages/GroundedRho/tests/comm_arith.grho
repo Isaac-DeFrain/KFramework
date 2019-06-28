@@ -1,33 +1,72 @@
-// AExp
+// Persistent listen for Int
 
-    new x in { x!(41) | for( y <- x ){ *y + 1 } }
+    new x in { x!(41) | for( @{\y /\ Int} <= x ){ \y + 1 } | x!(true) | x!(-43) }
 
 /*
 Output:
 <T>
-  <threads>
-    <thread>
+  <activity>
+    <task>
       <k>
         42
       </k>
-    </thread>
-  </threads>
+    </task> <task>
+      <k>
+        -42
+      </k>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
-      .SendCellBag
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          true
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
     </sends>
     <receives>
-      .RecCellBag
+      <rec>
+        <rchan>
+          @ unforgeable( 0 )
+        </rchan>
+        <bvars>
+          @ \ y /\ Int
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          \ y + 1
+        </cont>
+      </rec>
     </receives>
   </tuplespace>
   <nextLoc>
     1
   </nextLoc>
-  <freeVars>
+  <original>
+    new x in { x ! ( 41 ) | for ( @ \ y /\ Int <= x ) { \ y + 1 } | x ! ( true ) | x ! ( -43 ) }
+  </original>
+  <OGfreevar>
     .Set
-  </freeVars>
-  <deBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 41 ) | for ( boundN( 1 ) <- boundN( 0 ) ) { * boundN( 1 ) + 1 } }
-  </deBruijn>
+  </OGfreevar>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 ) | for ( @ boundP( 1 ) /\ Int <= boundN( 0 ) ) { boundP( 1 ) + 1 } | boundN( 0 ) ! ( true ) | boundN( 0 ) ! ( -43 ) }
+  </OGdeBruijn>
 </T>
 */
