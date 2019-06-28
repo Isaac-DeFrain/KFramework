@@ -1,17 +1,17 @@
-// AExp - input guard
+// Input guard - comm
 
     for( @\y <- @Nil if \y < 38 and \y > 36 ){ \y + 5 } | @Nil!(36) | @Nil!(37) | @Nil!(38)
 
 /*
 Output:
 <T>
-  <threads>
-    <thread>
+  <activity>
+    <task>
       <k>
         42
       </k>
-    </thread>
-  </threads>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       <send>
@@ -21,9 +21,9 @@ Output:
         <msg>
           36
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -34,9 +34,9 @@ Output:
         <msg>
           38
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -49,11 +49,14 @@ Output:
   <nextLoc>
     0
   </nextLoc>
-  <freeVars>
+  <original>
+    for ( @ \ y <- @ Nil if \ y < 38 and \ y > 36 ) { \ y + 5 } | ( @ Nil ) ! ( 36 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+  </original>
+  <OGfreevar>
     .Set
-  </freeVars>
-  <deBruijn>
-    #deBruijn( 0 ; for ( @ \ y <- @ Nil if \ y < 38 and \ y > 36 ) { \ y + 5 } ; .Map ) | ( @ Nil ) ! ( 36 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
-  </deBruijn>
+  </OGfreevar>
+  <OGdeBruijn>
+    for ( @ boundP( 0 ) <- @ Nil if boundP( 0 ) < 38 and boundP( 0 ) > 36 ) { boundP( 0 ) + 5 } | ( @ Nil ) ! ( 36 ) | ( @ Nil ) ! ( 37 ) | ( @ Nil ) ! ( 38 )
+  </OGdeBruijn>
 </T>
 */

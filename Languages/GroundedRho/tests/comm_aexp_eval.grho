@@ -1,4 +1,4 @@
-// Comm - AExp with Eval
+// Nondeterministic comm
 
     @Nil!(1) | for( y <- @Nil ){ *y + 5 } | @Nil!(37) | @Nil!(37) | @Nil!(38)
 
