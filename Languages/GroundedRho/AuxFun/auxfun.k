@@ -1,13 +1,5 @@
 // Auxilary functions for GRHO configuration
 
-/*
-TODO:
- - #toK( RhoList/RhoMap/RhoSet ) => List/Map/Set to utilize builtin functionality for methods
- - #fromK( List/Map/Set ) => RhoList/RhoMap/RhoSet
-
- - #length( RhoKVPairs ), #length( ConcatExp ), & #length( InterpMaps )
-*/
-
 require "../grho.k"
 require "../AlphaEquiv/alpha.k"
 
@@ -15,214 +7,323 @@ module AUXFUN-SYNTAX
   import GRHO-SYNTAX
 
 // Length of object lists
-  syntax     Int ::= "#length(" Name        ")" [function]
-                   | "#length(" Names       ")" [function]
-                   | "#length(" NamePat     ")" [function]
-                   | "#length(" NamePats    ")" [function]
-                   | "#length(" Proc        ")" [function]
-                   | "#length(" Procs       ")" [function]
-                   | "#length(" ProcPat     ")" [function]
-                   | "#length(" ProcPats    ")" [function]
-                   | "#length(" AnyBinds    ")" [function]
-                   | "#length(" AnyBindPats ")" [function]
+  syntax        Int ::= "#length(" Names       ")" [function]
+                      | "#length(" NamePats    ")" [function]
+                      | "#length(" Procs       ")" [function]
+                      | "#length(" ProcPats    ")" [function]
+                      | "#length(" AnyBinds    ")" [function]
+                      | "#length(" AnyBindPats ")" [function]
+                      | "#length(" RhoKVPairs  ")" [function]
+                      | "#length(" RhoKVPats   ")" [function]
 
-  syntax     Int ::=   "#size(" RhoMap   ")" [function]
-                   |   "#size(" RhoSet   ")" [function]
-                   | "#length(" RhoList  ")" [function]
-                   | "#length(" RhoTuple ")" [function]
+  syntax        Int ::= "#length+(" Concat     ")" [function]
+                      | "#length+(" ConcatExp  ")" [function]
+                      | "#length+(" Interp     ")" [function]
+                      | "#length+(" InterpMaps ")" [function]
 
-// Send/Rec classification & destructuring
-  syntax     Int ::= "#msglen(" Send        ")" [function] // number of messages
-                   | "#msglen(" SendPat     ")" [function] // number of messages
-                   | "#lislen(" AnyBind     ")" [function] // number of listening names
-                   | "#lislen(" AnyBindPat  ")" [function] // number of listening names
-                   | "#lislen(" Receive     ")" [function] // number of listening names
-                   | "#lislen(" RecPat      ")" [function] // number of listening names
-                   |  "#stype(" Send        ")" [function]
-                   |  "#stype(" SendPat     ")" [function]
-                   |  "#rtype(" AnyBind     ")" [function]
-                   |  "#rtype(" AnyBindPat  ")" [function]
-                   |  "#rtype(" AnyBinds    ")" [function]
-                   |  "#rtype(" AnyBindPats ")" [function]
-                   |  "#rtype(" Receive     ")" [function]
-                   |  "#rtype(" RecPat      ")" [function]
+  syntax        Int ::=  "#size(" RhoMap ")" [function]
+                      |  "#size(" MapPat ")" [function]
+                      |  "#size(" RhoSet ")" [function]
+                      |  "#size(" SetPat ")" [function]
+                      | "#length" RhoList    [function]
+                      | "#length" ListPat    [function]
+                      | "#length" RhoTuple   [function]
+                      | "#length" TuplePat   [function]
 
-  // Finish Pattern syntax
+// Destructuring functions
+  // Receive/RecPat
+    // receive bind function
+  syntax       Bind ::= "#bind(" Receive ")" [function]
+                      | "#bind(" RecPat  ")" [function]
+  syntax      Binds ::= "#bind(" Receive ")" [function]
+                      | "#bind(" RecPat  ")" [function]
+  syntax    BindPat ::= "#bind(" RecPat  ")" [function]
+  syntax   BindPats ::= "#bind(" RecPat  ")" [function]
+    // receive listening patterns
+  syntax       Name ::= "#bvar(" Receive ")" [function]
+                      | "#bvar(" RecPat  ")" [function]
+  syntax      Names ::= "#bvar(" Receive ")" [function]
+                      | "#bvar(" RecPat  ")" [function]
+  syntax    NamePat ::= "#bvar(" Receive ")" [function]
+                      | "#bvar(" RecPat  ")" [function]
+  syntax   NamePats ::= "#bvar(" Receive ")" [function]
+                      | "#bvar(" RecPat  ")" [function]
+    // receive channel function
+  syntax       Name ::= "#chan(" SRec    ")" [function]
+                      | "#chan(" SRecPat ")" [function]
+  syntax      Names ::= "#chan(" MRec    ")" [function]
+                      | "#chan(" MRecPat ")" [function]
+  syntax    NamePat ::= "#chan(" SRecPat ")" [function]
+  syntax   NamePats ::= "#chan(" MRecPat ")" [function]
+    // receive continuation function
+  syntax       Proc ::= "#cont(" Receive ")" [function]
+                      | "#cont(" RecPat ")" [function]
+  syntax    ProcPat ::= "#cont(" RecPat ")" [function]
+    // receive listen length function
+  syntax        Int ::= "#lislen(" Receive ")" [function]
+                      | "#lislen(" RecPat  ")" [function]
+    // receive type function
+  syntax        Int ::= "#rtype(" Receive ")" [function]
+                      | "#rtype(" RecPat  ")" [function]
+    // receive input guard function
+  syntax       BExp ::= "#guard(" Receive ")" [function]
+                      | "#guard(" RecPat  ")" [function]
 
-// Receive and RecPat can both have Bind listens
-  syntax      Bind ::= "#bind(" Receive ")" [function]
-                     | "#bind(" RecPat  ")" [function]
-  syntax     Binds ::= "#bind(" Receive ")" [function]
-                     | "#bind(" RecPat  ")" [function]
+  // AnyBind[Pat]s
+    // bind pattern function
+  syntax       Name ::= "#bvar(" AnyBind     ")" [function]
+                      | "#bvar(" AnyBindPat  ")" [function]
+  syntax      Names ::= "#bvar(" AnyBind     ")" [function]
+                      | "#bvar(" AnyBinds    ")" [function]
+                      | "#bvar(" AnyBindPat  ")" [function]
+                      | "#bvar(" AnyBindPats ")" [function]
+  syntax    NamePat ::= "#bvar(" AnyBind     ")" [function]
+                      | "#bvar(" AnyBindPat  ")" [function]
+  syntax   NamePats ::= "#bvar(" AnyBind     ")" [function]
+                      | "#bvar(" AnyBinds    ")" [function]
+                      | "#bvar(" AnyBindPat  ")" [function]
+                      | "#bvar(" AnyBindPats ")" [function]
+    // bind channel function
+  syntax       Name ::= "#chan(" AnyBind     ")" [function]
+  syntax      Names ::= "#chan(" AnyBinds    ")" [function]
+  syntax    NamePat ::= "#chan(" AnyBindPat  ")" [function]
+  syntax   NamePats ::= "#chan(" AnyBindPats ")" [function]
+    // bind input guard function
+  syntax       BExp ::= "#guard(" GBind     ")" [function]
+                      | "#guard(" GBinds    ")" [function]
+                      | "#guard(" GBindPat  ")" [function]
+                      | "#guard(" GBindPats ")" [function]
+    // bind listen length function
+  syntax        Int ::= "#lislen(" AnyBind    ")" [function]
+                      | "#lislen(" AnyBindPat ")" [function]
+    // bind type function
+  syntax        Int ::= "#rtype(" AnyBind     ")" [function]
+                      | "#rtype(" AnyBindPat  ")" [function]
+                      | "#rtype(" AnyBinds    ")" [function]
+                      | "#rtype(" AnyBindPats ")" [function]
 
-// Only RecPat has BindPat listens
-  syntax   BindPat ::= "#bind(" RecPat  ")" [function]
-  syntax  BindPats ::= "#bind(" RecPat  ")" [function]
+  // Send[Pat]
+    // send channel function
+  syntax       Name ::= "#chan(" Send    ")" [function]
+                      | "#chan(" SendPat ")" [function]
+  syntax    NamePat ::= "#chan(" SendPat ")" [function]
+    // send message function
+  syntax       Proc ::= "#msg(" Send    ")" [function]
+                      | "#msg(" SendPat ")" [function]
+  syntax      Procs ::= "#msg(" Send    ")" [function]
+                      | "#msg(" SendPat ")" [function]
+  syntax    ProcPat ::= "#msg(" SendPat ")" [function]
+  syntax   ProcPats ::= "#msg(" SendPat ")" [function]
+    // send message length function
+  syntax        Int ::= "#msglen(" Send    ")" [function]
+                      | "#msglen(" SendPat ")" [function]
+    // send type function
+  syntax        Int ::= "#stype(" Send    ")" [function]
+                      | "#stype(" SendPat ")" [function]
 
-// Patterns & Processes can have Proc msg & cont
-  syntax      Proc ::= "#cont(" Receive ")" [function]
-                     | "#cont(" RecPat  ")" [function]
-                     |  "#msg(" Send    ")" [function]
-                     |  "#msg(" SendPat ")" [function]
-  syntax     Procs ::=  "#msg(" Send    ")" [function]
-                     |  "#msg(" SendPat ")" [function]
+  // New[Pat]
+    // declared names function
+  syntax       Name ::= "#dec(" New    ")" [function]
+                      | "#dec(" NewPat ")" [function]
+  syntax      Names ::= "#dec(" New    ")" [function]
+                      | "#dec(" NewPat ")" [function]
 
-// Only Patterns have ProcPat msg or cont
-  syntax   ProcPat ::= "#cont(" RecPat  ")" [function]
-                     |  "#msg(" SendPat ")" [function]
-  syntax  ProcPats ::=  "#msg(" SendPat ")" [function]
+  // IfThenElse
+    // if function
+  syntax       BExp ::=   "#if(" IfThen ")" [function]
+                      |   "#if(" Else   ")" [function]
+    // then & else functions
+  syntax       Proc ::= "#then(" IfThen ")" [function]
+                      | "#then(" Else   ")" [function]
+                      | "#else(" IfThen ")" [function]
+                      | "#else(" Else   ")" [function]
 
+  // Procs <-> Par
+  syntax       Proc ::= "#procs2par(" Procs ")" [function]
+  syntax      Procs ::= "#par2procs(" Proc  ")" [function]
+  // Collection <-> Procs
+  syntax      Procs ::=  "#rho2procs(" RhoList    ")" [function]
+                      |  "#rho2procs(" RhoSet     ")" [function]
+                      |  "#rho2procs(" RhoTuple   ")" [function]
+  syntax       List ::= "#procs2list(" Procs      ")" [function]
+                      | "#names2list(" Names      ")" [function]
+  syntax     RhoMap ::=    "#KVs2rho(" RhoKVPairs ")" [function]
+  syntax     MapPat ::=    "#KVs2rho(" RhoKVPats  ")" [function]
+  syntax RhoKVPairs ::=    "#rho2KVs(" RhoMap     ")" [function]
+                      |    "#map2KVs(" Map        ")" [function]
+  syntax  RhoKVPats ::=    "#rho2KVs(" MapPat     ")" [function]
+                      |    "#map2KVs(" Map        ")" [function]
+  syntax        Map ::=    "#KVs2map(" RhoKVPats  ")" [function]
+                      |    "#KVs2map(" RhoKVPairs ")" [function]
 
-  syntax      Name ::= "#chan(" Send       ")" [function]
-                     | "#chan(" SendPat    ")" [function]
-                     | "#chan(" Receive    ")" [function]
-                     | "#chan(" RecPat     ")" [function]
-                     | "#chan(" AnyBind    ")" [function]
-                     | "#bvar(" AnyBind    ")" [function]
-                     | "#bvar(" AnyBindPat ")" [function]
-                     | "#bvar(" Receive    ")" [function]
-                     | "#bvar(" RecPat     ")" [function]
-                     |  "#dec(" New        ")" [function]
-                     |  "#dec(" NewPat     ")" [function]
+  syntax   ProcPats ::=  "#rho2pats(" ListPat   ")" [function]
+                      |  "#rho2pats(" SetPat    ")" [function]
+                      |  "#rho2pats(" TuplePat  ")" [function]
+  syntax       List ::= "#pats2list(" ProcPats  ")" [function]
+                      | "#pats2list(" NamePats  ")" [function]
+  syntax        Set ::=  "#pats2set(" ProcPats  ")" [function]
+                      |  "#pats2set(" NamePats  ")" [function]
 
-  syntax     Names ::= "#chan(" AnyBinds    ")" [function]
-                     | "#chan(" Send        ")" [function]
-                     | "#chan(" SendPat     ")" [function]
-                     | "#chan(" Receive     ")" [function]
-                     | "#chan(" RecPat      ")" [function]
-                     | "#chan(" AnyBind     ")" [function]
-                     | "#bvar(" AnyBind     ")" [function]
-                     | "#bvar(" AnyBinds    ")" [function]
-                     | "#bvar(" AnyBindPat  ")" [function]
-                     | "#bvar(" AnyBindPats ")" [function]
-                     | "#bvar(" Receive     ")" [function]
-                     | "#bvar(" RecPat      ")" [function]
-                     |  "#dec(" New         ")" [function]
-                     |  "#dec(" NewPat      ")" [function]
+// Quotes
+  syntax       Name ::= "#quotes(" Proc     ")" [function]
+  syntax      Names ::= "#quotes(" Procs    ")" [function]
+  syntax    NamePat ::= "#quotes(" ProcPat  ")" [function]
+  syntax   NamePats ::= "#quotes(" ProcPats ")" [function]
 
-  syntax   NamePat ::= "#chan(" SendPat     ")" [function]
-                     | "#chan(" RecPat      ")" [function]
-                     | "#chan(" AnyBindPat  ")" [function]
-                     | "#bvar(" AnyBind     ")" [function]
-                     | "#bvar(" AnyBindPat  ")" [function]
-                     | "#bvar(" Receive     ")" [function]
-                     | "#bvar(" RecPat      ")" [function]
-  syntax  NamePats ::= "#chan(" RecPat      ")" [function]
-                     | "#chan(" AnyBindPats ")" [function]
-                     | "#bvar(" AnyBindPat  ")" [function]
-                     | "#bvar(" AnyBind     ")" [function]
-                     | "#bvar(" AnyBinds    ")" [function]
-                     | "#bvar(" AnyBindPat  ")" [function]
-                     | "#bvar(" AnyBindPats ")" [function]
-                     | "#bvar(" Receive     ")" [function]
-                     | "#bvar(" RecPat      ")" [function]
+// Evals -- *( A , B , ... ) => *A , *B , ...
+  syntax       Proc ::= "#evals(" Name     ")" [function]
+  syntax      Procs ::= "#evals(" Names    ")" [function]
+  syntax    ProcPat ::= "#evals(" NamePat  ")" [function]
+  syntax   ProcPats ::= "#evals(" NamePats ")" [function]
 
-  // Input Guards
-  syntax      BExp ::= "#guard(" Receive   ")" [function]
-                     | "#guard(" RecPat    ")" [function]
-                     | "#guard(" GBind     ")" [function]
-                     | "#guard(" GBinds    ")" [function]
-                     | "#guard(" GBindPat  ")" [function]
-                     | "#guard(" GBindPats ")" [function]
+// Append
+  // Names & NamePats
+  syntax      Names ::= "#append(" Names    ";" Names    ")" [function]
+  syntax   NamePats ::= "#append(" Names    ";" NamePats ")" [function]
+                      | "#append(" NamePats ";" Names    ")" [function]
+                      | "#append(" NamePats ";" NamePats ")" [function]
+  // Procs & ProcPats
+  syntax      Procs ::= "#append(" Procs    ";" Procs    ")" [function]
+  syntax   ProcPats ::= "#append(" Procs    ";" ProcPats ")" [function]
+                      | "#append(" ProcPats ";" Procs    ")" [function]
+                      | "#append(" ProcPats ";" ProcPats ")" [function]
+  // Binds & BindPats
+  syntax     Lbinds ::= "#append(" Lbind  ";;" Lbind  ")" [function]
+                      | "#append(" Lbind  ";;" Lbinds ")" [function]
+                      | "#append(" Lbinds ";;" Lbind  ")" [function]
+                      | "#append(" Lbinds ";;" Lbinds ")" [function]
+  syntax     Pbinds ::= "#append(" Pbind  ";;" Pbind  ")" [function]
+                      | "#append(" Pbind  ";;" Pbinds ")" [function]
+                      | "#append(" Pbinds ";;" Pbind  ")" [function]
+                      | "#append(" Pbinds ";;" Pbinds ")" [function]
+  syntax     Rbinds ::= "#append(" Rbind  ";;" Rbind  ")" [function]
+                      | "#append(" Rbind  ";;" Rbinds ")" [function]
+                      | "#append(" Rbinds ";;" Rbind  ")" [function]
+                      | "#append(" Rbinds ";;" Rbinds ")" [function]
 
-  syntax      Proc ::= "#par2procs(" Proc  ")" [function]
-                     | "#procs2par(" Proc  ")" [function]
-                     | "#procs2par(" Procs ")" [function]
-  syntax     Procs ::= "#par2procs(" Proc  ")" [function]
+  syntax  LbindPats ::= "#append(" Lbind     ";;" LbindPat  ")" [function]
+                      | "#append(" Lbind     ";;" LbindPats ")" [function]
+                      | "#append(" LbindPat  ";;" Lbind     ")" [function]
+                      | "#append(" LbindPat  ";;" Lbinds    ")" [function]
+                      | "#append(" LbindPat  ";;" LbindPat  ")" [function]
+                      | "#append(" LbindPat  ";;" LbindPats ")" [function]
+                      | "#append(" Lbinds    ";;" LbindPat  ")" [function]
+                      | "#append(" Lbinds    ";;" LbindPats ")" [function]
+                      | "#append(" LbindPats ";;" Lbind     ")" [function]
+                      | "#append(" LbindPats ";;" Lbinds    ")" [function]
+                      | "#append(" LbindPats ";;" LbindPat  ")" [function]
+                      | "#append(" LbindPats ";;" LbindPats ")" [function]
+  syntax  PbindPats ::= "#append(" Pbind     ";;" PbindPat  ")" [function]
+                      | "#append(" Pbind     ";;" PbindPats ")" [function]
+                      | "#append(" PbindPat  ";;" Pbind     ")" [function]
+                      | "#append(" PbindPat  ";;" Pbinds    ")" [function]
+                      | "#append(" PbindPat  ";;" PbindPat  ")" [function]
+                      | "#append(" PbindPat  ";;" PbindPats ")" [function]
+                      | "#append(" Pbinds    ";;" PbindPat  ")" [function]
+                      | "#append(" Pbinds    ";;" PbindPats ")" [function]
+                      | "#append(" PbindPats ";;" Pbind     ")" [function]
+                      | "#append(" PbindPats ";;" Pbinds    ")" [function]
+                      | "#append(" PbindPats ";;" PbindPat  ")" [function]
+                      | "#append(" PbindPats ";;" PbindPats ")" [function]
+  syntax  RbindPats ::= "#append(" Rbind     ";;" RbindPat  ")" [function]
+                      | "#append(" Rbind     ";;" RbindPats ")" [function]
+                      | "#append(" RbindPat  ";;" Rbind     ")" [function]
+                      | "#append(" RbindPat  ";;" Rbinds    ")" [function]
+                      | "#append(" RbindPat  ";;" RbindPat  ")" [function]
+                      | "#append(" RbindPat  ";;" RbindPats ")" [function]
+                      | "#append(" Rbinds    ";;" RbindPat  ")" [function]
+                      | "#append(" Rbinds    ";;" RbindPats ")" [function]
+                      | "#append(" RbindPats ";;" Rbind     ")" [function]
+                      | "#append(" RbindPats ";;" Rbinds    ")" [function]
+                      | "#append(" RbindPats ";;" RbindPat  ")" [function]
+                      | "#append(" RbindPats ";;" RbindPats ")" [function]
 
-  syntax      Name ::= "#quotes(" Proc  ")"           [function]
-  syntax     Names ::= "#quotes(" Procs ")"           [function]
-                     | "#append(" Name  ";" Name  ")" [function]
-                     | "#append(" Names ";" Name  ")" [function]
-                     | "#append(" Name  ";" Names ")" [function]
-                     | "#append(" Names ";" Names ")" [function]
-
-  syntax   NamePat ::= "#quotes(" ProcPat  ")"              [function]
-  syntax  NamePats ::= "#quotes(" ProcPats ")"              [function]
-                     | "#append(" Name     ";" NamePat  ")" [function]
-                     | "#append(" Names    ";" NamePat  ")" [function]
-                     | "#append(" Name     ";" NamePats ")" [function]
-                     | "#append(" Names    ";" NamePats ")" [function]
-                     | "#append(" NamePat  ";" Name     ")" [function]
-                     | "#append(" NamePats ";" Name     ")" [function]
-                     | "#append(" NamePat  ";" Names    ")" [function]
-                     | "#append(" NamePats ";" Names    ")" [function]
-                     | "#append(" NamePat  ";" NamePat  ")" [function]
-                     | "#append(" NamePats ";" NamePat  ")" [function]
-                     | "#append(" NamePat  ";" NamePats ")" [function]
-                     | "#append(" NamePats ";" NamePats ")" [function]
-
-  syntax     Procs ::= "#append(" Proc  ";" Proc  ")" [function]
-                     | "#append(" Procs ";" Proc  ")" [function]
-                     | "#append(" Proc  ";" Procs ")" [function]
-                     | "#append(" Procs ";" Procs ")" [function]
-
-  syntax  ProcPats ::= "#append(" Proc     ";" ProcPat  ")" [function]
-                     | "#append(" Procs    ";" ProcPat  ")" [function]
-                     | "#append(" Proc     ";" ProcPats ")" [function]
-                     | "#append(" Procs    ";" ProcPats ")" [function]
-                     | "#append(" ProcPat  ";" Proc     ")" [function]
-                     | "#append(" ProcPats ";" Proc     ")" [function]
-                     | "#append(" ProcPat  ";" Procs    ")" [function]
-                     | "#append(" ProcPats ";" Procs    ")" [function]
-                     | "#append(" ProcPat  ";" ProcPat  ")" [function]
-                     | "#append(" ProcPats ";" ProcPat  ")" [function]
-                     | "#append(" ProcPat  ";" ProcPats ")" [function]
-                     | "#append(" ProcPats ";" ProcPats ")" [function]
-
-  syntax
-        RhoKVPairs ::= "#append(" RhoKVPair  ";" RhoKVPair  ")" [function]
-                     | "#append(" RhoKVPairs ";" RhoKVPair  ")" [function]
-                     | "#append(" RhoKVPair  ";" RhoKVPairs ")" [function]
-                     | "#append(" RhoKVPairs ";" RhoKVPairs ")" [function]
+  // RhoKVPairs & Pats
+  syntax RhoKVPairs ::= "#append(" RhoKVPairs ";" RhoKVPairs ")" [function]
+  syntax  RhoKVPats ::= "#append(" RhoKVPairs ";" RhoKVPats  ")" [function]
+                      | "#append(" RhoKVPats  ";" RhoKVPairs ")" [function]
+                      | "#append(" RhoKVPats  ";" RhoKVPats  ")" [function]
 
 // Methods
-  syntax    RhoSet ::=  "#keys(" RhoMap ")"            [function]
-                     | "#union(" RhoSet ";" RhoSet ")" [function]
+  syntax     RhoSet ::=  "#keys(" RhoMap ")"            [function]
+                      | "#union(" RhoSet ";" RhoSet ")" [function]
 
-  syntax   RhoList ::=    "#slice(" RhoList "," Int "," Int ")" [function]
-                     | "#truncate(" RhoList "," Int ")"         [function]
+  syntax    RhoList ::=    "#slice(" RhoList "," Int "," Int ")" [function]
+                      | "#truncate(" RhoList "," Int ")"         [function]
 
 // Substitution
-  syntax       Map ::= "#mapSub(" Set ")" [function]
+  syntax        Map ::= "#mapSub(" Set ")" [function]
 
 // Par Normalization
-  syntax      Proc ::=   "#normPar(" Proc ")"          [function, poly(0,1)]
-                     |   "#set2Par(" Set  ")"          [function]
-                     | "#removePar(" Proc ";" Proc ")" [function]
-                     |    "#parDup(" Proc ";" Int  ")" [function]
-                     | "#set2procs(" Set  ")" [function]
-  syntax     Procs ::= "#set2procs(" Set  ")" [function]
-  syntax       Set ::=   "#par2Set(" Proc  ")"         [function]
-                     | "#procs2set(" Proc  ")"         [function]
-                     | "#procs2set(" Procs ")"         [function]
-  syntax       Int ::=  "#countPar(" Proc ";" Proc ")" [function]
+  syntax       Proc ::=   "#normPar(" Proc  ")"          [function, poly(0,1)]
+                      |   "#set2Par(" Set   ")"          [function]
+                      | "#removePar(" Proc  ";" Proc ")" [function]
+                      |    "#parDup(" Proc  ";" Int  ")" [function]
+  syntax      Procs ::= "#set2procs(" Set   ")"          [function]
+  syntax      Names ::= "#set2names(" Set   ")"          [function]
+  syntax        Set ::=   "#par2Set(" Proc  ")"          [function]
+                      | "#procs2set(" Procs ")"          [function]
+                      | "#names2set(" Names ")"          [function]
+  syntax        Int ::=  "#countPar(" Proc  ";" Proc ")" [function]
 
 // String Interpolation
-  syntax    String ::= "#interpolate(" String ";" RhoMap ")" [function]
+  syntax     String ::= "#interpolate(" String ";" RhoMap ")" [function]
 
 // De Bruijn indexing
-  syntax     Proc ::= "#val2Key(" Proc ";" Map ")" [function]
-  syntax     Name ::= "#val2Key(" Name ";" Map ")" [function]
+  syntax       Proc ::= "#val2Key(" Proc ";" Map ")" [function]
+  syntax       Name ::= "#val2Key(" Name ";" Map ")" [function]
 
 // Predicates -- List, RhoMap keys, & RhoSet inclusion
-  syntax     Bool ::= Int   "#in"  "(" Procs ")" [function]
-                    | Int   "#in"  "(" Proc  ")" [function]
-                    | Name  "#in"  "(" Names ")" [function]
-                    | Name  "#in"  "(" Name  ")" [function]
-                    | Bind  "#in"  "(" Bind  ")" [function]
-                    | Bind  "#in"  "(" Binds ")" [function]
-                    | Binds "#in"  "(" Binds ")" [function]
-                    | Proc  "#in_keys" RhoMap    [function]
-                    | Proc  "#in_set"  RhoSet    [function]
+  syntax       Bool ::= Int   "#int" "(" Procs ")" [function]
+                      | Name  "#in"  "(" Names ")" [function]
+                      | Bind  "#in"  "(" Bind  ")" [function]
+                      | Bind  "#in"  "(" Binds ")" [function]
+                      | Binds "#in"  "(" Binds ")" [function]
+                      | Proc     "#in_keys" RhoMap [function]
+                      | Proc     "#in_keys" MapPat [function]
+                      | ProcPat  "#in_keys" MapPat [function]
+                      | Proc     "#in_set"  RhoSet [function]
+                      | Proc     "#in_set"  SetPat [function]
+                      | ProcPat  "#in_set"  SetPat [function]
 
-// Translation from Built-ins
-  syntax  RhoList ::= "#list2rho(" List ")" [function]
-                    |   "#concat(" RhoList ";" RhoList ")" [function]
-  syntax   RhoMap ::=  "#map2rho(" Map  ")" [function]
-                    | "#unionMap(" RhoMap  ";" RhoMap ")" [function]
-  syntax   RhoSet ::=  "#set2rho(" Set  ")" [function]
-                    | "#unionSet(" RhoSet  ";" RhoSet ")" [function]
+// Translation from built-ins to rho -- other direction in STRUCT
+  syntax    RhoList ::=  "#list2rho(" List ")"                [function]
+                      |    "#concat(" RhoList ";" RhoList ")" [function]
+  syntax    ListPat ::=  "#list2rho(" List ")"                [function]
+                      |    "#concat(" RhoList ";" ListPat ")" [function]
+                      |    "#concat(" ListPat ";" RhoList ")" [function]
+                      |    "#concat(" ListPat ";" ListPat ")" [function]
+  syntax     RhoMap ::=   "#map2rho(" Map  ")"                [function]
+                      |  "#unionMap(" RhoMap  ";" RhoMap  ")" [function]
+  syntax     MapPat ::=   "#map2rho(" Map  ")"                [function]
+                      |  "#unionMap(" RhoMap  ";" MapPat  ")" [function]
+                      |  "#unionMap(" MapPat  ";" RhoMap  ")" [function]
+                      |  "#unionMap(" MapPat  ";" MapPat  ")" [function]
+  syntax     RhoSet ::=   "#set2rho(" Set  ")"                [function]
+                      |  "#unionSet(" RhoSet  ";" RhoSet  ")" [function]
+  syntax     SetPat ::=   "#set2rho(" Set  ")"                [function]
+                      |  "#unionSet(" RhoSet  ";" SetPat  ")" [function]
+                      |  "#unionSet(" SetPat  ";" RhoSet  ")" [function]
+                      |  "#unionSet(" SetPat  ";" SetPat  ")" [function]
+  syntax   RhoTuple ::= "#tuple2rho(" List ")"                [function]
+  syntax   TuplePat ::= "#tuple2rho(" List ")"                [function]
+
+  syntax    RhoList ::= "#tuple2list(" RhoTuple ")" [function]
+  syntax    ListPat ::= "#tuple2list(" TuplePat ")" [function]
+  syntax   RhoTuple ::= "#list2tuple(" RhoList  ")" [function]
+  syntax   TuplePat ::= "#list2tuple(" ListPat  ")" [function]
+
+  syntax      Procs ::= "#list2procs(" List ")" [function]
+  syntax   ProcPats ::=  "#list2pats(" List ")" [function]
+  syntax      Names ::= "#list2names(" List ")" [function]
+  syntax   NamePats ::=  "#list2pats(" List ")" [function]
+
+  syntax   NamePats ::= "#set2pats(" Set ")" [function]
+  syntax   ProcPats ::= "#set2pats(" Set ")" [function]
+
+set2pats
+
+  syntax      KItem ::= Name | Names | NamePat | NamePats | Proc | Procs | ProcPat | ProcPats
 
 endmodule
 
@@ -233,7 +334,7 @@ module AUXFUN
                    | Name | Names | NamePat | NamePats
                    | Proc | Procs | ProcPat | ProcPats
                    | Bind | Binds | BindPat | BindPats
-                   /*| Bool | Int | String | Map | Set <: Proc*/
+                   | Bool | Int   | String  | List | Map | Set
 
 // Sends
   rule #chan( N:Name    !  (            ) ) => N
@@ -261,7 +362,7 @@ module AUXFUN
   rule #msg( _:NamePat !! (            ) ) => EmptyP
   rule #msg( _:NamePat !! ( P:Procs    ) ) => P
   rule #msg( _:NamePat !! ( P:ProcPats ) ) => P
-  
+
   rule #msglen( S:Send    ) => #length(#msg(S))
   rule #msglen( S:SendPat ) => #length(#msg(S))
 
@@ -318,103 +419,8 @@ module AUXFUN
   rule #bind( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => B
 
-  rule #bvar( for ( B:Lbind  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Lbinds ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Lbind  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Lbinds _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Pbind  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Pbinds ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Pbind  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Pbinds _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Rbind  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Rbinds ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Rbind  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Rbinds _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:Lbind  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Lbinds ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Lbind  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Lbinds _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Pbind  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Pbinds ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Pbind  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Pbinds _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Rbind  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Rbinds ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Rbind  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:Rbinds _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPat  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPats ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPat  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPats _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPat  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPats ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPat  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPats _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPat  ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPats ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPat  _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPats _:Guard ){ _:Proc } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPat  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPats ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:LbindPats _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPat  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPats ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPat  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:PbindPats _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPat  ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPats ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => #bvar(B)
-  rule #bvar( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => #bvar(B)
-
-  rule #chan( for ( B:Lbind  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Lbinds ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Lbind  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Lbinds _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Pbind  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Pbinds ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Pbind  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Pbinds _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Rbind  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Rbinds ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Rbind  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Rbinds _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:Lbind  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Lbinds ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Lbind  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Lbinds _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Pbind  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Pbinds ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Pbind  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Pbinds _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Rbind  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Rbinds ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Rbind  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:Rbinds _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:LbindPat  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:LbindPats ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:LbindPat  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:LbindPats _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:PbindPat  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:PbindPats ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:PbindPat  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:PbindPats _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:RbindPat  ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:RbindPats ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:RbindPat  _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:RbindPats _:Guard ){ _:Proc } ) => #chan(B)
-  rule #chan( for ( B:LbindPat  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:LbindPats ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:LbindPats _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:PbindPat  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:PbindPats ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:PbindPat  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:PbindPats _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:RbindPat  ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:RbindPats ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => #chan(B)
-  rule #chan( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => #chan(B)
+  rule #bvar( A:Receive ) => #bvar(#bind(A))
+  rule #chan( A:Receive ) => #chan(#bind(A))
 
   rule #cont( for ( _:Lbind  ){ P:Proc } ) => P
   rule #cont( for ( _:Lbinds ){ P:Proc } ) => P
@@ -632,100 +638,262 @@ module AUXFUN
   rule #append( A:ProcPat , B:ProcPats ; C:Procs    ) => A,#append(B;C)
   rule #append( A:ProcPat , B:ProcPats ; C:ProcPats ) => A,#append(B;C)
 
-// RhoKVPairs
+// Binds
+  rule #append( A:Lbind ;; B:Lbind  ) => A;B
+  rule #append( A:Lbind ;; B:Lbinds ) => A;B
+  rule #append( A:Lbind  ; B:Lbinds ;; C:Lbind  ) => A;#append(B;;C)
+  rule #append( A:Lbind  ; B:Lbinds ;; C:Lbinds ) => A;#append(B;;C)
+  rule #append( A:Pbind ;; B:Pbind  ) => A;B
+  rule #append( A:Pbind ;; B:Pbinds ) => A;B
+  rule #append( A:Pbind  ; B:Pbinds ;; C:Pbind  ) => A;#append(B;;C)
+  rule #append( A:Pbind  ; B:Pbinds ;; C:Pbinds ) => A;#append(B;;C)
+  rule #append( A:Rbind ;; B:Rbind  ) => A;B
+  rule #append( A:Rbind ;; B:Rbinds ) => A;B
+  rule #append( A:Rbind  ; B:Rbinds ;; C:Rbind  ) => A;#append(B;;C)
+  rule #append( A:Rbind  ; B:Rbinds ;; C:Rbinds ) => A;#append(B;;C)
+
+// BindPats
+  // LbindPats
+  rule #append( A:Lbind    ;; B:LbindPat  ) => A;B
+  rule #append( A:Lbind    ;; B:LbindPats ) => A;B
+  rule #append( A:LbindPat ;; B:Lbind     ) => A;B
+  rule #append( A:LbindPat ;; B:Lbinds    ) => A;B
+  rule #append( A:LbindPat ;; B:LbindPat  ) => A;B
+  rule #append( A:LbindPat ;; B:LbindPats ) => A;B
+  rule #append( A:Lbind     , B:Lbind     ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:Lbind     ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:Lbinds    ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:Lbinds    ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPat  ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPat  ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPat  ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPat  ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPats ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPats ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPats ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:Lbind     , B:LbindPats ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbind     ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbind     ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbind     ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbind     ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbinds    ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbinds    ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbinds    ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:Lbinds    ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPat  ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPat  ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPat  ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPat  ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPats ;; C:Lbind     ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPats ;; C:Lbinds    ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPats ;; C:LbindPat  ) => A;#append(B;;C)
+  rule #append( A:LbindPat  , B:LbindPats ;; C:LbindPats ) => A;#append(B;;C)
+  // PbindPats
+  rule #append( A:Pbind    ;; B:PbindPat  ) => A;B
+  rule #append( A:Pbind    ;; B:PbindPats ) => A;B
+  rule #append( A:PbindPat ;; B:Pbind     ) => A;B
+  rule #append( A:PbindPat ;; B:Pbinds    ) => A;B
+  rule #append( A:PbindPat ;; B:PbindPat  ) => A;B
+  rule #append( A:PbindPat ;; B:PbindPats ) => A;B
+  rule #append( A:Pbind     , B:Pbind     ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:Pbind     ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:Pbinds    ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:Pbinds    ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPat  ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPat  ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPat  ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPat  ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPats ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPats ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPats ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:Pbind     , B:PbindPats ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbind     ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbind     ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbind     ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbind     ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbinds    ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbinds    ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbinds    ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:Pbinds    ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPat  ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPat  ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPat  ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPat  ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPats ;; C:Pbind     ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPats ;; C:Pbinds    ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPats ;; C:PbindPat  ) => A;#append(B;;C)
+  rule #append( A:PbindPat  , B:PbindPats ;; C:PbindPats ) => A;#append(B;;C)
+  // RbindPats
+  rule #append( A:Rbind    ;; B:RbindPat  ) => A;B
+  rule #append( A:Rbind    ;; B:RbindPats ) => A;B
+  rule #append( A:RbindPat ;; B:Rbind     ) => A;B
+  rule #append( A:RbindPat ;; B:Rbinds    ) => A;B
+  rule #append( A:RbindPat ;; B:RbindPat  ) => A;B
+  rule #append( A:RbindPat ;; B:RbindPats ) => A;B
+  rule #append( A:Rbind     , B:Rbind     ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:Rbind     ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:Rbinds    ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:Rbinds    ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPat  ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPat  ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPat  ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPat  ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPats ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPats ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPats ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:Rbind     , B:RbindPats ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbind     ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbind     ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbind     ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbind     ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbinds    ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbinds    ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbinds    ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:Rbinds    ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPat  ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPat  ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPat  ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPat  ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPats ;; C:Rbind     ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPats ;; C:Rbinds    ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPats ;; C:RbindPat  ) => A;#append(B;;C)
+  rule #append( A:RbindPat  , B:RbindPats ;; C:RbindPats ) => A;#append(B;;C)
+
+// RhoKVPairs & RhoKVPats
   rule #append( A:RhoKVPair ; B:RhoKVPairs ) => A,B
+  rule #append( A:RhoKVPair ; B:RhoKVPats  ) => A,B
+  rule #append( A:RhoKVPat  ; B:RhoKVPairs ) => A,B
+  rule #append( A:RhoKVPat  ; B:RhoKVPats  ) => A,B
   rule #append( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPairs ) => A,#append(B;C)
+  rule #append( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPats  ) => A,#append(B;C)
+  rule #append( A:RhoKVPair , B:RhoKVPats  ; C:RhoKVPairs ) => A,#append(B;C)
+  rule #append( A:RhoKVPair , B:RhoKVPats  ; C:RhoKVPats  ) => A,#append(B;C)
+  rule #append( A:RhoKVPat  , B:RhoKVPairs ; C:RhoKVPairs ) => A,#append(B;C)
+  rule #append( A:RhoKVPat  , B:RhoKVPairs ; C:RhoKVPats  ) => A,#append(B;C)
+  rule #append( A:RhoKVPat  , B:RhoKVPats  ; C:RhoKVPairs ) => A,#append(B;C)
+  rule #append( A:RhoKVPat  , B:RhoKVPats  ; C:RhoKVPats  ) => A,#append(B;C)
 
 //-----------
 //--- #in ---
 //-----------
-// Int #in RhoTuple
-  rule A:Int #in ( B:Int           ) => A ==Int B
-  rule A:Int #in ( B:Int , C:Int   ) => A ==Int B orBool A ==Int C
-  rule A:Int #in ( B:Int , C:Procs ) => A ==Int B orBool A #in (C)
+// Int #int IntList
+  rule A:Int #int ( B:Int           ) => A ==Int B
+  rule A:Int #int ( B:Int , C:Procs ) => A ==Int B orBool A #int (C)
 
 // Name #in Names
-  rule _:Name #in ( EmptyN           ) => false
-  rule A:Name #in ( B:Name           ) => A ==K B requires B =/=K EmptyN
-  rule A:Name #in ( B:Name , C:Name  ) => A ==K B orBool A ==K C
+  rule A:Name #in ( B:Name           ) => A ==K B andBool B =/=K EmptyN
   rule A:Name #in ( B:Name , C:Names ) => A ==K B orBool A #in (C)
 
 //------------
 //--- #dec ---
 //------------
 // New name declarations
-  // New
-  rule #dec( new A:Names in { _:Proc } ) => A
-  // NewPat
+  // New[Pat]
+  rule #dec( new A:Names in { _:Proc    } ) => A
   rule #dec( new A:Names in { _:ProcPat } ) => A
 
 //-------------
 //--- #size ---
 //-------------
-  rule #size( Set( ) ) => 0
-  rule #size( Set( P:Procs ) ) => #length(P)
-  
+// TODO: other pattern constructs
+// for RhoMap & RhoSet
+  // RhoMap
   rule #size( { } ) => 0
-  rule #size( { _:Proc : _:Proc } ) => 1
-  rule #size( { _:Proc : _:Proc , R:RhoKVPairs } ) => 1 +Int #size({R})
+  rule #size( { A:RhoKVPairs } ) => size(#KVs2map(A))
+  rule #size( { A:RhoKVPats  } ) => size(#KVs2map(A))
+
+  // RhoSet
+  rule #size( Set( ) ) => 0
+  rule #size( Set( P:Procs    ) ) => size(#procs2set(P))
+  rule #size( Set( P:ProcPats ) ) => size( #pats2set(P))
 
 //---------------
 //--- #length ---
 //---------------
-// Procs
-  rule #length( EmptyP ) => 0
-  rule #length( A:Proc ) => 1 requires A =/=K EmptyP
-  rule #length( _:Proc , P:Procs ) => 1 +Int #length(P)
-
-// ProcPats
+// Proc[Pat]s
+  rule #length(   EmptyP  ) => 0
+  rule #length( A:Proc    ) => 1 requires A =/=K EmptyP
   rule #length( _:ProcPat ) => 1
+  rule #length( _:Proc    , P:Procs    ) => 1 +Int #length(P)
   rule #length( _:Proc    , P:ProcPats ) => 1 +Int #length(P)
-  rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
   rule #length( _:ProcPat , P:Procs    ) => 1 +Int #length(P)
+  rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
 
-// RhoList
-  rule #length( [ ] ) => 0
-  rule #length( [ P:Procs    ] ) => #length(P)
-  rule #length( [ P:ProcPats ] ) => #length(P)
+  // RhoList
+  rule #length [ ] => 0
+  rule #length [ P:Procs    ] => #length(P)
+  rule #length [ P:ProcPats ] => #length(P)
 
-// Names
-  rule #length( EmptyN ) => 0
-  rule #length( A:Name ) => 1 requires A =/=K EmptyN
-  rule #length( _:Name , N:Names ) => 1 +Int #length(N)
+  // RhoKVPairs
+  rule #length( EmptyP : EmptyP ) => 0
+  rule #length( A:RhoKVPair     ) => 1 requires A =/=K (EmptyP : EmptyP)
+  rule #length( _:RhoKVPat      ) => 1
+  rule #length( _:RhoKVPair , B:RhoKVPairs ) => 1 +Int #length(B)
+  rule #length( _:RhoKVPair , B:RhoKVPats  ) => 1 +Int #length(B)
+  rule #length( _:RhoKVPat  , B:RhoKVPairs ) => 1 +Int #length(B)
+  rule #length( _:RhoKVPat  , B:RhoKVPats  ) => 1 +Int #length(B)
 
-// NamePats
+  // RhoTuple
+  rule #length ( P:Procs    ,) => #length(P)
+  rule #length ( P:ProcPats ,) => #length(P)
+
+// Name[Pat]s
+  rule #length(   EmptyN  ) => 0
+  rule #length( A:Name    ) => 1 requires A =/=K EmptyN
   rule #length( _:NamePat ) => 1
+  rule #length( _:Name    , N:Names    ) => 1 +Int #length(N)
   rule #length( _:Name    , N:NamePats ) => 1 +Int #length(N)
-  rule #length( _:NamePat , N:NamePats ) => 1 +Int #length(N)
   rule #length( _:NamePat , N:Names    ) => 1 +Int #length(N)
+  rule #length( _:NamePat , N:NamePats ) => 1 +Int #length(N)
 
-//--- Binds ---
-// Binds - number of listens in a join
-  // Lbinds
+//--- Bind[Pat]s ---
+// Binds - number of listens in a join[pat]
+  // Lbind[Pat]s
   rule #length( _:Lbind    ; _:Lbind     ) => 2
-  rule #length( _:Lbind    ; C:Lbinds    ) => 1 +Int #length(C)
-  // LbindPats
+  rule #length( _:Lbind    ; _:LbindPat  ) => 2
+  rule #length( _:LbindPat ; _:Lbind     ) => 2
   rule #length( _:LbindPat ; _:LbindPat  ) => 2
-  rule #length( _:LbindPat ; C:LbindPats ) => 1 +Int #length(C)
-  // Pbinds
-  rule #length( _:Pbind ; _:Pbind  ) => 2
-  rule #length( _:Pbind ; C:Pbinds ) => 1 +Int #length(C)
-  // PbindPats
+  rule #length( _:Lbind    ; A:Lbinds    ) => 1 +Int #length(A)
+  rule #length( _:Lbind    ; A:LbindPats ) => 1 +Int #length(A)
+  rule #length( _:LbindPat ; A:Lbinds    ) => 1 +Int #length(A)
+  rule #length( _:LbindPat ; A:LbindPats ) => 1 +Int #length(A)
+  // Pbind[Pat]s
+  rule #length( _:Pbind    ; _:Pbind     ) => 2
+  rule #length( _:Pbind    ; _:PbindPat  ) => 2
+  rule #length( _:PbindPat ; _:Pbind     ) => 2
   rule #length( _:PbindPat ; _:PbindPat  ) => 2
-  rule #length( _:PbindPat ; C:PbindPats ) => 1 +Int #length(C)
-  // Rbinds
-  rule #length( _:Rbind ; _:Rbind  ) => 2
-  rule #length( _:Rbind ; C:Rbinds ) => 1 +Int #length(C)
-  // RbindPats
+  rule #length( _:Pbind    ; A:Pbinds    ) => 1 +Int #length(A)
+  rule #length( _:Pbind    ; A:PbindPats ) => 1 +Int #length(A)
+  rule #length( _:PbindPat ; A:Pbinds    ) => 1 +Int #length(A)
+  rule #length( _:PbindPat ; A:PbindPats ) => 1 +Int #length(A)
+  // Rbind[Pat]s
+  rule #length( _:Rbind    ; _:Rbind     ) => 2
+  rule #length( _:Rbind    ; _:RbindPat  ) => 2
+  rule #length( _:RbindPat ; _:Rbind     ) => 2
   rule #length( _:RbindPat ; _:RbindPat  ) => 2
-  rule #length( _:RbindPat ; C:RbindPats ) => 1 +Int #length(C)
+  rule #length( _:Rbind    ; A:Rbinds    ) => 1 +Int #length(A)
+  rule #length( _:Rbind    ; A:RbindPats ) => 1 +Int #length(A)
+  rule #length( _:RbindPat ; A:Rbinds    ) => 1 +Int #length(A)
+  rule #length( _:RbindPat ; A:RbindPats ) => 1 +Int #length(A)
   // Guarded
-  rule #length( B:Lbinds _:Guard ) => #length(B)
-  rule #length( B:Pbinds _:Guard ) => #length(B)
-  rule #length( B:Rbinds _:Guard ) => #length(B)
+  rule #length( B:Lbinds    _:Guard ) => #length(B)
+  rule #length( B:Pbinds    _:Guard ) => #length(B)
+  rule #length( B:Rbinds    _:Guard ) => #length(B)
   rule #length( B:LbindPats _:Guard ) => #length(B)
   rule #length( B:PbindPats _:Guard ) => #length(B)
   rule #length( B:RbindPats _:Guard ) => #length(B)
+
+// Concat
+  rule #length+( _:StringOrVar A:ConcatExp ) => 1 +Int #length+(A)
+// ConcatExp
+  rule #length+( ++ _:StringOrVar ) => 1
+  rule #length+( ++ _:StringOrVar A:ConcatExp ) => 1 +Int #length+(A)
+
+// Interp
+  rule #length+( _:StringOrVar %% A:InterpMaps ) => 1 +Int #length+(A)
+// InterpMaps
+  rule #length+( _:RhoMap ) => 1
+  rule #length+( _:RhoMap %% A:InterpMaps ) => 1 +Int #length+(A)
 
 //-------------
 //--- #chan ---
@@ -752,7 +920,7 @@ module AUXFUN
   rule #chan( B:Rbind ; C:Rbinds ) => #chan(B) , #chan(C)
   rule #chan( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
   rule #chan( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
-  
+
   rule #chan( B:Lbinds _:Guard ) => #chan(B)
   rule #chan( B:Pbinds _:Guard ) => #chan(B)
   rule #chan( B:Rbinds _:Guard ) => #chan(B)
@@ -804,12 +972,12 @@ module AUXFUN
 //-------------
 // number of binding variables in a listen
 // Bind
-  rule #lislen(            <- _:Name ) => 0
-  rule #lislen( N:Names    <- _:Name ) => #length(N)
-  rule #lislen( N:NamePats <- _:Name ) => #length(N)
-  rule #lislen(            <= _:Name ) => 0
-  rule #lislen( N:Names    <= _:Name ) => #length(N)
-  rule #lislen( N:NamePats <= _:Name ) => #length(N)
+  rule #lislen(            <-  _:Name ) => 0
+  rule #lislen( N:Names    <-  _:Name ) => #length(N)
+  rule #lislen( N:NamePats <-  _:Name ) => #length(N)
+  rule #lislen(            <=  _:Name ) => 0
+  rule #lislen( N:Names    <=  _:Name ) => #length(N)
+  rule #lislen( N:NamePats <=  _:Name ) => #length(N)
   rule #lislen(            <<- _:Name ) => 0
   rule #lislen( N:Names    <<- _:Name ) => #length(N)
   rule #lislen( N:NamePats <<- _:Name ) => #length(N)
@@ -818,12 +986,12 @@ module AUXFUN
   rule #lislen( B:Pbind _:Guard ) => #lislen(B)
   rule #lislen( B:Rbind _:Guard ) => #lislen(B)
 // BindPat
-  rule #lislen(            <- _:NamePat ) => 0
-  rule #lislen( N:Names    <- _:NamePat ) => #length(N)
-  rule #lislen( N:NamePats <- _:NamePat ) => #length(N)
-  rule #lislen(            <= _:NamePat ) => 0
-  rule #lislen( N:Names    <= _:NamePat ) => #length(N)
-  rule #lislen( N:NamePats <= _:NamePat ) => #length(N)
+  rule #lislen(            <-  _:NamePat ) => 0
+  rule #lislen( N:Names    <-  _:NamePat ) => #length(N)
+  rule #lislen( N:NamePats <-  _:NamePat ) => #length(N)
+  rule #lislen(            <=  _:NamePat ) => 0
+  rule #lislen( N:Names    <=  _:NamePat ) => #length(N)
+  rule #lislen( N:NamePats <=  _:NamePat ) => #length(N)
   rule #lislen(            <<- _:NamePat ) => 0
   rule #lislen( N:Names    <<- _:NamePat ) => #length(N)
   rule #lislen( N:NamePats <<- _:NamePat ) => #length(N)
@@ -891,22 +1059,32 @@ module AUXFUN
   rule #bvar( B:RbindPat ; C:Rbinds    ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:RbindPat ; C:RbindPat  ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:RbindPat ; C:RbindPats ) => #append(#bvar(B);#bvar(C))
-  
+
   rule #bvar( B:LbindPats _:Guard ) => #bvar(B)
   rule #bvar( B:PbindPats _:Guard ) => #bvar(B)
   rule #bvar( B:RbindPats _:Guard ) => #bvar(B)
-  
-//---------------
-//--- #quotes ---  
-//---------------
-  rule #quotes( A:Proc ) => @A
-  rule #quotes( A:Proc , B:Procs ) => @A , #quotes(B)
 
-  rule #quotes( \_ ) => \_
+//---------------
+//--- #quotes ---
+//---------------
+  rule #quotes( \_        ) => @\_
+  rule #quotes( A:Proc    ) => @A
   rule #quotes( A:ProcPat ) => @A requires notBool isWildCard(A)
-  rule #quotes( A:Proc    , B:ProcPats ) => #quotes(A) , #quotes(B)
-  rule #quotes( A:ProcPat , B:Procs    ) => #quotes(A) , #quotes(B)
-  rule #quotes( A:ProcPat , B:ProcPats ) => #quotes(A) , #quotes(B)
+  rule #quotes( A:Proc    , B:Procs    ) => @A , #quotes(B)
+  rule #quotes( A:Proc    , B:ProcPats ) => @A , #quotes(B)
+  rule #quotes( A:ProcPat , B:Procs    ) => @A , #quotes(B)
+  rule #quotes( A:ProcPat , B:ProcPats ) => @A , #quotes(B)
+
+//--------------
+//--- #evals ---
+//--------------
+  rule #evals( \_        ) => *\_
+  rule #evals( A:Name    ) => *A
+  rule #evals( A:NamePat ) => *A requires notBool isWildCard(A)
+  rule #evals( A:Name    , B:Names    ) => *A , #evals(B)
+  rule #evals( A:Name    , B:NamePats ) => *A , #evals(B)
+  rule #evals( A:NamePat , B:Names    ) => *A , #evals(B)
+  rule #evals( A:NamePat , B:NamePats ) => *A , #evals(B)
 
 //--------------------
 //--- #interpolate ---
@@ -915,45 +1093,40 @@ module AUXFUN
   rule #interpolate( S:String ; { A:String : B:String } )
        => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
           #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
-          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),
                 substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
           +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
           #else S
           #fi
-  rule #interpolate( S:String ; { A:String : B:String , KV:RhoKVPair } )
+  rule #interpolate( S:String ; { A:String : B:String , KV:RhoKVPairs } )
        => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
           #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
-          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
+          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),
                 substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
           +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
           #else #interpolate(S;{KV})
           #fi
-  rule #interpolate( S:String ; { A:String : B:String , KVs:RhoKVPairs } )
-       => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
-          #then substrString(S,0,findString(S,"${",0)) // this part extracts A from original string
-          +String replaceAll(substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)),                                  
-                substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)), B) // this part substitutes B for A
-          +String substrString(S,findString(S,"}",findString(S,"${",0) +Int 2) +Int 1, lengthString(S))
-          #else #interpolate(S;{KVs})
-          #fi
   // if key is not a string, bypass it
-  rule #interpolate(S:String ; { A:Proc : _:Proc ,  KV:RhoKVPair  } ) => #interpolate(S;{KV})  requires notBool isString(A)
-  rule #interpolate(S:String ; { A:Proc : _:Proc , KVs:RhoKVPairs } ) => #interpolate(S;{KVs}) requires notBool isString(A)
+  rule #interpolate( S:String ; { A:Proc : _:Proc , KV:RhoKVPairs } ) => #interpolate(S;{KV}) requires notBool isString(A)
   // if all else fails, return the original string
-  rule #interpolate(S:String ; _:RhoMap ) => S [owise]
+  rule #interpolate( S:String ; _:RhoMap ) => S [owise]
 
 //------------------
 //--- Predicates ---
 //------------------
 // Maps
-  rule _:Proc #in_keys { }:RhoMap => false
-  rule A:Proc #in_keys { Key:Proc : Val:Proc } => A ==K Key
-  rule A:Proc #in_keys { Key:Proc : Val:Proc , KVs:RhoKVPairs } => A ==K Key orBool A #in_keys { KVs }
-  
+  rule _:Proc    #in_keys { } => false
+  rule _:ProcPat #in_keys { } => false
+  rule A:Proc    #in_keys { B:RhoKVPairs } => A in keys(#KVs2map(B))
+  rule A:Proc    #in_keys { B:RhoKVPats  } => A in keys(#KVs2map(B))
+  rule A:ProcPat #in_keys { B:RhoKVPats  } => A in keys(#KVs2map(B))
+
 // Sets
-  rule _:Proc #in_set Set( ) => false
-  rule A:Proc #in_set Set( Elm:Proc ) => A ==K Elm
-  rule A:Proc #in_set Set( Elm1:Proc , Rest:Procs ) => A ==K Elm1 orBool A #in_set Set( Rest )
+  rule _:Proc    #in_set Set( ) => false
+  rule _:ProcPat #in_set Set( ) => false
+  rule A:Proc    #in_set Set( B:Procs    ) => A in #procs2set(B)
+  rule A:Proc    #in_set Set( B:ProcPats ) => A in  #pats2set(B)
+  rule A:ProcPat #in_set Set( B:ProcPats ) => A in  #pats2set(B)
 
 //---------------
 //--- #mapSub ---
@@ -988,7 +1161,7 @@ module AUXFUN
 // computes Par Set of a Proc
   // par set of a nonPar Proc contains only one appearance of that Proc
   rule #par2Set( A:Proc ) => SetItem(A,1) requires notBool isPar(A)
-  rule #par2Set( A:Proc | B:Proc ) 
+  rule #par2Set( A:Proc | B:Proc )
     => #if #countPar(A;B) >Int 0
        #then SetItem(A, 1 +Int #countPar(A;B)) #par2Set(#removePar(A;B))
        #else SetItem(A,1) #par2Set(B)
@@ -1025,56 +1198,166 @@ module AUXFUN
   rule #procs2par( A:Proc ) => A
   rule #procs2par( A:Proc , B:Procs ) => A | #procs2par(B)
 
-//------------------
-//--- #set2procs ---
-//------------------
-  rule #set2procs( SetItem( A:Proc ) ) => A
+//----------------------------
+//--- #set2procs/name/pats ---
+//----------------------------
+// Set <-> Names
+  rule #names2set( A:Name                  ) => SetItem(A)
+  rule #names2set( A:Name , B:Names        ) => SetItem(A) #names2set(B)
+  rule #set2names( SetItem( A:Name )       ) => A
+  rule #set2names( SetItem( A:Name ) S:Set ) => A , #set2names(S) requires S =/=K .Set
+
+// Set <-> Procs
+  rule #procs2set( A:Proc                  ) => SetItem(A)
+  rule #procs2set( A:Proc , B:Procs        ) => SetItem(A) #procs2set(B)
+  rule #set2procs( SetItem( A:Proc )       ) => A
   rule #set2procs( SetItem( A:Proc ) S:Set ) => A , #set2procs(S) requires S =/=K .Set
-// #procs2set
-  rule #procs2set( A:Proc ) => SetItem(A)
-  rule #procs2set( A:Proc , B:Proc ) => SetItem(A) #procs2set(B)
+
+// Set <-> Pats
+  rule #set2pats( SetItem( A:Name    ) ) => A
+  rule #set2pats( SetItem( A:NamePat ) ) => A
+  rule #set2pats( SetItem( A:Proc    ) ) => A
+  rule #set2pats( SetItem( A:ProcPat ) ) => A
+  rule #set2pats( SetItem( A:Proc    ) B:Set ) => A , #set2pats(B) requires B =/=K .Set
+  rule #set2pats( SetItem( A:ProcPat ) B:Set ) => A , #set2pats(B) requires B =/=K .Set
+  rule #set2pats( SetItem( A:Name    ) B:Set ) => A , #set2pats(B) requires B =/=K .Set
+  rule #set2pats( SetItem( A:NamePat ) B:Set ) => A , #set2pats(B) requires B =/=K .Set
+  rule #pats2set( A:NamePat ) => SetItem(A)
+  rule #pats2set( A:NamePat , B:NamePats ) => SetItem(A) #pats2set(B)
+  rule #pats2set( A:ProcPat ) => SetItem(A)
+  rule #pats2set( A:ProcPat , B:ProcPats ) => SetItem(A) #pats2set(B)
 
 //-----------------
 //--- Built-ins ---
 //-----------------
 // List
-  rule #list2rho( .List ) => [ ]
-  rule #list2rho( ListItem( A:Proc ) ) => [A]
-  rule #list2rho( ListItem( A:Proc ) B:List ) => #concat([A];#list2rho(B)) requires B =/=K .List
+  rule #procs2list( A:Proc ) => ListItem(A)
+  rule #procs2list( A:Proc , B:Procs ) => ListItem(A) #procs2list(B)
+  rule #list2procs( ListItem( A:Proc ) ) => A
+  rule #list2procs( ListItem( A:Proc ) B:List ) => A , #list2procs(B) requires B =/=K .List
 
+  rule #names2list( A:Name ) => ListItem(A)
+  rule #names2list( A:Name , B:Names ) => ListItem(A) #names2list(B)
+  rule #list2names( ListItem( A:Name ) ) => A
+  rule #list2names( ListItem( A:Name ) B:List ) => A , #list2names(B) requires B =/=K .List
+
+  rule #pats2list( A:ProcPat ) => ListItem(A)
+  rule #pats2list( A:ProcPat , B:ProcPats ) => ListItem(A) #pats2list(B)
+  rule #pats2list( A:NamePat ) => ListItem(A)
+  rule #pats2list( A:NamePat , B:NamePats ) => ListItem(A) #pats2list(B)
+  rule #list2pats( ListItem( A:ProcPat ) ) => A
+  rule #list2pats( ListItem( A:ProcPat ) B:List ) => A , #list2pats(B) requires B =/=K .List
+  rule #list2pats( ListItem( A:NamePat ) ) => A
+  rule #list2pats( ListItem( A:NamePat ) B:List ) => A , #list2pats(B) requires B =/=K .List
+
+  rule #list2rho( .List ) => [ ]
+  rule #list2rho( ListItem( A:Proc    ) B:List ) => [A,#list2procs(B)]
+  rule #list2rho( ListItem( A:ProcPat ) B:List ) => [A, #list2pats(B)]
   rule #concat( [ ] ; A:RhoList ) => A
+  rule #concat( [ ] ; A:ListPat ) => A
   rule #concat( A:RhoList ; [ ] ) => A
-  rule #concat( [ A:Procs ] ; [ B:Procs ] ) => [#append(A;B)]
+  rule #concat( A:ListPat ; [ ] ) => A
+  rule #concat( [ A:Procs    ] ; [ B:Procs    ] ) => [#append(A;B)]
+  rule #concat( [ A:Procs    ] ; [ B:ProcPats ] ) => [#append(A;B)]
+  rule #concat( [ A:ProcPats ] ; [ B:Procs    ] ) => [#append(A;B)]
+  rule #concat( [ A:ProcPats ] ; [ B:ProcPats ] ) => [#append(A;B)]
 
 // Map
-  rule #map2rho( .Map ) => { }
-  rule #map2rho( A:Proc |-> B:Proc ) => {A:B}
-  rule #map2rho( A:Proc |-> B:Proc C:Map ) => #unionMap({A:B};#map2rho(C)) requires C =/=K .Map
-
+  rule #map2rho( A:Map ) => #KVs2rho(#map2KVs(A))
   // check if each right arg element is seq to a left arg element
   rule #unionMap( { } ; A:RhoMap ) => A
+  rule #unionMap( { } ; A:MapPat ) => A
   rule #unionMap( A:RhoMap ; { } ) => A
-  rule #unionMap( { A:RhoKVPairs } ; { B:RhoKVPairs } ) => {#append(A;B)}
+  rule #unionMap( A:MapPat ; { } ) => A
+  rule #unionMap( { A:RhoKVPairs } ; { B:RhoKVPairs } ) => {#map2KVs(#KVs2map(#append(A;B)))}
+  rule #unionMap( { A:RhoKVPairs } ; { B:RhoKVPats  } ) => {#map2KVs(#KVs2map(#append(A;B)))}
+  rule #unionMap( { A:RhoKVPats  } ; { B:RhoKVPairs } ) => {#map2KVs(#KVs2map(#append(A;B)))}
+  rule #unionMap( { A:RhoKVPats  } ; { B:RhoKVPats  } ) => {#map2KVs(#KVs2map(#append(A;B)))}
+
+  rule #map2KVs( .Map ) => EmptyP : EmptyP
+  rule #map2KVs( A:Proc    |-> B:Proc    ) => A : B
+  rule #map2KVs( A:Proc    |-> B:ProcPat ) => A : B
+  rule #map2KVs( A:ProcPat |-> B:Proc    ) => A : B
+  rule #map2KVs( A:ProcPat |-> B:ProcPat ) => A : B
+  rule #map2KVs( A:Proc    |-> B:Proc    M:Map ) => A : B , #map2KVs(M) requires M =/=K .Map
+  rule #map2KVs( A:Proc    |-> B:ProcPat M:Map ) => A : B , #map2KVs(M) requires M =/=K .Map
+  rule #map2KVs( A:ProcPat |-> B:Proc    M:Map ) => A : B , #map2KVs(M) requires M =/=K .Map
+  rule #map2KVs( A:ProcPat |-> B:ProcPat M:Map ) => A : B , #map2KVs(M) requires M =/=K .Map
+
+// Tuple
+  rule #tuple2rho( ListItem( A:Proc    ) ) => (A,)
+  rule #tuple2rho( ListItem( A:ProcPat ) ) => (A,)
+  rule #tuple2rho( ListItem( A:Proc    ) B:List ) => #list2tuple(#concat([A];#list2rho(B))) requires B =/=K .List
+  rule #tuple2rho( ListItem( A:ProcPat ) B:List ) => #list2tuple(#concat([A];#list2rho(B))) requires B =/=K .List
+
+  rule #list2tuple( [ A:Procs     ] ) => (A,)
+  rule #list2tuple( [ A:ProcPats  ] ) => (A,)
+  rule #tuple2list( ( A:Procs    ,) ) => [A]
+  rule #tuple2list( ( A:ProcPats ,) ) => [A]
 
 // Set
   rule #set2rho( .Set ) => Set( )
-  rule #set2rho( SetItem( A:Proc ) ) => Set(A)
-  rule #set2rho( SetItem( A:Proc ) B:Set ) => #unionSet(Set(A);#set2rho(B)) requires B =/=K .Set
-
+  rule #set2rho( SetItem( A:Proc    ) B:Set ) => Set(A;#set2procs(B))
+  rule #set2rho( SetItem( A:ProcPat ) B:Set ) => Set(A;#set2procs(B))
+  // #unionSet
   rule #unionSet( Set( ) ; A:RhoSet ) => A
+  rule #unionSet( Set( ) ; A:SetPat ) => A
   rule #unionSet( A:RhoSet ; Set( ) ) => A
-  // check if each right arg element is seq to a left arg element
-  rule #unionSet( Set( A:Procs ) ; Set( B:Procs ) ) => Set(#append(A;B))
+  rule #unionSet( A:SetPat ; Set( ) ) => A
+  // check if each right arg element is seq to a left arg element -- e.g. #unionSet( Set(a,b,c) ; Set(b,c,d) ) => Set( #set2procs( { a,b,c,d } ) ) => Set( a,b,c,d )
+  rule #unionSet( Set( A:Procs    ) ; Set( B:Procs    ) ) => Set(#set2procs(#procs2set(A) #procs2set(B)))
+  rule #unionSet( Set( A:Procs    ) ; Set( B:ProcPats ) ) => Set( #set2pats(#procs2set(A)  #pats2set(B)))
+  rule #unionSet( Set( A:ProcPats ) ; Set( B:Procs    ) ) => Set( #set2pats( #pats2set(A) #procs2set(B)))
+  rule #unionSet( Set( A:ProcPats ) ; Set( B:ProcPats ) ) => Set( #set2pats( #pats2set(A)  #pats2set(B)))
+
+//------------------
+//--- #rho2procs ---
+//------------------
+  rule #rho2procs(    [ ]            ) => EmptyP
+  rule #rho2procs( Set( )            ) => EmptyP
+  rule #rho2procs( [ A:Procs    ]    ) => A
+  rule  #rho2pats( [ A:ProcPats ]    ) => A
+  rule #rho2procs( Set( A:Procs    ) ) => A
+  rule  #rho2pats( Set( A:ProcPats ) ) => A
+  rule #rho2procs( ( A:Procs    ,)   ) => A
+  rule  #rho2pats( ( A:ProcPats ,)   ) => A
+
+  rule #rho2KVs( { } ) => EmptyP : EmptyP
+  rule #rho2KVs( { A:RhoKVPairs } ) => A
+  rule #rho2KVs( { A:RhoKVPats  } ) => A
+  rule #KVs2rho( EmptyP : EmptyP  ) => { }
+  rule #KVs2rho( A:RhoKVPairs     ) => {A}
+  rule #KVs2rho( A:RhoKVPats      ) => {A}
+
+  rule #KVs2map(   EmptyP    : EmptyP       ) => .Map
+  rule #KVs2map( A:Proc      : B:Proc       ) => A |-> B
+  rule #KVs2map( A:Proc      : B:ProcPat    ) => A |-> B
+  rule #KVs2map( A:ProcPat   : B:Proc       ) => A |-> B
+  rule #KVs2map( A:ProcPat   : B:ProcPat    ) => A |-> B
+  rule #KVs2map( A:RhoKVPair , B:RhoKVPairs ) => updateMap( #KVs2map(B) , #KVs2map(A) ) // keeps first occurrence of RhoKVPair/Pat
+  rule #KVs2map( A:RhoKVPair , B:RhoKVPats  ) => updateMap( #KVs2map(B) , #KVs2map(A) ) // keeps first occurrence of RhoKVPair/Pat
+  rule #KVs2map( A:RhoKVPat  , B:RhoKVPairs ) => updateMap( #KVs2map(B) , #KVs2map(A) ) // keeps first occurrence of RhoKVPair/Pat
+  rule #KVs2map( A:RhoKVPat  , B:RhoKVPats  ) => updateMap( #KVs2map(B) , #KVs2map(A) ) // keeps first occurrence of RhoKVPair/Pat
+
+//--------------------
+//--- IfThen[Else] ---
+//--------------------
+  rule   #if( if ( A:BExp ) _:Proc ) => A
+  rule   #if( if ( A:BExp ) _:Proc else _:Proc ) => A
+  rule #then( if ( _:BExp ) A:Proc ) => A
+  rule #then( if ( _:BExp ) A:Proc else _:Proc ) => A
+  rule #else( if ( _:BExp ) _:Proc ) => Nil
+  rule #else( if ( _:BExp ) _:Proc else A:Proc ) => A
 
 //-------------
 //--- #bind ---
 //-------------
 // Reconstruct listen from listen info
 /*
-  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <- A
-  rule #bind ( A:Name ; B:Names ;; 0 ) => B <- A
-  rule #bind ( A:Name ; B:Name  ;; 1 ) => B <= A
-  rule #bind ( A:Name ; B:Names ;; 1 ) => B <= A
+  rule #bind ( A:Name ; B:Name  ;; 0 ) => B <-  A
+  rule #bind ( A:Name ; B:Names ;; 0 ) => B <-  A
+  rule #bind ( A:Name ; B:Name  ;; 1 ) => B <=  A
+  rule #bind ( A:Name ; B:Names ;; 1 ) => B <=  A
   rule #bind ( A:Name ; B:Name  ;; 2 ) => B <<- A
   rule #bind ( A:Name ; B:Names ;; 2 ) => B <<- A
 */
@@ -1090,7 +1373,7 @@ module AUXFUN
   rule #slice( [ ] , _ , _ ) => [ ]
   rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
   rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
-  
+
 //-------------
 //--- #keys ---
 //-------------
