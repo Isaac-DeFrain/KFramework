@@ -1,10 +1,10 @@
 // New - parallel News
 
-    new x in { x!(1) } | new x in { x!(2) } | new x in { x!(3) }
+    new x in { x!("private msg for no one") } | new x in { x!("passed private msg",*rtnChan) | for( y,z <- x ){ z!(*y) } } | new x in { x!("private msg for no one") }
 
 /*
 Output:
-Result ==K <T>
+<T>
   <activity>
     .TaskCellBag
   </activity>
@@ -12,27 +12,14 @@ Result ==K <T>
     <sends>
       <send>
         <schan>
-          @ unforgeable( 0 )
-        </schan>
-        <msg>
-          3
-        </msg>
-        <tuple>
-          1
-        </tuple>
-        <stype>
-          0
-        </stype>
-      </send> <send>
-        <schan>
           @ unforgeable( 1 )
         </schan>
         <msg>
-          1
+          "private msg for no one"
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -41,11 +28,24 @@ Result ==K <T>
           @ unforgeable( 2 )
         </schan>
         <msg>
-          2
+          "private msg for no one"
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          rtnChan
+        </schan>
+        <msg>
+          "passed private msg"
+        </msg>
+        <arity>
+          1
+        </arity>
         <stype>
           0
         </stype>
@@ -59,13 +59,16 @@ Result ==K <T>
     3
   </nextLoc>
   <original>
-    new x in { x ! ( 1 ) } | new x in { x ! ( 2 ) } | new x in { x ! ( 3 ) }
+    new x in { x ! ( "private msg for no one" ) } | new x in { x ! ( "passed private msg" , * rtnChan ) | for ( y , z <- x ) { z ! ( * y ) } } | new x in { x ! ( "private msg for no one" ) }
   </original>
-  <freeVars>
+  <OGfreevar>
+    SetItem ( rtnChan : name )
+  </OGfreevar>
+  <OGvarcontexts>
     .Set
-  </freeVars>
-  <deBruijnified>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) } | new boundN( 0 ) in { boundN( 0 ) ! ( 2 ) } | new boundN( 0 ) in { boundN( 0 ) ! ( 3 ) }
-  </deBruijnified>
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( "private msg for no one" ) } | new boundN( 1 ) in { boundN( 1 ) ! ( "passed private msg" , * rtnChan ) | for ( boundN( 2 ) , boundN( 3 ) <- boundN( 1 ) ) { boundN( 3 ) ! ( * boundN( 2 ) ) } } | new boundN( 4 ) in { boundN( 4 ) ! ( "private msg for no one" ) }
+  </OGdeBruijn>
 </T>
 */

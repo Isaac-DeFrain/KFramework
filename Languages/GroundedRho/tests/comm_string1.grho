@@ -1,6 +1,6 @@
 // String - race condition
 
-    x!("Hello ") | for( y <- x ){ *y ++ "world!" } | x!("Goodbye ")
+    new x in { x!("Hello ") | for( y <- x ){ *y ++ "world!" } | x!("Goodbye ") }
 
 /*
 Output:

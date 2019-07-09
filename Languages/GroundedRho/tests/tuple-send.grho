@@ -1,46 +1,54 @@
 // Send
 
-    new x in { x!(Nil,*y,[1,2,\a,2],{1:2,3:4,1:2},Set(x!(1,[2],Set(3))),(1,2,"a")) }
+    new x,y in { x!(@42!(Nil)) | for( @{@Int!(\a)} <- x ){ x!(Nil,*y,[1,2,\a,2],{1:2,3:4,1:2},Set(x!(1,[2],(Set(3),))),(1,2,"a",)) } }
 
 /*
 Output:
 <T>
-  <threads>
-    .ThreadCellBag
-  </threads>
+  <activity>
+    .TaskCellBag
+  </activity>
   <tuplespace>
     <sends>
-      <send>
-        <schan>
-          @ unforgeable( 0 )
-        </schan>
-        <msg>
-          Nil , * y , [ 1 , 2 , \ a , 2 ] , { 1 : 2 , 3 : 4 , 1 : 2 } , Set ( ( @ unforgeable( 0 ) ) ! ( 1 , ( [ 2 ] , Set ( 3 ) ) ) ) , ( 1 , 2 , "a" )
-        </msg>
-        <tuple>
-          6
-        </tuple>
-        <stype>
-          0
-        </stype>
-      </send>
+      .SendCellBag
     </sends>
     <receives>
-      .RecCellBag
+      <rec>
+        <rchan>
+          @ unforgeable( 0 )
+        </rchan>
+        <bvars>
+          @ ( ( @ Int ) ! ( \ a ) )
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          ( @ unforgeable( 0 ) ) ! ( Nil , unforgeable( 1 ) , [ 1 , 2 , \ a , 2 ] , { 1 : 2 , 3 : 4 , 1 : 2 } , Set( ( @ unforgeable( 0 ) ) ! ( 1 , [ 2 ] , ( Set( 3 ) ,) ) ) , ( 1 , 2 , "a" ,) )
+        </cont>
+      </rec>
     </receives>
   </tuplespace>
   <nextLoc>
-    1
+    2
   </nextLoc>
-  <freeVars>
-    SetItem ( * y : proc )
-    SetItem ( \ a : proc )
-    SetItem ( y : name )
-  </freeVars>
-  <deBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( Nil , * y , [ 1 , 2 , \ a , 2 ] , #deBruijn( 4 ; { 1 : 2 , 3 : 4 , 1 : 2 } ; updateMap ( x |-> boundN( 0 )
-    y |-> boundN( 2 ) , #mapify( 3 ; [ 1 , 2 , \ a , 2 ] ; x |-> boundN( 0 )
-    y |-> boundN( 2 ) ) ) ) , ( Set ( boundN( 0 ) ! ( 1 , ( [ 2 ] , Set ( 3 ) ) ) ) , ( 1 , 2 , "a" ) ) ) }
-  </deBruijn>
+  <original>
+    new x , y in { for ( @ ( ( @ Int ) ! ( \ a ) ) <- x ) { x ! ( Nil , * y , ( [ 1 , 2 , \ a , 2 ] , { 1 : 2 , 3 : 4 , 1 : 2 } , Set( x ! ( 1 , [ 2 ] , ( Set( 3 ) ,) ) ) , ( 1 , 2 , "a" ,) ) ) } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { for ( @ ( @ Int ) ! ( boundP( 2 ) ) <- boundN( 0 ) ) { boundN( 0 ) ! ( Nil , * boundN( 1 ) , [ 1 , 2 , boundP( 2 ) , 2 ] , { 1 : 2 , 3 : 4 , 1 : 2 } , Set( boundN( 0 ) ! ( 1 , [ 2 ] , ( Set( 3 ) ,) ) ) , ( 1 , 2 , "a" ,) ) } }
+  </OGdeBruijn>
 </T>
 */

@@ -1,0 +1,10 @@
+// isConcreteProc
+
+    #isConcreteProc( new y in { y!(Nil | "3") } )
+
+/*
+Output:
+
+    true
+
+*/

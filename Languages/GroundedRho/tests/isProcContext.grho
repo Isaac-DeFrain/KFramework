@@ -1,0 +1,10 @@
+// isProcContext
+
+    #isProcContext( y!(1) | x!(2) )
+
+/*
+Output:
+
+    false
+
+*/

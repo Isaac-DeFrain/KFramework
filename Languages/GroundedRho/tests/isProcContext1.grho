@@ -1,0 +1,10 @@
+// isProcContext
+
+    #isProcContext( @Nil!(1) | @0!(\x) )
+
+/*
+Output:
+
+    true
+
+*/

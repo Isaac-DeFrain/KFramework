@@ -1,0 +1,53 @@
+// isProcContext
+
+    #variable( new x in { x!(1,[Nil,1,[1,2,3,4]]) | for( @\a,b <- x ){ b!(\a | \c) } } )
+
+/*
+Output:
+
+z3 error: (error "line 8 column 15: Sorts Proc and Ground are incompatible")
+
+z3 error: (error "line 8 column 15: Sorts Proc and SRec are incompatible")
+
+z3 error: (error "line 8 column 15: Sorts Proc and MRec are incompatible")
+
+z3 error: (error "line 8 column 15: Sorts Proc and Send are incompatible")
+
+z3 error: (error "line 8 column 15: Sorts Proc and Ground are incompatible")
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    .
+  </original>
+  <OGfreevar>
+    FV( . )
+  </OGfreevar>
+  <OGvarcontexts>
+    #VarContext( . )
+  </OGvarcontexts>
+  <OGdeBruijn>
+    #deBruijn( . )
+  </OGdeBruijn>
+</T>
+[Warning] Critical: missing SMTLib translation for project:Proc (missing SMTLib
+translation for project:Proc)
+
+
+
+  #isProcContext( new x in { x!(1,[Nil,1,[1,2,3,4]]) | for( @\a,b <- x ){ b!(\a | \c) | *b.nth(2) } } )
+  => true
+
+*/

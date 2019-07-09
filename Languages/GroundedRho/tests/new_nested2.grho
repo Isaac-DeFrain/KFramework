@@ -1,0 +1,124 @@
+// New - nested
+   // new x,x in { P } => new x in { P } & new x,y in { P } == new y,x in { P }
+
+    new y,x in { x!(1) | y!(2) }
+
+/*
+Input:
+  new x,y in { x!(1) | y!(2) }
+
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          1
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 1 )
+        </schan>
+        <msg>
+          2
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    2
+  </nextLoc>
+  <original>
+    new x , y in { x ! ( 1 ) | y ! ( 2 ) }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 1 ) | boundN( 1 ) ! ( 2 ) }
+  </OGdeBruijn>
+</T>
+
+Input:
+  new y,x in { x!(1) | y!(2) }
+
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        <schan>
+          @ unforgeable( 0 )
+        </schan>
+        <msg>
+          1
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 1 )
+        </schan>
+        <msg>
+          2
+        </msg>
+        <arity>
+          1
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send>
+    </sends>
+    <receives>
+      .RecCellBag
+    </receives>
+  </tuplespace>
+  <nextLoc>
+    2
+  </nextLoc>
+  <original>
+    new y , x in { x ! ( 1 ) | y ! ( 2 ) }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 1 ) ! ( 1 ) | boundN( 0 ) ! ( 2 ) }
+  </OGdeBruijn>
+</T>
+*/

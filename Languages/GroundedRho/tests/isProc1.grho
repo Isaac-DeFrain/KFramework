@@ -1,8 +1,10 @@
-// isProc
+// isConcreteProc
 
-    #isProc( y!(Nil | "3") )
+    #isConcreteProc( y!(Nil | "3") )
 
 /*
 Output:
-true
+
+    false
+
 */

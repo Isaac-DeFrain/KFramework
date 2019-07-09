@@ -1,13 +1,13 @@
 // New - nested
 
-    new x in { x!(1) | new x in { x!(1) } | new x in { @1!(*x | (\x , \y) ) } }
+    new x in { x!(1) | new x in { x!(1) } | new x in { @1!(*x) | for( @[\x,\y] <- x ){ (\x , \y ,) } | x!([1,2]) } }
 
 /*
 Output:
 <T>
-  <threads>
-    .ThreadCellBag
-  </threads>
+  <activity>
+    .TaskCellBag
+  </activity>
   <tuplespace>
     <sends>
       <send>
@@ -15,11 +15,11 @@ Output:
           @ 1
         </schan>
         <msg>
-          unforgeable( 2 ) | ( \ x , \ y )
+          unforgeable( 2 )
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -30,9 +30,9 @@ Output:
         <msg>
           1
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
         <stype>
           0
         </stype>
@@ -43,27 +43,64 @@ Output:
         <msg>
           1
         </msg>
-        <tuple>
+        <arity>
           1
-        </tuple>
+        </arity>
+        <stype>
+          0
+        </stype>
+      </send> <send>
+        <schan>
+          @ unforgeable( 2 )
+        </schan>
+        <msg>
+          [ 1 , 2 ]
+        </msg>
+        <arity>
+          2
+        </arity>
         <stype>
           0
         </stype>
       </send>
     </sends>
     <receives>
-      .RecCellBag
+      <rec>
+        <rchan>
+          @ unforgeable( 2 )
+        </rchan>
+        <bvars>
+          @ [ \ x , \ y ]
+        </bvars>
+        <bnum>
+          1
+        </bnum>
+        <rtype>
+          0
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          ( \ x , \ y ,)
+        </cont>
+      </rec>
     </receives>
   </tuplespace>
   <nextLoc>
     3
   </nextLoc>
-  <freeVars>
-    SetItem ( \ x : proc )
-    SetItem ( \ y : proc )
-  </freeVars>
-  <deBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) | new boundN( 1 ) in { boundN( 1 ) ! ( 1 ) } | new boundN( 1 ) in { ( @ 1 ) ! ( * boundN( 1 ) | ( \ x , \ y ) ) } }
-  </deBruijn>
+  <original>
+    new x in { x ! ( 1 ) | new x in { x ! ( 1 ) } | new x in { ( @ 1 ) ! ( * x ) | for ( @ [ \ x , \ y ] <- x ) { ( \ x , \ y ,) } | x ! ( [ 1 , 2 ] ) } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) | new boundN( 1 ) in { boundN( 1 ) ! ( 1 ) } | new boundN( 2 ) in { @ 1 ! ( * boundN( 2 ) ) | for ( @ [ boundP( 3 ) , boundP( 4 ) ] <- boundN( 2 ) ) { ( boundP( 3 ) , boundP( 4 ) ,) } | boundN( 2 ) ! ( [ 1 , 2 ] ) } }
+  </OGdeBruijn>
 </T>
 */
