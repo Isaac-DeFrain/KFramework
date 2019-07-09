@@ -42,6 +42,9 @@ module STRUCT-SYNTAX
 
   syntax   Bool ::=   "#order(" Procs  ";" Procs ")" [function]
                   |   "#order(" Names  ";" Names ")" [function]
+                  |   "#order(" Bind  ";;" Bind  ")" [function]
+                  |   "#order(" Bind  ";;" Binds ")" [function]
+                  |   "#order(" Binds ";;" Bind  ")" [function]
                   |   "#order(" Binds ";;" Binds ")" [function]
                   | "#orderif(" Procs  ";" Procs ")" [function]
                   | "#orderif(" Names  ";" Names ")" [function]
@@ -251,23 +254,18 @@ module STRUCT
              #else true #fi
        #else false #fi
 
- // Receive: dictionary order by Type , listen length , Chans , listen lengths , Bvars , Cont
-  rule #order( A:Receive ; B:Receive )
+ // Receive: Binds , Cont
+  rule #order( A:Receive ; B:Receive ) => #order(#bind(A);;#bind(B)) andBool #order(#cont(A);#cont(B))
+
+  // Binds: dictionary order by Type , length , Chans , bvars
+  rule #order( A:Bind ;; B:Bind )
     => #if #rtype(A) <=Int #rtype(B)
        #then #if #rtype(A) ==Int #rtype(B)
              #then #if #lislen(A) <=Int #lislen(B)
                    #then #if #lislen(A) ==Int #lislen(B)
                          #then #if #order(#chan(A);#chan(B))
                                #then #if #order(#chan(B);#chan(A))
-                                     #then #if #order(#lislens(A);#lislens(B))
-                                           #then #if #order(#lislens(B);#lislens(A))
-                                                 #then #if #order(#bvar(A);#bvar(B))
-                                                       #then #if #order(#bvar(B);#bvar(A))
-                                                             #then #order(#cont(A);#cont(A))
-                                                             #else true #fi
-                                                       #else false #fi
-                                                 #else true #fi
-                                           #else false #fi
+                                     #then #order(#bvar(A);#bvar(B))
                                      #else true #fi
                                #else false #fi
                          #else true #fi
