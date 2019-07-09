@@ -1,0 +1,10 @@
+// Procs match
+
+    #match( [ 1 , 2 ] ; [ \x , \y ] )
+
+/*
+Output:
+
+    true
+
+*/

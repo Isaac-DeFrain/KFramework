@@ -1,0 +1,10 @@
+// Procs match
+
+    #matchif( 2 , @3!(for(a,@{b!(\c)} <- x ){ Nil }) ; \y , \z )
+
+/*
+Output:
+
+    true
+
+*/
