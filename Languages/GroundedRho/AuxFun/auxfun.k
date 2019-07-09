@@ -62,6 +62,9 @@ module AUXFUN-SYNTAX
     // receive listen length function
   syntax        Int ::= "#lislen(" Receive ")" [function]
                       | "#lislen(" RecPat  ")" [function]
+    // receive listen lengths function
+  syntax      Procs ::= "#lislens(" MRec    ")" [function]
+                      | "#lislens(" MRecPat ")" [function]
     // receive type function
   syntax        Int ::= "#rtype(" Receive ")" [function]
                       | "#rtype(" RecPat  ")" [function]
@@ -96,6 +99,9 @@ module AUXFUN-SYNTAX
     // bind listen length function
   syntax        Int ::= "#lislen(" AnyBind    ")" [function]
                       | "#lislen(" AnyBindPat ")" [function]
+    // bind listen length function
+  syntax      Procs ::= "#lislens(" AnyBinds    ")" [function]
+                      | "#lislens(" AnyBindPats ")" [function]
     // bind type function
   syntax        Int ::= "#rtype(" AnyBind     ")" [function]
                       | "#rtype(" AnyBindPat  ")" [function]
@@ -321,8 +327,6 @@ module AUXFUN-SYNTAX
   syntax   NamePats ::= "#set2pats(" Set ")" [function]
   syntax   ProcPats ::= "#set2pats(" Set ")" [function]
 
-set2pats
-
   syntax      KItem ::= Name | Names | NamePat | NamePats | Proc | Procs | ProcPat | ProcPats
 
 endmodule
@@ -471,54 +475,67 @@ module AUXFUN
   rule #cont( for ( _:RbindPat  _:Guard ){ P:ProcPat } ) => P
   rule #cont( for ( _:RbindPats _:Guard ){ P:ProcPat } ) => P
 
-  rule #lislen( for ( B:Lbind  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Lbind  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Pbind  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Pbind  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Rbind  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Rbind  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:Lbind  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Lbind  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Pbind  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Pbind  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Rbind  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Rbind  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:LbindPat  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:LbindPat  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:PbindPat  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:PbindPat  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:RbindPat  ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:RbindPat  _:Guard ){ _:Proc } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats _:Guard ){ _:Proc } ) => #length(B)
-  rule #lislen( for ( B:LbindPat  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats ){ _:ProcPat } ) => #length(B)
+//rule #lislen( A:SRec ) => #lislen(#bind(A))
+//rule #lislen( A:MRec ) => #length(#bind(A))
+  rule #lislen( for ( B:Lbind             ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Lbinds            ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Lbind     _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Lbinds    _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Pbind             ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Pbinds            ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Pbind     _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Pbinds    _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Rbind             ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Rbinds            ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Rbind     _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:Rbinds    _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:Lbind             ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Lbinds            ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:Lbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Lbinds    _:Guard ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:Pbind             ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Pbinds            ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:Pbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Pbinds    _:Guard ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:Rbind             ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Rbinds            ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:Rbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:Rbinds    _:Guard ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:LbindPat          ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:LbindPats         ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:LbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:LbindPats _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:PbindPat          ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:PbindPats         ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:PbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:PbindPats _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:RbindPat          ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:RbindPats         ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:RbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
+  rule #lislen( for ( B:RbindPats _:Guard ){ _:Proc    } ) => #length(B)
+  rule #lislen( for ( B:LbindPat          ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:LbindPats         ){ _:ProcPat } ) => #length(B)
   rule #lislen( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
   rule #lislen( for ( B:LbindPats _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:PbindPat  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:PbindPat          ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:PbindPats         ){ _:ProcPat } ) => #length(B)
   rule #lislen( for ( B:PbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
   rule #lislen( for ( B:PbindPats _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:RbindPat  ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats ){ _:ProcPat } ) => #length(B)
+  rule #lislen( for ( B:RbindPat          ){ _:ProcPat } ) => #lislen(B)
+  rule #lislen( for ( B:RbindPats         ){ _:ProcPat } ) => #length(B)
   rule #lislen( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
   rule #lislen( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => #length(B)
+
+// listen lengths
+  rule #lislens( A:MRec    ) => #lislens(#bind(A))
+  rule #lislens( A:MRecPat ) => #lislens(#bind(A))
+
+  rule #lislens( A:Lbind ; B:Lbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Lbind ; B:Lbinds ) => #lislen(A) , #lislens(B)
+  rule #lislens( A:Pbind ; B:Pbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Pbind ; B:Pbinds ) => #lislen(A) , #lislens(B)
+  rule #lislens( A:Rbind ; B:Rbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Rbind ; B:Rbinds ) => #lislen(A) , #lislens(B)
 
 // receive types - receive
   rule #rtype( _:LinearSRec     ) => 0
@@ -546,28 +563,28 @@ module AUXFUN
   rule #rtype( _:PeekMRecPat    ) => 2
   rule #rtype( _:GPeekMRecPat   ) => 2
 
-  rule #rtype( _:Lbind  ) => 0
-  rule #rtype( _:Lbinds ) => 0
-  rule #rtype( _:Lbind  _:Guard ) => 0
-  rule #rtype( _:Lbinds _:Guard ) => 0
-  rule #rtype( _:LbindPat  ) => 0
-  rule #rtype( _:LbindPats ) => 0
+  rule #rtype( _:Lbind             ) => 0
+  rule #rtype( _:Lbinds            ) => 0
+  rule #rtype( _:Lbind     _:Guard ) => 0
+  rule #rtype( _:Lbinds    _:Guard ) => 0
+  rule #rtype( _:LbindPat          ) => 0
+  rule #rtype( _:LbindPats         ) => 0
   rule #rtype( _:LbindPat  _:Guard ) => 0
   rule #rtype( _:LbindPats _:Guard ) => 0
-  rule #rtype( _:Rbind  ) => 1
-  rule #rtype( _:Rbinds ) => 1
-  rule #rtype( _:Rbind  _:Guard ) => 1
-  rule #rtype( _:Rbinds _:Guard ) => 1
-  rule #rtype( _:RbindPat  ) => 1
-  rule #rtype( _:RbindPats ) => 1
+  rule #rtype( _:Rbind             ) => 1
+  rule #rtype( _:Rbinds            ) => 1
+  rule #rtype( _:Rbind     _:Guard ) => 1
+  rule #rtype( _:Rbinds    _:Guard ) => 1
+  rule #rtype( _:RbindPat          ) => 1
+  rule #rtype( _:RbindPats         ) => 1
   rule #rtype( _:RbindPat  _:Guard ) => 1
   rule #rtype( _:RbindPats _:Guard ) => 1
-  rule #rtype( _:Pbind  ) => 2
-  rule #rtype( _:Pbinds ) => 2
-  rule #rtype( _:Pbind  _:Guard ) => 2
-  rule #rtype( _:Pbinds _:Guard ) => 2
-  rule #rtype( _:PbindPat  ) => 2
-  rule #rtype( _:PbindPats ) => 2
+  rule #rtype( _:Pbind             ) => 2
+  rule #rtype( _:Pbinds            ) => 2
+  rule #rtype( _:Pbind     _:Guard ) => 2
+  rule #rtype( _:Pbinds    _:Guard ) => 2
+  rule #rtype( _:PbindPat          ) => 2
+  rule #rtype( _:PbindPats         ) => 2
   rule #rtype( _:PbindPat  _:Guard ) => 2
   rule #rtype( _:PbindPats _:Guard ) => 2
 
