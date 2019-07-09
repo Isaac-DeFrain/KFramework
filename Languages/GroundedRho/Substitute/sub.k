@@ -99,6 +99,8 @@ module SUB-SYNTAX
                       | "#subNew(" Names    ";" NamePats ";" New ")" [function]
                       | "#subNew(" NamePats ";" NamePats ";" New ")" [function]
 
+  syntax       Proc ::= "#subNew(" Int ";" Set ";" Proc ")" [function]
+
   // Match substitution
   syntax      Match ::= "#subMatch(" Procs    ";" Procs    ";" Match ")" [function]
                       | "#subMatch(" Procs    ";" ProcPats ";" Match ")" [function]
@@ -301,11 +303,11 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; *C:BoundName ) => *C requires notBool (isBoundProc(A) andBool isBoundProc(B))
   rule #sub( A:BoundName ; _:BoundName ;  _:BoundName ) =>  A
   rule #sub( A:BoundName ; _:BoundName ; *_:BoundName ) => *A
-  rule #sub( A:BoundName ; _:BoundName ;  _:Var   ) =>  A
-  rule #sub( A:BoundName ; _:BoundName ; *_:Var   ) => *A
+  rule #sub( A:BoundName ; _:BoundName ;  _:Var ) =>  A
+  rule #sub( A:BoundName ; _:BoundName ; *_:Var ) => *A
   // no sub BoundName for BoundName in ProcVar
-  rule #sub( _:BoundName ; _:BoundName ;  \C:Var   ) =>  \C
-  rule #sub( _:BoundName ; _:BoundName ; @\C:Var   ) => @\C
+  rule #sub( _:BoundName ; _:BoundName ;  \C:Var ) =>  \C
+  rule #sub( _:BoundName ; _:BoundName ; @\C:Var ) => @\C
   // no sub BoundName for BoundName in BoundProc
   rule #sub( _:BoundName ; _:BoundName ;  C:BoundProc ) =>  C
   rule #sub( _:BoundName ; _:BoundName ; @C:BoundProc ) => @C
@@ -316,20 +318,20 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; @C:BoundProc ) => @C requires notBool (isBoundProc(A) andBool isBoundProc(B))
   rule #sub( A:BoundProc ; _:BoundProc ;   _:BoundProc ) =>  A
   rule #sub( A:BoundProc ; _:BoundProc ;  @_:BoundProc ) => @A
-  rule #sub( A:BoundProc ; _:BoundProc ;  \(_:Var)   ) =>  A
-  rule #sub( A:BoundProc ; _:BoundProc ; @\(_:Var)   ) => @A
+  rule #sub( A:BoundProc ; _:BoundProc ;  \(_:Var) ) =>  A
+  rule #sub( A:BoundProc ; _:BoundProc ; @\(_:Var) ) => @A
   // no sub BoundProc for BoundProc in Var
-  rule #sub( _:BoundProc ; _:BoundProc ;  C:Var   ) =>  C
-  rule #sub( _:BoundProc ; _:BoundProc ; *C:Var   ) => *C
+  rule #sub( _:BoundProc ; _:BoundProc ;  C:Var ) =>  C
+  rule #sub( _:BoundProc ; _:BoundProc ; *C:Var ) => *C
   // no sub BoundProc for BoundProc in BoundName
   rule #sub( _:BoundProc ; _:BoundProc ;  C:BoundName ) =>  C
   rule #sub( _:BoundProc ; _:BoundProc ; *C:BoundName ) => *C
 
 // For #mapSub -- de Bruijn indexing for Receive
-  rule #sub( _:Name ; @sub ; N:Name ) => N
-  rule #sub( _:Name ; @sub ; P:Proc ) => P
-  rule #sub( _:Proc ;  sub ; N:Name ) => N
-  rule #sub( _:Proc ;  sub ; P:Proc ) => P
+  rule #sub( _:Name ; @sub ; N:Name    ) => N
+  rule #sub( _:Name ; @sub ; P:Proc    ) => P
+  rule #sub( _:Proc ;  sub ; N:Name    ) => N
+  rule #sub( _:Proc ;  sub ; P:Proc    ) => P
   rule #sub( _:Name ; @sub ; N:NamePat ) => N
   rule #sub( _:Name ; @sub ; P:ProcPat ) => P
   rule #sub( _:Proc ;  sub ; N:NamePat ) => N
@@ -341,6 +343,8 @@ module SUB
   rule #sub( _:Proc    ; _:Proc    ; sub ) => sub
   rule #sub( _:Proc    ; _:ProcPat ; sub ) => sub
   rule #sub( _:ProcPat ; _:ProcPat ; sub ) => sub
+
+  rule #sub( @EmptyP ; EmptyN ; A:Proc ) => A
 
 //------------------------------------------------
 //--- Substitute Proc for Proc in Proc or Name ---
@@ -381,9 +385,9 @@ module SUB
 
   // sub Proc for Proc in Receive -- only substitute free variables in channel and continuation
     // if substitution variables are all listening variables and not receive variables, then no substitution occurs
-  rule #sub( _:Proc ;  B:Proc    ; Rec:Receive ) => Rec requires #FV(B) <=Set (#LV(Rec) -Set #RV(Rec))
+  rule #sub( _:Proc ;  B:Proc ; Rec:Receive ) => Rec requires #FV(B) <=Set (#LV(Rec) -Set #RV(Rec))
     // if substitution variables are distinct from free variables in Rec, then no substitution occurs
-  rule #sub( _:Proc ;  B:Proc    ; Rec:Receive ) => Rec requires intersectSet(#FV(B),#FV(Rec)) ==K .Set
+  rule #sub( _:Proc ;  B:Proc ; Rec:Receive ) => Rec requires intersectSet(#FV(B),#FV(Rec)) ==K .Set
     // substituting for a ProcVar -- if ProcVar is a listening variable, substitute only in the channel, else substitute in both the channel and continuation
   rule #sub( A:Proc ; \B:Var ; Rec:Receive ) => #if (\B in #LV(Rec)) #then #subChan(A;\B;Rec) #else #subRec(A;\B;Rec) #fi
     // substituting for *Var -- if Var is a listening variable, substitute only in the channel, else substitute in both the channel and continuation
