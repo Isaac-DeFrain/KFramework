@@ -1,12 +1,35 @@
 // Receive -- listen pattern
 
-    new x,a in { x!(41,*a) | x!(40) | for( \_ , b <- x ){ b!!( ) } | for( <<- a ){ "yes" } }
+  new x,a in {
+
+    x!(41,*a) |
+    x!(40)    |
+    for( \_ , b <- x ){ b!!( ) } |
+    for( <<- a ){ "yes" }   |
+    for(  <- a ){ "one" }   |
+    for(  <- a ){ "two" }   |
+    for(  <- a ){ "three" } |
+    for(  <= a ){ "four" }
+
+  }
 
 /*
 Output:
 <T>
   <activity>
     <task>
+      <k>
+        "one"
+      </k>
+    </task> <task>
+      <k>
+        "three"
+      </k>
+    </task> <task>
+      <k>
+        "two"
+      </k>
+    </task> <task>
       <k>
         "yes"
       </k>
@@ -43,20 +66,42 @@ Output:
       </send>
     </sends>
     <receives>
-      .RecCellBag
+      <rec>
+        <rchan>
+          @ unforgeable( 1 )
+        </rchan>
+        <bvars>
+          EmptyN
+        </bvars>
+        <bnum>
+          0
+        </bnum>
+        <rtype>
+          1
+        </rtype>
+        <guard>
+          true
+        </guard>
+        <cont>
+          "four"
+        </cont>
+      </rec>
     </receives>
   </tuplespace>
   <nextLoc>
     2
   </nextLoc>
   <original>
-    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ , b <- x ) { b !! ( ) } | for ( <<- a ) { "yes" } }
+    new x , a in { x ! ( 41 , * a ) | x ! ( 40 ) | for ( \_ , b <- x ) { b !! ( ) } | for ( <<- a ) { "yes" } | for ( <- a ) { "one" } | for ( <- a ) { "two" } | for ( <- a ) { "three" } | for ( <= a ) { "four" } }
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
   <OGdeBruijn>
-    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ , boundN( 2 ) <- boundN( 0 ) ) { boundN( 2 ) !! ( ) } | for ( <<- boundN( 1 ) ) { "yes" } }
+    new boundN( 0 ) , boundN( 1 ) in { boundN( 0 ) ! ( 41 , * boundN( 1 ) ) | boundN( 0 ) ! ( 40 ) | for ( \_ , boundN( 2 ) <- boundN( 0 ) ) { boundN( 2 ) !! ( ) } | for ( <<- boundN( 1 ) ) { "yes" } | for ( <- boundN( 1 ) ) { "one" } | for ( <- boundN( 1 ) ) { "two" } | for ( <- boundN( 1 ) ) { "three" } | for ( <= boundN( 1 ) ) { "four" } }
   </OGdeBruijn>
 </T>
 */
