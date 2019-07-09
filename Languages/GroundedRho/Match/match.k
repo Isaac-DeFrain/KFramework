@@ -14,32 +14,24 @@ module MATCH-SYNTAX
 
 // #match predicate checks that the terms match
 // Name & Proc
-  syntax   Bool ::=   "#match(" Proc  ";" Proc  ")" [function]
-                  |   "#match(" Name  ";" Name  ")" [function]
-                  |   "#match(" Procs ";" Procs ")" [function]
+  syntax   Bool ::=   "#match(" Procs ";" Procs ")" [function]
                   |   "#match(" Names ";" Names ")" [function]
                   | "#matchif(" Procs ";" Procs ")" [function]
                   | "#matchif(" Names ";" Names ")" [function]
 
 // subexpressions
-  syntax   Bool ::= "#match(" ConcatExp  ";" ConcatExp  ")" [function]
-                  | "#match(" InterpMaps ";" InterpMaps ")" [function]
-                  | "#match(" RhoKVPair  ";" RhoKVPair  ")" [function]
-                  | "#match(" RhoKVPairs ";" RhoKVPairs ")" [function]
+  syntax   Bool ::=   "#match(" ConcatExp  ";" ConcatExp  ")" [function]
+                  |   "#match(" InterpMaps ";" InterpMaps ")" [function]
+                  |   "#match(" RhoKVPairs ";" RhoKVPairs ")" [function]
+                  | "#matchif(" RhoKVPairs ";" RhoKVPairs ")" [function]
 
 // Patterns
   syntax   Bool ::=   "#match(" ProcPats ";" Procs    ")" [function]
                   |   "#match(" Procs    ";" ProcPats ")" [function]
                   |   "#match(" ProcPats ";" ProcPats ")" [function]
-                  |   "#match(" ProcPat  ";" Proc     ")" [function]
-                  |   "#match(" Proc     ";" ProcPat  ")" [function]
-                  |   "#match(" ProcPat  ";" ProcPat  ")" [function]
                   |   "#match(" NamePats ";" Names    ")" [function]
                   |   "#match(" Names    ";" NamePats ")" [function]
                   |   "#match(" NamePats ";" NamePats ")" [function]
-                  |   "#match(" NamePat  ";" Name     ")" [function]
-                  |   "#match(" Name     ";" NamePat  ")" [function]
-                  |   "#match(" NamePat  ";" NamePat  ")" [function]
                   | "#matchif(" Procs    ";" ProcPats ")" [function]
                   | "#matchif(" ProcPats ";" Procs    ")" [function]
                   | "#matchif(" ProcPats ";" ProcPats ")" [function]
@@ -47,12 +39,15 @@ module MATCH-SYNTAX
                   | "#matchif(" NamePats ";" Names    ")" [function]
                   | "#matchif(" NamePats ";" NamePats ")" [function]
 
+  syntax   Bool ::= "#includedIn(" Map  ";" Map  ")" [function]
+
 // Matching Par
   syntax   Bool ::= "#includedIn(" Set  ";" Set  ")" [function]
   syntax   Proc ::= "#removeProc(" Proc ";" Proc ")" [function]
   syntax    Int ::=  "#countProc(" Proc ";" Proc ")" [function]
-  syntax    Set ::=    "#par2set(" Proc ")" [function]
+  syntax    Set ::=    "#par2set(" Proc ")"          [function]
 
+  syntax  KItem ::= Name | Names | NamePat | NamePats | Proc | Procs | ProcPat | ProcPats
 
 endmodule
 
@@ -62,47 +57,47 @@ module MATCH
   import AUXFUN
   import SUB
 
-  syntax KResult ::= Bool | Set
+  syntax KResult ::= Bool | Int | Proc | Set
 
 // #matchif
-  rule #matchif( A:Names    ; B:Names    ) => #length(A) ==Int #length(B) andBool #match(A;B)
-  rule #matchif( A:Names    ; B:NamePats ) => #length(A) ==Int #length(B) andBool #match(A;B)
-  rule #matchif( A:NamePats ; B:NamePats ) => #length(A) ==Int #length(B) andBool #match(A;B)
-  rule #matchif( A:Procs    ; B:Procs    ) => #length(A) ==Int #length(B) andBool #match(A;B)
-  rule #matchif( A:Procs    ; B:ProcPats ) => #length(A) ==Int #length(B) andBool #match(A;B)
-  rule #matchif( A:ProcPats ; B:ProcPats ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Names      ; B:Names      ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Names      ; B:NamePats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:NamePats   ; B:NamePats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Procs      ; B:Procs      ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Procs      ; B:ProcPats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:ProcPats   ; B:ProcPats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:RhoKVPairs ; B:RhoKVPairs ) => #length(A) ==Int #length(B) andBool #match(A;B)
 
 // Name matching
-  rule #match( A:Name    ;  A ) => true // any Name matches itself
-  rule #match( _:Name    ;  _:NameVar ) => true // any Name matches a NameVar
-  rule #match( _:NameVar ;  B:Name    ) => true requires isNameVar(B) orBool isQuote(B) // NameVar can only match a NameVar...
-  rule #match( @EmptyP   ;  EmptyN    ) => true // empty send/empty listen matching
+  rule #match( A:Name  ;  A      ) => true // any Name matches itself
+  rule #match( _:Name  ;  _:Var  ) => true // any Name matches a Var
+  rule #match( A:Name  ; @B:Proc ) => #match(*A;B)
+  rule #match( @EmptyP ;  EmptyN ) => true // empty send/empty listen matching
+  rule #match(  EmptyN ; @EmptyP ) => true // empty send/empty listen matching
 
 // Process matching
-  rule #match( A:Proc    ;  A ) => true // any Proc matches itself
-  rule #match( _:Proc    ;  _:ProcVar ) => true // any Proc matches a ProcVar
-  rule #match( _:Proc    ; *_:NameVar ) => true // any Proc matches a *NameVar
-  rule #match( _:ProcVar ;  B:Proc    ) => true requires isProcVar(B) // ProcVar can only match a ProcVar
+  rule #match( A:Proc  ; A         ) => true // every Proc matches itself
+  rule #match( _:Proc  ; _:ProcVar ) => true // every Proc matches a ProcVar
+  rule #match( A:Proc  ; *B:Name   ) => #match(@A;B)
+  rule #match(  EmptyP ; *EmptyN   ) => true // empty send/empty listen matching
+  rule #match( *EmptyN ;  EmptyP   ) => true // empty send/empty listen matching
 
 // same is true of WildCard
 
-  // Ground only matches itself
+  // the only Ground a Ground matches is itself
   rule #match( A:Ground ; B:Ground ) => A ==K B
 
-  // ProcVar only matches ProcVar or *NameVar or Par
-  rule #match( _:ProcVar ; B:Proc ) => false requires notBool (isProcVar(B) orBool isEval(B) orBool isPar(B))
+  // ProcVar only matches ProcVar or *Var or Par
+//  rule #match( _:ProcVar ; B:Proc ) => false requires notBool (isProcVar(B) orBool isEval(B) orBool isPar(B))
 
   // Eval matches Eval
   rule #match( *A:Name ; *B:Name ) => #match(A;B) // underlying Names must match
   rule #match(  _:Eval ;  A:Proc ) => false requires notBool (isProcVar(A) orBool isEval(A) orBool isPar(A))
-  rule #match(  A:Proc ; *B:Name ) => false requires notBool (isNameVar(B) orBool isQuote(B) orBool isEval(A) orBool isPar(A))
 
   // Send matching
   rule #match( A:Name !  (         ) ; C:Name !  (         ) ) => #match(A;C)
-  rule #match( A:Name !  ( B:Proc  ) ; C:Name !  ( D:Proc  ) ) => #match(A;C) andBool #match(B;D)
   rule #match( A:Name !  ( B:Procs ) ; C:Name !  ( D:Procs ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name !! (         ) ; C:Name !! (         ) ) => #match(A;C)
-  rule #match( A:Name !! ( B:Proc  ) ; C:Name !! ( D:Proc  ) ) => #match(A;C) andBool #match(B;D)
   rule #match( A:Name !! ( B:Procs ) ; C:Name !! ( D:Procs ) ) => #match(A;C) andBool #matchif(B;D)
     // message length mismatch
   rule #match( _:Send ; _:Send ) => false [owise]
@@ -114,72 +109,69 @@ module MATCH
 
   // Receive matching
     // SRec
-  rule #match( for(            <- A:Name ){ B:Proc } ; for(            <- C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
-  rule #match( for( X:Name     <- A:Name ){ B:Proc } ; for( Y:Name     <- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:Names    <- A:Name ){ B:Proc } ; for( Y:Names    <- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePat  <- A:Name ){ B:Proc } ; for( Y:NamePat  <- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePats <- A:Name ){ B:Proc } ; for( Y:NamePats <- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for(            <-  A:Name ){ B:Proc } ; for(            <-  C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
+  rule #match( for( X:Names    <-  A:Name ){ B:Proc } ; for( Y:Names    <-  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for( X:NamePats <-  A:Name ){ B:Proc } ; for( Y:NamePats <-  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
-  rule #match( for(            <= A:Name ){ B:Proc } ; for(            <= C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
-  rule #match( for( X:Name     <= A:Name ){ B:Proc } ; for( Y:Name     <= C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:Names    <= A:Name ){ B:Proc } ; for( Y:Names    <= C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePat  <= A:Name ){ B:Proc } ; for( Y:NamePat  <= C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePats <= A:Name ){ B:Proc } ; for( Y:NamePats <= C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for(            <=  A:Name ){ B:Proc } ; for(            <=  C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
+  rule #match( for( X:Names    <=  A:Name ){ B:Proc } ; for( Y:Names    <=  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
+  rule #match( for( X:NamePats <=  A:Name ){ B:Proc } ; for( Y:NamePats <=  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
   rule #match( for(            <<- A:Name ){ B:Proc } ; for(            <<- C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
-  rule #match( for( X:Name     <<- A:Name ){ B:Proc } ; for( Y:Name     <<- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:Names    <<- A:Name ){ B:Proc } ; for( Y:Names    <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-  rule #match( for( X:NamePat  <<- A:Name ){ B:Proc } ; for( Y:NamePat  <<- C:Name ){ D:Proc } ) =>   #match(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:NamePats <<- A:Name ){ B:Proc } ; for( Y:NamePats <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
   rule #match( _:Receive ; A:Proc ) => false requires notBool (isReceive(A) orBool isProcVar(A) orBool isPar(A))
   rule #match( A:Proc ; _:Receive ) => false requires notBool (isReceive(A) orBool isPar(A))
 
   // MRec -- TODO
+  // Guarded -- TODO
 
 
 // Par match - apply after normalization
-//old: rule #match( A:Proc | B:Proc ; C:Proc | D:Proc ) => #match(A;C) andBool #match(B;D) requires notBool (isPar(A) orBool isPar(C))
   // works for A/\Par and A/\(~Par/\Proc)
   rule #match( A:Proc ; B:Par  ) => #includedIn(#par2set(A);#par2set(B))
   rule #match( A:Par  ; B:Proc ) => #includedIn(#par2set(A);#par2set(B)) requires notBool isPar(A)
 
 // Collection matching - empty structures are accomodated by the first rule
   // RhoList matches RhoList (if underlying Procs match), nothing else matches RhoList
-  rule #match( [ A:Proc  ] ; [ B:Proc  ] ) => #match(A;B)
+  rule #match( [  ] ; [  ] ) => true
   rule #match( [ A:Procs ] ; [ B:Procs ] ) => #matchif(A;B)
   rule #match( A:Proc ; _:RhoList ) => false requires notBool (isRhoList(A) orBool isPar(A) orBool isEval(A))
   rule #match( _:RhoList ; A:Proc ) => false requires notBool (isRhoList(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
   // RhoMaps & RhoSets are unordered -> assume canonical ordering
   // RhoMap matches RhoMap (if underlying Procs match), nothing else matches RhoMap
-  rule #match( { A:Proc : B:Proc } ; { C:Proc : D:Proc } ) => #match(A;C) andBool #match(B;D)
-  // order of KVPairs should not matter!!!
-  rule #match( { A:RhoKVPair , B:RhoKVPair  } ; { C:RhoKVPair , D:RhoKVPair  } ) => #match(A;C) andBool #match(B;D)
-  rule #match( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPair , D:RhoKVPairs } ) => #match(A;C) andBool #match(B;D) // #matchif (need to count KVPairs)
+  rule #match( { }      ; { }      ) => true
+  rule #match( A:RhoMap ; { }      ) => false requires A =/=K { }
+  rule #match( { }      ; A:RhoMap ) => false requires A =/=K { }
+  rule #match( A:RhoMap ; B:RhoMap ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B))) requires A =/=K { } andBool B =/=K { }
+  rule #match( A:RhoMap ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+  rule #match( A:MapPat ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
 
-  // RhoSet matches RhoSet (if underlying Procs match), nothing else matches RhoSet
-  rule #match( Set( A:Proc  ) ; Set( B:Proc  ) ) => #match(A;B)
-  rule #match( Set( A:Procs ) ; Set( B:Procs ) ) => #matchif(A;B) // order should not matter!!!
-  rule #match( A:Proc ; _:RhoSet ) => false requires notBool (isRhoSet(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc : B:Proc ; C:Proc : D:Proc   ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ) => #match(A;C) andBool #match(B;D)
+
+
+  // RhoSet matches RhoSet (if underlying Procs match)
+  rule #match( Set( ) ; Set( ) ) => true
+  rule #match( Set( A:Procs ) ; Set( B:Procs ) ) => #includedIn(#procs2set(#rho2procs(A));#procs2set(#rho2procs(B)))
+  rule #match( A:Proc ; _:RhoSet ) => false requires notBool (isRhoSet(A) orBool isEval(A) orBool isPar(A))
   rule #match( _:RhoSet ; A:Proc ) => false requires notBool (isRhoSet(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
-  // RhoTuple matches RhoTuple (if underlying Procs match), nothing else matches RhoTuple
-  rule #match( ( A:Proc  ,) ; ( B:Proc  ,) ) => #match(A;B)
+  // RhoTuple matches RhoTuple (if underlying Procs match)
   rule #match( ( A:Procs ,) ; ( B:Procs ,) ) => #matchif(A;B)
-  rule #match( A:Proc ; _:RhoTuple ) => false requires notBool (isRhoTuple(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc ; _:RhoTuple ) => false requires notBool (isRhoTuple(A) orBool isEval(A) orBool isPar(A))
   rule #match( _:RhoTuple ; A:Proc ) => false requires notBool (isRhoTuple(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
   // several Procs matching -- used in many other contexts
-  rule #match( A:Proc , B:Proc  ; C:Proc , D:Proc  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Procs ; C:Proc , D:Procs ) => #match(A;C) andBool #matchif(B;D)
+  rule #match( A:Proc , B:Procs ; C:Proc , D:Procs ) => #match(A;C) andBool #match(B;D)
 
 // New matching
   // New matches New (if same number of Names declared and Procs match), nothing else matches New
-  rule #match( new A:Name  in { P:Proc } ; new B:Name  in { Q:Proc } ) => #match(P;#sub(A;B;Q))
   rule #match( new A:Names in { P:Proc } ; new B:Names in { Q:Proc } ) => #match(P;#sub(A;B;Q))
-  rule #match( _:New ; A:Proc ) => false requires notBool (isNew(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
-  rule #match( A:Proc ; _:New ) => false requires notBool (isNew(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( _:New  ; A:Proc ) => false requires notBool (isNew(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc ; _:New  ) => false requires notBool (isNew(A) orBool isEval(A) orBool isPar(A))
 
 // Arithmetic Exps matching
   // AExp matches AExp with matching subexpressions, nothing else matches AExp
@@ -226,18 +218,18 @@ module MATCH
   rule #match( _:BExp ; A:Proc ) => false requires notBool (isBExp(A) orBool isPar(A) orBool isProcVar(A) orBool isEval(A))
   rule #match( A:Proc ; _:BExp ) => false requires notBool (isBExp(A) orBool isPar(A) orBool isProcVar(A) orBool isEval(A))
 
-// Every Proc matches Par, ProcVar/*NameVar, and itself
 // anything matches Par
 // Send matches other Send (if underlying channels and messages match), but only Send matches Send
 // Receive matches Receive (if the underlying channels, listening variables, and continuations match?), but only Receive matches Receive
 // every Proc matches ProcVar, but ProcVar only matches ProcVar
 // VarRef matches any VarRef (because underlying variables match), nothing else matches VarRef? 
 // Method matches same Method (if Proc and arguments match), nothing else matches Method?
-  rule #match( A:Proc . B:Method ( C:Procs ) ; D:Proc . E:Method ( F:Procs ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
-  rule #match( A:Proc . B:Method ( C:Proc  ) ; D:Proc . E:Method ( F:Proc  ) ) => #match(A;D) andBool B ==K E andBool #match(C;F)
-  rule #match( A:Proc . B:Method (         ) ; D:Proc . E:Method (         ) ) => #match(A;D) andBool B ==K E
+  rule #match( A:Proc . B:Method ( C:ProcPats ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
+  rule #match( A:Proc . B:Method ( C:Procs    ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
+  rule #match( A:Proc . B:Method ( C:Procs    ) ; D:Proc . E:Method ( F:Procs    ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
+  rule #match( A:Proc . B:Method (            ) ; D:Proc . E:Method (            ) ) => #match(A;D) andBool B ==K E
   rule #match( _:MethodProc ; _:MethodProc ) => false [owise]
-  rule #match( A:Proc ; _:MethodProc ) => false requires notBool (isMethodProc(A) orBool isPar(A) orBool isProcVar(A) orBool isEval(A))
+  rule #match( A:Proc ; _:MethodProc ) => false requires notBool (isMethodProc(A) orBool isPar(A) orBool isEval(A))
   rule #match( _:MethodProc ; A:Proc ) => false requires notBool (isMethodProc(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
 // Match matching?
@@ -249,20 +241,12 @@ module MATCH
 //---------------------
 //--- Name matching ---
 //---------------------
-
-// Primitive matching
-  rule #match( A:Name ;  A ) => true // any Name matches itself
-  rule #match( _:Name ;  B:NameVar ) => true // any Name matches a NameVar
-  rule #match( _:Name ; @_:ProcVar ) => true // any Name matches a quoted ProcVar
-  rule #match( A:Name ; @B:Proc ) => #match(*A;B) requires notBool isProcVar(B) // underlying Procs must match
-
-// NameVar only matches NameVar
-//  rule #match( _:NameVar ; @B:Proc ) => false requires notBool (isProcVar(B) orBool  isEval(B) orBool isPar(B))
-  rule #match( _:NameVar ;  B:Name ) => false requires notBool (isNameVar(B) orBool isQuote(B))
+// Var only matches Var
+//  rule #match( _:Var ; @B:Proc ) => false requires notBool (isProcVar(B) orBool  isEval(B) orBool isPar(B))
+  rule #match( _:Var ; B:Name ) => false requires notBool (isVar(B) orBool isQuote(B))
 
 // several Names
-  rule #match( A:Name , B:Name  ; C:Name , D:Name  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Names ; C:Name , D:Names ) => #match(A;C) andBool #match(B;D) // length is checked beforehand
+  rule #match( A:Name , B:Names ; C:Name , D:Names ) => #match(A;C) andBool #match(B;D)
 
 //------------------------
 //--- Pattern Matching ---
@@ -274,8 +258,8 @@ module MATCH
 //  rule #match( A:NamePats ; _:Names ) => false
 
 // Every pattern matches itself
-  rule #match( A:ProcPat  ; A ) => true
-  rule #match( A:NamePat  ; A ) => true
+  rule #match( A:ProcPat ; A ) => true
+  rule #match( A:NamePat ; A ) => true
 
 // Name pattern
   // every Name matches WildCard
@@ -296,25 +280,26 @@ module MATCH
   rule #match( *A:NamePat ; *B:NamePat ) => #match(A;B)
 
 // Simpe pattern
-  rule #match( _:Bool        ; B:SimplePat  ) => B ==K Bool
-  rule #match( _:Int         ; B:SimplePat  ) => B ==K Int
-  rule #match( _:String      ; B:SimplePat  ) => B ==K String
-  rule #match( _:RhoList     ; B:SimplePat  ) => B ==K List
-  rule #match( _:RhoMap      ; B:SimplePat  ) => B ==K Map
-  rule #match( _:RhoSet      ; B:SimplePat  ) => B ==K Set
-  rule #match( _:RhoTuple    ; B:SimplePat  ) => B ==K Tuple
-  rule #match( _:Unforgeable ; B:SimplePat  ) => B ==K Unforgeable
-  rule #match( _:Uri         ; B:SimplePat  ) => B ==K Uri
-  rule #match( A:Proc        ; ConcreteProc ) => #FV(A) ==K .Set
-  rule #match( A:Name        ; ConcreteName ) => #FV(A) ==K .Set
-//  rule #match( A:Proc        ; _:SimplePat  ) => false requires notBool (isGround(A) orBool isCollection(A))
-//  rule #match( A:NamePat     ; ConcreteName ) => A ==K ConcreteName
-//  rule #match( A:SimplePat   ; B:SimplePat  ) => A ==K B
+  rule #match( _:Bool        ; B:SimplePat ) => B ==K Bool
+  rule #match( _:Int         ; B:SimplePat ) => B ==K Int
+  rule #match( _:String      ; B:SimplePat ) => B ==K String
+  rule #match( _:RhoList     ; B:SimplePat ) => B ==K List
+  rule #match( _:RhoMap      ; B:SimplePat ) => B ==K Map
+  rule #match( _:RhoSet      ; B:SimplePat ) => B ==K Set
+  rule #match( _:RhoTuple    ; B:SimplePat ) => B ==K Tuple
+  rule #match( _:Unforgeable ; B:SimplePat ) => B ==K Unforgeable
+  rule #match( _:Uri         ; B:SimplePat ) => B ==K Uri
+  rule #match( A:Proc        ; ClosedProc  ) => #FV(A) ==K .Set
+  rule #match( A:Name        ; ClosedName  ) => #FV(A) ==K .Set
+//  rule #match( A:ProcPat   ; ClosedProcPat ) => A ==K ClosedProcPat
+//  rule #match( A:NamePat   ; ClosedNamePat ) => A ==K ClosedNamePat
+//  rule #match( A:SimplePat ; B:SimplePat ) => A ==K B
+// TODO: contexts
   rule #match( _:ListPat   ; List  ) => true
   rule #match( _:TuplePat  ; Tuple ) => true
-  rule #match( A:SimplePat ; B:SimplePat  ) => A ==K B
-  rule #match( A:ProcPat   ; _:SimplePat  ) => false requires notBool (isSimplePat(A) orBool isCollectionPat(A) orBool isPatExp(A) orBool isParPat(A))
-  rule #match( A:NamePat   ; ConcreteName ) => A ==K ConcreteName
+  rule #match( A:SimplePat ; B:SimplePat ) => A ==K B
+  rule #match( A:ProcPat   ; _:SimplePat ) => false requires notBool (isSimplePat(A) orBool isCollectionPat(A) orBool isPatExp(A) orBool isParPat(A))
+  rule #match( A:NamePat   ; ClosedName  ) => A ==K ClosedName
 
 // #match(Contravariant;Covariant)
 // Pattern expression
@@ -389,20 +374,11 @@ module MATCH
       // Send = Name!( )
 //  rule #match( _:Name ! (  ) ; _:CSendPat ) => false [owise]
   rule #match( A:Name ! (  ) ; C:NamePat ! (  ) ) => #match(A;C)
-      // Send = Name!(Proc)
-//  rule #match( _:Name ! ( _:Proc  ) ; _:CSendPat ) => false [owise]
-  rule #match( A:Name ! ( B:Proc  ) ; C:NamePat ! ( D:Proc     ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name ! ( B:Proc  ) ; C:NamePat ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name ! ( B:Proc  ) ; C:Name    ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
       // Send = Name!(Procs)
 //  rule #match( _:Name ! ( _:Procs ) ; _:CSendPat ) => false [owise]
   rule #match( A:Name ! ( B:Procs ) ; C:NamePat ! ( D:Procs    ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name ! ( B:Procs ) ; C:NamePat ! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name ! ( B:Procs ) ; C:Name    ! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
-    // Send = Name!(ProcPat)
-//  rule #match( _:Name ! ( _:ProcPat  ) ; _:CSendPat ) => false [owise]
-  rule #match( A:Name ! ( B:ProcPat  ) ; C:NamePat ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name ! ( B:ProcPat  ) ; C:Name    ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
     // Send = Name!(ProcPats)
 //  rule #match( _:Name ! ( _:ProcPats ) ; _:CSendPat ) => false [owise]
   rule #match( A:Name ! ( B:ProcPats ) ; C:NamePat ! ( D:ProcPats ) ) => #match(A;C) andBool #match(B;D)
@@ -410,17 +386,10 @@ module MATCH
     // SendPat = NamePat!( )
 //  rule #match( _:NamePat ! (  ) ; _:CSendPat ) => false [owise]
   rule #match( A:NamePat ! (  ) ; C:NamePat ! (  ) ) => #match(A;C)
-    // SendPat = NamePat!(Proc)
-//  rule #match( _:NamePat ! ( _:Proc  ) ; _:CSendPat ) => false [owise]
-  rule #match( A:NamePat ! ( B:Proc  ) ; C:NamePat ! ( D:Proc     ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat ! ( B:Proc  ) ; C:NamePat ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
     // SendPat = NamePat!(Procs)
 //  rule #match( _:NamePat ! ( _:Procs ) ; _:CSendPat ) => false [owise]
   rule #match( A:NamePat ! ( B:Procs ) ; C:NamePat ! ( D:Procs    ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:NamePat ! ( B:Procs ) ; C:NamePat ! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
-    // SendPat = NamePat!(ProcPat)
-//  rule #match( _:NamePat ! ( _:ProcPat  ) ; _:CSendPat ) => false [owise]
-  rule #match( A:NamePat ! ( B:ProcPat  ) ; C:NamePat ! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
     // SendPat = NamePat!(ProcPats)
 //  rule #match( _:NamePat ! ( _:ProcPats ) ; _:CSendPat ) => false [owise]
   rule #match( A:NamePat ! ( B:ProcPats ) ; C:NamePat ! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
@@ -435,30 +404,18 @@ module MATCH
     // Send = Name!!( )
 //  rule #match( _:Name !! (  ) ; _:USendPat ) => false [owise]
   rule #match( A:Name !! (  ) ; C:NamePat !! (  ) ) => #match(A;C)
-    // Send = Name!!(Proc)
-//  rule #match( _:Name !! ( _:Proc  ) ; _:USendPat ) => false [owise]
-  rule #match( A:Name !! ( B:Proc  ) ; C:NamePat !! ( D:Proc     ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name !! ( B:Proc  ) ; C:NamePat !! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name !! ( B:Proc  ) ; C:Name    !! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
     // Send = Name!!(Procs)
 //  rule #match( _:Name !! ( _:Procs ) ; _:USendPat ) => false
   rule #match( A:Name !! ( B:Procs ) ; C:NamePat !! ( D:Procs    ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name !! ( B:Procs ) ; C:NamePat !! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name !! ( B:Procs ) ; C:Name    !! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
     // SendPat = NamePat!!( )
-  rule #match( A:NamePat !! (         ) ; C:NamePat !! (            ) ) => #match(A;C)
-//  rule #match( _:NamePat !! (         ) ; _:SendPat ) => false [owise]
-    // SendPat = NamePat!!(Proc)
-  rule #match( A:NamePat !! ( B:Proc  ) ; C:NamePat !! ( D:Proc     ) ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat !! ( B:Proc  ) ; C:NamePat !! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
-//  rule #match( _:NamePat !! ( _:Proc  ) ; _:SendPat ) => false [owise]
+  rule #match( A:NamePat !! (      ) ; C:NamePat !! (            ) ) => #match(A;C)
+//rule #match( _:NamePat !! (      ) ; _:SendPat ) => false [owise]
     // Send = NamePat!!(Procs)
   rule #match( A:NamePat !! ( B:Procs ) ; C:NamePat !! ( D:Procs    ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:NamePat !! ( B:Procs ) ; C:NamePat !! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
 //  rule #match( _:NamePat !! ( _:Procs ) ; _:SendPat ) => false [owise]
-    // SendPat = NamePat!!(ProcPat)
-  rule #match( A:NamePat !! ( B:ProcPat  ) ; C:NamePat !! ( D:ProcPat  ) ) => #match(A;C) andBool #match(B;D)
-//  rule #match( _:NamePat !! ( _:ProcPat  ) ; _:SendPat ) => false [owise]
     // Send = NamePat!!(ProcPats)
   rule #match( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ) => #match(A;C) andBool #matchif(B;D)
 //  rule #match( _:NamePat !! ( _:ProcPats ) ; _:SendPat ) => false [owise]
@@ -479,8 +436,6 @@ module MATCH
   rule #match(  _:EvalPat ;  A:ProcPat ) => false requires notBool (isEvalPat(A) orBool isWildCard(A) orBool isParPat(A) orBool isPatExp(A))
 
 // NewPat
-  rule #match( new A:Name  in { P:Proc    } ; new B:Name  in { Q:ProcPat } ) => #match(P;#sub(A;B;Q))
-  rule #match( new A:Name  in { P:ProcPat } ; new B:Name  in { Q:ProcPat } ) => #match(P;#sub(A;B;Q))
   rule #match( new A:Names in { P:Proc    } ; new B:Names in { Q:ProcPat } ) => #length(A) ==Int #length(B) andBool #match(P;#sub(A;B;Q))
   rule #match( new A:Names in { P:ProcPat } ; new B:Names in { Q:ProcPat } ) => #length(A) ==Int #length(B) andBool #match(P;#sub(A;B;Q))
   // declaration length/type mismatch
@@ -489,114 +444,148 @@ module MATCH
 
 // CollectionPat
   // List Pattern
-  rule #match( [ A:Proc     ] ; [ B:ProcPat  ] ) => #match(A;B)
-  rule #match( [ A:ProcPat  ] ; [ B:ProcPat  ] ) => #match(A;B)
   rule #match( [ A:Procs    ] ; [ B:ProcPats ] ) => #matchif(A;B)
   rule #match( [ A:ProcPats ] ; [ B:ProcPats ] ) => #matchif(A;B)
 
+  // Map Pattern
+
+  // Set Pattern
+  rule #match( A:RhoSet ; B:RhoSet ) => #includedIn(#rho2set(A);#rho2set(B))
+  rule #match( A:RhoSet ; B:SetPat ) => #includedIn(#rho2set(A);#rho2set(B))
+  rule #match( A:SetPat ; B:SetPat ) => #includedIn(#rho2set(A);#rho2set(B))
+
   // Tuple Pattern
-  rule #match( ( A:Proc     ,) ; ( B:ProcPat  ,) ) => #match(A;B)
-  rule #match( ( A:ProcPat  ,) ; ( B:ProcPat  ,) ) => #match(A;B)
   rule #match( ( A:Procs    ,) ; ( B:ProcPats ,) ) => #matchif(A;B)
   rule #match( ( A:ProcPats ,) ; ( B:ProcPats ,) ) => #matchif(A;B)
 
-// match Procs with ProcPats
-  rule #match( A:Proc , B:Proc  ; C:ProcPat , D:Proc     ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Proc  ; C:Proc    , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Proc  ; C:ProcPat , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Procs ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Procs ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc , B:Procs ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-
-// match ProcPats with ProcPats
-  rule #match( A:ProcPat , B:Proc     ; C:ProcPat , D:Proc     ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:Proc     ; C:Proc    , D:ProcPat  ) => false // ProcPat does not match Proc
-  rule #match( A:ProcPat , B:Proc     ; C:ProcPat , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:ProcPat  ; C:Proc    , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:ProcPat  ; C:ProcPat , D:Proc     ) => false // ProcPat does not match Proc
-  rule #match( A:Proc    , B:ProcPat  ; C:ProcPat , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:ProcPat  ; C:Proc    , D:ProcPat  ) => false // ProcPat does not match Proc
-  rule #match( A:ProcPat , B:ProcPat  ; C:ProcPat , D:Proc     ) => false // ProcPat does not match Proc
-  rule #match( A:ProcPat , B:ProcPat  ; C:ProcPat , D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+// match Proc[Pat]s with ProcPats
+  rule #match( A:Proc    , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc    , B:Procs    ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc    , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
   rule #match( A:ProcPat , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ) => false // ProcPat does not match Proc
   rule #match( A:ProcPat , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ) => false // ProcPats does not match Procs
   rule #match( A:Proc    , B:ProcPats ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
   rule #match( A:Proc    , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ) => false // ProcPats does not match Procs
-  rule #match( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ) => false // ProcPat does not match Proc
   rule #match( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ) => false
+  rule #match( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ) => false
+  rule #match( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ) => false
+  rule #match( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ) => false
 
 //--- Name & NamePat ---
   rule #match( _:Name    ; \_ ) => true
   rule #match( _:NamePat ; \_ ) => true
 
-// match Names with NamePats
-  rule #match( A:Name , B:Name  ; C:NamePat , D:Name     ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Name  ; C:Name    , D:NamePat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Name  ; C:NamePat , D:NamePat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Names ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Names ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name , B:Names ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-
-// match NamePats with NamePats
-  rule #match( A:NamePat , B:Name     ; C:NamePat , D:Name     ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:Name     ; C:Name    , D:NamePat  ) => false
-  rule #match( A:NamePat , B:Name     ; C:NamePat , D:NamePat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:NamePat  ; C:Name    , D:NamePat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:NamePat  ; C:NamePat , D:Name     ) => false
-  rule #match( A:Name    , B:NamePat  ; C:NamePat , D:NamePat  ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:NamePat  ; C:Name    , D:NamePat  ) => false
-  rule #match( A:NamePat , B:NamePat  ; C:NamePat , D:Name     ) => false
-  rule #match( A:NamePat , B:NamePat  ; C:NamePat , D:NamePat  ) => #match(A;C) andBool #match(B;D)
+// match Name[Pat]s with NamePats
+  rule #match( A:Name    , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name    , B:Names    ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name    , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
   rule #match( A:NamePat , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:Names    ; C:Name    , D:NamePats ) => false
   rule #match( A:NamePat , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:NamePats ; C:NamePat , D:Names    ) => false
   rule #match( A:Name    , B:NamePats ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
   rule #match( A:Name    , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePat , B:Names    ; C:Name    , D:NamePats ) => false
+  rule #match( A:Name    , B:NamePats ; C:NamePat , D:Names    ) => false
   rule #match( A:NamePat , B:NamePats ; C:NamePat , D:Names    ) => false
   rule #match( A:NamePat , B:NamePats ; C:Name    , D:NamePats ) => false
-  rule #match( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
 
 //------------------
 //--- #includedIn --
 //------------------
-  // left arg set empty
+  // left arg empty
+  rule #includedIn(  .Map ; _:Map ) => true
   rule #includedIn(  .Set ; _:Set ) => true
-  // right arg set empty
+  // right arg empty
+  rule #includedIn( A:Map ;  .Map ) => false requires A =/=K .Map
   rule #includedIn( A:Set ;  .Set ) => false requires A =/=K .Set
-//rule #includedIn( _:Set ; _:Set ) => false [owise]
 
-  // #includedIn( {e} S:Set ; T:Set ) => #includedIn({e};T) and #includedIn(S;T)
-  // each element of the left arg set must be contained in the right arg set
-  // and-branch over all left arg set elements:
-  rule #includedIn( SetItem( A:Proc    , I:Int ) S:Set ; T:Set )
+  // #includedIn( {e} S:Set ; T:Set ) => #includedIn({e};T) and #includedIn(S;T) & #includedIn( A|->B S:Map ; T:Map ) => #includedIn(A|->B;T) and #includedIn(S;T)
+  // each element of the left arg must be contained in the right arg
+  // and-branch over all left arg elements:
+  rule #includedIn( A:Proc |-> B:Proc M:Map ; N:Map )
+    => #includedIn(A|->B;N) andBool #includedIn(M;N)
+       requires M =/=K .Map andBool N =/=K .Map
+  rule #includedIn( A:Proc |-> B:ProcPat M:Map ; N:Map )
+    => #includedIn(A|->B;N) andBool #includedIn(M;N)
+       requires M =/=K .Map andBool N =/=K .Map
+  rule #includedIn( A:ProcPat |-> B:Proc M:Map ; N:Map )
+    => #includedIn(A|->B;N) andBool #includedIn(M;N)
+       requires M =/=K .Map andBool N =/=K .Map
+  rule #includedIn( A:ProcPat |-> B:ProcPat M:Map ; N:Map )
+    => #includedIn(A|->B;N) andBool #includedIn(M;N)
+       requires M =/=K .Map andBool N =/=K .Map
+
+  rule #includedIn( SetItem( A:Proc ) S:Set ; T:Set )
+    => #includedIn(SetItem(A);T) andBool #includedIn(S;T)
+       requires S =/=K .Set andBool T =/=K .Set
+  rule #includedIn( SetItem( A:Proc , I:Int ) S:Set ; T:Set )
     => #includedIn(SetItem(A,I);T) andBool #includedIn(S;T)
        requires S =/=K .Set andBool T =/=K .Set
-  rule #includedIn( SetItem( A:Proc    , I:Int ) S:Set ; T:Set )
+  rule #includedIn( SetItem( A:Proc , I:Int ) S:Set ; T:Set )
     => #includedIn(SetItem(A,I);T) andBool #includedIn(S;T)
        requires S =/=K .Set andBool T =/=K .Set
   rule #includedIn( SetItem( A:ProcPat , I:Int ) S:Set ; T:Set )
     => #includedIn(SetItem(A,I);T) andBool #includedIn(S;T)
        requires S =/=K .Set andBool T =/=K .Set
 
-  // #includedIn( {e} ; {e'} T:Set ) => #includedIn({e};{e'}) or #includedIn({e};T)
-  // left arg set element is included in right arg set if there's at least one matching right arg set element
-  // or-brach over right arg set elements:
-  rule #includedIn( SetItem( A:Proc    , I:Int ) ; SetItem( B:Proc    , J:Int ) T:Set )
+  // #includedIn( {e} ; {e'} T:Set ) => #includedIn({e};{e'}) or #includedIn({e};T) & #includedIn( A|->B ; C|->D N:Map ) => #includedIn(A|->B;C|->D) or #includedIn(A|->B;N)
+  // left arg set element is included in right arg if there's at least one matching right arg element
+  // or-brach over right arg elements:
+  rule #includedIn(    A:Proc |-> B:Proc    ; C:Proc    |-> D:Proc    N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn(    A:Proc |-> B:Proc    ; C:Proc    |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn(    A:Proc |-> B:Proc    ; C:ProcPat |-> D:Proc    N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn(    A:Proc |-> B:Proc    ; C:ProcPat |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn(    A:Proc |-> B:ProcPat ; C:Proc    |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn(    A:Proc |-> B:ProcPat ; C:ProcPat |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn( A:ProcPat |-> B:Proc    ; C:ProcPat |-> D:Proc    N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn( A:ProcPat |-> B:Proc    ; C:ProcPat |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+  rule #includedIn( A:ProcPat |-> B:ProcPat ; C:ProcPat |-> D:ProcPat N:Map )
+    => #includedIn(A|->B;C|->D) andBool #includedIn(A|->B;N)
+       requires N =/=K .Map
+
+  rule #includedIn( SetItem( A:Proc ) ; SetItem( B:Proc ) T:Set )
+    => #includedIn(SetItem(A);SetItem(B)) orBool #includedIn(SetItem(A);T)
+       requires T =/=K .Set
+  rule #includedIn( SetItem( A:Proc , I:Int ) ; SetItem( B:Proc , J:Int ) T:Set )
     => #includedIn(SetItem(A,I);SetItem(B,J)) orBool #includedIn(SetItem(A,I);T)
        requires T =/=K .Set
-  rule #includedIn( SetItem( A:Proc    , I:Int ) ; SetItem( B:ProcPat , J:Int ) T:Set )
+  rule #includedIn( SetItem( A:Proc , I:Int ) ; SetItem( B:ProcPat , J:Int ) T:Set )
     => #includedIn(SetItem(A,I);SetItem(B,J)) orBool #includedIn(SetItem(A,I);T)
        requires T =/=K .Set
   rule #includedIn( SetItem( A:ProcPat , I:Int ) ; SetItem( B:ProcPat , J:Int ) T:Set )
     => #includedIn(SetItem(A,I);SetItem(B,J)) orBool #includedIn(SetItem(A,I);T)
        requires T =/=K .Set
 
-  // #includedIn( {A,I} ; {B,J} ) => #match(A;B) and I <= J
-  // element inclusion -- matching and fewer occurrences in the left arg set element
+  // #includedIn( {A,I} ; {B,J} ) => #match(A;B) and I <= J & #includedIn( A|->B ; C|->D ) => #match(A;C) and #match(B;D)
+  // element inclusion -- matching and fewer occurrences in the left arg element
+  rule #includedIn( A:Proc    |-> B:Proc     ; C:Proc    |-> D:Proc     ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:Proc    |-> B:Proc     ; C:Proc    |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:Proc    |-> B:Proc     ; C:ProcPat |-> D:Proc     ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:Proc    |-> B:Proc     ; C:ProcPat |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:Proc    |-> B:ProcPat  ; C:Proc    |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:Proc    |-> B:ProcPat  ; C:ProcPat |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:ProcPat |-> B:Proc     ; C:ProcPat |-> D:Proc     ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:ProcPat |-> B:Proc     ; C:ProcPat |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+  rule #includedIn( A:ProcPat |-> B:ProcPat  ; C:ProcPat |-> D:ProcPat  ) => #match(A;C) andBool #match(B;D)
+
+  rule #includedIn( SetItem( A:Proc            ) ; SetItem( B:Proc            ) ) => #match(A;B)
   rule #includedIn( SetItem( A:Proc    , I:Int ) ; SetItem( B:Proc    , J:Int ) ) => I <=Int J andBool #match(A;B)
   rule #includedIn( SetItem( A:Proc    , I:Int ) ; SetItem( B:ProcPat , J:Int ) ) => I <=Int J andBool #match(A;B)
   rule #includedIn( SetItem( A:ProcPat , I:Int ) ; SetItem( B:ProcPat , J:Int ) ) => I <=Int J andBool #match(A;B)
@@ -625,6 +614,11 @@ module MATCH
        #else SetItem(A,1) #par2set(B)
        #fi requires notBool isPar(A)
 
+// Message set of Proc matching Names
+//  rule Msg( A:Name ; B:Names    ; C:Proc    ) => #SN(C)
+//  rule Msg( A:Name ; B:NamePats ; C:Proc    )
+//  rule Msg( A:Name ; B:Names    ; C:ProcPat )
+//  rule Msg( A:Name ; B:NamePats ; C:ProcPat )
 
 // Nil unit of |
   rule Nil       | P:Proc    => P  [anywhere, structural]
