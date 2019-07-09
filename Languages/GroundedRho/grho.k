@@ -164,7 +164,7 @@ module GRHO-SYNTAX
 
 // Eval
   syntax             Eval ::= "*" Name
-  syntax            Procs ::= "*" Names [function] //
+  syntax            Procs ::= "*" Names [function]
 
 // New - creates fresh unforgeable names
   syntax              New ::= "new" Names "in" "{" Proc "}"
@@ -211,20 +211,23 @@ module GRHO-SYNTAX
   syntax       Collection ::= RhoList | RhoMap | RhoSet | RhoTuple
 
   // Process lists
+  syntax        EmptyList ::= "[" "]"
   syntax          RhoList ::= "[" Procs "]"
-                            | "[" "]"
+                            | EmptyList
 
   // Process maps
+  syntax         EmptyMap ::= "{" "}"
   syntax           RhoMap ::= "{" RhoKVPairs "}"
-                            | "{" "}"
+                            | EmptyMap
 
   syntax        RhoKVPair ::= Proc ":" Proc
   syntax       RhoKVPairs ::= RhoKVPair
                             | RhoKVPair "," RhoKVPairs [right]
 
   // Process sets
+  syntax         EmptySet ::= "Set(" ")"
   syntax           RhoSet ::= "Set(" Procs ")"
-                            | "Set(" ")"
+                            | EmptySet
 
   // Process tuples
   syntax         RhoTuple ::= "(" Procs ",)"
@@ -894,8 +897,10 @@ module GRHO
   rule A:Ground != B:Ground => A =/=K B [anywhere, structural]
   // if only one term is Ground, we wait for the other -- e.g. in *x == true, we must wait on a value for x before computing
   // if both terms are not Ground, check structural equivalence immediately
-  rule P:Proc == Q:Proc => #structEq(P;Q)         requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
-  rule P:Proc != Q:Proc => notBool #structEq(P;Q) requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
+  rule P:Proc == Q:Proc => #structEq(P;Q)
+       requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
+  rule P:Proc != Q:Proc => notBool #structEq(P;Q)
+       requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
   rule M:Name == N:Name => #nameEq(M;N)         [anywhere, structural]
   rule M:Name != N:Name => notBool #nameEq(M;N) [anywhere, structural]
 
@@ -1216,7 +1221,7 @@ module GRHO
 
   rule #isMultiProcContext( A:Proc ) => size(#FNV(A)) ==Int 0 andBool size(#FPV(A))  >Int 1
 //  rule        #variable( A:Proc    ) => flatten(#FPV(A))
-  rule #isMulitProcContext( A:K    ) => false requires notBool isProc(A)
+  rule #isMultiProcContext( A:K    ) => false requires notBool isProc(A)
 
   rule      #isNameContext( A:Proc ) => size(#FNV(A)) ==Int 1 andBool size(#FPV(A)) ==Int 0
   rule           #variable( A:Proc ) => flatten(#FNV(A))
@@ -1224,7 +1229,7 @@ module GRHO
 
   rule #isMultiNameContext( A:Proc ) => size(#FNV(A))  >Int 1 andBool size(#FPV(A)) ==Int 0
 //  rule        #variable( A:Proc    ) => flatten(#FNV(A))
-  rule #isMulitNameContext( A:K    ) => false requires notBool isProc(A)
+  rule #isMultiNameContext( A:K    ) => false requires notBool isProc(A)
 
   rule     #isMixedContext( A:Proc ) => size(#FNV(A)) >=Int 1 andBool size(#FPV(A)) >=Int 1
 //  rule        #variable( A:Proc    ) => flatten(#FNV(A))
