@@ -135,19 +135,24 @@ module MATCH
 
 // Collection matching - empty structures are accomodated by the first rule
   // RhoList matches RhoList (if underlying Procs match), nothing else matches RhoList
-  rule #match( [  ] ; [  ] ) => true
+  rule #match( _:EmptyList ; _:EmptyList ) => true
+  rule #match( A:RhoList   ; _:EmptyList ) => false requires notBool isEmptyList(A)
+  rule #match( _:EmptyList ; A:RhoList   ) => false requires notBool isEmptyList(A)
   rule #match( [ A:Procs ] ; [ B:Procs ] ) => #matchif(A;B)
-  rule #match( A:Proc ; _:RhoList ) => false requires notBool (isRhoList(A) orBool isPar(A) orBool isEval(A))
-  rule #match( _:RhoList ; A:Proc ) => false requires notBool (isRhoList(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc ; _:RhoList ) => false
+       requires notBool (isRhoList(A) orBool isPar(A) orBool isEval(A))
+  rule #match( _:RhoList ; A:Proc ) => false
+       requires notBool (isRhoList(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
   // RhoMaps & RhoSets are unordered -> assume canonical ordering
   // RhoMap matches RhoMap (if underlying Procs match), nothing else matches RhoMap
-  rule #match( { }      ; { }      ) => true
-  rule #match( A:RhoMap ; { }      ) => false requires A =/=K { }
-  rule #match( { }      ; A:RhoMap ) => false requires A =/=K { }
-  rule #match( A:RhoMap ; B:RhoMap ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B))) requires A =/=K { } andBool B =/=K { }
-  rule #match( A:RhoMap ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
-  rule #match( A:MapPat ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+  rule #match( _:EmptyMap ; _:EmptyMap ) => true
+  rule #match( A:RhoMap   ; _:EmptyMap ) => false requires notBool isEmptyMap(A)
+  rule #match( _:EmptyMap ; A:RhoMap   ) => false requires notBool isEmptyMap(A)
+  rule #match( A:RhoMap   ; B:RhoMap   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+       requires notBool (isEmptyMap(A) orBool isEmptyMap(B))
+  rule #match( A:RhoMap   ; B:MapPat   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+  rule #match( A:MapPat   ; B:MapPat   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
 
   rule #match( A:Proc : B:Proc ; C:Proc : D:Proc   ) => #match(A;C) andBool #match(B;D)
   rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ) => #match(A;C) andBool #match(B;D)
@@ -155,14 +160,18 @@ module MATCH
 
   // RhoSet matches RhoSet (if underlying Procs match)
   rule #match( Set( ) ; Set( ) ) => true
-  rule #match( Set( A:Procs ) ; Set( B:Procs ) ) => #includedIn(#procs2set(#rho2procs(A));#procs2set(#rho2procs(B)))
-  rule #match( A:Proc ; _:RhoSet ) => false requires notBool (isRhoSet(A) orBool isEval(A) orBool isPar(A))
-  rule #match( _:RhoSet ; A:Proc ) => false requires notBool (isRhoSet(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( Set( A:Procs ) ; Set( B:Procs ) ) => #includedIn(#procs2set(A);#procs2set(B))
+  rule #match( A:Proc ; _:RhoSet ) => false
+       requires notBool (isRhoSet(A) orBool isEval(A) orBool isPar(A))
+  rule #match( _:RhoSet ; A:Proc ) => false
+       requires notBool (isRhoSet(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
   // RhoTuple matches RhoTuple (if underlying Procs match)
   rule #match( ( A:Procs ,) ; ( B:Procs ,) ) => #matchif(A;B)
-  rule #match( A:Proc ; _:RhoTuple ) => false requires notBool (isRhoTuple(A) orBool isEval(A) orBool isPar(A))
-  rule #match( _:RhoTuple ; A:Proc ) => false requires notBool (isRhoTuple(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc ; _:RhoTuple ) => false
+       requires notBool (isRhoTuple(A) orBool isEval(A) orBool isPar(A))
+  rule #match( _:RhoTuple ; A:Proc ) => false
+       requires notBool (isRhoTuple(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
   // several Procs matching -- used in many other contexts
   rule #match( A:Proc , B:Procs ; C:Proc , D:Procs ) => #match(A;C) andBool #match(B;D)
@@ -222,15 +231,17 @@ module MATCH
 // Send matches other Send (if underlying channels and messages match), but only Send matches Send
 // Receive matches Receive (if the underlying channels, listening variables, and continuations match?), but only Receive matches Receive
 // every Proc matches ProcVar, but ProcVar only matches ProcVar
-// VarRef matches any VarRef (because underlying variables match), nothing else matches VarRef? 
+// VarRef matches any VarRef (because underlying variables match), nothing else matches VarRef?
 // Method matches same Method (if Proc and arguments match), nothing else matches Method?
-  rule #match( A:Proc . B:Method ( C:ProcPats ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
-  rule #match( A:Proc . B:Method ( C:Procs    ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
+//  rule #match( A:Proc . B:Method ( C:ProcPats ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
+//  rule #match( A:Proc . B:Method ( C:Procs    ) ; D:Proc . E:Method ( F:ProcPats ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
   rule #match( A:Proc . B:Method ( C:Procs    ) ; D:Proc . E:Method ( F:Procs    ) ) => #match(A;D) andBool B ==K E andBool #matchif(C;F)
   rule #match( A:Proc . B:Method (            ) ; D:Proc . E:Method (            ) ) => #match(A;D) andBool B ==K E
   rule #match( _:MethodProc ; _:MethodProc ) => false [owise]
-  rule #match( A:Proc ; _:MethodProc ) => false requires notBool (isMethodProc(A) orBool isPar(A) orBool isEval(A))
-  rule #match( _:MethodProc ; A:Proc ) => false requires notBool (isMethodProc(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
+  rule #match( A:Proc       ; _:MethodProc ) => false
+       requires notBool (isMethodProc(A) orBool isPar(A) orBool isEval(A))
+  rule #match( _:MethodProc ; A:Proc       ) => false
+       requires notBool (isMethodProc(A) orBool isProcVar(A) orBool isEval(A) orBool isPar(A))
 
 // Match matching?
 // Contract matches Contract like Receive, nothing else matches Contract
@@ -450,9 +461,9 @@ module MATCH
   // Map Pattern
 
   // Set Pattern
-  rule #match( A:RhoSet ; B:RhoSet ) => #includedIn(#rho2set(A);#rho2set(B))
-  rule #match( A:RhoSet ; B:SetPat ) => #includedIn(#rho2set(A);#rho2set(B))
-  rule #match( A:SetPat ; B:SetPat ) => #includedIn(#rho2set(A);#rho2set(B))
+  rule #match( A:RhoSet ; B:RhoSet ) => #includedIn(#procs2set(#rho2procs(A));#procs2set(#rho2procs(B)))
+  rule #match( A:RhoSet ; B:SetPat ) => #includedIn(#procs2set(#rho2procs(A)); #pats2set( #rho2pats(B)))
+  rule #match( A:SetPat ; B:SetPat ) => #includedIn( #pats2set( #rho2pats(A)); #pats2set( #rho2pats(B)))
 
   // Tuple Pattern
   rule #match( ( A:Procs    ,) ; ( B:ProcPats ,) ) => #matchif(A;B)
@@ -608,7 +619,7 @@ module MATCH
 
   rule #par2set(   Nil  ) => .Set
   rule #par2set( A:Proc ) => SetItem(A,1) requires notBool (isPar(A) orBool A ==K Nil)
-  rule #par2set( A:Proc | B:Proc ) 
+  rule #par2set( A:Proc | B:Proc )
     => #if #countProc(A;B) >Int 0
        #then SetItem(A, 1 +Int #countProc(A;B)) #par2set(#removeProc(A;B))
        #else SetItem(A,1) #par2set(B)
