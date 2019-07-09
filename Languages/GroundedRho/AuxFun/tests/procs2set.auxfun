@@ -1,0 +1,19 @@
+// #procs2set
+
+    #procs2set( = \a , @"k"!("hey") , *b , *a , \a , for( b,c <<- @Nil ){ b!(*c) }, 1 , new x in { x!(1,*a) | for( num,chan <= x ){ chan!("thank you number ${num}" %% { "num" : *y }) } } , = \a , [ 1 , Set( ) , (1,) ] , "a" )
+
+/*
+Output:
+
+  SetItem ( 1 )
+  SetItem ( "a" )
+  SetItem ( ( @ "k" ) ! ( "hey" ) )
+  SetItem ( * a )
+  SetItem ( * b )
+  SetItem ( = \ a )
+  SetItem ( [ 1 , Set( ) , ( 1 ,) ] )
+  SetItem ( \ a )
+  SetItem ( for ( b , c <<- @ Nil ) { b ! ( * c ) } )
+  SetItem ( new x in { x ! ( 1 , * a ) | for ( num , chan <= x ) { chan ! ( "thank you number ${num}" %% { "num" : * y } ) } } )
+
+*/
