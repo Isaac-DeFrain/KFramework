@@ -124,18 +124,12 @@ module SUB-SYNTAX
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPairs ")" [function]
 
 // String expressions
-  syntax  ConcatExp ::= "#subConcat(" Procs    ";" Procs    ";" ConcatExp  ")" [function]
-                      | "#subConcat(" Procs    ";" ProcPats ";" ConcatExp  ")" [function]
-                      | "#subConcat(" ProcPats ";" ProcPats ";" ConcatExp  ")" [function]
-                      | "#subConcat(" Names    ";" Names    ";" ConcatExp  ")" [function]
-                      | "#subConcat(" Names    ";" NamePats ";" ConcatExp  ")" [function]
-                      | "#subConcat(" NamePats ";" NamePats ";" ConcatExp  ")" [function]
-  syntax InterpMaps ::= "#subInterp(" Procs    ";" Procs    ";" InterpMaps ")" [function]
-                      | "#subInterp(" Procs    ";" ProcPats ";" InterpMaps ")" [function]
-                      | "#subInterp(" ProcPats ";" ProcPats ";" InterpMaps ")" [function]
-                      | "#subInterp(" Names    ";" Names    ";" InterpMaps ")" [function]
-                      | "#subInterp(" Names    ";" NamePats ";" InterpMaps ")" [function]
-                      | "#subInterp(" NamePats ";" NamePats ";" InterpMaps ")" [function]
+  syntax InterpMaps ::= "#sub(" Procs    ";" Procs    ";" InterpMaps ")" [function]
+                      | "#sub(" Procs    ";" ProcPats ";" InterpMaps ")" [function]
+                      | "#sub(" ProcPats ";" ProcPats ";" InterpMaps ")" [function]
+                      | "#sub(" Names    ";" Names    ";" InterpMaps ")" [function]
+                      | "#sub(" Names    ";" NamePats ";" InterpMaps ")" [function]
+                      | "#sub(" NamePats ";" NamePats ";" InterpMaps ")" [function]
 
 // Name substitution
   syntax       Name ::= "#sub(" Procs    ";" Procs    ";" Name ")" [function]
@@ -291,16 +285,20 @@ module SUB
   import AUXFUN
   import NAMEVAR
 
-  syntax KResult ::= Proc | Procs | Bind | Binds | New | Match | ConcatExp | InterpMaps | RhoKVPair | RhoKVPairs
+  syntax KResult ::= Proc | Procs | Bind | Binds | New | Match | InterpMaps | RhoKVPair | RhoKVPairs
                    | ProcPat | ProcPats | BindPat | BindPats | NewPat | MatchPat
                    | Name | Names | NamePat | NamePats
 
 // BoundName/Proc subs for ALPHA
   // requirements of #sub function on BoundNames/Procs for finishing De Bruijn index substitutions
-  rule #sub( A:Name ; B:Name ;  C:BoundName ) =>  C requires notBool (isBoundName(A) andBool isBoundName(B))
-  rule #sub( A:Proc ; B:Proc ;  C:BoundName ) =>  C requires notBool (isBoundProc(A) andBool isBoundProc(B))
-  rule #sub( A:Name ; B:Name ; *C:BoundName ) => *C requires notBool (isBoundName(A) andBool isBoundName(B))
-  rule #sub( A:Proc ; B:Proc ; *C:BoundName ) => *C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ;  C:BoundName ) =>  C
+       requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ;  C:BoundName ) =>  C
+       requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ; *C:BoundName ) => *C
+       requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ; *C:BoundName ) => *C
+       requires notBool (isBoundProc(A) andBool isBoundProc(B))
   rule #sub( A:BoundName ; _:BoundName ;  _:BoundName ) =>  A
   rule #sub( A:BoundName ; _:BoundName ; *_:BoundName ) => *A
   rule #sub( A:BoundName ; _:BoundName ;  _:Var ) =>  A
@@ -312,10 +310,14 @@ module SUB
   rule #sub( _:BoundName ; _:BoundName ;  C:BoundProc ) =>  C
   rule #sub( _:BoundName ; _:BoundName ; @C:BoundProc ) => @C
 
-  rule #sub( A:Name ; B:Name ;  C:BoundProc ) =>  C requires notBool (isBoundName(A) andBool isBoundName(B))
-  rule #sub( A:Proc ; B:Proc ;  C:BoundProc ) =>  C requires notBool (isBoundProc(A) andBool isBoundProc(B))
-  rule #sub( A:Name ; B:Name ; @C:BoundProc ) => @C requires notBool (isBoundName(A) andBool isBoundName(B))
-  rule #sub( A:Proc ; B:Proc ; @C:BoundProc ) => @C requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ;  C:BoundProc ) =>  C
+       requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ;  C:BoundProc ) =>  C
+       requires notBool (isBoundProc(A) andBool isBoundProc(B))
+  rule #sub( A:Name ; B:Name ; @C:BoundProc ) => @C
+       requires notBool (isBoundName(A) andBool isBoundName(B))
+  rule #sub( A:Proc ; B:Proc ; @C:BoundProc ) => @C
+       requires notBool (isBoundProc(A) andBool isBoundProc(B))
   rule #sub( A:BoundProc ; _:BoundProc ;   _:BoundProc ) =>  A
   rule #sub( A:BoundProc ; _:BoundProc ;  @_:BoundProc ) => @A
   rule #sub( A:BoundProc ; _:BoundProc ;  \(_:Var) ) =>  A
@@ -346,9 +348,9 @@ module SUB
 
   rule #sub( @EmptyP ; EmptyN ; A:Proc ) => A
 
-//------------------------------------------------
-//--- Substitute Proc for Proc in Proc or Name ---
-//------------------------------------------------
+//--------------------------------
+//--- Substitute Proc for Proc ---
+//--------------------------------
 // Trivial cases
   rule #sub( A:Proc ; A ; N:Name ) => N
   rule #sub( A:Proc ; A ; P:Proc ) => P
@@ -356,12 +358,12 @@ module SUB
 
 // Fundamental cases -- variables
   // sub Proc for ProcVar in ProcVar or Var
-  rule #sub( A:Proc ; \B:Var   ; \C:Var ) =>  A requires B ==K C
+  rule #sub( A:Proc ; \B:Var   ; \B     ) =>  A
   rule #sub( _:Proc ; \B:Var   ; \C:Var ) => \C requires B =/=K C
   rule #sub( _:Proc ; \(_:Var) ;  A:Var ) =>  A
 
   // sub Proc for *Var in Var or ProcVar
-  rule #sub( A:Proc ; *B:Var ;  C:Var ) => @A requires B ==K C
+  rule #sub( A:Proc ; *B:Var ;  B     ) => @A
   rule #sub( A:Proc ; *B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Proc ; *_:Var ; \A:Var ) => \A
 
@@ -375,7 +377,7 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; *C:Name ) => * #sub(A;B;C)
 
   // sub *Name for *Name in Proc
-  rule #sub( *A:Name ; *B:Name ; C:Proc ) => #sub(A;B;C)
+  rule #sub( *A:Name ; *B:Name ; C:Proc ) => #sub(A;B;C) requires notBool isVar(B)
 
   // sub Proc for Proc in Send -- sub in channel and continuation
   rule #sub( A:Proc ; B:Proc ; C:Name !  (         ) ) => #sub(A;B;C) !  (             )
@@ -428,20 +430,20 @@ module SUB
   rule #subBind( A:Proc ; B:Proc ;;            <- X:Name  ) =>   <- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; Y:Names    <- X:Name  ) => Y <- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <- X:Name  ) => Y <- #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind ; D:Lbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind ; D:Lbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-    // Repeated
-  rule #subBind( A:Proc ; B:Proc ;;            <= X:Name  ) =>   <= #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:Names    <= X:Name  ) => Y <= #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <= X:Name  ) => Y <= #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind ; D:Rbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind ; D:Rbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; C:Lbind & D:Lbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; C:Lbind & D:Lbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Peek
   rule #subBind( A:Proc ; B:Proc ;;            <<- X:Name  ) =>   <<- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; Y:Names    <<- X:Name  ) => Y <<- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <<- X:Name  ) => Y <<- #sub(A;B;X)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind ; D:Pbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind ; D:Pbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; C:Pbind & D:Pbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; C:Pbind & D:Pbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+    // Repeated
+  rule #subBind( A:Proc ; B:Proc ;;            <= X:Name  ) =>   <= #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:Names    <= X:Name  ) => Y <= #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; Y:NamePats <= X:Name  ) => Y <= #sub(A;B;X)
+  rule #subBind( A:Proc ; B:Proc ;; C:Rbind & D:Rbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; C:Rbind & D:Rbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
 
 // MRec
   rule #subRec( A:Proc ; \B:Var ; for( C:Lbinds ){ P:Proc } ) => for( #subBind(A;\B;;C) ){ #sub(A;\B;P) }
@@ -478,12 +480,14 @@ module SUB
 
 // sub Proc for Proc in New
   rule    #sub( A:Proc ; \B:Var  ; P:New ) => #subNew(A;\B;P)
-  rule #subNew( A:Proc ;  B:Proc ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
+  rule #subNew( A:Proc ;  B:Proc ; new C:VarDecs in { D:Proc } ) => new C in { #sub(A;B;D) }
 
   rule #subNew( I:Int ; .Set ; P:Proc    ) => P
   rule #subNew( I:Int ; .Set ; P:ProcPat ) => P
-  rule #subNew( I:Int ;  SetItem( A:Var ) S:Set ; P:Proc    ) => #subNew(I +Int 1;S;#sub(@unforgeable(I);A;P))
-  rule #subNew( I:Int ;  SetItem( A:Var ) S:Set ; P:ProcPat ) => #subNew(I +Int 1;S;#sub(@unforgeable(I);A;P))
+  rule #subNew( I:Int ;  SetItem( A:Var ) S:Set ; P:Proc    )
+    => #subNew(I +Int 1;S;#sub(@unforgeable(I);A;P))
+  rule #subNew( I:Int ;  SetItem( A:Var ) S:Set ; P:ProcPat )
+    => #subNew(I +Int 1;S;#sub(@unforgeable(I);A;P))
 
 // Arithmetic Exps
   rule #sub( A:Proc ; B:Proc ; - C:AExp ) => - #sub(A;B;C)
@@ -492,13 +496,14 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:AExp +  D:AExp ) => #sub(A;B;C) +  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:AExp -  D:AExp ) => #sub(A;B;C) -  #sub(A;B;D)
   rule #sub( A:Proc ; B:Proc ; C:AExp %  D:AExp ) => #sub(A;B;C) %  #sub(A;B;D)
-// String expressions
-  rule #sub( A:Proc ; B:Proc ; C:StringOrVar D:ConcatExp ) => #sub(A;B;C) #subConcat(A;B;D)
-  rule #subConcat( A:Proc ; B:Proc ; ++ C:StringOrVar ) => ++ #sub(A;B;C)
-  rule #subConcat( A:Proc ; B:Proc ; ++ C:StringOrVar D:ConcatExp ) => ++ #sub(A;B;C) #subConcat(A;B;D)
-  rule #sub( A:Proc ; B:Proc ; C:StringOrVar %% D:InterpMaps ) => #sub(A;B;C) %% #subInterp(A;B;D)
-  rule #subInterp( A:Proc ; B:Proc ; C:RhoMap ) => #sub(A;B;C)
-  rule #subInterp( A:Proc ; B:Proc ; C:RhoMap %% D:InterpMaps ) => #sub(A;B;C) %% #subInterp(A;B;D)
+// List & String expressions
+//  rule #sub( A:Proc ; B:Proc ; C:StringOrVar D:ConcatExp ) => #sub(A;B;C) #subConcat(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:ListOrVar   ++ D:ListOrVar   ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:ListOrVar   ++ D:ConcatList  ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:StringOrVar ++ D:StringOrVar ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:StringOrVar ++ D:ConcatStr   ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:StringOrVar %% D:InterpMaps  ) => #sub(A;B;C) %% #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:RhoMap      %% D:InterpMaps  ) => #sub(A;B;C) %% #sub(A;B;D)
 
 // Boolean Exps
   rule #sub( A:Proc ; B:Proc ; not C:BExp ) => not #sub(A;B;C)
@@ -626,11 +631,12 @@ module SUB
     // guarded -- sub guard free variables after channels and before continuations
 
 // sub Par for Par in Name or Proc -- applied after normalization
-  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N)) requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub(B;D;#sub(A;C;P)) requires notBool (isPar(A) orBool isPar(C))
+  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; N:Name ) => #sub(B;D;#sub(A;C;N))
+       requires notBool (isPar(A) orBool isPar(C))
+  rule #sub( A:Proc | B:Proc ; C:Proc | D:Proc ; P:Proc ) => #sub(B;D;#sub(A;C;P))
+       requires notBool (isPar(A) orBool isPar(C))
 
 // TODO: other productions
-
 
 
 //------------------------------------------------
@@ -648,12 +654,12 @@ module SUB
 
 // Fundamental cases
   // sub Name for Var in Var or ProcVar
-  rule #sub( A:Name ; B:Var ;  C:Var ) => A requires B ==K C
-  rule #sub( A:Name ; B:Var ;  C:Var ) => C requires B =/=K C
+  rule #sub( A:Name ; B:Var ;  B     ) =>  A
+  rule #sub( A:Name ; B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Name ; _:Var ; \A:Var ) => \A
 
   // sub Name for @ProcVar in Var
-  rule #sub( A:Name ; @\B:Var   ; \C:Var ) => *A requires B ==K C
+  rule #sub( A:Name ; @\B:Var   ; \B     ) => *A
   rule #sub( A:Name ; @\B:Var   ; \C:Var ) => \C requires B =/=K C
   rule #sub( _:Name ; @\(_:Var) ;  A:Var ) =>  A
 
@@ -712,23 +718,23 @@ module SUB
 
   // Binds
     // Linear
-  rule #subBind( A:Name ; B:Name ;;            <- X:Name  ) =>   <- #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:Names    <- X:Name  ) => Y <- #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:NamePats <- X:Name  ) => Y <- #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; C:Lbind ; D:Lbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Name ; B:Name ;; C:Lbind ; D:Lbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;;            <-  X:Name  ) =>   <- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:Names    <-  X:Name  ) => Y <- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:NamePats <-  X:Name  ) => Y <- #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; C:Lbind & D:Lbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;; C:Lbind & D:Lbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Repeated
-  rule #subBind( A:Name ; B:Name ;;            <= X:Name  ) =>   <= #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:Names    <= X:Name  ) => Y <= #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; Y:NamePats <= X:Name  ) => Y <= #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; C:Rbind ; D:Rbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Name ; B:Name ;; C:Rbind ; D:Rbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;;            <=  X:Name  ) =>   <= #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:Names    <=  X:Name  ) => Y <= #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; Y:NamePats <=  X:Name  ) => Y <= #sub(A;B;X)
+  rule #subBind( A:Name ; B:Name ;; C:Rbind & D:Rbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;; C:Rbind & D:Rbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Peek
   rule #subBind( A:Name ; B:Name ;;            <<- X:Name  ) =>   <<- #sub(A;B;X)
   rule #subBind( A:Name ; B:Name ;; Y:Names    <<- X:Name  ) => Y <<- #sub(A;B;X)
   rule #subBind( A:Name ; B:Name ;; Y:NamePats <<- X:Name  ) => Y <<- #sub(A;B;X)
-  rule #subBind( A:Name ; B:Name ;; C:Pbind ; D:Pbind  ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
-  rule #subBind( A:Name ; B:Name ;; C:Pbind ; D:Pbinds ) => #subBind(A;B;;C) ; #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;; C:Pbind & D:Pbind  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Name ; B:Name ;; C:Pbind & D:Pbinds ) => #subBind(A;B;;C) & #subBind(A;B;;D)
 
   // sub Name for Name in Send
   rule #sub( A:Name ; B:Name ; C:Name !  (         ) ) => #sub(A;B;C) !  (             )
@@ -763,7 +769,7 @@ module SUB
 
   // sub Name for Name in New -- if substitution variable is bound, no substitution occurs, else substitute in Proc
   rule #sub( A:Name ; B:Var ; P:New ) => #if (B in #DV(P)) #then P #else #subNew(A;B;P) #fi
-  rule #subNew( A:Name ; B:Name ; new C:Names in { D:Proc } ) => new C in { #sub(A;B;D) }
+  rule #subNew( A:Name ; B:Name ; new C:VarDecs in { D:Proc } ) => new C in { #sub(A;B;D) }
 
 // Arithmetic Exps
   rule #sub( A:Name ; B:Name ; - C:AExp ) => - #sub(A;B;C)
@@ -773,14 +779,14 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:AExp -  D:AExp ) => #sub(A;B;C) -  #sub(A;B;D)
   rule #sub( A:Name ; B:Name ; C:AExp %  D:AExp ) => #sub(A;B;C) %  #sub(A;B;D)
 // String expressions
-  rule #sub( A:Name ; B:Name ; C:StringOrVar D:ConcatExp ) => #sub(A;B;C) #subConcat(A;B;D)
-  rule #subConcat( A:Name ; B:Name ; ++ C:StringOrVar ) => ++ #sub(A;B;C)
-  rule #subConcat( A:Name ; B:Name ; ++ C:StringOrVar D:ConcatExp ) => ++ #sub(A;B;C) #subConcat(A;B;D)
-
-  rule #sub( A:Name ; B:Name ; C:StringOrVar %% D:RhoMap ) => #sub(A;B;C) %% #sub(A;B;D)
-  rule #sub( A:Name ; B:Name ; C:StringOrVar %% D:RhoMap %% E:InterpMaps ) => #sub(A;B;C) %% #subInterp(A;B;D %% E)
-  rule #subInterp( A:Name ; B:Name ; C:RhoMap ) => #sub(A;B;C)
-  rule #subInterp( A:Name ; B:Name ; C:RhoMap %% D:InterpMaps ) => #sub(A;B;C) %% #subInterp(A;B;D)
+//  rule #sub( A:Name ; B:Name ; C:StringOrVar D:ConcatExp ) => #sub(A;B;C) #subConcat(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:ListOrVar   ++ D:ListOrVar   ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:ListOrVar   ++ D:ConcatList  ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:StringOrVar ++ D:StringOrVar ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:StringOrVar ++ D:ConcatStr   ) => #sub(A;B;C) ++ #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:StringOrVar %% D:RhoMap      ) => #sub(A;B;C) %% #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:StringOrVar %% D:InterpMaps  ) => #sub(A;B;C) %% #sub(A;B;D)
+  rule #sub( A:Name ; B:Name ; C:RhoMap      %% D:InterpMaps  ) => #sub(A;B;C) %% #sub(A;B;D)
 
 // Boolean Exps
   rule #sub( A:Name ; B:Name ; not C:BExp ) => not #sub(A;B;C)
@@ -820,38 +826,34 @@ module SUB
 //-------------------------
 //--- Map substitutions ---
 //-------------------------
+  rule #sub( .Map ; A:Names    ) => A
+  rule #sub( .Map ; A:NamePats ) => A
+  rule #sub( .Map ; A:Procs    ) => A
+  rule #sub( .Map ; A:ProcPats ) => A
   // if no variables are map keys, then no substitution happens
-  rule #sub( M:Map ; N:Name    ) => N requires intersectSet(#FV(N),keys(M)) ==K .Set
+//  rule #sub( M:Map ; N:Name    ) => N requires intersectSet(#FV(N),keys(M)) ==K .Set
 //  rule #sub( M:Map ; N:NamePat ) => N requires intersectSet(#FV(N),keys(M)) ==K .Set
-  rule #sub( M:Map ; A:Name    , B:Names    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
+//  rule #sub( M:Map ; A:Name    , B:Names    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:NamePat , B:Names    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:Name    , B:NamePats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:NamePat , B:NamePats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
   // if variables appear as map keys, substitute value for key
-  rule #sub( Key:Name |-> Val:Name M:Map ; N:Name     ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Name |-> Val:Name M:Map ; N:Names    ) => #sub(M;#sub(Val;Key;N))
-  rule #sub( Key:Name |-> Val:Name M:Map ; N:NamePat  ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Name |-> Val:Name M:Map ; N:NamePats ) => #sub(M;#sub(Val;Key;N))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Name     ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; N:Names    ) => #sub(M;#sub(Val;Key;N))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; N:NamePat  ) => #sub(M;#sub(Val;Key;N))
   rule #sub( Key:Proc |-> Val:Proc M:Map ; N:NamePats ) => #sub(M;#sub(Val;Key;N))
 
   // if no variables are map keys, then no substitution happens
-  rule #sub( M:Map ; P:Proc    ) => P requires intersectSet(#FV(P),keys(M)) ==K .Set
+//  rule #sub( M:Map ; P:Proc    ) => P requires intersectSet(#FV(P),keys(M)) ==K .Set
 //  rule #sub( M:Map ; P:ProcPat ) => P requires intersectSet(#FV(N),keys(M)) ==K .Set
-  rule #sub( M:Map ; A:Proc    , B:Procs    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
+//  rule #sub( M:Map ; A:Proc    , B:Procs    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:ProcPat , B:Procs    ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:Proc    , B:ProcPats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
 //  rule #sub( M:Map ; A:ProcPat , B:ProcPats ) => A , #sub(M;B) requires intersectSet(#FV(A),keys(M)) ==K .Set
   // if variables appear as map keys, substitute value for key
-  rule #sub( Key:Name |-> Val:Name M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Name |-> Val:Name M:Map ; P:Procs    ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Name |-> Val:Name M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Name |-> Val:Name M:Map ; P:ProcPats ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Proc     ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:Procs    ) => #sub(M;#sub(Val;Key;P))
-  rule #sub( Key:Proc |-> Val:Proc M:Map ; P:ProcPat  ) => #sub(M;#sub(Val;Key;P)) //
   rule #sub( Key:Proc |-> Val:Proc M:Map ; P:ProcPats ) => #sub(M;#sub(Val;Key;P))
 
 //-----------------
@@ -1012,37 +1014,77 @@ module SUB
 
 // sub Proc for ProcPat in Proc
 //  rule #sub( _:Proc ; ~ _:Proc    ; C:Proc ) => C
-  rule #sub( A:Proc ;       B:Proc /\ Bool         ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ Bool         ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Int          ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ Int          ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ String       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ String       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ List         ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ List         ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Map          ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ Map          ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Set          ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ Set          ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Tuple        ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;    B:ProcPat /\ Tuple        ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Unforgeable  ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       B:Proc /\ Uri          ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Bool         ; C:Proc )
+    => #if isBExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Bool         ; C:Proc )
+    => #if isBExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Int          ; C:Proc )
+    => #if isAExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Int          ; C:Proc )
+    => #if isAExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ String       ; C:Proc )
+    => #if isStringExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ String       ; C:Proc )
+    => #if isStringExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ List         ; C:Proc )
+    => #if   isListExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ List         ; C:Proc )
+    => #if   isListExp(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Map          ; C:Proc )
+    => #if isRhoMap(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Map          ; C:Proc )
+    => #if isRhoMap(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Set          ; C:Proc )
+    => #if isRhoSet(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Set          ; C:Proc )
+    => #if isRhoSet(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Tuple        ; C:Proc )
+    => #if isRhoTuple(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Tuple        ; C:Proc )
+    => #if isRhoTuple(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Unforgeable  ; C:Proc )
+    => #if isUnforgeable(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Unforgeable  ; C:Proc )
+    => #if isUnforgeable(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       B:Proc /\ Uri          ; C:Proc )
+    => #if isUri(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;    B:ProcPat /\ Uri          ; C:Proc )
+    => #if isUri(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;       B:Proc /\ ClosedProc ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;         Bool /\ B:Proc       ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;         Bool /\ B:ProcPat    ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;         Bool /\ B:ProcPat    ; C:Proc )
+    => #if isBExp(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Int /\ B:Proc       ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;          Int /\ B:ProcPat    ; C:Proc ) => #if         isInt(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Int /\ B:ProcPat    ; C:Proc )
+    => #if isAExp(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;       String /\ B:Proc       ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;       String /\ B:ProcPat    ; C:Proc ) => #if      isString(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;       String /\ B:ProcPat    ; C:Proc )
+    => #if isStringExp(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;         List /\ B:Proc       ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;         List /\ B:ProcPat    ; C:Proc ) => #if     isRhoList(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;         List /\ B:ProcPat    ; C:Proc )
+    => #if isListExp(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Map /\ B:Proc       ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;          Map /\ B:ProcPat    ; C:Proc ) => #if      isRhoMap(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Map /\ B:ProcPat    ; C:Proc )
+    => #if isRhoMap(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Set /\ B:Proc       ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;          Set /\ B:ProcPat    ; C:Proc ) => #if      isRhoSet(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;          Set /\ B:ProcPat    ; C:Proc )
+    => #if isRhoSet(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;        Tuple /\ B:Proc       ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
-  rule #sub( A:Proc ;        Tuple /\ B:ProcPat    ; C:Proc ) => #if    isRhoTuple(A) #then #sub(A;B;C) #else C #fi
+  rule #sub( A:Proc ;        Tuple /\ B:ProcPat    ; C:Proc )
+    => #if isRhoTuple(A) orBool isBoundProc(A) orBool isEval(A)
+       #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;  Unforgeable /\ B:Proc       ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Uri /\ B:Proc       ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;   ClosedProc /\ B:Proc       ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
@@ -1124,7 +1166,6 @@ module SUB
   rule #sub2map( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:Procs    ) ) => updateMap( #sub2map(A;C) , #sub2map(B;D) )
   rule #sub2map( A:Name    !! (            ) ; C:NamePat !! (            ) ) => #sub2map(A;C)
   rule #sub2map( A:Name    !! (            ) ; C:Name    !! (            ) ) => #sub2map(A;C)
-
 
   rule   @ * N:Name => N  [anywhere, structural]
   rule   * @ P:Proc => P  [anywhere, structural]
