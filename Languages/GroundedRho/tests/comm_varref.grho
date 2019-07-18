@@ -1,0 +1,42 @@
+// Variable Reference
+
+    new x in { x!(*y) | for( @=*y <- x ){ y!(1) } }
+
+/*
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        #sub( * y ; = * y ; y ) ! ( 1 )
+      </send>
+    </sends>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new x in { x ! ( * y ) | for ( @ = * y <- x ) { y ! ( 1 ) } }
+  </original>
+  <OGfreevar>
+    SetItem ( y :: name )
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( * y ) | for ( @ #dBound( 1 ; = * y ; .Map ) <- boundN( 0 ) ) { #deBruijn( 2 ; #sub( updateMap ( .Map , #mapify( 1 ; = * y ; .Map ) ) ; y ! ( 1 ) ) ; updateMap ( x |-> boundN( 0 ) , updateMap ( .Map , #mapify( 1 ; = * y ; .Map ) ) ) ) } }
+  </OGdeBruijn>
+</T>
+*/
