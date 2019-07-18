@@ -1,0 +1,14 @@
+// Structurally Equivalent Set Inclusion
+
+    #matchComm( @{2|1}!(42,@0!("a"),[1,2,3,4],37) ;;
+
+                w,@{@Int!(\x /\ String)},@{\y /\ List},@{\z /\ Int} <= @{1|2|Nil}
+
+                if *w > 41 and *w < \z + 6 )
+
+/*
+Output:
+
+  true andBool { 42 > 41 and 42 < 37 + 6 }
+
+*/
