@@ -2,6 +2,7 @@
 
 require "domains.k"
 require "AuxFun/auxfun.k"
+require "Configuration/config.k"
 require "Match/match.k"
 require "Names_Variables/namevar.k"
 require "Substitute/sub.k"
@@ -13,26 +14,45 @@ module GRHO-SYNTAX
 
 // Variables
   syntax              Var ::= Id
-//  syntax             Vars ::= Var
-//                            > Var "," Vars [right]
+  syntax             Vars ::= Var
+                            > Var "," Vars [right]
 
 //-------------
 //--- NAMES ---
 //-------------
-  syntax             Name ::= Quote
+  syntax             Name ::= "{" Name "}" [bracket]
+                            > Bundle
+                            | Quote
                             | Var       // name variable
-                            > NewUri
+                            > VarDec
+                            > TypedName
                             | EmptyName // listen for empty message
   syntax            Quote ::= "@" Proc
   syntax        EmptyName ::= "EmptyN"  // listening for empty messages
+  syntax           VarDec ::= Var | NewUri
   syntax           NewUri ::= Var "(" Uri ")"
 
+  // Bundles -- cannot be destructured with pattern-matching
+  // e.g. bundle?{P} acts as channel @P with object capabilities
+  syntax           Bundle ::= BundlePlus | BundleMinus | BundleOther
+  syntax       BundlePlus ::= "bundle+{" Proc "}" // write-only
+  syntax      BundleMinus ::= "bundle-{" Proc "}" // read-only
+  syntax      BundleOther ::= "bundle0{" Proc "}" // no-read/no-write
+                            |  "bundle{" Proc "}" // read/write
+
+// Typed Names
+  syntax        TypedName ::= Var ":" NamePat
+
 // Several Names
-  syntax            Names ::= Name
-                            | "@" Procs      [function]
-//                            > Vars // TODO: include - will be needed once Var <: Name & Var <: Proc
-//                            > Name
-                            > Name "," Names [right]
+  syntax            Names ::= Vars
+                            > VarDecs
+                            > Name
+                            > Name "," Names      [right]
+  syntax            Names ::= "@" Procs        [function]
+
+  syntax          VarDecs ::= Vars
+                            > VarDec
+                            > VarDec "," VarDecs  [right]
 
   syntax        NamesList ::= Names
                             > Names "&" NamesList [right]
@@ -45,7 +65,8 @@ module GRHO-SYNTAX
                             > New             // New name declaration(s)
                             > Ground          // Ground terms - Bool, Int, Nil, String, Uri
                             | Collection      // Data structures - RhoList, RhoMap, RhoSet, RhoTuple
-                            | ProcVar         // Process variable -- TODO: change to Var
+                            | ProcVar         // Process variable
+                            > TypedProc
                             > VarRef          // Variable references - Name/Process variable shadowing
                             > Eval            // Evaluation
                             > MethodProc      // Methods
@@ -55,11 +76,11 @@ module GRHO-SYNTAX
                             | Contract        // Contract
                             | Invocation      // Contract invocation
                             | Send            // Send messages
-                            | Bundle          // Process bundle
                             > Conditional     // If...then(...else)
                             > Par             // Parallel composition
 
   syntax          ProcVar ::= "\\" Var
+  syntax        TypedProc ::= ProcVar ":" ProcPat [klabel(typeproc)]
 
 // Several Processes
   syntax            Procs ::= Proc
@@ -67,8 +88,8 @@ module GRHO-SYNTAX
 //                            > Proc
                             > Proc "," Procs [right]
 
-  syntax         ProcsList ::= Procs
-                             > Procs "&" ProcsList
+  syntax        ProcsList ::= Procs
+                            > Procs "&" ProcsList
 
 // Parallel composition
   // Par is a multiset of processes represented as an order-normalized list of processes
@@ -76,18 +97,25 @@ module GRHO-SYNTAX
     // implemented as a multiset in STRUCT
   syntax              Par ::= Proc "|" Proc  [right]
 
-// Receives - only homogeneous joins currently
-  syntax          Receive ::= SRec | MRec
+// Receives
+  syntax          Receive ::= SRec | MRec | GRec | UGRec
+  syntax             GRec ::= GSRec  | GMRec
+                            | "for" "(" OrGBinds ")" "{" Proc "}"
+  syntax            UGRec ::= UGSRec | UGMRec
+                            | "for" "(" OrBinds  ")" "{" Proc "}"
 
   // Single Listen Receives
   syntax             SRec ::= GSRec       // Guarded single receieve
                             | UGSRec      // Unguarded single receieve
+                            | "for" "(" AnyBind ")" "{" Proc "}"
   syntax           UGSRec ::= LinearSRec  // Linear single receieve, unguarded
                             | PeekSRec    // Peek single receieve, unguarded
                             | RepeatSRec  // Repeat single receieve, unguarded
+                            | "for" "(" Bind    ")" "{" Proc "}"
   syntax            GSRec ::= GLinearSRec // Linear single receieve, guarded
                             | GPeekSRec   // Peek single receieve, guarded
                             | GRepeatSRec // Repeat single receieve, guarded
+                            | "for" "(" GBind   ")" "{" Proc "}"
   // Input Guard
   syntax            Guard ::= "if" BExp
 
@@ -96,19 +124,25 @@ module GRHO-SYNTAX
   syntax      GLinearSRec ::= "for" "(" GLbind ")" "{" Proc "}"
   syntax            Lbind ::= NamePats "<-"  Name
                             | Names    "<-"  Name
-                            |          "<-"  Name
+                            | EmptyLbind
+  syntax       EmptyLbind ::=          "<-"  Name
+
   // Peek Single
   syntax         PeekSRec ::= "for" "(" Pbind  ")" "{" Proc "}"
   syntax        GPeekSRec ::= "for" "(" GPbind ")" "{" Proc "}"
   syntax            Pbind ::= NamePats "<<-" Name
                             | Names    "<<-" Name
-                            |          "<<-" Name
+                            | EmptyPbind
+  syntax       EmptyPbind ::=          "<<-" Name
+
   // Repeated/Persistent Single
   syntax       RepeatSRec ::= "for" "(" Rbind  ")" "{" Proc "}"
   syntax      GRepeatSRec ::= "for" "(" GRbind ")" "{" Proc "}"
   syntax            Rbind ::= NamePats "<="  Name
                             | Names    "<="  Name
-                            |          "<="  Name
+                            | EmptyRbind
+  syntax       EmptyRbind ::=          "<="  Name
+
   // Guarded Single Bind
   syntax           GLbind ::= Lbind Guard
   syntax           GPbind ::= Pbind Guard
@@ -119,30 +153,34 @@ module GRHO-SYNTAX
                             > Bind Guard
   syntax          AnyBind ::= Bind   | GBind
 
-  // Multiple Listen Receives
+  // Multiple Listen Receives -- TODO: add mixed binds & change syntax to "&"
   syntax             MRec ::= GMRec       // Guarded multi receive
                             | UGMRec      // Unguarded multi receive
+                            | "for" "(" AnyBinds ")" "{" Proc "}"
   syntax           UGMRec ::= LinearMRec  // Linear multi receive, unguarded
                             | PeekMRec    // Peek multi receive, unguarded
                             | RepeatMRec  // Repeat multi receive, unguarded
+                            | "for" "(" Binds    ")" "{" Proc "}"
   syntax            GMRec ::= GLinearMRec // Linear multi receive, guarded
                             | GPeekMRec   // Peek multi receive, guarded
                             | GRepeatMRec // Repeat multi receive, guarded
-  // Linear
+                            | "for" "(" GBinds   ")" "{" Proc "}"
+  // Homogeneous binds
+    // Linear
   syntax       LinearMRec ::= "for" "(" Lbinds  ")" "{" Proc "}"
   syntax      GLinearMRec ::= "for" "(" GLbinds ")" "{" Proc "}"
-  syntax           Lbinds ::= Lbind ";" Lbind
-                            | Lbind ";" Lbinds [right]
-  // Peek
+  syntax           Lbinds ::= Lbind "&" Lbind
+                            | Lbind "&" Lbinds [right]
+    // Peek
   syntax         PeekMRec ::= "for" "(" Pbinds  ")" "{" Proc "}"
   syntax        GPeekMRec ::= "for" "(" GPbinds ")" "{" Proc "}"
-  syntax           Pbinds ::= Pbind ";" Pbind
-                            | Pbind ";" Pbinds [right]
-  // Repeated
+  syntax           Pbinds ::= Pbind "&" Pbind
+                            | Pbind "&" Pbinds [right]
+    // Repeated/Persistent
   syntax       RepeatMRec ::= "for" "(" Rbinds  ")" "{" Proc "}"
   syntax      GRepeatMRec ::= "for" "(" GRbinds ")" "{" Proc "}"
-  syntax           Rbinds ::= Rbind ";" Rbind
-                            | Rbind ";" Rbinds [right]
+  syntax           Rbinds ::= Rbind "&" Rbind
+                            | Rbind "&" Rbinds [right]
   // Guarded Binds
   syntax          GLbinds ::= Lbinds Guard
   syntax          GPbinds ::= Pbinds Guard
@@ -151,34 +189,38 @@ module GRHO-SYNTAX
   syntax            Binds ::= Lbinds  | Pbinds  | Rbinds
   syntax           GBinds ::= GLbinds | GPbinds | GRbinds
                             > Binds Guard
-  syntax         AnyBinds ::= Binds   | GBinds
+  syntax         AnyBinds ::= Binds | GBinds
+  syntax          OrBinds ::= Bind  | Binds
+  syntax         OrGBinds ::= GBind | GBinds
 
 // Sends
   syntax             Send ::= ConSend | UnconSend
-  // Consumable
+  // Consumable -- ephemeral data
   syntax          ConSend ::= Name "!"  "(" Procs ")"
-                            | Name "!"  "("       ")"
-  // Unconsumable
+                            | EmptyCSend
+  syntax       EmptyCSend ::= Name "!"  "("       ")"
+  // Unconsumable -- persistent data
   syntax        UnconSend ::= Name "!!" "(" Procs ")"
-                            | Name "!!" "("       ")"
+                            | EmptyUSend
+  syntax       EmptyUSend ::= Name "!!" "("       ")"
 
-// Eval
+// Eval -- evaluation
   syntax             Eval ::= "*" Name
   syntax            Procs ::= "*" Names [function]
 
-// New - creates fresh unforgeable names
-  syntax              New ::= "new" Names "in" "{" Proc "}"
+// New - declares variables corresponding to fresh unforgeable Names
+  syntax              New ::= "new" VarDecs "in" "{" Proc "}"
 
 // Matching
   syntax         Matching ::= Match | Select
-  // Match
+  // Match -- pattern matching
   syntax            Match ::= "match" "{" Proc "}" "{" MatchCases "}"
 
   syntax        MatchCase ::= "{" Proc    "}" "|=>" Proc
                             | "{" ProcPat "}" "|=>" Proc
   syntax       MatchCases ::= MatchCase
                             | MatchCase MatchCases [right]
-  // Select
+  // Select -- receive-guarded choice
   syntax           Select ::= "select" "{" Branches "}"
 
   syntax           Branch ::= "{" Lbind  "}" "|=>" Proc
@@ -186,17 +228,18 @@ module GRHO-SYNTAX
   syntax         Branches ::= Branch
                             | Branch Branches [right]
 
-// Variable Reference - allows for shadowing
-  syntax           VarRef ::= "=" "*" Var // Var binds a Name
-                            | "=" ProcVar // Var binds a Proc
+// Variable Reference - allows for variable shadowing
+  syntax           VarRef ::= NameRef
+                            | ProcRef
+  syntax          NameRef ::= "=" "*" Var // Var binds a Name variable
+  syntax          ProcRef ::= "=" ProcVar // Var binds a Proc variable
 
 // Conditional
   syntax      Conditional ::= IfThen | Else
-
   syntax           IfThen ::= "if" "(" BExp ")" Proc  [strict(1)]
   syntax             Else ::= IfThen "else" Proc
 
-// Contract - syntactic sugar for persistent receive
+// Contract - syntactic sugar for persistent single receive
   syntax         Contract ::= "contract" Name "(" NamePats ")" "=" "{" Proc "}"
                             | "contract" Name "(" Names    ")" "=" "{" Proc "}"
                             | "contract" Name "("          ")" "=" "{" Proc "}"
@@ -233,11 +276,11 @@ module GRHO-SYNTAX
   syntax         RhoTuple ::= "(" Procs ",)"
 
 // Ground terms
-  syntax           Ground ::= "Nil"                // stopped process
+  syntax           Ground ::= Unit                 // stopped process
                             | Bool | Int  | String // built-in
                             | Unforgeable | Uri    // registry, lookup, locker & OCaps
+  syntax             Unit ::= "Nil"
   syntax      Unforgeable ::= "unforgeable(" Int ")"
-
   syntax              Uri ::= "`" NativeChan "`"
   syntax       NativeChan ::= NativeIO
 // TODO: add other native channels
@@ -247,83 +290,135 @@ module GRHO-SYNTAX
 // Expressions resolve to ground terms
   syntax              Exp ::= "{" Exp "}" [bracket]
                             > AExp
-                            | StringExp
+                            | LiStrExp
                             > BExp
   // Arithmetic
   syntax         IntOrVar ::= Int | ProcVar | Eval
   syntax             AExp ::= "{" AExp "}" [bracket]
-                            > IntOrVar
-                            | "-" AExp       [strict]
-                            > AExp "%" AExp  [strict(2)] // mod reduction
-                            > AExp "*" AExp  [strict, right]
-                            | AExp "/" AExp  [strict, right]
-                            > AExp "+" AExp  [strict, right]
-                            | AExp "-" AExp  [strict, right]
+                            > IntOrVar | AExpNeg
+                            > AExpMod
+                            > AExpMul  | AExpDiv
+                            > AExpSum  | AExpSub
+                            > IntExp
 
-  // String
+  syntax          AExpNeg ::= "-" AExp       [strict]
+                            | IntNeg
+  syntax          AExpMod ::= AExp "%" AExp  [strict(2), left] // mod reduction
+                            | IntMod
+  syntax          AExpMul ::= AExp "*" AExp  [strict, right]
+                            | IntMul
+  syntax          AExpDiv ::= AExp "/" AExp  [strict, right]
+                            | IntDiv
+  syntax          AExpSum ::= AExp "+" AExp  [strict, right]
+                            | IntSum
+  syntax          AExpSub ::= AExp "-" AExp  [strict, right]
+                            | IntSub
+
+  syntax           IntExp ::= Int > IntNeg > IntMod
+                            > IntMul | IntDiv
+                            > IntSum | IntSub
+
+  syntax           IntNeg ::= "-" IntExp
+  syntax           IntMod ::= IntExp "%" IntExp [left]
+  syntax           IntMul ::= IntExp "*" IntExp [right]
+  syntax           IntDiv ::= IntExp "/" IntExp [right]
+  syntax           IntSum ::= IntExp "+" IntExp [right]
+  syntax           IntSub ::= IntExp "-" IntExp [right]
+
+  // RhoList & String
+  syntax        ListOrVar ::= RhoList | ProcVar | Eval
+  syntax          ListExp ::= "{" ListExp "}"             [bracket]
+                            > ListOrVar
+                            | ConcatList
+  syntax    ConcatRhoList ::= RhoList
+                            | RhoList   "++" ConcatRhoList  [right]
+  syntax       ConcatList ::= ListOrVar "++" ListOrVar
+                            | ListOrVar "++" ConcatList     [right]
+                            > ConcatRhoList
+
   syntax      StringOrVar ::= String | ProcVar | Eval
-  syntax        StringExp ::= "{" StringExp "}" [bracket]
+  syntax        StringExp ::= "{" StringExp "}"           [bracket]
                             > StringOrVar
-                            | Concat  // string concatenation
-                            | Interp  // string interpolation: "${key}rest" %% { key:value , ... } => "value" ++ "rest"
+                            > ConcatStr  // string concat
+                            | Interp     // string interpolation
+                            > StringOnlyExp
+  syntax     ConcatString ::= String
+                            | String      "++" StringOnlyExp [right, strict(1)]
+  syntax        ConcatStr ::= StringOrVar "++" StringExp     [right, strict(1)]
+                            > ConcatString
+  syntax           Interp ::= StringExp   "%%" InterpMaps    [right, strict(1)]
+                            > InterpString
+  syntax     InterpString ::= String | StringOnlyExp "%%" InterpMaps [right]
+  syntax       InterpMaps ::= RhoMap | RhoMap "%%" InterpMaps
+  syntax    StringOnlyExp ::= String | ConcatString | InterpString
 
-  syntax           Concat ::= StringOrVar ConcatExp
-  syntax        ConcatExp ::= "++" StringOrVar
-                            | "++" StringOrVar ConcatExp
-
-  syntax           Interp ::= StringOrVar "%%" InterpMaps
-  syntax       InterpMaps ::= RhoMap
-                            | RhoMap "%%" InterpMaps
+  syntax           Concat ::= ConcatList | ConcatStr
+  syntax         LiStrExp ::= ListExp | StringExp | Concat
 
   // Boolean
   syntax        BoolOrVar ::= Bool | ProcVar | Eval
   syntax             BExp ::= "{" BExp "}"              [bracket]
                             > BoolOrVar
-                            | AExp "<=" AExp            [seqstrict]
-                            | AExp "<"  AExp            [seqstrict]
-                            | AExp ">=" AExp            [seqstrict]
-                            > AExp ">"  AExp            [seqstrict]
-                            | Name "==" Name            // name equivalence
-                            | Name "!=" Name            // [| A:Name != B:Name |] = not ( A == B )
-                            | Proc "==" Proc            // structural equivalence
-                            | Proc "!=" Proc            // [| A:Proc != B:Proc |] = not ( A == B )
-                            > Proc    "matches" Proc    // [| P matches Q |] = match P { { Q |=> true } { P |=> false } }
+                            | BExpLeq | BExpL | BExpGeq | BExpG
+                            > Name "==" Name  // name equivalence
+                            | Name "!=" Name
+                            | Proc "==" Proc  // structural equivalence
+                            | Proc "!=" Proc
+                            > Proc    "matches" Proc
                             | Proc    "matches" ProcPat
                             | ProcPat "matches" ProcPat
-                            > "not" BExp                [strict]
-                            > BExp "and" BExp           [strict(1), right]
-                            > BExp "or"  BExp           [strict(1), right]
+                            > BExpNot > BExpAnd > BExpOr
+                            | BoolExp
 
-// Bundles -- cannot be destructured with pattern-matching
-  syntax           Bundle ::= "bundle+{" Proc "}" // write-only
-                            | "bundle-{" Proc "}" // read-only
-                            | "bundle0{" Proc "}" // neither read/write
-                            |  "bundle{" Proc "}" // both read/write
+  syntax          BExpLeq ::= AExp "<=" AExp [seqstrict]
+                            | BoolLeq
+  syntax            BExpL ::= AExp "<"  AExp [seqstrict]
+                            | BoolL
+  syntax          BExpGeq ::= AExp ">=" AExp [seqstrict]
+                            | BoolGeq
+  syntax            BExpG ::= AExp ">"  AExp [seqstrict]
+                            | BoolG
+  syntax          BExpNot ::= "not" BExp     [strict]
+                            | BoolNot
+  syntax          BExpAnd ::=BExp "and" BExp [strict(1), right]
+                            | BoolAnd
+  syntax           BExpOr ::=BExp "or"  BExp [strict(1), right]
+                            | BoolOr
+
+  syntax          BoolExp ::= Bool | BoolLeq | BoolL | BoolGeq | BoolG
+                            > BoolNot > BoolAnd > BoolOr
+  syntax          BoolLeq ::= IntExp "<=" IntExp    [right]
+  syntax            BoolL ::= IntExp "<"  IntExp    [right]
+  syntax          BoolGeq ::= IntExp ">=" IntExp    [right]
+  syntax            BoolG ::= IntExp ">"  IntExp    [right]
+  syntax          BoolNot ::= "not" BoolExp         [right]
+  syntax          BoolAnd ::= BoolExp "and" BoolExp [right]
+  syntax           BoolOr ::= BoolExp "or"  BoolExp [right]
 
 // Methods
   syntax       MethodProc ::= Proc MethodAndArgs
   syntax    MethodAndArgs ::= "." Method "(" Procs ")"
                             | "." Method "(" ")"
 
-  syntax           Method ::= "nth"          // nth element - list, string(?), tuple - Proc.nth( Int )
+  // acknowledgement args?
+  syntax           Method ::= "nth"          // nth element - list, tuple - Proc.nth( Int )
                             | "toByteArray"  // transform to bytearray - Data.toByteArray( )
                             | "hexToBytes"   // hex string -> bytes
                             | "union"        // map, set union - Map.union( Map ) , Set.union( Set )
-                            | "diff"         // difference - map, set?
-                            | "add"          // add - like single element concat? - list, map, set?
-                            | "delete"       // delete element? - list, map, set
-                            | "contains"     // contains predicate
+                            | "diff"         // difference - Map.diff( Map ), Set.diff( Set )
+                            | "add"          // add element - list, map, set
+                            | "delete"       // delete element - list, map, set
+                            | "contains"     // contains predicate - list, map:key?, set
                             | "get"          // get - get value corresponding to key - Map.get( Key )
                             | "getOrElse"    // getOrElse - get or side condition - Map.getOrElse( Key , SideCondition )
-                            | "set"          // set - Map.set( Key , Value )
-                            | "contains"     // contains predicate - list, map, set?
-                            | "keys"         // set of keys of a map - map.keys( )
-                            | "values"       // list of values of a map - map.values( )
-                            | "size"         // number of elements in unordered structures - Map.size(), Set.size()
-                            | "length"       // length of ordered data list/tuple - List.length() , Tuple.length()
+                            | "set"          // set - Map.set( Key , Value ) == updateMap( Map , Key:Value )
+                            | "keys"         // set of keys of a map - Map.keys( )
+                            | "values"       // list of values of a map - Map.values( )
+                            | "size"         // size of unordered - Map.size(), Set.size()
+                            | "length"       // length of ordered - List.length() , Tuple.length()
                             | "slice"        // slice of list/string - List.slice(I1,I2) , String.slice(I1,I2)
                             | "iterate"      // semantics? - list and tuple? - args?
-                            | "confine"      // semantics? - confine variables? - args?
+                            | "confine"      // semantics? - confine variables/communication?
 
 // For empty content & args
   syntax             Proc ::= EmptyProc // sending empty message; empty Proc arg
@@ -413,8 +508,10 @@ module GRHO-SYNTAX
   syntax        SimplePat ::= "Bool" | "Int" | "String"
                             | "List" | "Map" | "Set" | "Tuple" | "Unforgeable" | "Uri"
                             | "ClosedProc" | "ClosedProcPat"
-                            | "Proc" | "Ground" | "Par" | "Send" | "Receive" | "ProcVar" // other Proc[Pat] constructors
-                            | "ProcContext" | "MultiProcContext" | "NameContext" | "MultiNameContext" | "MixedContext"
+                            | "Proc" | "Ground" | "Par" | "Send" | "Receive" | "ProcVar"
+                            // add SimplePat for other Proc constructors
+                            | "ProcContext" | "MultiProcContext"
+                            | "NameContext" | "MultiNameContext" | "MixedContext"
                             | "Context(" Int "," Int ")"
 
 // Patterns
@@ -437,17 +534,29 @@ module GRHO-SYNTAX
 //                          | Par
 
 // Receive Pattern
-  syntax           RecPat ::= SRecPat | MRecPat
+  syntax           RecPat ::= SRecPat | MRecPat | GRecPat | UGRecPat
+  syntax          GRecPat ::= GSRecPat  | GMRecPat
+  syntax         UGRecPat ::= UGSRecPat | UGMRecPat
+
   // Single listen receive pattern
-  syntax          SRecPat ::= LinearSRecPat
-                            | PeekSRecPat
-                            | RepeatSRecPat
-                            | GSRecPat
+  syntax          SRecPat ::= GSRecPat
+                            | UGSRecPat
 //                          | SRec
+
   syntax         GSRecPat ::= GLinearSRecPat
                             | GPeekSRecPat
                             | GRepeatSRecPat
+                            > "for" "(" GBindPat  ")" "{" Proc    "}"
+                            | "for" "(" GBind     ")" "{" ProcPat "}"
+                            | "for" "(" GBindPat  ")" "{" ProcPat "}"
 //                          | GSRec
+  syntax        UGSRecPat ::= LinearSRecPat
+                            | PeekSRecPat
+                            | RepeatSRecPat
+                            > "for" "(" BindPat   ")" "{" Proc    "}"
+                            | "for" "(" Bind      ")" "{" ProcPat "}"
+                            | "for" "(" BindPat   ")" "{" ProcPat "}"
+//                          | UGSRec
 
   // Linear listen pattern
   syntax    LinearSRecPat ::= "for" "(" Lbind     ")" "{" ProcPat "}"
@@ -495,13 +604,20 @@ module GRHO-SYNTAX
   syntax       AnyBindPat ::= BindPat   | GBindPat
 
   // Multiple listen receive patterns
-  syntax          MRecPat ::= LinearMRecPat
-                            | PeekMRecPat
-                            | RepeatMRecPat
-                            | GMRecPat
+  syntax          MRecPat ::= GMRecPat
+                            | UGMRecPat
   syntax         GMRecPat ::= GLinearMRecPat
                             | GPeekMRecPat
                             | GRepeatMRecPat
+                            > "for" "(" GBindPats ")" "{" Proc    "}"
+                            | "for" "(" GBinds    ")" "{" ProcPat "}"
+                            | "for" "(" GBindPats ")" "{" ProcPat "}"
+  syntax        UGMRecPat ::= LinearMRecPat
+                            | PeekMRecPat
+                            | RepeatMRecPat
+                            > "for" "(" BindPats  ")" "{" Proc    "}"
+                            | "for" "(" Binds     ")" "{" ProcPat "}"
+                            | "for" "(" BindPats  ")" "{" ProcPat "}"
   // Linear
   syntax    LinearMRecPat ::= "for" "(" Lbinds     ")" "{" ProcPat "}"
                             | "for" "(" LbindPats  ")" "{" ProcPat "}"
@@ -511,12 +627,12 @@ module GRHO-SYNTAX
                             | "for" "(" GLbindPats ")" "{" ProcPat "}"
                             | "for" "(" GLbindPats ")" "{" Proc    "}"
 //                          | GLinearMRec
-  syntax        LbindPats ::= Lbind    ";" LbindPat
-                            | LbindPat ";" Lbind
-                            | LbindPat ";" LbindPat
-                            | Lbind    ";" LbindPats [right]
-                            | LbindPat ";" Lbinds    [right]
-                            | LbindPat ";" LbindPats [right]
+  syntax        LbindPats ::= Lbind    "&" LbindPat
+                            | LbindPat "&" Lbind
+                            | LbindPat "&" LbindPat
+                            | Lbind    "&" LbindPats [right]
+                            | LbindPat "&" Lbinds    [right]
+                            | LbindPat "&" LbindPats [right]
   // Peek
   syntax      PeekMRecPat ::= "for" "(" Pbinds     ")" "{" ProcPat "}"
                             | "for" "(" PbindPats  ")" "{" ProcPat "}"
@@ -524,12 +640,12 @@ module GRHO-SYNTAX
   syntax     GPeekMRecPat ::= "for" "(" GPbinds    ")" "{" ProcPat "}"
                             | "for" "(" GPbindPats ")" "{" ProcPat "}"
                             | "for" "(" GPbindPats ")" "{" Proc    "}"
-  syntax        PbindPats ::= Pbind    ";" PbindPat
-                            | PbindPat ";" Pbind
-                            | PbindPat ";" PbindPat
-                            | Pbind    ";" PbindPats [right]
-                            | PbindPat ";" Pbinds    [right]
-                            | PbindPat ";" PbindPats [right]
+  syntax        PbindPats ::= Pbind    "&" PbindPat
+                            | PbindPat "&" Pbind
+                            | PbindPat "&" PbindPat
+                            | Pbind    "&" PbindPats [right]
+                            | PbindPat "&" Pbinds    [right]
+                            | PbindPat "&" PbindPats [right]
   // Repeated
   syntax    RepeatMRecPat ::= "for" "(" Rbinds     ")" "{" ProcPat "}"
                             | "for" "(" RbindPats  ")" "{" ProcPat "}"
@@ -537,12 +653,12 @@ module GRHO-SYNTAX
   syntax   GRepeatMRecPat ::= "for" "(" GRbinds    ")" "{" ProcPat "}"
                             | "for" "(" GRbindPats ")" "{" ProcPat "}"
                             | "for" "(" GRbindPats ")" "{" Proc    "}"
-  syntax        RbindPats ::= Rbind    ";" RbindPat
-                            | RbindPat ";" Rbind
-                            | RbindPat ";" RbindPat
-                            | Rbind    ";" RbindPats [right]
-                            | RbindPat ";" Rbinds    [right]
-                            | RbindPat ";" RbindPats [right]
+  syntax        RbindPats ::= Rbind    "&" RbindPat
+                            | RbindPat "&" Rbind
+                            | RbindPat "&" RbindPat
+                            | Rbind    "&" RbindPats [right]
+                            | RbindPat "&" Rbinds    [right]
+                            | RbindPat "&" RbindPats [right]
 
 
   syntax         BindPats ::= LbindPats  | PbindPats  | RbindPats
@@ -572,7 +688,7 @@ module GRHO-SYNTAX
   syntax          EvalPat ::= "*" NamePat
 
 // New pattern
-  syntax           NewPat ::= "new" Names "in" "{" ProcPat "}"
+  syntax           NewPat ::= "new" VarDecs "in" "{" ProcPat "}"
 
 // Matching pattern
   // Match pattern
@@ -650,14 +766,15 @@ module GRHO-SYNTAX
 
   // RhoList pattern -- TODO: bind Procs or RhoList to ProcVar???
   // how to capture empty List?
-  syntax          ListPat ::= "[" ProcPats "..." ProcVar "]" // match each Pat and bind remainder as RhoList to ProcVar?
-                            | "[" Procs    "..." ProcVar "]" // match each Proc and bind remainder as RhoList to ProcVar?
+     // match each Pat/Proc at head and bind remainder as RhoList to ProcVar?
+  syntax          ListPat ::= "[" ProcPats "..." ProcVar "]"
+                            | "[" Procs    "..." ProcVar "]"
                             | "[" ProcPats "]" // match List pattern
 
   // RhoMap pattern -- TODO: bind RhoKVPairs or RhoMap to ProcVar???
-  // how to capture empty Map?
-  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}" // match each Pat and bind remainder as RhoMap to ProcVar?
-                            | "{" Procs    "..." ProcVar "}" // match each Proc and bind remainder as RhoMap to ProcVar?
+    // match each Pat and bind remainder as RhoMap to ProcVar?
+  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}"
+                            | "{" Procs    "..." ProcVar "}"
                             | "{" RhoKVPats "}"
     // RhoKVPat
   syntax         RhoKVPat ::= Proc    ":" ProcPat
@@ -669,9 +786,10 @@ module GRHO-SYNTAX
                             | RhoKVPat  "," RhoKVPats  [right]
 
   // RhoSet pattern -- TODO: bind Procs or RhoSet to ProcVar???
-  // how to capture empty Set?
-  syntax           SetPat ::= "Set(" ProcPats "..." ProcVar ")" // match each Pat and bind remainder as RhoSet to ProcVar?
-                            | "Set(" Procs    "..." ProcVar ")" // match each Proc and bind remainder as RhoSet to ProcVar?
+  // how to capture Set( )?
+    // match each Pat and bind remainder as RhoSet to ProcVar?
+  syntax           SetPat ::= "Set(" ProcPats "..." ProcVar ")"
+                            | "Set(" Procs    "..." ProcVar ")"
                             | "Set(" ProcPats ")"
 
   // RhoTuple pattern  -- TODO: ProcVar for binding???
@@ -767,9 +885,10 @@ module GRHO-SYNTAX
   syntax        BoundName ::= "boundN(" Int ")"
                             | "boundN(" Int "," Int ")"
 
-  syntax        BoolOrVar ::= BoundProc // for substitution of variables in BExps
-  syntax         IntOrVar ::= BoundProc // for substitution of variables in AExps
-  syntax      StringOrVar ::= BoundProc // for substitution of variables in BExps
+  syntax        BoolOrVar ::= BoundProc // for indexing variables in BExps
+  syntax         IntOrVar ::= BoundProc // for indexing variables in AExps
+  syntax        ListOrVar ::= BoundProc // for indexing variables in ListExps
+  syntax      StringOrVar ::= BoundProc // for indexing variables in StringExps
   syntax        BoundProc ::= "boundP(" Int ")"
                             | "boundP(" Int "," Int ")"
 
@@ -784,112 +903,47 @@ endmodule
 
 // SEMANTICS MODULE
 module GRHO
+  import ALPHA
   import AUXFUN
+  import CONFIG
   import MATCH
   import NAMEVAR
   import SUB
-  import ALPHA
   import STRUCT
 
-//---------------------
-//--- CONFIGURATION ---
-//---------------------
-  configuration
-    <T color="purple">                                  //
-      <activity color="red">                            //**activity threads**
-        <task color="green" multiplicity="*">           // collection of concurrent tasks
-//        <k> Check_All ~> $PGM:Proc </k>               // check all program execution guards
-          <k> $PGM:Proc </k>                            // programs and computations are process-based
-        </task>                                         //
-      </activity>                                       //**tuplespace**
-      <tuplespace color="blue">                         // stores sends and receives
-        <sends>                                         //**sends**
-          <send color="cyan" multiplicity="*">          //
-            <schan> .K </schan>                         // sending channel (many messages on same channel)
-            <msg>   .K   </msg>                         // sent message
-            <arity> .K </arity>                         // number of messages - for arity matching
-            <stype> .K </stype>                         // 0 for single send (consumed), 1 for persistent send (not consumed)
-          </send>                                       //
-        </sends>                                        //
-        <receives>                                      //
-          <rec color="yellow" multiplicity="*">         //
-            <rchan> .K </rchan>                         // receiving channel (many messages on same channel)
-            <bvars> .K </bvars>                         // binding varible(s) in continuation
-            <bnum>  .K  </bnum>                         // number of bindings
-            <rtype> .K </rtype>                         // 0 for single listen (consumed), 1 for persistent listen (not consumed), 2 for peek
-            <guard> .K </guard>                         // input guard
-            <cont>  .K  </cont>                         // continuation
-          </rec>                                        //
-        </receives>                                     //
-      </tuplespace>                                     //
-      <nextLoc color="gray"> 0 </nextLoc>               //
-      <original color="pink">                           //
-        $PGM                                            // parsed original program
-      </original>                                       //
-      <OGfreevar color="pink">                          //
-        FV($PGM)                                        // set of kind free variables of original program
-      </OGfreevar>                                      //
-      <OGvarcontexts color="pink">                      //
-        #VarContext($PGM)                               // intersection of name & proc variables
-      </OGvarcontexts>                                  //
-      <OGdeBruijn color="pink">                         //
-        #deBruijn($PGM)                                 // De Bruijn indexed original program
-      </OGdeBruijn>                                     //
-    </T>                                                //
-
   syntax KResult ::= Ground | SimplePat | Proc | List | Map | Set   // final output type of functions & strict operations
-/*
-// Execution guards
-  syntax KItem ::= "Check_All"
-  rule (Check_All => Check_FreeVars ~> Check_VarContext) ~> _:Proc
-
-  // Free variable execution guard
-  syntax KItem ::= "Check_FreeVars"
-                 | "Error: Free Variables!"
-  // Remove free variable error guard if program is closed & check variable context
-  rule (Check_FreeVars ~> Check_VarContext ~> P:Proc) => #if FV(P) ==K .Set
-                                           #then (Check_VarContext ~> P)
-                                           #else Error: FreeVars! #fi
-// Variable context execution guard
-  syntax KItem ::= "Check_VarContext"
-                 | "Error: Variable used in both name and process contexts!"
-                 | "Error: VarContext!"
-// Remove variable context error guard and execute if program is well-formed
-  rule <k> (Check_VarContext ~> P:Proc) => #if #VarContext(P) ==K .Set
-                                             #then P // TODO: more execution constraints?
-                                             #else Error: Variable used in both name and process contexts! #fi
-       </k>
-*/
-// TODO: add other type constraints
 
 // Arithmetic & Boolean expressions are evaluated as soon as they can be
   // Arithmetic expressions -- evaluated immediately
-  rule I:Int + J:Int => I +Int J                     [anywhere, structural] // addition
-  rule I:Int - J:Int => I -Int J                     [anywhere, structural] // subtraction
-  rule I:Int * J:Int => I *Int J                     [anywhere, structural] // multiplication
-  rule I:Int / J:Int => I /Int J requires J =/=Int 0 [anywhere, structural] // division
-  rule I:Int % J:Int => I %Int J requires J =/=Int 0 [anywhere, structural] // modular reduction
-  rule - I:Int => 0 -Int I                           [anywhere, structural] // negation
+  rule A:IntExp + B:IntExp => #eval(A) +Int #eval(B)
+  rule A:IntExp - B:IntExp => #eval(A) -Int #eval(B)
+  rule A:IntExp * B:IntExp => #eval(A) *Int #eval(B)
+  rule A:IntExp / B:IntExp => #eval(A) /Int #eval(B) requires #eval(B) =/=Int 0
+  rule A:IntExp % B:IntExp => #eval(A) %Int #eval(B) requires #eval(B) =/=Int 0
+  rule - A:IntExp =>   0 -Int #eval(A)
 
-  // String expressions -- evaluated immediately
+  // List & String expressions -- evaluated immediately
     // concatenation
-  rule S:String ++ T:String             => S +String T   [structural]
-  rule S:String ++ T:String U:ConcatExp => S +String T U [structural]
+  rule A:RhoList ++ B:ConcatRhoList => #concat(A;#eval(B))
+  rule A:String  ++ B:StringOnlyExp => #concat(A;#eval(B))
     // interpolation: "begin${key}rest" %% { ..., key:value ,... } => "begin" ++ "value" ++ "rest"
-  rule S:String %% R:RhoMap                 => #interpolate(S;R)      [structural]
-  rule S:String %% R:RhoMap %% T:InterpMaps => #interpolate(S;R) %% T [structural]
+  rule A:StringOnlyExp %% B:InterpMaps => #interpolate(#eval(A);B)
+
+// TODO: #eval(InterpMaps)???
 
   // Boolean expressions
-  rule I1:Int <= I2:Int => I1 <=Int I2 [anywhere, structural]
-  rule I1:Int <  I2:Int => I1  <Int I2 [anywhere, structural]
-  rule I1:Int >= I2:Int => I1 >=Int I2 [anywhere, structural]
-  rule I1:Int >  I2:Int => I1  >Int I2 [anywhere, structural]
-  rule not B:Bool => notBool B         [anywhere, structural]
+  rule A:IntExp   <= B:IntExp  => #eval(A)   <=Int #eval(B)
+  rule A:IntExp   <  B:IntExp  => #eval(A)    <Int #eval(B)
+  rule A:IntExp   >= B:IntExp  => #eval(A)   >=Int #eval(B)
+  rule A:IntExp   >  B:IntExp  => #eval(A)    >Int #eval(B)
+  rule A:BoolExp and B:BoolExp => #eval(A) andBool #eval(B)
+  rule A:BoolExp  or B:BoolExp => #eval(A)  orBool #eval(B)
+  rule not A:BoolExp =>  notBool  #eval(A)
     // short-circuited semantics
-  rule true  and B:BExp => B     [anywhere, structural]
-  rule false and _:BExp => false [anywhere, structural]
-  rule true  or  _:BExp => true  [anywhere, structural]
-  rule false or  B:BExp => B     [anywhere, structural]
+  rule true  and B:BExp => B     requires notBool isBoolExp(B) [anywhere, structural]
+  rule false and B:BExp => false requires notBool isBoolExp(B) [anywhere, structural]
+  rule true  or  B:BExp => true  requires notBool isBoolExp(B) [anywhere, structural]
+  rule false or  B:BExp => B     requires notBool isBoolExp(B) [anywhere, structural]
 
 // Structural Equivalence
   // Syntactic equality of Ground terms -- checked immediately
@@ -898,21 +952,21 @@ module GRHO
   // if only one term is Ground, we wait for the other -- e.g. in *x == true, we must wait on a value for x before computing
   // if both terms are not Ground, check structural equivalence immediately
   rule P:Proc == Q:Proc => #structEq(P;Q)
-       requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
+       requires notBool (isGround(P) andBool isGround(Q)) [structural]
   rule P:Proc != Q:Proc => notBool #structEq(P;Q)
-       requires notBool (isGround(P) orBool isGround(Q)) [anywhere, structural]
-  rule M:Name == N:Name => #nameEq(M;N)         [anywhere, structural]
-  rule M:Name != N:Name => notBool #nameEq(M;N) [anywhere, structural]
+       requires notBool (isGround(P) andBool isGround(Q)) [structural]
+  rule M:Name == N:Name => #nameEq(M;N)                   [structural]
+  rule M:Name != N:Name => notBool #nameEq(M;N)           [structural]
 
-// Conditionals -- short-circuited
-  rule if ( true  ) P:Proc => P              [structural]
-  rule if ( false ) _:Proc => Nil            [structural]
-  rule if ( true  ) P:Proc else _:Proc => P  [structural]
-  rule if ( false ) _:Proc else Q:Proc => Q  [structural]
+// Conditionals
+  rule if ( B:BoolExp ) P:Proc => P   requires #eval(B)         [structural]
+  rule if ( B:BoolExp ) _:Proc => Nil requires notBool #eval(B) [structural]
+  rule if ( B:BoolExp ) P:Proc else _:Proc => P   requires #eval(B)         [structural]
+  rule if ( B:BoolExp ) _:Proc else Q:Proc => Nil requires notBool #eval(B) [structural]
 
 // Matching
   // Match
-    // "matches" binop desugars into #match function call
+    // matches binop desugars into #match function call
   rule P:Proc    matches Q:Proc      => #match(P;Q) [structural]
   rule P:Proc    matches Q:ProcPat   => #match(P;Q) requires notBool isSimplePat(Q) [structural]
   rule P:Ground  matches Q:SimplePat => #match(P;Q) [anywhere, structural]
@@ -923,14 +977,13 @@ module GRHO
   rule match { P:Proc } { { Q:Proc    } |=> R:Proc M:MatchCases } => #if #match(P;Q) #then #sub(P;Q;R) #else match {P}{M} #fi
   rule match { P:Proc } { { Q:ProcPat } |=> R:Proc M:MatchCases } => #if #match(P;Q) #then #sub(P;Q;R) #else match {P}{M} #fi
 
-  // Select -- TODO
-  // select works with a single send or does it have access to all sends in the tuplespace???
-//  rule select { { L:Lbind    } |=> Q:Proc } =>
-//  rule select { { L:LbindPat } |=> Q:Proc } =>
-
 // New Operator Semantics
-  rule <k> new N:Names in { P:Proc } => #subNew(L;#DV(N);P) ...</k>
-       <nextLoc> L => L +Int size(#DV(N)) </nextLoc>
+  rule <k> new V:VarDecs in { P:Proc } => #subNew(L;#DV(V);P) ...</k>
+       <nextLoc> L => L +Int size(#DV(V)) </nextLoc>
+
+// Bundles
+  rule A:Send => . requires isBundleMinus(#chan(A)) [structural]
+  rule A:SRec => . requires isBundlePlus( #chan(A)) [structural] // TODO: MRec
 
 // Sugar - contract desugars into unconsumable receive
   rule contract X:Name ( Y:Names ) = { P:Proc } => for( Y <= X ){ P }  [structural]
@@ -943,69 +996,47 @@ module GRHO
        </task>
        (.Bag => <task> <k> P </k> </task>)
        requires notBool isPar(P)
+  rule <task>
+         <k> P:Proc | Q:ProcPat => Q ...</k>
+       </task>
+       (.Bag => <task> <k> P </k> </task>)
+       requires notBool isPar(P)
+  rule <task>
+         <k> P:ProcPat | Q:Proc => Q ...</k>
+       </task>
+       (.Bag => <task> <k> P </k> </task>)
+       requires notBool isParPat(P)
+  rule <task>
+         <k> P:ProcPat | Q:ProcPat => Q ...</k>
+       </task>
+       (.Bag => <task> <k> P </k> </task>)
+       requires notBool isParPat(P)
 
 //-------------------------------
 //--- Send Operator Semantics ---
 //-------------------------------
   rule (<task> <k> S:Send </k> </task> => .Bag) // dissolve send in <activity/> and spawn <send/>
-       (.Bag => <send>
-                  <schan>   #chan(S) </schan>  // sending channel
-                  <msg>      #msg(S)   </msg>  // sending message(s)
-                  <arity> #msglen(S) </arity>  // number of messages
-                  <stype>  #stype(S) </stype>  // send type
-                </send>)
-
+       (.Bag => <send> S </send>)
   rule (<task> <k> S:SendPat </k> </task> => .Bag) // dissolve send in <activity/> and spawn <send/>
-       (.Bag => <send>
-                  <schan>   #chan(S) </schan>  // sending channel
-                  <msg>      #msg(S)   </msg>  // sending message(s)
-                  <arity> #msglen(S) </arity>  // number of messages
-                  <stype>  #stype(S) </stype>  // send type
-                </send>)
+       (.Bag => <send> S </send>)
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
-  rule (<task> <k> R:SRec </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
-       (.Bag => <rec>
-                  <rchan>  #chan(R) </rchan>  // receiving channel
-                  <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
-                  <bnum> #lislen(R)  </bnum>  // number of binding variables
-                  <rtype> #rtype(R) </rtype>  // receive type
-                  <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
-                  <cont>   #cont(R)  </cont>  // continuation
-                </rec>)
+  rule (<task> <k> R:Receive </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
+       (.Bag => <rec> R </rec>)
+  rule (<task> <k> R:RecPat </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
+       (.Bag => <rec> R </rec>)
 
-  rule (<task> <k> R:SRecPat </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
-       (.Bag => <rec>
-                  <rchan>  #chan(R) </rchan>  // receiving channel/pattern
-                  <bvars>  #bvar(R) </bvars>  // variables/patterns to be substituted in continuation
-                  <bnum> #lislen(R)  </bnum>  // number of binding variables/patterns
-                  <rtype> #rtype(R) </rtype>  // receive type
-                  <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
-                  <cont>   #cont(R)  </cont>  // continuation/pattern
-                </rec>)
-
-// Joins
-  rule (<task> <k> R:MRec </k> </task> => .Bag)
-       (.Bag => <rec>
-                  <rchan>  #chan(R) </rchan>  // receiving channel
-                  <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
-                  <bnum> #lislen(R)  </bnum>  // number of variables to bind
-                  <rtype> #rtype(R) </rtype>  // receive type
-                  <cont>   #cont(R)  </cont>  // continuation
-                  <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
-                </rec>)
-
-  rule (<task> <k> R:MRecPat </k> </task> => .Bag)
-       (.Bag => <rec>
-                  <rchan>  #chan(R) </rchan>  // receiving channel
-                  <bvars>  #bvar(R) </bvars>  // variable(s) to be substituted in continuation
-                  <bnum> #lislen(R)  </bnum>  // number of variables to bind
-                  <rtype> #rtype(R) </rtype>  // receive type
-                  <cont>   #cont(R)  </cont>  // continuation
-                  <guard> #guard(R) </guard>  // input guard - restricts acceptable inputs
-                </rec>)
+//---------------------------------
+//--- Select operator semantics ---
+//---------------------------------
+  rule
+  (<task> <k> select { { A:Lbind  } |=> P:Proc } </k> </task> => .Bag)
+  (.Bag => <sum> <branches> <branch> {A} |=> P </branch> </branches> </sum>)
+  rule
+  (<task> <k> select { { A:Lbinds } |=> P:Proc } </k> </task> => .Bag)
+  (.Bag => <sum> <branches> <branch> {A} |=> P </branch> </branches> </sum>)
 
 //-------------------
 //--- COMM EVENTS ---
@@ -1013,173 +1044,50 @@ module GRHO
 // Communication over name equivalent channels
 // x!(Q) | for( z <- y ){P} => #sub(@Q;z;P) requires #nameEq(x;y)
 
-// Comm semantics
-// Linear listen, linear send
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Names </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of names to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  syntax SendCell
+  syntax SendCellBag
+  syntax Bag ::= SendCellBag
+  syntax Bool ::= "#matchComm(" SendCell    ";;" AnyBind  ")" [function]
+                | "#matchComm(" SendCellBag ";;" AnyBinds ")" [function]
 
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePats </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of names to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  rule #matchComm( .SendCellBag ;; _:AnyBinds ) => false
+  rule #matchComm( <send> _:Send </send> ;; _:AnyBinds ) => false
+//  rule #matchComm( <send> A:Send </send> B ;; C:Bind & D:Bind  )
+//    => #matchBind(A;;C) andBool #matchComm(B;;D)
+//  rule #matchComm( <send> A:Send </send> B ;; C:Bind & D:Binds )
+//    => #matchBind(A;;C) andBool #matchComm(B;;D)
 
-// Persistent listen, linear send
-  rule                                     //consume single send, keep persistent receive
-   <rec>                                   //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Names </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 1       </rtype>              // repeated listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec>                                  //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  rule
+  (<rec>  R:LinearSRec </rec> => .Bag)
+  (<send> S:ConSend   </send> => .Bag)
+  (.Bag => <task> <k> #order(#sub(#quotes(#msg(S));#bvar(R);#cont(R))) </k> </task>)
+   requires #matchComm(S;;#gbind(R)) [comm]
 
-  rule                                     //consume single send, keep persistent receive
-   <rec>                                   //DON'T consume persistent receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePats </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 1       </rtype>              // repeated listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec>                                  //
-  (<send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 0       </stype>              // linear send
-   </send> => .Bag)                        //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  rule
+  (<rec>  R:SRec       </rec> => .Bag)
+   <send> S:UnconSend </send>
+  (.Bag => <task> <k> #order(#sub(#quotes(#msg(S));#bvar(R);#cont(R))) </k> </task>)
+   requires #matchComm(S;;#gbind(R)) andBool notBool isRepeatSRec(R) [comm]
 
-// Linear listen, persistent send
-  rule                                     //consume single receive and keep single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Names </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation
-   </rec> => .Bag)                         //
-   <send>                                  //DON'T consume persistent send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 1       </stype>              // persistent send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  rule
+  (<rec>  R:PeekSRec   </rec> => .Bag)
+   <send> S:ConSend   </send>
+  (.Bag => <task> <k> #order(#sub(#quotes(#msg(S));#bvar(R);#cont(R))) </k> </task>)
+   requires #matchComm(S;;#gbind(R)) [comm]
 
-  rule                                     //consume single receive and keep single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePats </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 0       </rtype>              // linear listen
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation
-   </rec> => .Bag)                         //
-   <send>                                  //DON'T consume persistent send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> 1       </stype>              // persistent send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
+  rule
+   <rec>  R:RepeatSRec </rec>
+  (<send> S:ConSend   </send> => .Bag)
+  (.Bag => <task> <k> #order(#sub(#quotes(#msg(S));#bvar(R);#cont(R))) </k> </task>)
+        requires #matchComm(S;;#gbind(R)) [comm]
+//  rule  <rec>  R:RepeatSRec </rec>
+//        <send> S:UnconSend </send>
+//        requires #matchComm(S;;#gbind(R))
 
-// Peek semantics
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:Names </bvars>              // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 2       </rtype>              // peek
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-   <send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> _       </stype>              // any kind of send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
-
-  rule                                     //consume single send, single receive
-  (<rec>                                   //consume single receive
-     <rchan> X:Name  </rchan>              // channel X
-     <bvars> Y:NamePats </bvars>           // binding variable(s) Y
-     <bnum>  N:Int    </bnum>              // number of name(s) to bind
-     <rtype> 2       </rtype>              // peek
-     <guard> B:BExp  </guard>              // input guard
-     <cont>  P:Proc   </cont>              // continuation P
-   </rec> => .Bag)                         //
-   <send>                                  //consume single send
-     <schan> Z:Name  </schan>              // channel Z
-     <msg>   Q:Procs   </msg>              // message(s) Q
-     <arity> N       </arity>              // number of messages matches number of names to bind
-     <stype> _       </stype>              // any kind of send
-   </send>                                 //
-   (.Bag => <task> <k> #sub(#quotes(Q);Y;P) </k> </task>)
-   requires #subGuard(Q;Y;B)               // checks if input guard is satisfied
-    andBool #nameEq(X;Z)                   // checks if channels are name equivalent
-    andBool #match(#quotes(Q);Y)    [comm] // checks if sent messages match the variables being listened for
-
-// Join semantics seem to be much more complicated than single listens...
-// moved progress to join.k
+//  rule (<rec> R:MRec </rec> => .Bag)
+//        <sends> (S => .Bag) ...</sends>
+//       (.Bag => <task> <k> "wow" </k> </task>)
+//        requires #matchComm(S;;#gbind(R)) [comm]
 
 // Eliminate Nil in parallel compositions
   rule    Nil | P:Proc => P  [anywhere, structural]
@@ -1317,7 +1225,8 @@ module GRHO
 /*
 TODO:
  - Matching (patterns & wildcard)
- - add TypedName ::= Name [":" Proc ]
+ - add TypedName ::= Name [":" Proc[Pat] ]
+ - select semantics
  - Method semantics
  - Invocation semantics - syntactic sugar for cell pattern(?)
  - NativeChan semantics
