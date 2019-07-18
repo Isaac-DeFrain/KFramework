@@ -1,4 +1,4 @@
-// Process variables - send
+// Process variables
 
   PV( @"a"!(x!(z) | for( y <- u ){ for( @u <- a ){ u } } ) )
 

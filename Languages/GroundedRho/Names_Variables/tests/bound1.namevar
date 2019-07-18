@@ -1,13 +1,15 @@
 // Bound Variables - unkind
 
-    #BV( for( a,b <- x ; c,d,e,@\z <- y ){ a!(*b) | c!(\z | *a) } )
+    #BV( for( a,b <- x & c,d,e,@\z <- y ){ a!(*b) | c!(\z | *a) } )
 
 /*
 Output:
-  SetItem ( \ z )
+
   SetItem ( a )
   SetItem ( b )
   SetItem ( c )
   SetItem ( d )
   SetItem ( e )
+  SetItem ( z )
+
 */

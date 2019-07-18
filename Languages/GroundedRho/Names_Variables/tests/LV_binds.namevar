@@ -1,6 +1,9 @@
 // Listening variables
 
-    #LV( a , b <- x ; c <- x ; d , e , f <- z )
+    #LV( a , b <- x &
+         @[\c,d!(\e /\ Int)] <- x &
+         f , @for( @for( <- v ){0} <= u & @1 <= t ){ v!(*u) } <- z
+       )
 
 /*
 Output:
@@ -11,5 +14,7 @@ Output:
   SetItem ( d )
   SetItem ( e )
   SetItem ( f )
+  SetItem ( t )
+  SetItem ( u )
 
 */

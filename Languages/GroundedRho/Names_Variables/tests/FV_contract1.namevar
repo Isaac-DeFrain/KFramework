@@ -1,6 +1,12 @@
 // Free Variables - contract
 
-  FV( new Name , z in { contract Name ( x , y ) = { @{x!(Nil)}!(*z) | for( z <- @"a" ){ *y } } } )
+    FV( new Name , z(`rho:io:stdout`) in {
+
+      contract Name ( x , y ) = {
+        @{z!(Nil)}!(*x) | for( u <- @"a" ){ *y }
+      }
+
+    } )
 
 /*
 Output:

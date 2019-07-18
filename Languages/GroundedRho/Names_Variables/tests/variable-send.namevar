@@ -1,3 +1,14 @@
-// Variables - send
+// Variables
 
-  V( @"a"!(x!(y!(Nil))) | for( a <- @z ){ a!(z) } )
+  V( for( @for( @for( @for( @\d <- c ){\d} <- b ){Nil} <- a ){ *b | *c | \d } <- @\z ){ a!(\z) } )
+
+/*
+Output:
+
+  SetItem ( a :: name )
+  SetItem ( b :: name )
+  SetItem ( c :: name )
+  SetItem ( d :: proc )
+  SetItem ( z :: proc )
+
+*/

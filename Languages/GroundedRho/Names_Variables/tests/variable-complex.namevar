@@ -1,3 +1,12 @@
-// Variables - complex
+// Variables
 
-  V( @{x!(Nil)}!(*z) | @"a"(z){ 1 + *y} )
+  V( @{@{\x /\ Int}!(Nil)}!(*z) | contract @"a"(z)={ 1 + *y} )
+
+/*
+Output:
+
+  SetItem ( x :: proc )
+  SetItem ( y :: name )
+  SetItem ( z :: name )
+
+*/

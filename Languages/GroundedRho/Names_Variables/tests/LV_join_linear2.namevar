@@ -1,12 +1,14 @@
 // Listening variables
 
-    #LV( for( a,b <- x ; @\c <- a){ Nil } )
+    LV( for( a,b <- x & @{ \c:"confine", \d:Set(\e,1,Bool,Map) } <- a){ Nil } )
 
 /*
 Output:
 
-    SetItem ( \ c )
-    SetItem ( a )
-    SetItem ( b )
+  SetItem ( a :: name )
+  SetItem ( b :: name )
+  SetItem ( c :: proc )
+  SetItem ( d :: proc )
+  SetItem ( e :: proc )
 
 */

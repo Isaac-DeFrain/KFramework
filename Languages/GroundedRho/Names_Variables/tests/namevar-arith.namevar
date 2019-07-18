@@ -1,3 +1,0 @@
-// Name variables - Arithmetic
-
-  NV( for( y <- @Nil ){ *y + 42 } )

@@ -4,7 +4,8 @@
 
 /*
 Output:
-  SetItem ( * b : proc )
-  SetItem ( a : name )
-  SetItem ( b : name )
+
+  SetItem ( a :: name )
+  SetItem ( b :: name )
+
 */

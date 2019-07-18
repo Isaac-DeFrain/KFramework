@@ -1,12 +1,11 @@
 // Free Variables
 
-  FV( for( x , y <= a ){ @{x!(Nil)}!(*z) | for( z <- @"a" ){ *y } } )
+  FV( for( x , y <= a ){ @{x!(Nil)}!(\z) | for( z <- @"a" ){ *y } } )
 
 /*
 Output:
 
-    SetItem ( * z : proc )
-    SetItem ( a : name )
-    SetItem ( z : name )
+  SetItem ( a :: name )
+  SetItem ( z :: proc )
 
 */

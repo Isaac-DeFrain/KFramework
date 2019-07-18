@@ -1,11 +1,18 @@
-// Free Proc Variables
+// Process Variables
 
-  #PV( for( @{for( y <- x ){ Nil }} <- @Nil ){ y!(*x) | a!(\a | \b) } )
+  V( for( @{for( @\z , @{ \b /\ Int } <- x ){ Nil }} <- @Nil ){
+
+         y!(*x) | @\a!(\a | \b)
+
+       } )
 
 /*
 Output:
 
-    SetItem( \ a )
-    SetItem( \ b )
+  SetItem ( a :: proc )
+  SetItem ( b :: proc )
+  SetItem ( x :: name )
+  SetItem ( y :: name )
+  SetItem ( z :: proc )
 
 */

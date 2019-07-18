@@ -5,7 +5,6 @@
 /*
 Output:
 
-    SetItem ( * z : proc )
-    SetItem ( z : name )
+  SetItem ( z :: name )
 
 */

@@ -1,11 +1,15 @@
 // Free variables
 
-    #FV( for( a,b <- x ; @\c <- a){ Nil } )
+    #FV( for( a,b <- @\x & @\c <- a){ Nil } )
 
 /*
 Output:
 
     SetItem ( a )
     SetItem ( x )
+
+// a is free, even though it occurs as a listening variable
+// in the first bind, because it occurs as a receive variable
+// in the second bind
 
 */

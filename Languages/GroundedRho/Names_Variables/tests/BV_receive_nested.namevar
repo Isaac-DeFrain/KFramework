@@ -1,0 +1,11 @@
+// Bound Variables
+
+    BV( for( @{for( @\y <- x ){ Nil }} <- @Nil ){ *x } )
+
+/*
+Output:
+
+  SetItem ( x :: name )
+  SetItem ( y :: proc )
+
+*/

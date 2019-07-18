@@ -1,0 +1,12 @@
+// Variables - send
+
+    #NV( @Nil!(x!(y!(Nil))) | for( a <- @\z ){ a!(\z) } )
+
+/*
+Output:
+
+  SetItem ( a )
+  SetItem ( x )
+  SetItem ( y )
+
+*/

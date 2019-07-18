@@ -1,14 +1,12 @@
 // Free Names - complex
 
-  FV( @{x!(Nil)}!(*z) | for( z,z1 <! @"a"){ *z1 + *y} )
+  FV( @{x!(Nil)}!(\z) | for( z,z1 <<- @"a"){ *z1 + \y} )
 
 /*
 Output:
 
-    SetItem ( * y : proc )
-    SetItem ( * z : proc )
-    SetItem ( x : name )
-    SetItem ( y : name )
-    SetItem ( z : name )
+  SetItem ( x :: name )
+  SetItem ( y :: proc )
+  SetItem ( z :: proc )
 
 */

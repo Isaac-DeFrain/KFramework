@@ -1,0 +1,22 @@
+// Process variables - par
+
+     #PV( @\pv1!(nv1!(*nv2)) |
+          for( @\pv3 <- @\pv2 ){
+
+            for( @\pv2 <- nv3 ){
+
+              for( nv4 <- @Nil ){ *nv4 } | \pv4
+
+            }
+
+          } )
+
+ /*
+Output:
+
+  SetItem ( pv1 )
+  SetItem ( pv2 )
+  SetItem ( pv3 )
+  SetItem ( pv4 )
+
+ */
