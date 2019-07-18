@@ -15,7 +15,7 @@ module SUMSQR_SPEC
 
 // Main spec
 /* pre-state and post-state: if we initiate computation with an empty state map and the variables 
-   M, Z with intial values N and 0, respectively, then the computation terminates with the state map 
+   M, Z with intial values N and 0, respectively, then computation terminates in the state:
      M |-> 0
      Z |-> (2*N+1)*(N+1)*N/6  (the expected sum of squares formula)
 */
