@@ -37,6 +37,9 @@ module STRUCT-SYNTAX
                        | "#nameEqif(" Names    ";" Names    ")" [function]
                        | "#nameEqif(" NamePats ";" NamePats ")" [function]
 
+// Comm Predicate
+  syntax        Bool ::= "#matchComm(" Send ";;" AnyBind ")" [function]
+
 // Normalization functions
   syntax         Int ::=  "#parCount(" Proc ";" Proc  ")" [function]
   syntax        Proc ::= "#parRemove(" Proc ";" Proc  ")" [function]
@@ -45,11 +48,13 @@ module STRUCT-SYNTAX
   syntax         Set ::=    "#setify(" Proc ")"           [function]
 
 // Unary Ordering
-  syntax        Proc ::= "#order(" Proc ")" [function]
+  syntax        Proc ::= "#order(" Proc ")" [function, pol(0,1)]
   syntax        Name ::= "#order(" Name ")" [function]
 
+  syntax        Proc ::= "#orderEach(" Proc  ")" [function, pol(0,1)]
   syntax       Procs ::=     "#order(" Procs ")" [function]
                        | "#orderEach(" Procs ")" [function]
+  syntax        Name ::= "#orderEach(" Name  ")" [function]
   syntax       Names ::=     "#order(" Names ")" [function]
                        | "#orderEach(" Names ")" [function]
 
@@ -66,6 +71,31 @@ module STRUCT-SYNTAX
 
   // subexpression ordering
     // Binds
+  syntax       Lbind ::= "#order(" Lbind      ")" [function]
+  syntax      GLbind ::= "#order(" GLbind     ")" [function]
+  syntax      Lbinds ::= "#order(" Lbinds     ")" [function]
+  syntax     GLbinds ::= "#order(" GLbinds    ")" [function]
+  syntax    LbindPat ::= "#order(" LbindPat   ")" [function]
+  syntax   GLbindPat ::= "#order(" GLbindPat  ")" [function]
+  syntax   LbindPats ::= "#order(" LbindPats  ")" [function]
+  syntax  GLbindPats ::= "#order(" GLbindPats ")" [function]
+  syntax       Pbind ::= "#order(" Pbind      ")" [function]
+  syntax      GPbind ::= "#order(" GPbind     ")" [function]
+  syntax      Pbinds ::= "#order(" Pbinds     ")" [function]
+  syntax     GPbinds ::= "#order(" GPbinds    ")" [function]
+  syntax    PbindPat ::= "#order(" PbindPat   ")" [function]
+  syntax   GPbindPat ::= "#order(" GPbindPat  ")" [function]
+  syntax   PbindPats ::= "#order(" PbindPats  ")" [function]
+  syntax  GPbindPats ::= "#order(" GPbindPats ")" [function]
+  syntax       Rbind ::= "#order(" Rbind      ")" [function]
+  syntax      GRbind ::= "#order(" GRbind     ")" [function]
+  syntax      Rbinds ::= "#order(" Rbinds     ")" [function]
+  syntax     GRbinds ::= "#order(" GRbinds    ")" [function]
+  syntax    RbindPat ::= "#order(" RbindPat   ")" [function]
+  syntax   GRbindPat ::= "#order(" GRbindPat  ")" [function]
+  syntax   RbindPats ::= "#order(" RbindPats  ")" [function]
+  syntax  GRbindPats ::= "#order(" GRbindPats ")" [function]
+
   syntax        Bool ::=   "#order(" Bind  ";;" Bind  ")" [function]
                        |   "#order(" Bind  ";;" Binds ")" [function]
                        |   "#order(" Binds ";;" Bind  ")" [function]
@@ -75,8 +105,8 @@ module STRUCT-SYNTAX
   syntax        Bool ::=   "#order(" RhoKVPairs ";;" RhoKVPairs ")" [function]
                        | "#orderif(" RhoKVPairs ";;" RhoKVPairs ")" [function]
     // RhoKVPats
-//syntax        Bool ::=   "#order(" RhoKVPats  ";" RhoKVPats  ")" [function]
-//                     | "#orderif(" RhoKVPats  ";" RhoKVPats  ")" [function]
+  syntax        Bool ::=   "#order(" RhoKVPats  ";;" RhoKVPats  ")" [function]
+                       | "#orderif(" RhoKVPats  ";;" RhoKVPats  ")" [function]
 
 // Reordering
   syntax        Proc ::= "#reorder(" Proc  ")"                      [function]
@@ -96,8 +126,10 @@ module STRUCT-SYNTAX
                        | "#reorder("      ";;" Names ";;"       ")" [function]
 
   // Binds
-  syntax       Lbind ::= "#reorder(" Lbind  ")"                        [function]
-  syntax      Lbinds ::= "#reorder(" Lbinds ")"                        [function]
+  syntax       Lbind ::= "#reorder(" Lbind   ")"                       [function]
+  syntax      GLbind ::= "#reorder(" GLbind  ")"                       [function]
+  syntax     GLbinds ::= "#reorder(" GLbinds ")"                       [function]
+  syntax      Lbinds ::= "#reorder(" Lbinds  ")"                       [function]
                        | "#reorder("       ";;"        ";;" Lbinds ")" [function]
                        | "#reorder("       ";;" Lbind  ";;" Lbind  ")" [function]
                        | "#reorder("       ";;" Lbind  ";;" Lbinds ")" [function]
@@ -110,8 +142,10 @@ module STRUCT-SYNTAX
                        | "#reorder(" Lbind ";;" Lbind  ";;"        ")" [function]
                        | "#reorder(" Lbind ";;" Lbinds ";;"        ")" [function]
                        | "#reorder("       ";;" Lbinds ";;"        ")" [function]
-  syntax       Pbind ::= "#reorder(" Pbind  ")"                        [function]
-  syntax      Pbinds ::= "#reorder(" Pbinds ")"                        [function]
+  syntax       Pbind ::= "#reorder(" Pbind   ")"                       [function]
+  syntax      GPbind ::= "#reorder(" GPbind  ")"                       [function]
+  syntax     GPbinds ::= "#reorder(" GPbinds ")"                       [function]
+  syntax      Pbinds ::= "#reorder(" Pbinds  ")"                       [function]
                        | "#reorder("       ";;"        ";;" Pbinds ")" [function]
                        | "#reorder("       ";;" Pbind  ";;" Pbind  ")" [function]
                        | "#reorder("       ";;" Pbind  ";;" Pbinds ")" [function]
@@ -124,8 +158,10 @@ module STRUCT-SYNTAX
                        | "#reorder(" Pbind ";;" Pbind  ";;"        ")" [function]
                        | "#reorder(" Pbind ";;" Pbinds ";;"        ")" [function]
                        | "#reorder("       ";;" Pbinds ";;"        ")" [function]
-  syntax       Rbind ::= "#reorder(" Rbind  ")"                        [function]
-  syntax      Rbinds ::= "#reorder(" Rbinds ")"                        [function]
+  syntax       Rbind ::= "#reorder(" Rbind   ")"                       [function]
+  syntax      GRbind ::= "#reorder(" GRbind  ")"                       [function]
+  syntax     GRbinds ::= "#reorder(" GRbinds ")"                       [function]
+  syntax      Rbinds ::= "#reorder(" Rbinds  ")"                       [function]
                        | "#reorder("       ";;"        ";;" Rbinds ")" [function]
                        | "#reorder("       ";;" Rbind  ";;" Rbind  ")" [function]
                        | "#reorder("       ";;" Rbind  ";;" Rbinds ")" [function]
@@ -138,6 +174,23 @@ module STRUCT-SYNTAX
                        | "#reorder(" Rbind ";;" Rbind  ";;"        ")" [function]
                        | "#reorder(" Rbind ";;" Rbinds ";;"        ")" [function]
                        | "#reorder("       ";;" Rbinds ";;"        ")" [function]
+
+// TODO: reorder bind patterns semantics
+  // unguarded
+  syntax    LbindPat ::= "#reorder(" LbindPat   ")" [function]
+  syntax   LbindPats ::= "#reorder(" LbindPats  ")" [function]
+  syntax    PbindPat ::= "#reorder(" PbindPat   ")" [function]
+  syntax   PbindPats ::= "#reorder(" PbindPats  ")" [function]
+  syntax    RbindPat ::= "#reorder(" RbindPat   ")" [function]
+  syntax   RbindPats ::= "#reorder(" RbindPats  ")" [function]
+  // guarded
+  syntax   GLbindPat ::= "#reorder(" GLbindPat  ")" [function]
+  syntax  GLbindPats ::= "#reorder(" GLbindPats ")" [function]
+  syntax   GPbindPat ::= "#reorder(" GPbindPat  ")" [function]
+  syntax  GPbindPats ::= "#reorder(" GPbindPats ")" [function]
+  syntax   GRbindPat ::= "#reorder(" GRbindPat  ")" [function]
+  syntax  GRbindPats ::= "#reorder(" GRbindPats ")" [function]
+
   // RhoKVPairs
   syntax   RhoKVPair ::= "#reorder(" RhoKVPair  ")"                                [function]
   syntax  RhoKVPairs ::= "#reorder(" RhoKVPairs ")"                                [function]
@@ -175,9 +228,12 @@ endmodule
 module STRUCT
   import STRUCT-SYNTAX
   import ALPHA
+  import AUXFUN
+  import MATCH
 
   syntax KResult ::= Proc | Procs | Name | Names | Bool | Int | List | Map | Set
-                   | Lbind | Lbinds | Rbind | Pbinds | Lbind | Lbinds
+                   | Lbind | Lbinds | Pbind | Pbinds | Rbind | Rbinds
+                   | LbindPat | LbindPats | PbindPat | PbindPats | RbindPat | RbindPats
                    | RhoKVPair | RhoKVPairs // | RhoKVPat | RhoKVPats
 
 // counts number of structurally eq appearances of a nonPar Proc in a Par
@@ -232,12 +288,64 @@ module STRUCT
 //--- Unary Order ---
 //-------------------
 //  Returns least order term structurally equivalent to input
+  // OrderEach
+  rule #orderEach( A:Name ) => #order(A)
+  rule #orderEach( A:Name , B:Names ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:Proc ) => #order(A)
+  rule #orderEach( A:Proc , B:Procs ) => #order(A) , #orderEach(B)
+
+  // TODO: finish unary order
+  rule #order( @A:Proc ) => @#order(A)
+  rule #order(  A:Var  ) => A
+
+  rule #order(  A:Proc   ) => A [owise]
+  rule #order(  A:Ground ) => A
+
+  rule #order( A:Receive ) => for(#reorder(#gbind(A))){#order(#cont(A))}
+  rule #order( A:Name !  ( ) ) => #order(A)! ( )
+  rule #order( A:Name !! ( ) ) => #order(A)!!( )
+  rule #order( A:ConSend   ) => #order(#chan(A))! ( #orderEach(#msg(A)) )
+       requires notBool isEmptyCSend(A)
+  rule #order( A:UnconSend ) => #order(#chan(A))!!( #orderEach(#msg(A)) )
+       requires notBool isEmptyUSend(A)
+
+  rule #order( A:Proc | B:Proc ) => #order(A) | #order(B)
+       requires notBool isPar(A)
 
   rule #order( [ ] ) => [ ]
   rule #order( [ A:Procs ] ) => [ #orderEach(A) ]
 
   rule #order( { } ) => { }
   rule #order( A:RhoMap ) => { #orderEach(#map2KVs(#rho2map(A))) }
+
+  rule #order(   Set( ) ) => Set( )
+  rule #order( A:RhoSet ) => Set( #orderEach(#set2procs(#rho2set(A))) )
+       requires notBool isEmptySet(A)
+
+  rule #order( ( A:Procs ,) ) => ( #orderEach(A) ,)
+
+// Binds
+  rule #order( <-  A:Name ) => <-  #order(A)
+  rule #order( <=  A:Name ) => <=  #order(A)
+  rule #order( <<- A:Name ) => <<- #order(A)
+  rule #order( A:Lbind ) => #orderEach(#bvar(A)) <-  #order(#chan(A))
+       requires notBool isEmptyLbind(A)
+  rule #order( A:Pbind ) => #orderEach(#bvar(A)) <<- #order(#chan(A))
+       requires notBool isEmptyPbind(A)
+  rule #order( A:Rbind ) => #orderEach(#bvar(A)) <=  #order(#chan(A))
+       requires notBool isEmptyRbind(A)
+
+  rule #order( A:Lbind & B:Lbind  ) => #order(A) & #order(B)
+  rule #order( A:Lbind & B:Lbinds ) => #order(A) & #order(B)
+  rule #order( A:Pbind & B:Pbind  ) => #order(A) & #order(B)
+  rule #order( A:Pbind & B:Pbinds ) => #order(A) & #order(B)
+  rule #order( A:Rbind & B:Rbind  ) => #order(A) & #order(B)
+  rule #order( A:Rbind & B:Rbinds ) => #order(A) & #order(B)
+
+// Reorder to Order
+  rule #reorder( A:Lbind ) => #order(A)
+  rule #reorder( A:Pbind ) => #order(A)
+  rule #reorder( A:Rbind ) => #order(A)
 
 //--------------------
 //--- Binary Order ---
@@ -292,37 +400,37 @@ module STRUCT
 */
 
   // Binds
-  rule #order( A:Lbind ; B:Lbind  ;; C:Lbind ; D:Lbind  )
+  rule #order( A:Lbind & B:Lbind  ;; C:Lbind & D:Lbind  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Lbind ; B:Lbinds ;; C:Lbind ; D:Lbinds )
+  rule #order( A:Lbind & B:Lbinds ;; C:Lbind & D:Lbinds )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Pbind ; B:Pbind  ;; C:Pbind ; D:Pbind  )
+  rule #order( A:Pbind & B:Pbind  ;; C:Pbind & D:Pbind  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Pbind ; B:Pbinds ;; C:Pbind ; D:Pbinds )
+  rule #order( A:Pbind & B:Pbinds ;; C:Pbind & D:Pbinds )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Rbind ; B:Rbind  ;; C:Rbind ; D:Rbind  )
+  rule #order( A:Rbind & B:Rbind  ;; C:Rbind & D:Rbind  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Rbind ; B:Rbinds ;; C:Rbind ; D:Rbinds )
+  rule #order( A:Rbind & B:Rbinds ;; C:Rbind & D:Rbinds )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
@@ -408,7 +516,7 @@ module STRUCT
   rule #order( A:Proc ; _:New ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A) orBool isVarRef(A) orBool isNew(A))
-  rule #order( new A:Names in { B:Proc } ; new C:Names in { D:Proc } )
+  rule #order( new A:VarDecs in { B:Proc } ; new C:VarDecs in { D:Proc } )
     => #if #orderif(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
@@ -577,36 +685,36 @@ module STRUCT
   rule #reorder( A:Lbinds ) => #reorder( ;; ;;A)
 
     // #reorder( ;; ;; Lbinds )
-  rule #reorder( ;; ;; A:Lbind ; B:Lbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Lbind ; B:Lbinds ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Lbind & B:Lbind  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Lbind & B:Lbinds ) => #reorder( ;;A;;B)
 
     // #reorder( ;; Lbinds ;; )
   rule #reorder( ;; A:Lbinds ;;  ) => A
 
     // #reorder( ;; Lbind \/ Lbinds ;; Lbind \/ Lbinds )
   rule #reorder( ;; A:Lbind  ;; B:Lbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Lbind  ;; B:Lbind ; C:Lbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Lbind  ;; B:Lbind ; C:Lbinds ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Lbind  ;; B:Lbind & C:Lbind  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Lbind  ;; B:Lbind & C:Lbinds ) => #reorder(B;;A;;C)
   rule #reorder( ;; A:Lbinds ;; C:Lbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Lbinds ;; C:Lbind ; D:Lbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Lbinds ;; C:Lbind ; D:Lbinds ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Lbinds ;; C:Lbind & D:Lbind  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Lbinds ;; C:Lbind & D:Lbinds ) => #reorder(C;;A;;D)
 
     // #reorder( Lbind ;; Lbind \/ Lbinds ;; )
-  rule #reorder( A:Lbind ;; B:Lbind ;; ) => #if #order(A;;B) #then A;B #else B;A #fi
-  rule #reorder( A:Lbind ;; B:Lbind ; C:Lbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Lbind ;; B:Lbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:Lbind ;; B:Lbind & C:Lbind  ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Lbind ;; B:Lbind ; C:Lbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Lbind ;; B:Lbind & C:Lbinds ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
 
     // #reorder( Lbind ;; Lbind \/ Lbinds ;; Lbind \/ Lbinds )
   rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind ; D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind ; D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind & D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind & D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
   rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind ; D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind ; D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind & D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind & D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
 
     // Lbinds
     // #reorder( Pbind \/ Pbinds )
@@ -614,36 +722,36 @@ module STRUCT
   rule #reorder( A:Pbinds ) => #reorder( ;; ;;A)
 
     // #reorder( ;; ;; Pbinds )
-  rule #reorder( ;; ;; A:Pbind ; B:Pbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Pbind ; B:Pbinds ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Pbind & B:Pbind  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Pbind & B:Pbinds ) => #reorder( ;;A;;B)
 
     // #reorder( ;; Pbinds ;; )
   rule #reorder( ;; A:Pbinds ;;  ) => A
 
     // #reorder( ;; Pbind \/ Pbinds ;; Pbind \/ Pbinds )
   rule #reorder( ;; A:Pbind  ;; B:Pbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Pbind  ;; B:Pbind ; C:Pbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Pbind  ;; B:Pbind ; C:Pbinds ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Pbind  ;; B:Pbind & C:Pbind  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Pbind  ;; B:Pbind & C:Pbinds ) => #reorder(B;;A;;C)
   rule #reorder( ;; A:Pbinds ;; C:Pbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Pbinds ;; C:Pbind ; D:Pbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Pbinds ;; C:Pbind ; D:Pbinds ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Pbinds ;; C:Pbind & D:Pbind  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Pbinds ;; C:Pbind & D:Pbinds ) => #reorder(C;;A;;D)
 
     // #reorder( Pbind ;; Pbind \/ Pbinds ;; )
-  rule #reorder( A:Pbind ;; B:Pbind ;; ) => #if #order(A;;B) #then A;B #else B;A #fi
-  rule #reorder( A:Pbind ;; B:Pbind ; C:Pbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Pbind ;; B:Pbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:Pbind ;; B:Pbind & C:Pbind  ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Pbind ;; B:Pbind ; C:Pbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Pbind ;; B:Pbind & C:Pbinds ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
 
     // #reorder( Pbind ;; Pbind \/ Pbinds ;; Pbind \/ Pbinds )
   rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind ; D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind ; D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind & D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind & D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
   rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind ; D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind ; D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind & D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind & D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
 
     // Lbinds
     // #reorder( Rbind \/ Rbinds )
@@ -651,36 +759,36 @@ module STRUCT
   rule #reorder( A:Rbinds ) => #reorder( ;; ;;A)
 
     // #reorder( ;; ;; Rbinds )
-  rule #reorder( ;; ;; A:Rbind ; B:Rbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Rbind ; B:Rbinds ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Rbind & B:Rbind  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:Rbind & B:Rbinds ) => #reorder( ;;A;;B)
 
     // #reorder( ;; Rbinds ;; )
   rule #reorder( ;; A:Rbinds ;;  ) => A
 
     // #reorder( ;; Rbind \/ Rbinds ;; Rbind \/ Rbinds )
   rule #reorder( ;; A:Rbind  ;; B:Rbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Rbind  ;; B:Rbind ; C:Rbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Rbind  ;; B:Rbind ; C:Rbinds ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Rbind  ;; B:Rbind & C:Rbind  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:Rbind  ;; B:Rbind & C:Rbinds ) => #reorder(B;;A;;C)
   rule #reorder( ;; A:Rbinds ;; C:Rbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Rbinds ;; C:Rbind ; D:Rbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Rbinds ;; C:Rbind ; D:Rbinds ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Rbinds ;; C:Rbind & D:Rbind  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:Rbinds ;; C:Rbind & D:Rbinds ) => #reorder(C;;A;;D)
 
     // #reorder( Rbind ;; Rbind \/ Rbinds ;; )
-  rule #reorder( A:Rbind ;; B:Rbind ;; ) => #if #order(A;;B) #then A;B #else B;A #fi
-  rule #reorder( A:Rbind ;; B:Rbind ; C:Rbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Rbind ;; B:Rbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:Rbind ;; B:Rbind & C:Rbind  ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Rbind ;; B:Rbind ; C:Rbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B;C)
+  rule #reorder( A:Rbind ;; B:Rbind & C:Rbinds ;; ) => #if #order(A;;B)
+                                                       #then #append(A;;B&C)
                                                        #else #append(B;;#reorder(A;;C;; )) #fi
 
     // #reorder( Rbind ;; Rbind \/ Rbinds ;; Rbind \/ Rbinds )
   rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind ; D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind ; D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind & D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind & D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
   rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind ; D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind ; D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind & D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind & D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
 
 
 
@@ -852,6 +960,16 @@ module STRUCT
 
   rule #structEqs( A:Proc ; B:Proc           ) => #structEq(A;B)
   rule #structEqs( A:Proc ; B:Proc , C:Procs ) => #structEq(A;B) orBool #structEqs(A;C)
+
+
+//------------------
+//--- #matchComm ---
+//------------------
+  rule #matchComm( S:Send ;; B:Bind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+  rule #matchComm( S:Send ;; B:GBind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+       andBool #subGuard(#msg(S);#bvar(B);#guard(B))
 
 //---//---//
 
