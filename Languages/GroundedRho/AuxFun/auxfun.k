@@ -15,11 +15,12 @@ module AUXFUN-SYNTAX
                       | "#length(" AnyBindPats ")" [function]
                       | "#length(" RhoKVPairs  ")" [function]
                       | "#length(" RhoKVPats   ")" [function]
-  // String [sub]expressions
-  syntax        Int ::= "#length+(" Concat     ")" [function]
-                      | "#length+(" ConcatExp  ")" [function]
-                      | "#length+(" Interp     ")" [function]
-                      | "#length+(" InterpMaps ")" [function]
+  // List & String [sub]expressions
+  syntax        Int ::= "#length+(" ListOrVar   ")" [function]
+                      | "#length+(" StringOrVar ")" [function]
+                      | "#length+(" Concat      ")" [function]
+                      | "#length+(" Interp      ")" [function]
+                      | "#length+(" InterpMaps  ")" [function]
   // Collections
   syntax        Int ::=  "#size(" RhoMap ")" [function]
                       |  "#size(" MapPat ")" [function]
@@ -33,12 +34,79 @@ module AUXFUN-SYNTAX
 // Destructuring functions
   // Receive/RecPat
     // receive bind function
-  syntax       Bind ::= "#bind(" Receive ")" [function]
-                      | "#bind(" RecPat  ")" [function]
-  syntax      Binds ::= "#bind(" Receive ")" [function]
-                      | "#bind(" RecPat  ")" [function]
-  syntax    BindPat ::= "#bind(" RecPat  ")" [function]
-  syntax   BindPats ::= "#bind(" RecPat  ")" [function]
+  syntax      Lbind ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     GLbind ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     Lbinds ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax    GLbinds ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax   LbindPat ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax  GLbindPat ::= "#gbind(" RecPat  ")" [function]
+  syntax  LbindPats ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax GLbindPats ::= "#gbind(" RecPat  ")" [function]
+  syntax      Pbind ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     GPbind ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     Pbinds ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax    GPbinds ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax   PbindPat ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax  GPbindPat ::= "#gbind(" RecPat  ")" [function]
+  syntax  PbindPats ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax GPbindPats ::= "#gbind(" RecPat  ")" [function]
+  syntax      Rbind ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     GRbind ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax     Rbinds ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax    GRbinds ::= "#gbind(" Receive ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax   RbindPat ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax  GRbindPat ::= "#gbind(" RecPat  ")" [function]
+  syntax  RbindPats ::=  "#bind(" RecPat  ")" [function]
+                      | "#gbind(" RecPat  ")" [function]
+  syntax GRbindPats ::= "#gbind(" RecPat  ")" [function]
+
+  syntax      Lbind ::= "#bind(" GBind     ")" [function]
+                      | "#bind(" GBindPat  ")" [function]
+  syntax     Lbinds ::= "#bind(" GBinds    ")" [function]
+                      | "#bind(" GBindPats ")" [function]
+  syntax   LbindPat ::= "#bind(" GBindPat  ")" [function]
+  syntax  LbindPats ::= "#bind(" GBindPats ")" [function]
+  syntax      Pbind ::= "#bind(" GBind     ")" [function]
+                      | "#bind(" GBindPat  ")" [function]
+  syntax     Pbinds ::= "#bind(" GBinds    ")" [function]
+                      | "#bind(" GBindPats ")" [function]
+  syntax   PbindPat ::= "#bind(" GBindPat  ")" [function]
+  syntax  PbindPats ::= "#bind(" GBindPats ")" [function]
+  syntax      Rbind ::= "#bind(" GBind     ")" [function]
+                      | "#bind(" GBindPat  ")" [function]
+  syntax     Rbinds ::= "#bind(" GBinds    ")" [function]
+                      | "#bind(" GBindPats ")" [function]
+  syntax   RbindPat ::= "#bind(" GBindPat  ")" [function]
+  syntax  RbindPats ::= "#bind(" GBindPats ")" [function]
     // receive listening patterns
   syntax       Name ::= "#bvar(" Receive ")" [function]
                       | "#bvar(" RecPat  ")" [function]
@@ -133,6 +201,12 @@ module AUXFUN-SYNTAX
                       | "#dec(" NewPat ")" [function]
   syntax      Names ::= "#dec(" New    ")" [function]
                       | "#dec(" NewPat ")" [function]
+
+  // Select
+  syntax LinearSRec ::=    "#branch2rec(" Branch ")" [function]
+  syntax LinearMRec ::=    "#branch2rec(" Branch ")" [function]
+  syntax     Branch ::= "#select2branch(" Select ")" [function]
+  syntax   Branches ::= "#select2branch(" Select ")" [function]
 
   // IfThenElse
     // if function
@@ -277,7 +351,7 @@ module AUXFUN-SYNTAX
   syntax        Int ::=  "#countPar(" Proc  ";" Proc ")" [function]
 
 // String Interpolation
-  syntax     String ::= "#interpolate(" String ";" RhoMap ")" [function]
+  syntax     String ::= "#interpolate(" String ";" InterpMaps ")" [function]
 
 // De Bruijn indexing
   syntax       Proc ::= "#val2Key(" Proc ";" Map ")" [function]
@@ -299,8 +373,11 @@ module AUXFUN-SYNTAX
                       | ProcPat  "#in_set"  SetPat [function]
 
 // Translation from built-ins to rho -- other direction in STRUCT
-  syntax    RhoList ::=  "#list2rho(" List ")"                [function]
-                      |    "#concat(" RhoList ";" RhoList ")" [function]
+  syntax     String ::= "#concat(" String ";" ConcatStr ")" [function]
+
+  syntax    RhoList ::= "#list2rho(" List ")"                   [function]
+                      |   "#concat(" RhoList ";" ConcatList ")" [function]
+
   syntax    ListPat ::=  "#list2rho(" List ")"                [function]
                       |    "#concat(" RhoList ";" ListPat ")" [function]
                       |    "#concat(" ListPat ";" RhoList ")" [function]
@@ -339,6 +416,15 @@ module AUXFUN-SYNTAX
   syntax    ProcPat ::= "#set2pats(" Set ")" [function]
   syntax   ProcPats ::= "#set2pats(" Set ")" [function]
 
+  syntax        Set ::= "#vardecs2set(" VarDecs ")" [function]
+  syntax    VarDecs ::= "#set2vardecs(" Set     ")" [function]
+
+// Evaluating expressions
+  syntax       Bool ::= "#eval(" BoolExp       ")" [function]
+  syntax        Int ::= "#eval(" IntExp        ")" [function]
+  syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
+  syntax     String ::= "#eval(" StringOnlyExp ")" [function]
+
   syntax      KItem ::= Name | Names | NamePat | NamePats
                       | Proc | Procs | ProcPat | ProcPats
 
@@ -347,7 +433,7 @@ endmodule
 module AUXFUN
   import AUXFUN-SYNTAX
 
-  syntax KResult ::= RhoKVPair | RhoKVPairs
+  syntax KResult ::= RhoKVPair | RhoKVPairs | Collection
                    | Name | Names | NamePat | NamePats
                    | Proc | Procs | ProcPat | ProcPats
                    | Bind | Binds | BindPat | BindPats
@@ -435,6 +521,46 @@ module AUXFUN
   rule #bind( for ( B:RbindPats ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => B
+
+  rule #gbind( R:UGRec    ) => #bind(R) [structural]
+  rule #gbind( R:UGRecPat ) => #bind(R) [structural]
+  rule #gbind( for( B:GLbind     ){ _:Proc    } ) => B
+  rule #gbind( for( B:GPbind     ){ _:Proc    } ) => B
+  rule #gbind( for( B:GRbind     ){ _:Proc    } ) => B
+  rule #gbind( for( B:GLbinds    ){ _:Proc    } ) => B
+  rule #gbind( for( B:GPbinds    ){ _:Proc    } ) => B
+  rule #gbind( for( B:GRbinds    ){ _:Proc    } ) => B
+  rule #gbind( for( B:GLbind     ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GPbind     ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GRbind     ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GLbinds    ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GPbinds    ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GRbinds    ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GLbindPat  ){ _:Proc    } ) => B
+  rule #gbind( for( B:GPbindPat  ){ _:Proc    } ) => B
+  rule #gbind( for( B:GRbindPat  ){ _:Proc    } ) => B
+  rule #gbind( for( B:GLbindPats ){ _:Proc    } ) => B
+  rule #gbind( for( B:GPbindPats ){ _:Proc    } ) => B
+  rule #gbind( for( B:GRbindPats ){ _:Proc    } ) => B
+  rule #gbind( for( B:GLbindPat  ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GPbindPat  ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GRbindPat  ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GLbindPats ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GPbindPats ){ _:ProcPat } ) => B
+  rule #gbind( for( B:GRbindPats ){ _:ProcPat } ) => B
+
+  rule #bind( A:Lbind     _:Guard ) => A
+  rule #bind( A:Pbind     _:Guard ) => A
+  rule #bind( A:Rbind     _:Guard ) => A
+  rule #bind( A:Lbinds    _:Guard ) => A
+  rule #bind( A:Pbinds    _:Guard ) => A
+  rule #bind( A:Rbinds    _:Guard ) => A
+  rule #bind( A:LbindPat  _:Guard ) => A
+  rule #bind( A:PbindPat  _:Guard ) => A
+  rule #bind( A:RbindPat  _:Guard ) => A
+  rule #bind( A:LbindPats _:Guard ) => A
+  rule #bind( A:PbindPats _:Guard ) => A
+  rule #bind( A:RbindPats _:Guard ) => A
 
   rule #bvar( A:Receive ) => #bvar(#bind(A))
   rule #chan( A:SRec ) => #chan(#bind(A))
@@ -544,12 +670,12 @@ module AUXFUN
   rule #lislens( A:MRec    ) => #lislens(#bind(A))
   rule #lislens( A:MRecPat ) => #lislens(#bind(A))
 
-  rule #lislens( A:Lbind ; B:Lbind  ) => #lislen(A) ,  #lislen(B)
-  rule #lislens( A:Lbind ; B:Lbinds ) => #lislen(A) , #lislens(B)
-  rule #lislens( A:Pbind ; B:Pbind  ) => #lislen(A) ,  #lislen(B)
-  rule #lislens( A:Pbind ; B:Pbinds ) => #lislen(A) , #lislens(B)
-  rule #lislens( A:Rbind ; B:Rbind  ) => #lislen(A) ,  #lislen(B)
-  rule #lislens( A:Rbind ; B:Rbinds ) => #lislen(A) , #lislens(B)
+  rule #lislens( A:Lbind & B:Lbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Lbind & B:Lbinds ) => #lislen(A) , #lislens(B)
+  rule #lislens( A:Pbind & B:Pbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Pbind & B:Pbinds ) => #lislen(A) , #lislens(B)
+  rule #lislens( A:Rbind & B:Rbind  ) => #lislen(A) ,  #lislen(B)
+  rule #lislens( A:Rbind & B:Rbinds ) => #lislen(A) , #lislens(B)
 
 // receive types - receive
   rule #rtype( _:LinearSRec     ) => 0
@@ -670,125 +796,125 @@ module AUXFUN
   rule #append( A:ProcPat , B:ProcPats ; C:ProcPats ) => A,#append(B;C)
 
 // Binds
-  rule #append( A:Lbind ;; B:Lbind  ) => A;B
-  rule #append( A:Lbind ;; B:Lbinds ) => A;B
-  rule #append( A:Lbind  ; B:Lbinds ;; C:Lbind  ) => A;#append(B;;C)
-  rule #append( A:Lbind  ; B:Lbinds ;; C:Lbinds ) => A;#append(B;;C)
-  rule #append( A:Pbind ;; B:Pbind  ) => A;B
-  rule #append( A:Pbind ;; B:Pbinds ) => A;B
-  rule #append( A:Pbind  ; B:Pbinds ;; C:Pbind  ) => A;#append(B;;C)
-  rule #append( A:Pbind  ; B:Pbinds ;; C:Pbinds ) => A;#append(B;;C)
-  rule #append( A:Rbind ;; B:Rbind  ) => A;B
-  rule #append( A:Rbind ;; B:Rbinds ) => A;B
-  rule #append( A:Rbind  ; B:Rbinds ;; C:Rbind  ) => A;#append(B;;C)
-  rule #append( A:Rbind  ; B:Rbinds ;; C:Rbinds ) => A;#append(B;;C)
+  rule #append( A:Lbind ;; B:Lbind  ) => A&B
+  rule #append( A:Lbind ;; B:Lbinds ) => A&B
+  rule #append( A:Pbind ;; B:Pbind  ) => A&B
+  rule #append( A:Pbind ;; B:Pbinds ) => A&B
+  rule #append( A:Rbind ;; B:Rbind  ) => A&B
+  rule #append( A:Rbind ;; B:Rbinds ) => A&B
+  rule #append( A:Lbind  & B:Lbinds ;; C:Lbind  ) => A&#append(B;;C)
+  rule #append( A:Lbind  & B:Lbinds ;; C:Lbinds ) => A&#append(B;;C)
+  rule #append( A:Pbind  & B:Pbinds ;; C:Pbind  ) => A&#append(B;;C)
+  rule #append( A:Pbind  & B:Pbinds ;; C:Pbinds ) => A&#append(B;;C)
+  rule #append( A:Rbind  & B:Rbinds ;; C:Rbind  ) => A&#append(B;;C)
+  rule #append( A:Rbind  & B:Rbinds ;; C:Rbinds ) => A&#append(B;;C)
 
 // BindPats
   // LbindPats
-  rule #append( A:Lbind    ;; B:LbindPat  ) => A;B
-  rule #append( A:Lbind    ;; B:LbindPats ) => A;B
-  rule #append( A:LbindPat ;; B:Lbind     ) => A;B
-  rule #append( A:LbindPat ;; B:Lbinds    ) => A;B
-  rule #append( A:LbindPat ;; B:LbindPat  ) => A;B
-  rule #append( A:LbindPat ;; B:LbindPats ) => A;B
-  rule #append( A:Lbind     ; B:Lbind     ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:Lbind     ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:Lbinds    ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:Lbinds    ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPat  ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPat  ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPat  ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPat  ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPats ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPats ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPats ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:Lbind     ; B:LbindPats ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbind     ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbind     ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbind     ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbind     ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbinds    ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbinds    ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbinds    ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:Lbinds    ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPat  ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPat  ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPat  ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPat  ;; C:LbindPats ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPats ;; C:Lbind     ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPats ;; C:Lbinds    ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPats ;; C:LbindPat  ) => A;#append(B;;C)
-  rule #append( A:LbindPat  ; B:LbindPats ;; C:LbindPats ) => A;#append(B;;C)
+  rule #append( A:Lbind    ;; B:LbindPat  ) => A&B
+  rule #append( A:Lbind    ;; B:LbindPats ) => A&B
+  rule #append( A:LbindPat ;; B:Lbind     ) => A&B
+  rule #append( A:LbindPat ;; B:Lbinds    ) => A&B
+  rule #append( A:LbindPat ;; B:LbindPat  ) => A&B
+  rule #append( A:LbindPat ;; B:LbindPats ) => A&B
+  rule #append( A:Lbind     & B:Lbind     ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:Lbind     ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:Lbinds    ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:Lbinds    ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPat  ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPat  ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPat  ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPat  ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPats ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPats ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPats ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:Lbind     & B:LbindPats ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbind     ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbind     ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbind     ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbind     ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbinds    ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbinds    ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbinds    ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:Lbinds    ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPat  ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPat  ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPat  ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPat  ;; C:LbindPats ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPats ;; C:Lbind     ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPats ;; C:Lbinds    ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPats ;; C:LbindPat  ) => A&#append(B;;C)
+  rule #append( A:LbindPat  & B:LbindPats ;; C:LbindPats ) => A&#append(B;;C)
   // PbindPats
-  rule #append( A:Pbind    ;; B:PbindPat  ) => A;B
-  rule #append( A:Pbind    ;; B:PbindPats ) => A;B
-  rule #append( A:PbindPat ;; B:Pbind     ) => A;B
-  rule #append( A:PbindPat ;; B:Pbinds    ) => A;B
-  rule #append( A:PbindPat ;; B:PbindPat  ) => A;B
-  rule #append( A:PbindPat ;; B:PbindPats ) => A;B
-  rule #append( A:Pbind     ; B:Pbind     ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:Pbind     ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:Pbinds    ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:Pbinds    ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPat  ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPat  ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPat  ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPat  ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPats ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPats ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPats ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:Pbind     ; B:PbindPats ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbind     ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbind     ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbind     ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbind     ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbinds    ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbinds    ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbinds    ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:Pbinds    ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPat  ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPat  ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPat  ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPat  ;; C:PbindPats ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPats ;; C:Pbind     ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPats ;; C:Pbinds    ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPats ;; C:PbindPat  ) => A;#append(B;;C)
-  rule #append( A:PbindPat  ; B:PbindPats ;; C:PbindPats ) => A;#append(B;;C)
+  rule #append( A:Pbind    ;; B:PbindPat  ) => A&B
+  rule #append( A:Pbind    ;; B:PbindPats ) => A&B
+  rule #append( A:PbindPat ;; B:Pbind     ) => A&B
+  rule #append( A:PbindPat ;; B:Pbinds    ) => A&B
+  rule #append( A:PbindPat ;; B:PbindPat  ) => A&B
+  rule #append( A:PbindPat ;; B:PbindPats ) => A&B
+  rule #append( A:Pbind     & B:Pbind     ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:Pbind     ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:Pbinds    ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:Pbinds    ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPat  ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPat  ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPat  ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPat  ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPats ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPats ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPats ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:Pbind     & B:PbindPats ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbind     ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbind     ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbind     ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbind     ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbinds    ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbinds    ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbinds    ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:Pbinds    ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPat  ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPat  ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPat  ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPat  ;; C:PbindPats ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPats ;; C:Pbind     ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPats ;; C:Pbinds    ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPats ;; C:PbindPat  ) => A&#append(B;;C)
+  rule #append( A:PbindPat  & B:PbindPats ;; C:PbindPats ) => A&#append(B;;C)
   // RbindPats
-  rule #append( A:Rbind    ;; B:RbindPat  ) => A;B
-  rule #append( A:Rbind    ;; B:RbindPats ) => A;B
-  rule #append( A:RbindPat ;; B:Rbind     ) => A;B
-  rule #append( A:RbindPat ;; B:Rbinds    ) => A;B
-  rule #append( A:RbindPat ;; B:RbindPat  ) => A;B
-  rule #append( A:RbindPat ;; B:RbindPats ) => A;B
-  rule #append( A:Rbind     ; B:Rbind     ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:Rbind     ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:Rbinds    ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:Rbinds    ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPat  ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPat  ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPat  ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPat  ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPats ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPats ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPats ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:Rbind     ; B:RbindPats ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbind     ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbind     ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbind     ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbind     ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbinds    ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbinds    ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbinds    ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:Rbinds    ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPat  ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPat  ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPat  ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPat  ;; C:RbindPats ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPats ;; C:Rbind     ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPats ;; C:Rbinds    ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPats ;; C:RbindPat  ) => A;#append(B;;C)
-  rule #append( A:RbindPat  ; B:RbindPats ;; C:RbindPats ) => A;#append(B;;C)
+  rule #append( A:Rbind    ;; B:RbindPat  ) => A&B
+  rule #append( A:Rbind    ;; B:RbindPats ) => A&B
+  rule #append( A:RbindPat ;; B:Rbind     ) => A&B
+  rule #append( A:RbindPat ;; B:Rbinds    ) => A&B
+  rule #append( A:RbindPat ;; B:RbindPat  ) => A&B
+  rule #append( A:RbindPat ;; B:RbindPats ) => A&B
+  rule #append( A:Rbind     & B:Rbind     ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:Rbind     ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:Rbinds    ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:Rbinds    ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPat  ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPat  ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPat  ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPat  ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPats ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPats ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPats ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:Rbind     & B:RbindPats ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbind     ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbind     ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbind     ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbind     ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbinds    ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbinds    ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbinds    ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:Rbinds    ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPat  ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPat  ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPat  ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPat  ;; C:RbindPats ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPats ;; C:Rbind     ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPats ;; C:Rbinds    ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPats ;; C:RbindPat  ) => A&#append(B;;C)
+  rule #append( A:RbindPat  & B:RbindPats ;; C:RbindPats ) => A&#append(B;;C)
 
 // RhoKVPairs & RhoKVPats
   rule #append( A:RhoKVPair                ; B:RhoKVPairs ) => A,B
@@ -821,8 +947,8 @@ module AUXFUN
 //------------
 // New name declarations
   // New[Pat]
-  rule #dec( new A:Names in { _:Proc    } ) => A
-  rule #dec( new A:Names in { _:ProcPat } ) => A
+  rule #dec( new A:VarDecs in { _:Proc    } ) => A
+  rule #dec( new A:VarDecs in { _:ProcPat } ) => A
 
 //-------------
 //--- #size ---
@@ -843,7 +969,7 @@ module AUXFUN
 //--- #length ---
 //---------------
 // Proc[Pat]s
-  rule #length( EmptyP    ) => 0
+  rule #length(  EmptyP   ) => 0
   rule #length( A:Proc    ) => 1 requires notBool isEmptyProc(A)
   rule #length( _:ProcPat ) => 1
   rule #length( _:Proc    , P:Procs    ) => 1 +Int #length(P)
@@ -858,7 +984,7 @@ module AUXFUN
 
   // RhoKVPairs
   rule #length( EmptyP : EmptyP ) => 0
-  rule #length( A:RhoKVPair     ) => 1 requires A =/=K (EmptyP : EmptyP)
+  rule #length( _:RhoKVPair     ) => 1 [owise]
   rule #length( _:RhoKVPat      ) => 1
   rule #length( _:RhoKVPair , B:RhoKVPairs ) => 1 +Int #length(B)
   rule #length( _:RhoKVPair , B:RhoKVPats  ) => 1 +Int #length(B)
@@ -871,7 +997,8 @@ module AUXFUN
 
 // Name[Pat]s
   rule #length(   EmptyN  ) => 0
-  rule #length( A:Name    ) => 1 requires notBool isEmptyName(A)
+  rule #length(  @EmptyP  ) => 0
+  rule #length( _:Name    ) => 1 [owise]
   rule #length( _:NamePat ) => 1
   rule #length( _:Name    , N:Names    ) => 1 +Int #length(N)
   rule #length( _:Name    , N:NamePats ) => 1 +Int #length(N)
@@ -881,32 +1008,32 @@ module AUXFUN
 //--- Bind[Pat]s ---
 // Binds - number of listens in a join[pat]
   // Lbind[Pat]s
-  rule #length( _:Lbind    ; _:Lbind     ) => 2
-  rule #length( _:Lbind    ; _:LbindPat  ) => 2
-  rule #length( _:LbindPat ; _:Lbind     ) => 2
-  rule #length( _:LbindPat ; _:LbindPat  ) => 2
-  rule #length( _:Lbind    ; A:Lbinds    ) => 1 +Int #length(A)
-  rule #length( _:Lbind    ; A:LbindPats ) => 1 +Int #length(A)
-  rule #length( _:LbindPat ; A:Lbinds    ) => 1 +Int #length(A)
-  rule #length( _:LbindPat ; A:LbindPats ) => 1 +Int #length(A)
+  rule #length( _:Lbind    & _:Lbind     ) => 2
+  rule #length( _:Lbind    & _:LbindPat  ) => 2
+  rule #length( _:LbindPat & _:Lbind     ) => 2
+  rule #length( _:LbindPat & _:LbindPat  ) => 2
+  rule #length( _:Lbind    & A:Lbinds    ) => 1 +Int #length(A)
+  rule #length( _:Lbind    & A:LbindPats ) => 1 +Int #length(A)
+  rule #length( _:LbindPat & A:Lbinds    ) => 1 +Int #length(A)
+  rule #length( _:LbindPat & A:LbindPats ) => 1 +Int #length(A)
   // Pbind[Pat]s
-  rule #length( _:Pbind    ; _:Pbind     ) => 2
-  rule #length( _:Pbind    ; _:PbindPat  ) => 2
-  rule #length( _:PbindPat ; _:Pbind     ) => 2
-  rule #length( _:PbindPat ; _:PbindPat  ) => 2
-  rule #length( _:Pbind    ; A:Pbinds    ) => 1 +Int #length(A)
-  rule #length( _:Pbind    ; A:PbindPats ) => 1 +Int #length(A)
-  rule #length( _:PbindPat ; A:Pbinds    ) => 1 +Int #length(A)
-  rule #length( _:PbindPat ; A:PbindPats ) => 1 +Int #length(A)
+  rule #length( _:Pbind    & _:Pbind     ) => 2
+  rule #length( _:Pbind    & _:PbindPat  ) => 2
+  rule #length( _:PbindPat & _:Pbind     ) => 2
+  rule #length( _:PbindPat & _:PbindPat  ) => 2
+  rule #length( _:Pbind    & A:Pbinds    ) => 1 +Int #length(A)
+  rule #length( _:Pbind    & A:PbindPats ) => 1 +Int #length(A)
+  rule #length( _:PbindPat & A:Pbinds    ) => 1 +Int #length(A)
+  rule #length( _:PbindPat & A:PbindPats ) => 1 +Int #length(A)
   // Rbind[Pat]s
-  rule #length( _:Rbind    ; _:Rbind     ) => 2
-  rule #length( _:Rbind    ; _:RbindPat  ) => 2
-  rule #length( _:RbindPat ; _:Rbind     ) => 2
-  rule #length( _:RbindPat ; _:RbindPat  ) => 2
-  rule #length( _:Rbind    ; A:Rbinds    ) => 1 +Int #length(A)
-  rule #length( _:Rbind    ; A:RbindPats ) => 1 +Int #length(A)
-  rule #length( _:RbindPat ; A:Rbinds    ) => 1 +Int #length(A)
-  rule #length( _:RbindPat ; A:RbindPats ) => 1 +Int #length(A)
+  rule #length( _:Rbind    & _:Rbind     ) => 2
+  rule #length( _:Rbind    & _:RbindPat  ) => 2
+  rule #length( _:RbindPat & _:Rbind     ) => 2
+  rule #length( _:RbindPat & _:RbindPat  ) => 2
+  rule #length( _:Rbind    & A:Rbinds    ) => 1 +Int #length(A)
+  rule #length( _:Rbind    & A:RbindPats ) => 1 +Int #length(A)
+  rule #length( _:RbindPat & A:Rbinds    ) => 1 +Int #length(A)
+  rule #length( _:RbindPat & A:RbindPats ) => 1 +Int #length(A)
   // Guarded
   rule #length( B:Lbinds    _:Guard ) => #length(B)
   rule #length( B:Pbinds    _:Guard ) => #length(B)
@@ -916,14 +1043,16 @@ module AUXFUN
   rule #length( B:RbindPats _:Guard ) => #length(B)
 
 // Concat
-  rule #length+( _:StringOrVar A:ConcatExp ) => 1 +Int #length+(A)
-// ConcatExp
-  rule #length+( ++ _:StringOrVar ) => 1
-  rule #length+( ++ _:StringOrVar A:ConcatExp ) => 1 +Int #length+(A)
+  // ConcatList
+  rule #length+( _:ListOrVar   ) => 1
+  rule #length+( _:ListOrVar   ++ A:ConcatList ) => 1 +Int #length+(A)
+  // ConcatStr
+  rule #length+( _:StringOrVar ) => 1
+  rule #length+( _:StringOrVar ++ A:ConcatStr  ) => 1 +Int #length+(A)
 
 // Interp
   rule #length+( _:StringOrVar %% A:InterpMaps ) => 1 +Int #length+(A)
-// InterpMaps
+  // InterpMaps
   rule #length+( _:RhoMap ) => 1
   rule #length+( _:RhoMap %% A:InterpMaps ) => 1 +Int #length+(A)
 
@@ -946,12 +1075,12 @@ module AUXFUN
   rule #chan( B:Rbind _:Guard ) => #chan(B)
 
   // comma-separated list of channels involved in bindings
-  rule #chan( B:Lbind ; C:Lbind  ) => #chan(B) , #chan(C)
-  rule #chan( B:Lbind ; C:Lbinds ) => #chan(B) , #chan(C)
-  rule #chan( B:Rbind ; C:Rbind  ) => #chan(B) , #chan(C)
-  rule #chan( B:Rbind ; C:Rbinds ) => #chan(B) , #chan(C)
-  rule #chan( B:Pbind ; C:Pbind  ) => #chan(B) , #chan(C)
-  rule #chan( B:Pbind ; C:Pbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind & C:Lbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind & C:Lbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind & C:Rbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind & C:Rbinds ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind & C:Pbind  ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind & C:Pbinds ) => #chan(B) , #chan(C)
 
   rule #chan( B:Lbinds _:Guard ) => #chan(B)
   rule #chan( B:Pbinds _:Guard ) => #chan(B)
@@ -973,27 +1102,27 @@ module AUXFUN
   rule #chan( B:RbindPat _:Guard ) => #chan(B)
 
   // comma-separated list of channels involved in bindings
-  rule #chan( B:Lbind    ; C:LbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:LbindPat ; C:Lbind     ) => #chan(B) , #chan(C)
-  rule #chan( B:LbindPat ; C:LbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:Lbind    ; C:LbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:LbindPat ; C:Lbinds    ) => #chan(B) , #chan(C)
-  rule #chan( B:Lbind    ; C:LbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:LbindPat ; C:LbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:Pbind    ; C:PbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:PbindPat ; C:Pbind     ) => #chan(B) , #chan(C)
-  rule #chan( B:PbindPat ; C:PbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:Pbind    ; C:PbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:PbindPat ; C:Pbinds    ) => #chan(B) , #chan(C)
-  rule #chan( B:Pbind    ; C:PbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:PbindPat ; C:PbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:Rbind    ; C:RbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:RbindPat ; C:Rbind     ) => #chan(B) , #chan(C)
-  rule #chan( B:RbindPat ; C:RbindPat  ) => #chan(B) , #chan(C)
-  rule #chan( B:Rbind    ; C:RbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:RbindPat ; C:Rbinds    ) => #chan(B) , #chan(C)
-  rule #chan( B:Rbind    ; C:RbindPats ) => #chan(B) , #chan(C)
-  rule #chan( B:RbindPat ; C:RbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind    & C:LbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:LbindPat & C:Lbind     ) => #chan(B) , #chan(C)
+  rule #chan( B:LbindPat & C:LbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind    & C:LbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:LbindPat & C:Lbinds    ) => #chan(B) , #chan(C)
+  rule #chan( B:Lbind    & C:LbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:LbindPat & C:LbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind    & C:PbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:PbindPat & C:Pbind     ) => #chan(B) , #chan(C)
+  rule #chan( B:PbindPat & C:PbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind    & C:PbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:PbindPat & C:Pbinds    ) => #chan(B) , #chan(C)
+  rule #chan( B:Pbind    & C:PbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:PbindPat & C:PbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind    & C:RbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:RbindPat & C:Rbind     ) => #chan(B) , #chan(C)
+  rule #chan( B:RbindPat & C:RbindPat  ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind    & C:RbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:RbindPat & C:Rbinds    ) => #chan(B) , #chan(C)
+  rule #chan( B:Rbind    & C:RbindPats ) => #chan(B) , #chan(C)
+  rule #chan( B:RbindPat & C:RbindPats ) => #chan(B) , #chan(C)
   // Guarded
   rule #chan( B:LbindPats _:Guard ) => #chan(B)
   rule #chan( B:PbindPats _:Guard ) => #chan(B)
@@ -1067,30 +1196,30 @@ module AUXFUN
   rule #bvar( B:RbindPat _:Guard ) => #bvar(B)
 
 // Multiple Bindings
-  rule #bvar( B:Lbind    ; C:Lbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    ; C:Lbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    ; C:LbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    ; C:LbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat ; C:Lbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat ; C:Lbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat ; C:LbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat ; C:LbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    ; C:Pbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    ; C:Pbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    ; C:PbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    ; C:PbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat ; C:Pbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat ; C:Pbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat ; C:PbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat ; C:PbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    ; C:Rbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    ; C:Rbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    ; C:RbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    ; C:RbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat ; C:Rbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat ; C:Rbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat ; C:RbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat ; C:RbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Lbind    & C:Lbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Lbind    & C:Lbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Lbind    & C:LbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Lbind    & C:LbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:LbindPat & C:Lbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:LbindPat & C:Lbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:LbindPat & C:LbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:LbindPat & C:LbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Pbind    & C:Pbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Pbind    & C:Pbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Pbind    & C:PbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Pbind    & C:PbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:PbindPat & C:Pbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:PbindPat & C:Pbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:PbindPat & C:PbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:PbindPat & C:PbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Rbind    & C:Rbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Rbind    & C:Rbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Rbind    & C:RbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:Rbind    & C:RbindPats ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:RbindPat & C:Rbind     ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:RbindPat & C:Rbinds    ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:RbindPat & C:RbindPat  ) => #append(#bvar(B);#bvar(C))
+  rule #bvar( B:RbindPat & C:RbindPats ) => #append(#bvar(B);#bvar(C))
 
   rule #bvar( B:LbindPats _:Guard ) => #bvar(B)
   rule #bvar( B:PbindPats _:Guard ) => #bvar(B)
@@ -1099,9 +1228,8 @@ module AUXFUN
 //---------------
 //--- #quotes ---
 //---------------
-  rule #quotes( \_        ) => @\_
   rule #quotes( A:Proc    ) => @A
-  rule #quotes( A:ProcPat ) => @A requires notBool isWildCard(A)
+  rule #quotes( A:ProcPat ) => @A
   rule #quotes( A:Proc    , B:Procs    ) => @A , #quotes(B)
   rule #quotes( A:Proc    , B:ProcPats ) => @A , #quotes(B)
   rule #quotes( A:ProcPat , B:Procs    ) => @A , #quotes(B)
@@ -1121,6 +1249,7 @@ module AUXFUN
 //--------------------
 //--- #interpolate ---
 //--------------------
+// #interpolate( String ; RhoMap )
   // substitutes string in first occurrence of ${...} and ignores all } before ${
   rule #interpolate( S:String ; { A:String : B:String } )
        => #if substrString(S,findString(S,"${",0) +Int 2,findString(S,"}",findString(S,"${",0) +Int 2)) ==String A
@@ -1143,17 +1272,20 @@ module AUXFUN
   // if all else fails, return the original string
   rule #interpolate( S:String ; _:RhoMap ) => S [owise]
 
+  rule #interpolate( S:String ; A:RhoMap %% B:InterpMaps )
+    => #interpolate(#interpolate(S;A);B)
+
 //------------------
 //--- Predicates ---
 //------------------
-// Maps
+// Maps -- syntactic Proc inclusion in set of keys
   rule _:Proc    #in_keys   A:RhoMap => false requires isEmptyMap(A)
   rule _:ProcPat #in_keys   _:RhoMap => false
   rule A:Proc    #in_keys { B:RhoKVPairs } => A in keys(#KVs2map(B))
   rule A:Proc    #in_keys { B:RhoKVPats  } => A in keys(#KVs2map(B))
   rule A:ProcPat #in_keys { B:RhoKVPats  } => A in keys(#KVs2map(B))
 
-// Sets
+// Sets -- syntactic Proc inclusion in a set of Procs
   rule _:Proc    #in_set A:RhoSet => false requires isEmptySet(A)
   rule _:ProcPat #in_set _:RhoSet => false
   rule A:Proc    #in_set Set( B:Procs    ) => A in #procs2set(B)
@@ -1296,12 +1428,19 @@ module AUXFUN
   rule #list2rho( ListItem( A:ProcPat ) B:List ) => [A, #list2pats(B)]
   rule #concat( [ ] ; A:RhoList ) => A
   rule #concat( [ ] ; A:ListPat ) => A
-  rule #concat( A:RhoList ; [ ] ) => A
+  rule #concat( A:RhoList ; [ ] ) => A requires notBool isEmptyList(A)
   rule #concat( A:ListPat ; [ ] ) => A
   rule #concat( [ A:Procs    ] ; [ B:Procs    ] ) => [#append(A;B)]
   rule #concat( [ A:Procs    ] ; [ B:ProcPats ] ) => [#append(A;B)]
   rule #concat( [ A:ProcPats ] ; [ B:Procs    ] ) => [#append(A;B)]
   rule #concat( [ A:ProcPats ] ; [ B:ProcPats ] ) => [#append(A;B)]
+
+  rule #concat( A:RhoList ; B:RhoList ++ C:RhoList    ) => #concat(#concat(A;B);C)
+  rule #concat( A:RhoList ; B:RhoList ++ C:ConcatList ) => #concat(#concat(A;B);C)
+
+// String
+  rule #concat( A:String ; B:String ) => A +String B
+  rule #concat( A:String ; B:String ++ C:ConcatStr ) => #concat(A +String B;C)
 
 // Map
   rule #map2rho( A:Map ) => #KVs2rho(#map2KVs(A))
@@ -1390,6 +1529,56 @@ module AUXFUN
   rule #else( if ( _:BExp ) _:Proc ) => Nil
   rule #else( if ( _:BExp ) _:Proc else A:Proc ) => A
 
+//--------------------
+//--- #vardecs2set ---
+//--------------------
+  rule #vardecs2set( A:Var                ) => SetItem(A)
+  rule #vardecs2set( A:Var ( _:Uri )      ) => SetItem(A)
+  rule #vardecs2set( A:VarDec , B:VarDecs ) => SetItem(A) #vardecs2set(B)
+
+  rule #set2vardecs( SetItem( A:Var ) ) => A
+  rule #set2vardecs( SetItem( A:Var ) B:Set ) => A , #set2vardecs(B)
+       requires B =/=K .Set
+
+//--------------
+//--- Select ---
+//--------------
+  rule #branch2rec( { A:Lbind  } |=> B:Proc ) => for(A){B}
+  rule #branch2rec( { A:Lbinds } |=> B:Proc ) => for(A){B}
+
+  rule #select2branch( select { A:Branch   } ) => A
+  rule #select2branch( select { A:Branches } ) => A requires notBool isBranch(A)
+
+//-------------------
+// --- Evaluation ---
+//-------------------
+// BoolExp
+  rule #eval( B:Bool ) => B [structural]
+  rule #eval(           not B:BoolExp ) =>          notBool #eval(B)
+  rule #eval( A:BoolExp and B:BoolExp ) => #eval(A) andBool #eval(B)
+  rule #eval( A:BoolExp  or B:BoolExp ) => #eval(A)  orBool #eval(B)
+  rule #eval( A:IntExp   <= B:IntExp  ) => #eval(A)   <=Int #eval(B)
+  rule #eval( A:IntExp    < B:IntExp  ) => #eval(A)    <Int #eval(B)
+  rule #eval( A:IntExp   >= B:IntExp  ) => #eval(A)   >=Int #eval(B)
+  rule #eval( A:IntExp    > B:IntExp  ) => #eval(A)    >Int #eval(B)
+
+// IntExp
+  rule #eval( B:Int ) => B [structural]
+  rule #eval(          - B:IntExp ) =>       0  -Int #eval(B)
+  rule #eval( A:IntExp % B:IntExp ) => #eval(A) %Int #eval(B)
+  rule #eval( A:IntExp * B:IntExp ) => #eval(A) *Int #eval(B)
+  rule #eval( A:IntExp / B:IntExp ) => #eval(A) /Int #eval(B)
+  rule #eval( A:IntExp + B:IntExp ) => #eval(A) +Int #eval(B)
+  rule #eval( A:IntExp - B:IntExp ) => #eval(A) -Int #eval(B)
+
+// RhoListExp & StringExp
+  rule #eval( A:RhoList ) => A [structural]
+  rule #eval( A:RhoList ++ B:ConcatRhoList ) => #concat(A;#eval(B))
+
+  rule #eval( A:String  ) => A [structural]
+  rule #eval( A:String        ++ B:StringOnlyExp ) => A +String #eval(B)
+  rule #eval( A:StringOnlyExp %% B:InterpMaps    ) => #interpolate(#eval(A);B)
+
 //-------------
 //--- #bind ---
 //-------------
@@ -1436,13 +1625,13 @@ module AUXFUN
 //--- #lengths ---
 //----------------
 // Binds
-//  rule #lengths( B:Lbind ; C:Lbind  ) => #lislen(B) , #lislen(C)
-//  rule #lengths( B:Lbind ; C:Lbinds ) => #lislen(B) , #lengths(C)
+//  rule #lengths( B:Lbind & C:Lbind  ) => #lislen(B) , #lislen(C)
+//  rule #lengths( B:Lbind & C:Lbinds ) => #lislen(B) , #lengths(C)
 
-//  rule #lengths( B:Rbind ; C:Rbind  ) => #lislen(B) , #lislen(C)
-//  rule #lengths( B:Rbind ; C:Rbinds ) => #lislen(B) , #lengths(C)
+//  rule #lengths( B:Rbind & C:Rbind  ) => #lislen(B) , #lislen(C)
+//  rule #lengths( B:Rbind & C:Rbinds ) => #lislen(B) , #lengths(C)
 
-//  rule #lengths( B:Pbind ; C:Pbind  ) => #lislen(B) , #lislen(C)
-//  rule #lengths( B:Pbind ; C:Pbinds ) => #lislen(B) , #lengths(C)
+//  rule #lengths( B:Pbind & C:Pbind  ) => #lislen(B) , #lislen(C)
+//  rule #lengths( B:Pbind & C:Pbinds ) => #lislen(B) , #lengths(C)
 
 endmodule
