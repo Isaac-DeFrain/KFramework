@@ -4,6 +4,7 @@
 
 require "domains.k"
 require "../grho.k"
+require "../AuxFun/auxfun.k"
 
 module NAMEVAR-SYNTAX
   import DOMAINS
@@ -16,6 +17,7 @@ module NAMEVAR-SYNTAX
                    | Procs
                    | ProcPats
                    | RhoKVPairs
+                   | RhoKVPats
                    | AnyBind
                    | AnyBinds
                    | AnyBindPat
@@ -23,14 +25,13 @@ module NAMEVAR-SYNTAX
                    | MatchCases
                    | MCasePats
                    | MethodAndArgs
-                   | ConcatExp
                    | InterpMaps
                    | Set
                    | Map
 
 // Variable types
   syntax    Kind ::= "name" | "proc" | "pat"
-  syntax KindArg ::= Arg ":" Kind
+  syntax KindArg ::= Arg "::" Kind
 
 // Kind Sets
   syntax     Set ::=  "FV("   Arg  ")" [function] // free variables
@@ -43,8 +44,8 @@ module NAMEVAR-SYNTAX
                    | "SV+("   Arg  ")" [function] // auxiliary for bound variables
                    |  "SN("   Arg  ")" [function] // send names
                    |   "V("   Arg  ")" [function] // variables
-                   |  "Vn("   Var  ")" [function] // Name variables
-                   |  "Vp("   Var  ")" [function] // Proc variables
+                   |  "Vn("  Name  ")" [function] // Name variables
+                   |  "Vp("  Proc  ")" [function] // Proc variables
                    |  "LV("   Arg  ")" [function] // listening variables
                    | "LV+("   Arg  ")" [function] // auxiliary for bound variables
 
@@ -75,7 +76,7 @@ module NAMEVAR-SYNTAX
   syntax    Proc ::= "flatten(" Set ")" [function]
   syntax   Procs ::= "flatten(" Set ")" [function]
 
-// For sets...
+// For sets
 syntax     KItem ::= Arg | Var | ProcVar | KindArg
 
 endmodule
@@ -83,6 +84,7 @@ endmodule
 
 module NAMEVAR
   import NAMEVAR-SYNTAX
+  import AUXFUN
 
   syntax KResult ::= Set
 
@@ -91,8 +93,10 @@ module NAMEVAR
 //-----------------
 // Ground Terms
   rule  V( _:Ground    ) => .Set
-  rule  V( B:BoundProc ) => .Set
   rule #V( _:Ground    ) => .Set
+
+// Bound Procs
+  rule  V( B:BoundProc ) => .Set
   rule #V( B:BoundProc ) => .Set
 
 // Pattern
@@ -103,28 +107,28 @@ module NAMEVAR
   rule #V( _:SimplePat ) => .Set
 
 // ProcVar -- TODO
-  rule Vn( X:Var ) => SetItem(X : name)
-  rule Vp( X:Var ) => SetItem(X : proc)
-//rule  V( X:Name[Pat] ) => Vn(X)
+  rule Vn(  X:Var  ) => SetItem(X :: name)
+  rule Vp( \X:Var  ) => SetItem(X :: proc)
+  rule Vn(  X:Name ) => V(X) requires notBool isVar(X)
+  rule Vp(  X:Proc ) => V(X) requires notBool isProcVar(X)
 //rule  V( X:Proc[Pat] ) => Vp(X)
 
-  rule  V( \X:Var ) => Vp(X)
+  rule  V( \X:Var ) => Vp(\X)
   rule #V( \X:Var ) => SetItem(X)
 
 // Names
-  // Primitive names
+  // Primitive Names
   rule  V( X:Var ) => Vn(X)
   rule #V( X:Var ) => SetItem(X)
 
   rule  V( X:Var ( _:Uri ) ) => Vn(X)
   rule #V( X:Var ( _:Uri ) ) => SetItem(X)
 
-  rule  V( @B:BoundProc ) => .Set // Vn(@B) Vp(B)???
-  rule  V(  B:BoundName ) => .Set // Vn(B)???
-  rule #V( @B:BoundProc ) => .Set
+  // Bound Names
+  rule  V(  B:BoundName ) => .Set
   rule #V(  B:BoundName ) => .Set
     // can use @P as Name or P as Proc
-  rule  V( @\X:Var   ) => Vp(X)
+  rule  V( @\X:Var   ) => Vp(\X)
   rule #V( @\X:Var   ) => SetItem(X)
 
   rule  V( @P:Proc    ) =>  V(P) requires notBool (isProcVar(P) orBool isBoundProc(P))
@@ -141,6 +145,28 @@ module NAMEVAR
   rule #V( A:NamePat , B:Names    ) => #V(A) #V(B)
   rule #V( A:Name    , B:NamePats ) => #V(A) #V(B)
   rule #V( A:NamePat , B:NamePats ) => #V(A) #V(B)
+
+// Pattern Expressions
+  rule  V( ~ A:Proc    ) =>  V(A)
+  rule  V( ~ A:ProcPat ) =>  V(A)
+  rule  V( A:Proc    /\ B:Proc    ) =>  V(A)  V(B)
+  rule  V( A:Proc    /\ B:ProcPat ) =>  V(A)  V(B)
+  rule  V( A:ProcPat /\ B:Proc    ) =>  V(A)  V(B)
+  rule  V( A:ProcPat /\ B:ProcPat ) =>  V(A)  V(B)
+  rule  V( A:Proc    \/ B:Proc    ) =>  V(A)  V(B)
+  rule  V( A:Proc    \/ B:ProcPat ) =>  V(A)  V(B)
+  rule  V( A:ProcPat \/ B:Proc    ) =>  V(A)  V(B)
+  rule  V( A:ProcPat \/ B:ProcPat ) =>  V(A)  V(B)
+  rule #V( ~ A:Proc    ) => #V(A)
+  rule #V( ~ A:ProcPat ) => #V(A)
+  rule #V( A:Proc    /\ B:Proc    ) => #V(A) #V(B)
+  rule #V( A:Proc    /\ B:ProcPat ) => #V(A) #V(B)
+  rule #V( A:ProcPat /\ B:Proc    ) => #V(A) #V(B)
+  rule #V( A:ProcPat /\ B:ProcPat ) => #V(A) #V(B)
+  rule #V( A:Proc    \/ B:Proc    ) => #V(A) #V(B)
+  rule #V( A:Proc    \/ B:ProcPat ) => #V(A) #V(B)
+  rule #V( A:ProcPat \/ B:Proc    ) => #V(A) #V(B)
+  rule #V( A:ProcPat \/ B:ProcPat ) => #V(A) #V(B)
 
 // Receives, Binds, Contracts -- TODO: simplify to B:Bind[s] & B:Bind[s] if G:BExp
   // Guard variables should be contained in the listening variables, i.e. #FV(Guard) <=Set #LV(Rec)
@@ -232,54 +258,54 @@ module NAMEVAR
   rule #V( Y:Names    <=  X:NamePat ) => #V(X) #V(Y)
   rule #V(            <=  X:NamePat ) => #V(X)
   // Binds & BindPats
-  rule  V( A:Lbind    ; B:Lbind     ) =>  V(A)  V(B)
-  rule  V( A:LbindPat ; B:Lbind     ) =>  V(A)  V(B)
-  rule  V( A:Lbind    ; B:LbindPat  ) =>  V(A)  V(B)
-  rule  V( A:LbindPat ; B:LbindPat  ) =>  V(A)  V(B)
-  rule  V( A:Lbind    ; B:Lbinds    ) =>  V(A)  V(B)
-  rule  V( A:LbindPat ; B:Lbinds    ) =>  V(A)  V(B)
-  rule  V( A:Lbind    ; B:LbindPats ) =>  V(A)  V(B)
-  rule  V( A:LbindPat ; B:LbindPats ) =>  V(A)  V(B)
-  rule  V( A:Pbind    ; B:Pbind     ) =>  V(A)  V(B)
-  rule  V( A:PbindPat ; B:Pbind     ) =>  V(A)  V(B)
-  rule  V( A:Pbind    ; B:PbindPat  ) =>  V(A)  V(B)
-  rule  V( A:PbindPat ; B:PbindPat  ) =>  V(A)  V(B)
-  rule  V( A:Pbind    ; B:Pbinds    ) =>  V(A)  V(B)
-  rule  V( A:PbindPat ; B:Pbinds    ) =>  V(A)  V(B)
-  rule  V( A:Pbind    ; B:PbindPats ) =>  V(A)  V(B)
-  rule  V( A:PbindPat ; B:PbindPats ) =>  V(A)  V(B)
-  rule  V( A:Rbind    ; B:Rbind     ) =>  V(A)  V(B)
-  rule  V( A:RbindPat ; B:Rbind     ) =>  V(A)  V(B)
-  rule  V( A:Rbind    ; B:RbindPat  ) =>  V(A)  V(B)
-  rule  V( A:RbindPat ; B:RbindPat  ) =>  V(A)  V(B)
-  rule  V( A:Rbind    ; B:Rbinds    ) =>  V(A)  V(B)
-  rule  V( A:RbindPat ; B:Rbinds    ) =>  V(A)  V(B)
-  rule  V( A:Rbind    ; B:RbindPats ) =>  V(A)  V(B)
-  rule  V( A:RbindPat ; B:RbindPats ) =>  V(A)  V(B)
-  rule #V( A:Lbind    ; B:Lbind     ) => #V(A) #V(B)
-  rule #V( A:LbindPat ; B:Lbind     ) => #V(A) #V(B)
-  rule #V( A:Lbind    ; B:LbindPat  ) => #V(A) #V(B)
-  rule #V( A:LbindPat ; B:LbindPat  ) => #V(A) #V(B)
-  rule #V( A:Lbind    ; B:Lbinds    ) => #V(A) #V(B)
-  rule #V( A:LbindPat ; B:Lbinds    ) => #V(A) #V(B)
-  rule #V( A:Lbind    ; B:LbindPats ) => #V(A) #V(B)
-  rule #V( A:LbindPat ; B:LbindPats ) => #V(A) #V(B)
-  rule #V( A:Pbind    ; B:Pbind     ) => #V(A) #V(B)
-  rule #V( A:PbindPat ; B:Pbind     ) => #V(A) #V(B)
-  rule #V( A:Pbind    ; B:PbindPat  ) => #V(A) #V(B)
-  rule #V( A:PbindPat ; B:PbindPat  ) => #V(A) #V(B)
-  rule #V( A:Pbind    ; B:Pbinds    ) => #V(A) #V(B)
-  rule #V( A:PbindPat ; B:Pbinds    ) => #V(A) #V(B)
-  rule #V( A:Pbind    ; B:PbindPats ) => #V(A) #V(B)
-  rule #V( A:PbindPat ; B:PbindPats ) => #V(A) #V(B)
-  rule #V( A:Rbind    ; B:Rbind     ) => #V(A) #V(B)
-  rule #V( A:RbindPat ; B:Rbind     ) => #V(A) #V(B)
-  rule #V( A:Rbind    ; B:RbindPat  ) => #V(A) #V(B)
-  rule #V( A:RbindPat ; B:RbindPat  ) => #V(A) #V(B)
-  rule #V( A:Rbind    ; B:Rbinds    ) => #V(A) #V(B)
-  rule #V( A:RbindPat ; B:Rbinds    ) => #V(A) #V(B)
-  rule #V( A:Rbind    ; B:RbindPats ) => #V(A) #V(B)
-  rule #V( A:RbindPat ; B:RbindPats ) => #V(A) #V(B)
+  rule  V( A:Lbind    & B:Lbind     ) =>  V(A)  V(B)
+  rule  V( A:LbindPat & B:Lbind     ) =>  V(A)  V(B)
+  rule  V( A:Lbind    & B:LbindPat  ) =>  V(A)  V(B)
+  rule  V( A:LbindPat & B:LbindPat  ) =>  V(A)  V(B)
+  rule  V( A:Lbind    & B:Lbinds    ) =>  V(A)  V(B)
+  rule  V( A:LbindPat & B:Lbinds    ) =>  V(A)  V(B)
+  rule  V( A:Lbind    & B:LbindPats ) =>  V(A)  V(B)
+  rule  V( A:LbindPat & B:LbindPats ) =>  V(A)  V(B)
+  rule  V( A:Pbind    & B:Pbind     ) =>  V(A)  V(B)
+  rule  V( A:PbindPat & B:Pbind     ) =>  V(A)  V(B)
+  rule  V( A:Pbind    & B:PbindPat  ) =>  V(A)  V(B)
+  rule  V( A:PbindPat & B:PbindPat  ) =>  V(A)  V(B)
+  rule  V( A:Pbind    & B:Pbinds    ) =>  V(A)  V(B)
+  rule  V( A:PbindPat & B:Pbinds    ) =>  V(A)  V(B)
+  rule  V( A:Pbind    & B:PbindPats ) =>  V(A)  V(B)
+  rule  V( A:PbindPat & B:PbindPats ) =>  V(A)  V(B)
+  rule  V( A:Rbind    & B:Rbind     ) =>  V(A)  V(B)
+  rule  V( A:RbindPat & B:Rbind     ) =>  V(A)  V(B)
+  rule  V( A:Rbind    & B:RbindPat  ) =>  V(A)  V(B)
+  rule  V( A:RbindPat & B:RbindPat  ) =>  V(A)  V(B)
+  rule  V( A:Rbind    & B:Rbinds    ) =>  V(A)  V(B)
+  rule  V( A:RbindPat & B:Rbinds    ) =>  V(A)  V(B)
+  rule  V( A:Rbind    & B:RbindPats ) =>  V(A)  V(B)
+  rule  V( A:RbindPat & B:RbindPats ) =>  V(A)  V(B)
+  rule #V( A:Lbind    & B:Lbind     ) => #V(A) #V(B)
+  rule #V( A:LbindPat & B:Lbind     ) => #V(A) #V(B)
+  rule #V( A:Lbind    & B:LbindPat  ) => #V(A) #V(B)
+  rule #V( A:LbindPat & B:LbindPat  ) => #V(A) #V(B)
+  rule #V( A:Lbind    & B:Lbinds    ) => #V(A) #V(B)
+  rule #V( A:LbindPat & B:Lbinds    ) => #V(A) #V(B)
+  rule #V( A:Lbind    & B:LbindPats ) => #V(A) #V(B)
+  rule #V( A:LbindPat & B:LbindPats ) => #V(A) #V(B)
+  rule #V( A:Pbind    & B:Pbind     ) => #V(A) #V(B)
+  rule #V( A:PbindPat & B:Pbind     ) => #V(A) #V(B)
+  rule #V( A:Pbind    & B:PbindPat  ) => #V(A) #V(B)
+  rule #V( A:PbindPat & B:PbindPat  ) => #V(A) #V(B)
+  rule #V( A:Pbind    & B:Pbinds    ) => #V(A) #V(B)
+  rule #V( A:PbindPat & B:Pbinds    ) => #V(A) #V(B)
+  rule #V( A:Pbind    & B:PbindPats ) => #V(A) #V(B)
+  rule #V( A:PbindPat & B:PbindPats ) => #V(A) #V(B)
+  rule #V( A:Rbind    & B:Rbind     ) => #V(A) #V(B)
+  rule #V( A:RbindPat & B:Rbind     ) => #V(A) #V(B)
+  rule #V( A:Rbind    & B:RbindPat  ) => #V(A) #V(B)
+  rule #V( A:RbindPat & B:RbindPat  ) => #V(A) #V(B)
+  rule #V( A:Rbind    & B:Rbinds    ) => #V(A) #V(B)
+  rule #V( A:RbindPat & B:Rbinds    ) => #V(A) #V(B)
+  rule #V( A:Rbind    & B:RbindPats ) => #V(A) #V(B)
+  rule #V( A:RbindPat & B:RbindPats ) => #V(A) #V(B)
 
   // Contract -- TODO: patternize
   rule  V( contract X:Name ( Y:Names ) = { P:Proc } ) =>  V(X)  (V(Y)  V(P))
@@ -327,7 +353,7 @@ module NAMEVAR
   rule  V( *X:Name ) => V(X) requires notBool (isVar(X) orBool isBoundName(X))
   // can use *X as Proc or X as Name
   rule  V( *X:Var  ) => Vn(X)
-  rule  V( *X:BoundName ) => SetItem(X : name) // ???
+  rule  V( *X:BoundName ) => .Set // ???
   rule  V( *X:NamePat   ) => V(X)
   rule #V( *X:Name ) => #V(X) requires notBool isVar(X)
   rule #V( *X:Var  ) => SetItem(X)
@@ -375,26 +401,26 @@ module NAMEVAR
   rule #V( ( P:Procs    ,) ) => #V(P)
 
 // Variable Reference
-  rule  V( =  \X:Var ) => Vp(X)
-  rule  V( =*  X:Var ) => Vn(X)
-  rule #V( =  \X:Var ) => SetItem(X)
-  rule #V( =*  X:Var ) => SetItem(X)
+  rule  V( = \X:Var ) => Vp(\X)
+  rule  V( =* X:Var ) => Vn( X)
+  rule #V( = \X:Var ) => SetItem(X)
+  rule #V( =* X:Var ) => SetItem(X)
 
 // Bundles
   rule  V( bundle+{ P:Proc } ) =>  V(P)
-  rule  V( bundle-{ P:Proc } ) =>  V(P)
-  rule  V( bundle0{ P:Proc } ) =>  V(P)
+  rule  V( bundle-{ P:Proc } ) =>  .Set
+  rule  V( bundle0{ P:Proc } ) =>  .Set
   rule  V(  bundle{ P:Proc } ) =>  V(P)
   rule #V( bundle+{ P:Proc } ) => #V(P)
-  rule #V( bundle-{ P:Proc } ) => #V(P)
-  rule #V( bundle0{ P:Proc } ) => #V(P)
+  rule #V( bundle-{ P:Proc } ) =>  .Set
+  rule #V( bundle0{ P:Proc } ) =>  .Set
   rule #V(  bundle{ P:Proc } ) => #V(P)
 
 // New & NewPat
-  rule  V( new X:Names in { P:Proc    } ) =>  V(X)  V(P)
-  rule  V( new X:Names in { P:ProcPat } ) =>  V(X)  V(P)
-  rule #V( new X:Names in { P:Proc    } ) => #V(X) #V(P)
-  rule #V( new X:Names in { P:ProcPat } ) => #V(X) #V(P)
+  rule  V( new X:VarDecs in { P:Proc    } ) =>  V(X)  V(P)
+  rule  V( new X:VarDecs in { P:ProcPat } ) =>  V(X)  V(P)
+  rule #V( new X:VarDecs in { P:Proc    } ) => #V(X) #V(P)
+  rule #V( new X:VarDecs in { P:ProcPat } ) => #V(X) #V(P)
 
 // Conditional & CondPat
   rule  V( if  ( B:BExp )   P:Proc    ) =>  V(B)  V(P)
@@ -436,22 +462,24 @@ module NAMEVAR
   rule  V( A:AExp +  B:AExp ) => V(A) V(B)
   rule  V( A:AExp -  B:AExp ) => V(A) V(B)
   rule  V( A:AExp %  B:AExp ) => V(A) V(B)
-  rule  V( A:StringOrVar B:ConcatExp ) => V(A) V(B)
-  rule  V( ++ A:StringOrVar ) => V(A)
-  rule  V( ++ A:StringOrVar B:ConcatExp  ) => V(A) V(B)
-  rule  V( A:StringOrVar %% B:InterpMaps ) => V(A) V(B)
-  rule  V( A:RhoMap %% B:InterpMaps ) => V(A) V(B)
+  rule  V( A:StringOrVar ++ B:StringOrVar ) => V(A) V(B)
+  rule  V( A:StringOrVar ++ B:ConcatStr   ) => V(A) V(B)
+  rule  V( A:ListOrVar   ++ B:ListOrVar   ) => V(A) V(B)
+  rule  V( A:ListOrVar   ++ B:ConcatList  ) => V(A) V(B)
+  rule  V( A:StringOrVar %% B:InterpMaps  ) => V(A) V(B)
+  rule  V( A:RhoMap      %% B:InterpMaps  ) => V(A) V(B)
   rule #V( - A:AExp         ) => #V(A)
   rule #V( A:AExp *  B:AExp ) => #V(A) #V(B)
   rule #V( A:AExp /  B:AExp ) => #V(A) #V(B)
   rule #V( A:AExp +  B:AExp ) => #V(A) #V(B)
   rule #V( A:AExp -  B:AExp ) => #V(A) #V(B)
   rule #V( A:AExp %  B:AExp ) => #V(A) #V(B)
-  rule #V( A:StringOrVar B:ConcatExp ) => #V(A) #V(B)
-  rule #V( ++ A:StringOrVar ) => #V(A)
-  rule #V( ++ A:StringOrVar B:ConcatExp  ) => #V(A) #V(B)
-  rule #V( A:StringOrVar %% B:InterpMaps ) => #V(A) #V(B)
-  rule #V( A:RhoMap %% B:InterpMaps ) => #V(A) #V(B)
+  rule #V( A:StringOrVar ++ B:StringOrVar ) => #V(A) #V(B)
+  rule #V( A:StringOrVar ++ B:ConcatStr   ) => #V(A) #V(B)
+  rule #V( A:ListOrVar   ++ B:ListOrVar   ) => #V(A) #V(B)
+  rule #V( A:ListOrVar   ++ B:ConcatList  ) => #V(A) #V(B)
+  rule #V( A:StringOrVar %% B:InterpMaps  ) => #V(A) #V(B)
+  rule #V( A:RhoMap      %% B:InterpMaps  ) => #V(A) #V(B)
 
 // Boolean Expressions
   rule  V( not B:BExp        ) =>  V(B)
@@ -489,13 +517,13 @@ module NAMEVAR
 //--- Free Variables ---
 //----------------------
 // Auxiliary function for bindings in Receives, New, & Match
-  rule FV+( X:Var ) => SetItem(X : name) SetItem(*X : proc)
-  rule FV+( X:Var ( _:Uri ) ) => SetItem(X : name) SetItem(*X : proc)
+  rule FV+( X:Var ) => SetItem(X :: name) SetItem(*X :: proc)
+  rule FV+( X:Var ( _:Uri ) ) => SetItem(X :: name) SetItem(*X :: proc)
 
   // Ground, Bound
   rule FV+( _:Ground    ) => .Set
-  rule FV+( _:BoundName ) => .Set
-  rule FV+( _:BoundProc ) => .Set
+  rule FV+( B:BoundName ) => .Set
+  rule FV+( B:BoundProc ) => .Set
 
 // Pattern
   rule FV+( \_ ) => .Set
@@ -515,7 +543,7 @@ module NAMEVAR
 
 
   // ProcVar
-  rule FV+( \X:Var ) => Vp(X)
+  rule FV+( \X:Var ) => Vp(\X)
 
   // Quote & QuotePat
   rule FV+( @A:Proc    ) => FV+(A)
@@ -593,7 +621,7 @@ module NAMEVAR
   rule FV+( *X:Name    ) => FV+(X) requires notBool isVar(X)
   rule FV+( *X:NamePat ) => FV+(X)
     // can use *X as Proc or X as Name
-  rule FV+( *X:Var ) => SetItem(*X : proc) SetItem(X : name)
+  rule FV+( *X:Var ) => SetItem(*X :: proc) SetItem(X :: name)
 
   // Collections
     // RhoTuple
@@ -618,8 +646,8 @@ module NAMEVAR
   rule FV+( =* X:Var ) => FV+(*X)  // FVn(X)
 
   // New
-  rule FV+( new X:Names in { P:Proc    } ) => FV+(P) -Set FV+(X)
-  rule FV+( new X:Names in { P:ProcPat } ) => FV+(P) -Set FV+(X)
+  rule FV+( new X:VarDecs in { P:Proc    } ) => FV+(P) -Set FV+(X)
+  rule FV+( new X:VarDecs in { P:ProcPat } ) => FV+(P) -Set FV+(X)
 
   // Conditionals
   rule FV+( if ( B:BExp )    P:Proc    ) => FV+(B) FV+(P)
@@ -653,11 +681,12 @@ module NAMEVAR
   rule FV+( A:AExp +  B:AExp ) => FV+(A) FV+(B)
   rule FV+( A:AExp -  B:AExp ) => FV+(A) FV+(B)
   rule FV+( A:AExp %  B:AExp ) => FV+(A) FV+(B)
-  rule FV+( A:StringOrVar B:ConcatExp ) => FV+(A) FV+(B)
-  rule FV+( ++ A:StringOrVar ) => FV+(A)
-  rule FV+( ++ A:StringOrVar B:ConcatExp  ) => FV+(A) FV+(B)
-  rule FV+( A:StringOrVar %% B:InterpMaps ) => FV+(A) FV+(B)
-  rule FV+( A:RhoMap      %% B:InterpMaps ) => FV+(A) FV+(B)
+  rule FV+( A:StringOrVar ++ B:StringOrVar ) => FV+(A) FV+(B)
+  rule FV+( A:StringOrVar ++ B:ConcatStr   ) => FV+(A) FV+(B)
+  rule FV+( A:ListOrVar   ++ B:ListOrVar   ) => FV+(A) FV+(B)
+  rule FV+( A:ListOrVar   ++ B:ConcatList  ) => FV+(A) FV+(B)
+  rule FV+( A:StringOrVar %% B:InterpMaps  ) => FV+(A) FV+(B)
+  rule FV+( A:RhoMap      %% B:InterpMaps  ) => FV+(A) FV+(B)
 
   // Boolean Expressions
   rule FV+( not A:BExp        ) => FV+(A)
@@ -701,6 +730,10 @@ module NAMEVAR
   rule #FV(   \_        ) => .Set
   rule #FV( _:SimplePat ) => .Set
 
+// Bundles
+  rule  FV( _:Bundle ) => .Set
+  rule #FV( _:Bundle ) => .Set
+
 // Var -- TODO: FV( X:Name ) => FVn(X) & FV( X:Proc ) => FVp(X)
   rule  FV( X:Var           ) => Vn(X)
   rule  FV( X:Var ( _:Uri ) ) => Vn(X)
@@ -708,11 +741,14 @@ module NAMEVAR
   rule #FV( X:Var ( _:Uri ) ) => SetItem(X)
 
 // ProcVar
-  rule  FV( \X:Var ) => Vp(X)
+  rule  FV( \X:Var ) => Vp(\X)
   rule #FV( \X:Var ) => SetItem(X)
 
+// PatVar
+//  rule FV( $X:Var ) => Vpat(X)
+
 // Quote
-  rule  FV( @\X:Var    ) =>  Vp(X)
+  rule  FV( @\X:Var    ) =>  Vp(\X)
   rule  FV( @P:Proc    ) =>  FV(P) requires notBool isProcVar(P)
   rule  FV( @P:ProcPat ) =>  FV(P)
   rule #FV( @P:Proc    ) => #FV(P)
@@ -882,32 +918,48 @@ module NAMEVAR
   rule #FV( [ P:Procs    ] ) => #FV(P)
   rule #FV( [ ] ) => .Set
   // RhoSet
-  rule  FV( Set( P:Procs ) ) =>  FV(P)
+  rule  FV( Set( P:ProcPats ) ) =>  FV(P)
+  rule  FV( Set( P:Procs    ) ) =>  FV(P)
   rule  FV( Set( ) ) => .Set
-  rule #FV( Set( P:Procs ) ) => #FV(P)
+  rule #FV( Set( P:ProcPats ) ) => #FV(P)
+  rule #FV( Set( P:Procs    ) ) => #FV(P)
   rule #FV( Set( ) ) => .Set
   // RhoMap
   rule  FV( { } ) => .Set
   rule  FV( { R:RhoKVPairs } ) => FV(R)
+  rule  FV( { R:RhoKVPats  } ) => FV(R)
   rule #FV( { } ) => .Set
   rule #FV( { R:RhoKVPairs } ) => #FV(R)
+  rule #FV( { R:RhoKVPats  } ) => #FV(R)
     // KV pairs
-  rule  FV( P:Proc : Q:Proc ) => FV(P) FV(Q)
+  rule  FV( P:Proc    : Q:Proc    ) => FV(P) FV(Q)
+  rule  FV( P:Proc    : Q:ProcPat ) => FV(P) FV(Q)
+  rule  FV( P:ProcPat : Q:Proc    ) => FV(P) FV(Q)
+  rule  FV( P:ProcPat : Q:ProcPat ) => FV(P) FV(Q)
   rule  FV( R:RhoKVPair , S:RhoKVPairs ) => FV(R) FV(S)
-  rule #FV( P:Proc : Q:Proc ) => #FV(P) #FV(Q)
+  rule  FV( R:RhoKVPat  , S:RhoKVPairs ) => FV(R) FV(S)
+  rule  FV( R:RhoKVPair , S:RhoKVPats  ) => FV(R) FV(S)
+  rule  FV( R:RhoKVPat  , S:RhoKVPats  ) => FV(R) FV(S)
+  rule #FV( P:Proc    : Q:Proc    ) => #FV(P) #FV(Q)
+  rule #FV( P:Proc    : Q:ProcPat ) => #FV(P) #FV(Q)
+  rule #FV( P:ProcPat : Q:Proc    ) => #FV(P) #FV(Q)
+  rule #FV( P:ProcPat : Q:ProcPat ) => #FV(P) #FV(Q)
   rule #FV( R:RhoKVPair , S:RhoKVPairs ) => #FV(R) #FV(S)
+  rule #FV( R:RhoKVPat  , S:RhoKVPairs ) => #FV(R) #FV(S)
+  rule #FV( R:RhoKVPair , S:RhoKVPats  ) => #FV(R) #FV(S)
+  rule #FV( R:RhoKVPat  , S:RhoKVPats  ) => #FV(R) #FV(S)
 
 // Variable Reference -- TODO: binding?
-  rule  FV( = \X:Var ) => Vp(X)
-  rule  FV( =* X:Var ) => Vn(X)
+  rule  FV( = \X:Var ) => Vp(\X)
+  rule  FV( =* X:Var ) => Vn( X)
   rule #FV( = \X:Var ) => SetItem(X)
   rule #FV( =* X:Var ) => SetItem(X)
 
 // New
-  rule  FV( new X:Names in { P:Proc    } ) =>  FV(P) -Set FV+(X)
-  rule  FV( new X:Names in { P:ProcPat } ) =>  FV(P) -Set FV+(X)
-  rule #FV( new X:Names in { P:Proc    } ) => #FV(P) -Set #FV(X)
-  rule #FV( new X:Names in { P:ProcPat } ) => #FV(P) -Set #FV(X)
+  rule  FV( new X:VarDecs in { P:Proc    } ) =>  FV(P) -Set FV+(X)
+  rule  FV( new X:VarDecs in { P:ProcPat } ) =>  FV(P) -Set FV+(X)
+  rule #FV( new X:VarDecs in { P:Proc    } ) => #FV(P) -Set #FV(X)
+  rule #FV( new X:VarDecs in { P:ProcPat } ) => #FV(P) -Set #FV(X)
 
 // Conditionals
   rule  FV(   if ( B:BExp )  P:Proc    ) =>  FV(B)  FV(P)
@@ -940,16 +992,6 @@ module NAMEVAR
   rule #FV( . _:Method ( A:Procs ) ) => #FV(A)
   rule #FV( . _:Method (         ) ) => .Set
 
-// Bundles -- TODO: bindings?
-  rule  FV( bundle+{ P:Proc } ) =>  RV(P)  // write-only => only send names available -- receive variables are free?
-  rule  FV( bundle-{ P:Proc } ) =>  SV(P)  // read-only  => only receive names available -- send variables are free?
-  rule  FV( bundle0{ P:Proc } ) => .Set   // no read/write => no names available
-  rule  FV(  bundle{ P:Proc } ) =>  FV(P)  // read/write => both send & receive names available
-  rule #FV( bundle+{ P:Proc } ) => #RV(P)
-  rule #FV( bundle-{ P:Proc } ) => #SV(P)
-  rule #FV( bundle0{ P:Proc } ) => .Set
-  rule #FV(  bundle{ P:Proc } ) => #FV(P)
-
 // Arithmetic Expressions
   rule  FV( - A:AExp         ) => FV(A)
   rule  FV( A:AExp *  B:AExp ) => FV(A) FV(B)
@@ -957,23 +999,24 @@ module NAMEVAR
   rule  FV( A:AExp +  B:AExp ) => FV(A) FV(B)
   rule  FV( A:AExp -  B:AExp ) => FV(A) FV(B)
   rule  FV( A:AExp %  B:AExp ) => FV(A) FV(B)
-  rule  FV( A:StringOrVar B:ConcatExp ) => FV(A) FV(B)
-  rule  FV( ++ A:StringOrVar ) => FV(A)
-  rule  FV( ++ A:StringOrVar B:ConcatExp  ) => FV(A) FV(B)
-  rule  FV( A:StringOrVar %% B:InterpMaps ) => FV(A) FV(B)
-  rule  FV( A:RhoMap %% B:InterpMaps ) => FV(A) FV(B)
+  rule  FV( A:StringOrVar ++ B:StringOrVar ) => FV(A) FV(B)
+  rule  FV( A:StringOrVar ++ B:ConcatStr   ) => FV(A) FV(B)
+  rule  FV( A:ListOrVar   ++ B:ListOrVar   ) => FV(A) FV(B)
+  rule  FV( A:ListOrVar   ++ B:ConcatList  ) => FV(A) FV(B)
+  rule  FV( A:StringOrVar %% B:InterpMaps  ) => FV(A) FV(B)
+  rule  FV( A:RhoMap      %% B:InterpMaps  ) => FV(A) FV(B)
   rule #FV( - A:AExp         ) => #FV(A)
   rule #FV( A:AExp *  B:AExp ) => #FV(A) #FV(B)
   rule #FV( A:AExp /  B:AExp ) => #FV(A) #FV(B)
   rule #FV( A:AExp +  B:AExp ) => #FV(A) #FV(B)
   rule #FV( A:AExp -  B:AExp ) => #FV(A) #FV(B)
   rule #FV( A:AExp %  B:AExp ) => #FV(A) #FV(B)
-  rule #FV( A:StringOrVar B:ConcatExp ) => #FV(A) #FV(B)
-  rule #FV( ++ A:StringOrVar ) => #FV(A)
-  rule #FV( ++ A:StringOrVar B:ConcatExp  ) => #FV(A) #FV(B)
-  rule #FV( A:StringOrVar %% B:InterpMaps ) => #FV(A) #FV(B)
-  rule #FV( A:RhoMap %% B:InterpMaps ) => #FV(A) #FV(B)
-
+  rule #FV( A:StringOrVar ++ B:StringOrVar ) => #FV(A) #FV(B)
+  rule #FV( A:StringOrVar ++ B:ConcatStr   ) => #FV(A) #FV(B)
+  rule #FV( A:ListOrVar   ++ B:ListOrVar   ) => #FV(A) #FV(B)
+  rule #FV( A:ListOrVar   ++ B:ConcatList  ) => #FV(A) #FV(B)
+  rule #FV( A:StringOrVar %% B:InterpMaps  ) => #FV(A) #FV(B)
+  rule #FV( A:RhoMap      %% B:InterpMaps  ) => #FV(A) #FV(B)
 // Boolean Expressions
   rule  FV( not B:BExp        ) => FV(B)
   rule  FV( A:BExp and B:BExp ) => FV(A) FV(B)
@@ -1086,30 +1129,30 @@ module NAMEVAR
   rule LV+( Y:Names    <<- _:NamePat ) => FV+(Y)
   rule LV+(            <<- _:NamePat ) => .Set
   // Binds
-  rule LV+( A:Lbind    ; B:Lbind     ) => LV+(A) LV+(B)
-  rule LV+( A:Lbind    ; B:Lbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:Pbind    ; B:Pbind     ) => LV+(A) LV+(B)
-  rule LV+( A:Pbind    ; B:Pbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:Rbind    ; B:Rbind     ) => LV+(A) LV+(B)
-  rule LV+( A:Rbind    ; B:Rbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:Lbind    ; B:LbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:LbindPat ; B:Lbind     ) => LV+(A) LV+(B)
-  rule LV+( A:LbindPat ; B:LbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:Lbind    ; B:LbindPats ) => LV+(A) LV+(B)
-  rule LV+( A:LbindPat ; B:Lbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:LbindPat ; B:LbindPats ) => LV+(A) LV+(B)
-  rule LV+( A:Pbind    ; B:PbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:PbindPat ; B:Pbind     ) => LV+(A) LV+(B)
-  rule LV+( A:PbindPat ; B:PbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:Pbind    ; B:PbindPats ) => LV+(A) LV+(B)
-  rule LV+( A:PbindPat ; B:Pbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:PbindPat ; B:PbindPats ) => LV+(A) LV+(B)
-  rule LV+( A:Rbind    ; B:RbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:RbindPat ; B:Rbind     ) => LV+(A) LV+(B)
-  rule LV+( A:RbindPat ; B:RbindPat  ) => LV+(A) LV+(B)
-  rule LV+( A:Rbind    ; B:RbindPats ) => LV+(A) LV+(B)
-  rule LV+( A:RbindPat ; B:Rbinds    ) => LV+(A) LV+(B)
-  rule LV+( A:RbindPat ; B:RbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:Lbind    & B:Lbind     ) => LV+(A) LV+(B)
+  rule LV+( A:Lbind    & B:Lbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:Pbind    & B:Pbind     ) => LV+(A) LV+(B)
+  rule LV+( A:Pbind    & B:Pbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:Rbind    & B:Rbind     ) => LV+(A) LV+(B)
+  rule LV+( A:Rbind    & B:Rbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:Lbind    & B:LbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:LbindPat & B:Lbind     ) => LV+(A) LV+(B)
+  rule LV+( A:LbindPat & B:LbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:Lbind    & B:LbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:LbindPat & B:Lbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:LbindPat & B:LbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:Pbind    & B:PbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:PbindPat & B:Pbind     ) => LV+(A) LV+(B)
+  rule LV+( A:PbindPat & B:PbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:Pbind    & B:PbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:PbindPat & B:Pbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:PbindPat & B:PbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:Rbind    & B:RbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:RbindPat & B:Rbind     ) => LV+(A) LV+(B)
+  rule LV+( A:RbindPat & B:RbindPat  ) => LV+(A) LV+(B)
+  rule LV+( A:Rbind    & B:RbindPats ) => LV+(A) LV+(B)
+  rule LV+( A:RbindPat & B:Rbinds    ) => LV+(A) LV+(B)
+  rule LV+( A:RbindPat & B:RbindPats ) => LV+(A) LV+(B)
 
 // Variables being listened for by a Receive
   // unguarded
@@ -1232,64 +1275,68 @@ module NAMEVAR
   rule #LV( Y:Names    <<- _:Name ) => #FV(Y)
   rule #LV(            <<- _:Name ) => .Set
   // multiple
-  rule  LV( A:Lbind ; B:Lbind  ) =>  LV(A)  LV(B)
-  rule  LV( A:Lbind ; B:Lbinds ) =>  LV(A)  LV(B)
-  rule  LV( A:Pbind ; B:Pbind  ) =>  LV(A)  LV(B)
-  rule  LV( A:Pbind ; B:Pbinds ) =>  LV(A)  LV(B)
-  rule  LV( A:Rbind ; B:Rbind  ) =>  LV(A)  LV(B)
-  rule  LV( A:Rbind ; B:Rbinds ) =>  LV(A)  LV(B)
-  rule #LV( A:Lbind ; B:Lbind  ) => #LV(A) #LV(B)
-  rule #LV( A:Lbind ; B:Lbinds ) => #LV(A) #LV(B)
-  rule #LV( A:Pbind ; B:Pbind  ) => #LV(A) #LV(B)
-  rule #LV( A:Pbind ; B:Pbinds ) => #LV(A) #LV(B)
-  rule #LV( A:Rbind ; B:Rbind  ) => #LV(A) #LV(B)
-  rule #LV( A:Rbind ; B:Rbinds ) => #LV(A) #LV(B)
+  rule  LV( A:Lbind & B:Lbind  ) =>  LV(A)  LV(B)
+  rule  LV( A:Lbind & B:Lbinds ) =>  LV(A)  LV(B)
+  rule  LV( A:Pbind & B:Pbind  ) =>  LV(A)  LV(B)
+  rule  LV( A:Pbind & B:Pbinds ) =>  LV(A)  LV(B)
+  rule  LV( A:Rbind & B:Rbind  ) =>  LV(A)  LV(B)
+  rule  LV( A:Rbind & B:Rbinds ) =>  LV(A)  LV(B)
+  rule #LV( A:Lbind & B:Lbind  ) => #LV(A) #LV(B)
+  rule #LV( A:Lbind & B:Lbinds ) => #LV(A) #LV(B)
+  rule #LV( A:Pbind & B:Pbind  ) => #LV(A) #LV(B)
+  rule #LV( A:Pbind & B:Pbinds ) => #LV(A) #LV(B)
+  rule #LV( A:Rbind & B:Rbind  ) => #LV(A) #LV(B)
+  rule #LV( A:Rbind & B:Rbinds ) => #LV(A) #LV(B)
 
-  rule  LV( A:Lbind    ; B:LbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:LbindPat ; B:Lbind     ) =>  LV(A)  LV(B)
-  rule  LV( A:LbindPat ; B:LbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:LbindPat ; B:Lbinds    ) =>  LV(A)  LV(B)
-  rule  LV( A:Lbind    ; B:LbindPats ) =>  LV(A)  LV(B)
-  rule  LV( A:LbindPat ; B:LbindPats ) =>  LV(A)  LV(B)
-  rule  LV( A:Pbind    ; B:PbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:PbindPat ; B:Pbind     ) =>  LV(A)  LV(B)
-  rule  LV( A:PbindPat ; B:PbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:PbindPat ; B:Pbinds    ) =>  LV(A)  LV(B)
-  rule  LV( A:Pbind    ; B:PbindPats ) =>  LV(A)  LV(B)
-  rule  LV( A:PbindPat ; B:PbindPats ) =>  LV(A)  LV(B)
-  rule  LV( A:Rbind    ; B:RbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:RbindPat ; B:Rbind     ) =>  LV(A)  LV(B)
-  rule  LV( A:RbindPat ; B:RbindPat  ) =>  LV(A)  LV(B)
-  rule  LV( A:RbindPat ; B:Rbinds    ) =>  LV(A)  LV(B)
-  rule  LV( A:Rbind    ; B:RbindPats ) =>  LV(A)  LV(B)
-  rule  LV( A:RbindPat ; B:RbindPats ) =>  LV(A)  LV(B)
-  rule #LV( A:Lbind    ; B:LbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:LbindPat ; B:Lbind     ) => #LV(A) #LV(B)
-  rule #LV( A:LbindPat ; B:LbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:LbindPat ; B:Lbinds    ) => #LV(A) #LV(B)
-  rule #LV( A:Lbind    ; B:LbindPats ) => #LV(A) #LV(B)
-  rule #LV( A:LbindPat ; B:LbindPats ) => #LV(A) #LV(B)
-  rule #LV( A:Pbind    ; B:PbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:PbindPat ; B:Pbind     ) => #LV(A) #LV(B)
-  rule #LV( A:PbindPat ; B:PbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:PbindPat ; B:Pbinds    ) => #LV(A) #LV(B)
-  rule #LV( A:Pbind    ; B:PbindPats ) => #LV(A) #LV(B)
-  rule #LV( A:PbindPat ; B:PbindPats ) => #LV(A) #LV(B)
-  rule #LV( A:Rbind    ; B:RbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:RbindPat ; B:Rbind     ) => #LV(A) #LV(B)
-  rule #LV( A:RbindPat ; B:RbindPat  ) => #LV(A) #LV(B)
-  rule #LV( A:RbindPat ; B:Rbinds    ) => #LV(A) #LV(B)
-  rule #LV( A:Rbind    ; B:RbindPats ) => #LV(A) #LV(B)
-  rule #LV( A:RbindPat ; B:RbindPats ) => #LV(A) #LV(B)
+  rule  LV( A:Lbind    & B:LbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:LbindPat & B:Lbind     ) =>  LV(A)  LV(B)
+  rule  LV( A:LbindPat & B:LbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:LbindPat & B:Lbinds    ) =>  LV(A)  LV(B)
+  rule  LV( A:Lbind    & B:LbindPats ) =>  LV(A)  LV(B)
+  rule  LV( A:LbindPat & B:LbindPats ) =>  LV(A)  LV(B)
+  rule  LV( A:Pbind    & B:PbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:PbindPat & B:Pbind     ) =>  LV(A)  LV(B)
+  rule  LV( A:PbindPat & B:PbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:PbindPat & B:Pbinds    ) =>  LV(A)  LV(B)
+  rule  LV( A:Pbind    & B:PbindPats ) =>  LV(A)  LV(B)
+  rule  LV( A:PbindPat & B:PbindPats ) =>  LV(A)  LV(B)
+  rule  LV( A:Rbind    & B:RbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:RbindPat & B:Rbind     ) =>  LV(A)  LV(B)
+  rule  LV( A:RbindPat & B:RbindPat  ) =>  LV(A)  LV(B)
+  rule  LV( A:RbindPat & B:Rbinds    ) =>  LV(A)  LV(B)
+  rule  LV( A:Rbind    & B:RbindPats ) =>  LV(A)  LV(B)
+  rule  LV( A:RbindPat & B:RbindPats ) =>  LV(A)  LV(B)
+  rule #LV( A:Lbind    & B:LbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:LbindPat & B:Lbind     ) => #LV(A) #LV(B)
+  rule #LV( A:LbindPat & B:LbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:LbindPat & B:Lbinds    ) => #LV(A) #LV(B)
+  rule #LV( A:Lbind    & B:LbindPats ) => #LV(A) #LV(B)
+  rule #LV( A:LbindPat & B:LbindPats ) => #LV(A) #LV(B)
+  rule #LV( A:Pbind    & B:PbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:PbindPat & B:Pbind     ) => #LV(A) #LV(B)
+  rule #LV( A:PbindPat & B:PbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:PbindPat & B:Pbinds    ) => #LV(A) #LV(B)
+  rule #LV( A:Pbind    & B:PbindPats ) => #LV(A) #LV(B)
+  rule #LV( A:PbindPat & B:PbindPats ) => #LV(A) #LV(B)
+  rule #LV( A:Rbind    & B:RbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:RbindPat & B:Rbind     ) => #LV(A) #LV(B)
+  rule #LV( A:RbindPat & B:RbindPat  ) => #LV(A) #LV(B)
+  rule #LV( A:RbindPat & B:Rbinds    ) => #LV(A) #LV(B)
+  rule #LV( A:Rbind    & B:RbindPats ) => #LV(A) #LV(B)
+  rule #LV( A:RbindPat & B:RbindPats ) => #LV(A) #LV(B)
 
 //---------------------
 //--- Receive Names ---
 //---------------------
 // Excluded Proc[Pat]
-  rule  RN( A:Proc    ) => .Set requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A) orBool isBundle(A))
-  rule  RN( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A) /*orBool isBundlePat(A)*/)
-  rule #RN( A:Proc    ) => .Set requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A) orBool isBundle(A))
-  rule #RN( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A) /*orBool isBundlePat(A)*/)
+  rule  RN( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A))
+  rule  RN( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A))
+  rule #RN( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A))
+  rule #RN( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A))
 
   // Receives -- free variables in channel
     // unguarded
@@ -1393,24 +1440,24 @@ module NAMEVAR
 
   // Bind[Pat]s -- TODO: add patterns
     // Bind[Pat]
-  rule  RN( _:NamePats <-  X:Name    ) => SetItem(X : name)
-  rule  RN( _:Names    <-  X:Name    ) => SetItem(X : name)
-  rule  RN(            <-  X:Name    ) => SetItem(X : name)
-  rule  RN( _:NamePats <=  X:Name    ) => SetItem(X : name)
-  rule  RN( _:Names    <=  X:Name    ) => SetItem(X : name)
-  rule  RN(            <=  X:Name    ) => SetItem(X : name)
-  rule  RN( _:NamePats <<- X:Name    ) => SetItem(X : name)
-  rule  RN( _:Names    <<- X:Name    ) => SetItem(X : name)
-  rule  RN(            <<- X:Name    ) => SetItem(X : name)
-  rule  RN( _:NamePats <-  X:NamePat ) => SetItem(X : pat)
-  rule  RN( _:Names    <-  X:NamePat ) => SetItem(X : pat)
-  rule  RN(            <-  X:NamePat ) => SetItem(X : pat)
-  rule  RN( _:NamePats <=  X:NamePat ) => SetItem(X : pat)
-  rule  RN( _:Names    <=  X:NamePat ) => SetItem(X : pat)
-  rule  RN(            <=  X:NamePat ) => SetItem(X : pat)
-  rule  RN( _:NamePats <<- X:NamePat ) => SetItem(X : pat)
-  rule  RN( _:Names    <<- X:NamePat ) => SetItem(X : pat)
-  rule  RN(            <<- X:NamePat ) => SetItem(X : pat)
+  rule  RN( _:NamePats <-  X:Name    ) => SetItem(X :: name)
+  rule  RN( _:Names    <-  X:Name    ) => SetItem(X :: name)
+  rule  RN(            <-  X:Name    ) => SetItem(X :: name)
+  rule  RN( _:NamePats <=  X:Name    ) => SetItem(X :: name)
+  rule  RN( _:Names    <=  X:Name    ) => SetItem(X :: name)
+  rule  RN(            <=  X:Name    ) => SetItem(X :: name)
+  rule  RN( _:NamePats <<- X:Name    ) => SetItem(X :: name)
+  rule  RN( _:Names    <<- X:Name    ) => SetItem(X :: name)
+  rule  RN(            <<- X:Name    ) => SetItem(X :: name)
+  rule  RN( _:NamePats <-  X:NamePat ) => SetItem(X :: pat)
+  rule  RN( _:Names    <-  X:NamePat ) => SetItem(X :: pat)
+  rule  RN(            <-  X:NamePat ) => SetItem(X :: pat)
+  rule  RN( _:NamePats <=  X:NamePat ) => SetItem(X :: pat)
+  rule  RN( _:Names    <=  X:NamePat ) => SetItem(X :: pat)
+  rule  RN(            <=  X:NamePat ) => SetItem(X :: pat)
+  rule  RN( _:NamePats <<- X:NamePat ) => SetItem(X :: pat)
+  rule  RN( _:Names    <<- X:NamePat ) => SetItem(X :: pat)
+  rule  RN(            <<- X:NamePat ) => SetItem(X :: pat)
   rule #RN( _:NamePats <-  X:Name    ) => SetItem(X)
   rule #RN( _:Names    <-  X:Name    ) => SetItem(X)
   rule #RN(            <-  X:Name    ) => SetItem(X)
@@ -1430,54 +1477,54 @@ module NAMEVAR
   rule #RN( _:Names    <<- X:NamePat ) => SetItem(X)
   rule #RN(            <<- X:NamePat ) => SetItem(X)
     // Bind[Pat]s
-  rule  RN( A:Lbind    ; B:Lbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:Lbind    ; B:LbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:LbindPat ; B:Lbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:LbindPat ; B:LbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:Lbind    ; B:Lbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:Lbind    ; B:LbindPats ) =>  RN(A)  RN(B)
-  rule  RN( A:LbindPat ; B:Lbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:LbindPat ; B:LbindPats ) =>  RN(A)  RN(B)
-  rule  RN( A:Pbind    ; B:Pbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:Pbind    ; B:PbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:PbindPat ; B:Pbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:PbindPat ; B:PbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:Pbind    ; B:Pbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:Pbind    ; B:PbindPats ) =>  RN(A)  RN(B)
-  rule  RN( A:PbindPat ; B:Pbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:PbindPat ; B:PbindPats ) =>  RN(A)  RN(B)
-  rule  RN( A:Rbind    ; B:Rbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:Rbind    ; B:RbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:RbindPat ; B:Rbind     ) =>  RN(A)  RN(B)
-  rule  RN( A:RbindPat ; B:RbindPat  ) =>  RN(A)  RN(B)
-  rule  RN( A:Rbind    ; B:Rbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:Rbind    ; B:RbindPats ) =>  RN(A)  RN(B)
-  rule  RN( A:RbindPat ; B:Rbinds    ) =>  RN(A)  RN(B)
-  rule  RN( A:RbindPat ; B:RbindPats ) =>  RN(A)  RN(B)
-  rule #RN( A:Lbind    ; B:Lbind     ) => #RN(A) #RN(B)
-  rule #RN( A:Lbind    ; B:LbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:LbindPat ; B:Lbind     ) => #RN(A) #RN(B)
-  rule #RN( A:LbindPat ; B:LbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:Lbind    ; B:Lbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:Lbind    ; B:LbindPats ) => #RN(A) #RN(B)
-  rule #RN( A:LbindPat ; B:Lbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:LbindPat ; B:LbindPats ) => #RN(A) #RN(B)
-  rule #RN( A:Pbind    ; B:Pbind     ) => #RN(A) #RN(B)
-  rule #RN( A:Pbind    ; B:PbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:PbindPat ; B:Pbind     ) => #RN(A) #RN(B)
-  rule #RN( A:PbindPat ; B:PbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:Pbind    ; B:Pbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:Pbind    ; B:PbindPats ) => #RN(A) #RN(B)
-  rule #RN( A:PbindPat ; B:Pbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:PbindPat ; B:PbindPats ) => #RN(A) #RN(B)
-  rule #RN( A:Rbind    ; B:Rbind     ) => #RN(A) #RN(B)
-  rule #RN( A:Rbind    ; B:RbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:RbindPat ; B:Rbind     ) => #RN(A) #RN(B)
-  rule #RN( A:RbindPat ; B:RbindPat  ) => #RN(A) #RN(B)
-  rule #RN( A:Rbind    ; B:Rbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:Rbind    ; B:RbindPats ) => #RN(A) #RN(B)
-  rule #RN( A:RbindPat ; B:Rbinds    ) => #RN(A) #RN(B)
-  rule #RN( A:RbindPat ; B:RbindPats ) => #RN(A) #RN(B)
+  rule  RN( A:Lbind    & B:Lbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:Lbind    & B:LbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:LbindPat & B:Lbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:LbindPat & B:LbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:Lbind    & B:Lbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:Lbind    & B:LbindPats ) =>  RN(A)  RN(B)
+  rule  RN( A:LbindPat & B:Lbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:LbindPat & B:LbindPats ) =>  RN(A)  RN(B)
+  rule  RN( A:Pbind    & B:Pbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:Pbind    & B:PbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:PbindPat & B:Pbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:PbindPat & B:PbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:Pbind    & B:Pbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:Pbind    & B:PbindPats ) =>  RN(A)  RN(B)
+  rule  RN( A:PbindPat & B:Pbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:PbindPat & B:PbindPats ) =>  RN(A)  RN(B)
+  rule  RN( A:Rbind    & B:Rbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:Rbind    & B:RbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:RbindPat & B:Rbind     ) =>  RN(A)  RN(B)
+  rule  RN( A:RbindPat & B:RbindPat  ) =>  RN(A)  RN(B)
+  rule  RN( A:Rbind    & B:Rbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:Rbind    & B:RbindPats ) =>  RN(A)  RN(B)
+  rule  RN( A:RbindPat & B:Rbinds    ) =>  RN(A)  RN(B)
+  rule  RN( A:RbindPat & B:RbindPats ) =>  RN(A)  RN(B)
+  rule #RN( A:Lbind    & B:Lbind     ) => #RN(A) #RN(B)
+  rule #RN( A:Lbind    & B:LbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:LbindPat & B:Lbind     ) => #RN(A) #RN(B)
+  rule #RN( A:LbindPat & B:LbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:Lbind    & B:Lbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:Lbind    & B:LbindPats ) => #RN(A) #RN(B)
+  rule #RN( A:LbindPat & B:Lbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:LbindPat & B:LbindPats ) => #RN(A) #RN(B)
+  rule #RN( A:Pbind    & B:Pbind     ) => #RN(A) #RN(B)
+  rule #RN( A:Pbind    & B:PbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:PbindPat & B:Pbind     ) => #RN(A) #RN(B)
+  rule #RN( A:PbindPat & B:PbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:Pbind    & B:Pbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:Pbind    & B:PbindPats ) => #RN(A) #RN(B)
+  rule #RN( A:PbindPat & B:Pbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:PbindPat & B:PbindPats ) => #RN(A) #RN(B)
+  rule #RN( A:Rbind    & B:Rbind     ) => #RN(A) #RN(B)
+  rule #RN( A:Rbind    & B:RbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:RbindPat & B:Rbind     ) => #RN(A) #RN(B)
+  rule #RN( A:RbindPat & B:RbindPat  ) => #RN(A) #RN(B)
+  rule #RN( A:Rbind    & B:Rbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:Rbind    & B:RbindPats ) => #RN(A) #RN(B)
+  rule #RN( A:RbindPat & B:Rbinds    ) => #RN(A) #RN(B)
+  rule #RN( A:RbindPat & B:RbindPats ) => #RN(A) #RN(B)
 
   // Par[Pat] -- receive variables in each Proc
   rule  RN( A:Proc | B:Proc ) =>  RN(A)  RN(B) requires notBool isPar(A)
@@ -1490,8 +1537,10 @@ module NAMEVAR
 //-------------------------
 // Auxiliary function for receive variables
   // Excluded Proc[Pat]
-  rule RV+( A:Proc    ) => .Set requires notBool    (isNew(A) orBool isReceive(A) orBool    isPar(A) orBool isBundle(A))
-  rule RV+( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool  isRecPat(A) orBool isParPat(A))
+  rule RV+( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A))
+  rule RV+( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool  isRecPat(A) orBool isParPat(A))
 
   // Receives -- free variables in listening channels
     // unguarded
@@ -1566,30 +1615,30 @@ module NAMEVAR
   rule RV+( _:Names    <<- X:NamePat ) => FV+(X)
   rule RV+(            <<- X:NamePat ) => FV+(X)
     // multiple Binds
-  rule RV+( A:Lbind    ; B:Lbind     ) => RV+(A) RV+(B)
-  rule RV+( A:Lbind    ; B:LbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:LbindPat ; B:Lbind     ) => RV+(A) RV+(B)
-  rule RV+( A:LbindPat ; B:LbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:Lbind    ; B:LbindPats ) => RV+(A) RV+(B)
-  rule RV+( A:Lbind    ; B:Lbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:LbindPat ; B:Lbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:LbindPat ; B:LbindPats ) => RV+(A) RV+(B)
-  rule RV+( A:Pbind    ; B:Pbind     ) => RV+(A) RV+(B)
-  rule RV+( A:Pbind    ; B:PbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:PbindPat ; B:Pbind     ) => RV+(A) RV+(B)
-  rule RV+( A:PbindPat ; B:PbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:Pbind    ; B:PbindPats ) => RV+(A) RV+(B)
-  rule RV+( A:Pbind    ; B:Pbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:PbindPat ; B:Pbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:PbindPat ; B:PbindPats ) => RV+(A) RV+(B)
-  rule RV+( A:Rbind    ; B:Rbind     ) => RV+(A) RV+(B)
-  rule RV+( A:Rbind    ; B:RbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:RbindPat ; B:Rbind     ) => RV+(A) RV+(B)
-  rule RV+( A:RbindPat ; B:RbindPat  ) => RV+(A) RV+(B)
-  rule RV+( A:Rbind    ; B:RbindPats ) => RV+(A) RV+(B)
-  rule RV+( A:Rbind    ; B:Rbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:RbindPat ; B:Rbinds    ) => RV+(A) RV+(B)
-  rule RV+( A:RbindPat ; B:RbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Lbind    & B:Lbind     ) => RV+(A) RV+(B)
+  rule RV+( A:Lbind    & B:LbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:LbindPat & B:Lbind     ) => RV+(A) RV+(B)
+  rule RV+( A:LbindPat & B:LbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:Lbind    & B:LbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Lbind    & B:Lbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:LbindPat & B:Lbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:LbindPat & B:LbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Pbind    & B:Pbind     ) => RV+(A) RV+(B)
+  rule RV+( A:Pbind    & B:PbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:PbindPat & B:Pbind     ) => RV+(A) RV+(B)
+  rule RV+( A:PbindPat & B:PbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:Pbind    & B:PbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Pbind    & B:Pbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:PbindPat & B:Pbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:PbindPat & B:PbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Rbind    & B:Rbind     ) => RV+(A) RV+(B)
+  rule RV+( A:Rbind    & B:RbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:RbindPat & B:Rbind     ) => RV+(A) RV+(B)
+  rule RV+( A:RbindPat & B:RbindPat  ) => RV+(A) RV+(B)
+  rule RV+( A:Rbind    & B:RbindPats ) => RV+(A) RV+(B)
+  rule RV+( A:Rbind    & B:Rbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:RbindPat & B:Rbinds    ) => RV+(A) RV+(B)
+  rule RV+( A:RbindPat & B:RbindPats ) => RV+(A) RV+(B)
 
   // Par[Pat] -- receive variables in each Proc
   rule RV+( A:Proc    | B:Proc    ) => RV+(A) RV+(B) requires notBool isPar(A)
@@ -1601,10 +1650,14 @@ module NAMEVAR
 
 
 // Excluded Proc
-  rule  RV( A:Proc    ) => .Set requires notBool    (isNew(A) orBool isReceive(A) orBool    isPar(A) orBool isBundle(A))
-  rule  RV( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool  isRecPat(A) orBool isParPat(A))
-  rule #RV( A:Proc    ) => .Set requires notBool    (isNew(A) orBool isReceive(A) orBool    isPar(A) orBool isBundle(A))
-  rule #RV( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool  isRecPat(A) orBool isParPat(A))
+  rule  RV( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A))
+  rule  RV( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A))
+  rule #RV( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isReceive(A) orBool isPar(A))
+  rule #RV( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isRecPat(A) orBool isParPat(A))
 
 // Receives -- free variables in channel
   // unguarded
@@ -1745,54 +1798,54 @@ module NAMEVAR
   rule #RV( _:Names    <=  X:NamePat ) => #FV(X)
   rule #RV(            <=  X:NamePat ) => #FV(X)
   // Bind[Pat]s
-  rule  RV( A:Lbind    ; B:Lbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:LbindPat ; B:Lbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:Lbind    ; B:LbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:LbindPat ; B:LbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:Lbind    ; B:Lbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:Lbind    ; B:LbindPats ) =>  RV(A)  RV(B)
-  rule  RV( A:LbindPat ; B:Lbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:LbindPat ; B:LbindPats ) =>  RV(A)  RV(B)
-  rule  RV( A:Pbind    ; B:Pbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:PbindPat ; B:Pbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:Pbind    ; B:PbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:PbindPat ; B:PbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:Pbind    ; B:Pbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:Pbind    ; B:PbindPats ) =>  RV(A)  RV(B)
-  rule  RV( A:PbindPat ; B:Pbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:PbindPat ; B:PbindPats ) =>  RV(A)  RV(B)
-  rule  RV( A:Rbind    ; B:Rbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:RbindPat ; B:Rbind     ) =>  RV(A)  RV(B)
-  rule  RV( A:Rbind    ; B:RbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:RbindPat ; B:RbindPat  ) =>  RV(A)  RV(B)
-  rule  RV( A:Rbind    ; B:Rbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:Rbind    ; B:RbindPats ) =>  RV(A)  RV(B)
-  rule  RV( A:RbindPat ; B:Rbinds    ) =>  RV(A)  RV(B)
-  rule  RV( A:RbindPat ; B:RbindPats ) =>  RV(A)  RV(B)
-  rule #RV( A:Lbind    ; B:Lbind     ) => #RV(A) #RV(B)
-  rule #RV( A:LbindPat ; B:Lbind     ) => #RV(A) #RV(B)
-  rule #RV( A:Lbind    ; B:LbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:LbindPat ; B:LbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:Lbind    ; B:Lbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:Lbind    ; B:LbindPats ) => #RV(A) #RV(B)
-  rule #RV( A:LbindPat ; B:Lbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:LbindPat ; B:LbindPats ) => #RV(A) #RV(B)
-  rule #RV( A:Pbind    ; B:Pbind     ) => #RV(A) #RV(B)
-  rule #RV( A:PbindPat ; B:Pbind     ) => #RV(A) #RV(B)
-  rule #RV( A:Pbind    ; B:PbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:PbindPat ; B:PbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:Pbind    ; B:Pbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:Pbind    ; B:PbindPats ) => #RV(A) #RV(B)
-  rule #RV( A:PbindPat ; B:Pbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:PbindPat ; B:PbindPats ) => #RV(A) #RV(B)
-  rule #RV( A:Rbind    ; B:Rbind     ) => #RV(A) #RV(B)
-  rule #RV( A:RbindPat ; B:Rbind     ) => #RV(A) #RV(B)
-  rule #RV( A:Rbind    ; B:RbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:RbindPat ; B:RbindPat  ) => #RV(A) #RV(B)
-  rule #RV( A:Rbind    ; B:Rbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:Rbind    ; B:RbindPats ) => #RV(A) #RV(B)
-  rule #RV( A:RbindPat ; B:Rbinds    ) => #RV(A) #RV(B)
-  rule #RV( A:RbindPat ; B:RbindPats ) => #RV(A) #RV(B)
+  rule  RV( A:Lbind    & B:Lbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:LbindPat & B:Lbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:Lbind    & B:LbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:LbindPat & B:LbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:Lbind    & B:Lbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:Lbind    & B:LbindPats ) =>  RV(A)  RV(B)
+  rule  RV( A:LbindPat & B:Lbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:LbindPat & B:LbindPats ) =>  RV(A)  RV(B)
+  rule  RV( A:Pbind    & B:Pbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:PbindPat & B:Pbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:Pbind    & B:PbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:PbindPat & B:PbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:Pbind    & B:Pbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:Pbind    & B:PbindPats ) =>  RV(A)  RV(B)
+  rule  RV( A:PbindPat & B:Pbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:PbindPat & B:PbindPats ) =>  RV(A)  RV(B)
+  rule  RV( A:Rbind    & B:Rbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:RbindPat & B:Rbind     ) =>  RV(A)  RV(B)
+  rule  RV( A:Rbind    & B:RbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:RbindPat & B:RbindPat  ) =>  RV(A)  RV(B)
+  rule  RV( A:Rbind    & B:Rbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:Rbind    & B:RbindPats ) =>  RV(A)  RV(B)
+  rule  RV( A:RbindPat & B:Rbinds    ) =>  RV(A)  RV(B)
+  rule  RV( A:RbindPat & B:RbindPats ) =>  RV(A)  RV(B)
+  rule #RV( A:Lbind    & B:Lbind     ) => #RV(A) #RV(B)
+  rule #RV( A:LbindPat & B:Lbind     ) => #RV(A) #RV(B)
+  rule #RV( A:Lbind    & B:LbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:LbindPat & B:LbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:Lbind    & B:Lbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:Lbind    & B:LbindPats ) => #RV(A) #RV(B)
+  rule #RV( A:LbindPat & B:Lbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:LbindPat & B:LbindPats ) => #RV(A) #RV(B)
+  rule #RV( A:Pbind    & B:Pbind     ) => #RV(A) #RV(B)
+  rule #RV( A:PbindPat & B:Pbind     ) => #RV(A) #RV(B)
+  rule #RV( A:Pbind    & B:PbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:PbindPat & B:PbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:Pbind    & B:Pbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:Pbind    & B:PbindPats ) => #RV(A) #RV(B)
+  rule #RV( A:PbindPat & B:Pbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:PbindPat & B:PbindPats ) => #RV(A) #RV(B)
+  rule #RV( A:Rbind    & B:Rbind     ) => #RV(A) #RV(B)
+  rule #RV( A:RbindPat & B:Rbind     ) => #RV(A) #RV(B)
+  rule #RV( A:Rbind    & B:RbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:RbindPat & B:RbindPat  ) => #RV(A) #RV(B)
+  rule #RV( A:Rbind    & B:Rbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:Rbind    & B:RbindPats ) => #RV(A) #RV(B)
+  rule #RV( A:RbindPat & B:Rbinds    ) => #RV(A) #RV(B)
+  rule #RV( A:RbindPat & B:RbindPats ) => #RV(A) #RV(B)
 
 // Par[Pat] -- receive variables in each Proc[Pat]
   rule  RV( A:Proc    | B:Proc    ) =>  RV(A)  RV(B) requires notBool isPar(A)
@@ -1805,10 +1858,10 @@ module NAMEVAR
   rule #RV( A:ProcPat | B:ProcPat ) => #RV(A) #RV(B) requires notBool isParPat(A)
 
 // New[Pat]
-  rule  RV( new _:Names in { A:Proc    } ) =>  RV(A) //  RV(subNew(A)) ???
-  rule  RV( new _:Names in { A:ProcPat } ) =>  RV(A) //  RV(subNew(A)) ???
-  rule #RV( new _:Names in { A:Proc    } ) => #RV(A) // #RV(subNew(A)) ???
-  rule #RV( new _:Names in { A:ProcPat } ) => #RV(A) // #RV(subNew(A)) ???
+  rule  RV( new _:VarDecs in { A:Proc    } ) =>  RV(A) //  RV(subNew(A)) ???
+  rule  RV( new _:VarDecs in { A:ProcPat } ) =>  RV(A) //  RV(subNew(A)) ???
+  rule #RV( new _:VarDecs in { A:Proc    } ) => #RV(A) // #RV(subNew(A)) ???
+  rule #RV( new _:VarDecs in { A:ProcPat } ) => #RV(A) // #RV(subNew(A)) ???
 
 
 // Send Names
@@ -1818,8 +1871,10 @@ module NAMEVAR
 //----------------------
 // Auxiliary function for bound variables
   // Excluded Proc[Pat]
-  rule SV+( A:Proc    ) => .Set requires notBool    (isNew(A) orBool    isSend(A) orBool    isPar(A))
-  rule SV+( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
+  rule SV+( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isSend(A) orBool isPar(A))
+  rule SV+( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
 
   // Send[Pat]
   rule SV+( A:Name    !  ( _:ProcPats ) ) => FV+(A)
@@ -1842,10 +1897,14 @@ module NAMEVAR
   rule SV+( A:ProcPat | B:ProcPat ) => SV+(A) SV+(B) requires notBool isParPat(A)
 
 // Excluded Proc[Pat]
-  rule  SV( A:Proc    ) => .Set requires notBool    (isNew(A) orBool    isSend(A) orBool    isPar(A))
-  rule  SV( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
-  rule #SV( A:Proc    ) => .Set requires notBool    (isNew(A) orBool    isSend(A) orBool    isPar(A))
-  rule #SV( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
+  rule  SV( A:Proc    ) => .Set
+        requires notBool (isNew(A) orBool isSend(A) orBool isPar(A))
+  rule  SV( A:ProcPat ) => .Set
+        requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
+  rule #SV( A:Proc    ) => .Set
+       requires notBool (isNew(A) orBool isSend(A) orBool isPar(A))
+  rule #SV( A:ProcPat ) => .Set
+       requires notBool (isNewPat(A) orBool isSendPat(A) orBool isParPat(A))
 
 // Send[Pat]
   rule  SV( A:Name    !  ( _:ProcPats ) ) =>  FV(A)
@@ -1884,28 +1943,27 @@ module NAMEVAR
   rule #SV( A:ProcPat | B:ProcPat ) => #SV(A) #SV(B) requires notBool isParPat(A)
 
   // New[Pat]
-  rule  SV( new _:Names in { A:Proc    } ) =>  SV(A) //  SV(subNew(A)) ???
-  rule  SV( new _:Names in { A:ProcPat } ) =>  SV(A) //  SV(subNew(A)) ???
-  rule #SV( new _:Names in { A:Proc    } ) => #SV(A) // #SV(subNew(A)) ???
-  rule #SV( new _:Names in { A:ProcPat } ) => #SV(A) // #SV(subNew(A)) ???
+  rule  SV( new _:VarDecs in { A:Proc    } ) =>  SV(A) //  SV(subNew(A)) ???
+  rule  SV( new _:VarDecs in { A:ProcPat } ) =>  SV(A) //  SV(subNew(A)) ???
+  rule #SV( new _:VarDecs in { A:Proc    } ) => #SV(A) // #SV(subNew(A)) ???
+  rule #SV( new _:VarDecs in { A:ProcPat } ) => #SV(A) // #SV(subNew(A)) ???
 
 //--------------------------
-//--- Declared Variables --- TODO: add patterns
+//--- Declared Variables --- TODO: add let
 //--------------------------
   // #DV: New[Pat] -> Set(Var)
-  rule #DV( new A:Var                     in { _:Proc    } ) => SetItem(A) // Vn(A)
-  rule #DV( new A:Var                     in { _:ProcPat } ) => SetItem(A) // Vn(A)
-  rule #DV( new A:Var , B:Names           in { _:Proc    } ) => SetItem(A) #DV(new B in {Nil})
-  rule #DV( new A:Var , B:Names           in { _:ProcPat } ) => SetItem(A) #DV(new B in {\_ })
-  rule #DV( new A:Var ( _:Uri )           in { _:Proc    } ) => SetItem(A) // Vn(A)
-  rule #DV( new A:Var ( _:Uri )           in { _:ProcPat } ) => SetItem(A) // Vn(A)
-  rule #DV( new A:Var ( _:Uri ) , B:Names in { _:Proc    } ) => SetItem(A) #DV(new B in {Nil})
-  rule #DV( new A:Var ( _:Uri ) , B:Names in { _:ProcPat } ) => SetItem(A) #DV(new B in {\_ })
-//  rule #DV( A:Proc | B:Proc ) => #DV(A) #DV(B) requires notBool isPar(A)
-  rule #DV( A:Proc  ) => .Set requires notBool isNew(A) // (isPar(A) orBool isNew(A))
+  rule #DV( new A:VarDecs in { _:Proc    } ) => #vardecs2set(A) // Vn(A)
+  rule #DV( new A:VarDecs in { _:ProcPat } ) => #vardecs2set(A) // Vn(A)
+  rule #DV( A:Proc    | B:Proc    ) => #DV(A) #DV(B) requires notBool isPar(A)
+  rule #DV( A:Proc    | B:ProcPat ) => #DV(A) #DV(B) requires notBool isPar(A)
+  rule #DV( A:ProcPat | B:Proc    ) => #DV(A) #DV(B) requires notBool isParPat(A)
+  rule #DV( A:ProcPat | B:ProcPat ) => #DV(A) #DV(B) requires notBool isParPat(A)
+  rule #DV( A:Proc    ) => .Set requires notBool    (isNew(A) orBool isPar(A))
+  rule #DV( A:ProcPat ) => .Set requires notBool (isNewPat(A) orBool isParPat(A))
 
   // #DV: Names -> Set(Var)
-  rule #DV( A:Names ) => #DV(new A in {Nil})
+  rule #DV( A:VarDecs ) => #vardecs2set(A) [structural]
+  rule #DV( A:Names   ) => .Set requires notBool isVarDecs(A)
 
 //----------------------------
 //--- Nested Receive Names ---
@@ -1938,8 +1996,8 @@ module NAMEVAR
   rule #NV(  .Set     ) => .Set
   rule #NV( P:Proc    ) => #NV(V(P))
   rule #NV( P:ProcPat ) => #NV(V(P))
-  rule #NV(  SetItem(  A:Var : name ) S:Set ) => SetItem(A) #NV(S) // includes name kind Vars // TODO: include kind?
-  rule #NV(  SetItem(  _:Var : proc ) S:Set ) => #NV(S) // filters out proc kind Vars
+  rule #NV(  SetItem(  A:Var :: name ) S:Set ) => SetItem(A) #NV(S) // includes name kind Vars // TODO: include kind?
+  rule #NV(  SetItem(  _:Var :: proc ) S:Set ) => #NV(S) // filters out proc kind Vars
 
   rule #FPV(  .Set     ) => .Set
   rule #FPV( P:Proc    ) => #PV(FV(P))
@@ -1948,10 +2006,10 @@ module NAMEVAR
   rule #PV(  .Set     ) => .Set
   rule #PV( P:Proc    ) => #PV(V(P))
   rule #PV( P:ProcPat ) => #PV(V(P))
-  rule #PV(  SetItem( A:Var : proc ) S:Set ) => SetItem(A) #PV(S) // includes proc kind Vars // TODO: include kind?
-  rule #PV(  SetItem( _:Var : name ) S:Set ) => #PV(S) // filters out name kind Vars
-  rule #PV(  SetItem( A:Var : proc ) S:Set ) => SetItem(A) #PV(S) // includes proc kind Vars // TODO: include kind?
-  rule #PV(  SetItem( _:Var : name ) S:Set ) => #PV(S) // filters out name kind Vars
+  rule #PV(  SetItem( A:Var :: proc ) S:Set ) => SetItem(A) #PV(S) // includes proc kind Vars // TODO: include kind?
+  rule #PV(  SetItem( _:Var :: name ) S:Set ) => #PV(S) // filters out name kind Vars
+  rule #PV(  SetItem( A:Var :: proc ) S:Set ) => SetItem(A) #PV(S) // includes proc kind Vars // TODO: include kind?
+  rule #PV(  SetItem( _:Var :: name ) S:Set ) => #PV(S) // filters out name kind Vars
 
 //---------------
 //--- flatten ---
@@ -1969,7 +2027,10 @@ module NAMEVAR
 //-------------------
 //--- #VarContext ---
 //-------------------
+  // intersection of Name variables & Proc variables
+  // used to check for variables playing both roles -- should be empty
   rule     #VarContext( A:Proc ) => intersectSet( #NV(A), #PV(A))
+  //same for free variables
   rule #FreeVarContext( A:Proc ) => intersectSet(#FNV(A),#FPV(A))
 
 endmodule
