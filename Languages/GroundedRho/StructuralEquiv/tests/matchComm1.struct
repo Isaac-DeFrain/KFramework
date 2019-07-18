@@ -1,0 +1,10 @@
+// Matching for comm
+
+    #matchComm( @Nil!( ) ;; <- @Nil )
+
+/*
+Output:
+
+  true
+
+*/
