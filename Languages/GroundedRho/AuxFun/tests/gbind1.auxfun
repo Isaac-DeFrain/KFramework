@@ -1,0 +1,10 @@
+// GBind if GRec
+
+    #gbind( for( @{\x /\ Int} <<- chan if \x > 6 ){ Nil } )
+
+/*
+Output:
+
+  @ \ x /\ Int <<- chan if \ x > 6
+
+*/

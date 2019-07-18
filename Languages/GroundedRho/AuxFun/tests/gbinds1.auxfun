@@ -1,0 +1,10 @@
+// Bind if UGRec
+
+    #gbind( for( @{\x /\ Int} <- chan1 & @\y,z <- chan2 if *z matches @42!(Bool) ){ z!([\x,\y]) } )
+
+/*
+Output:
+
+  @ \ x /\ Int <- chan1 & @ \ y , z <- chan2 if * z matches @ 42 ! ( Bool )
+
+*/

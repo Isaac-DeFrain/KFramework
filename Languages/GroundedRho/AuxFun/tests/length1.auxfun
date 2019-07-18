@@ -1,0 +1,10 @@
+// Length
+
+    #length( @EmptyP )
+
+/*
+Output:
+
+  0
+
+*/
