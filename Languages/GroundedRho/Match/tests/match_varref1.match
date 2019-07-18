@@ -1,0 +1,10 @@
+// Process variable reference
+
+    #match( \var ; =\var )
+
+/*
+Output:
+
+    true
+
+*/

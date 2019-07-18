@@ -1,0 +1,10 @@
+// Name variable reference
+
+    #match( y ; @=*y )
+
+/*
+Output:
+
+    true
+
+*/

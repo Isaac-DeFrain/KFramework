@@ -1,0 +1,10 @@
+// Structurally Equivalent Set Inclusion
+
+  #matchif( @"a" , @5 ; @{\y /\ String } , @{*z /\ Int} )
+
+/*
+Output:
+
+    true
+
+*/
