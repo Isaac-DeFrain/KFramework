@@ -1,0 +1,56 @@
+// Nondeterministic comm
+
+    @Nil!(1) | for( y <- @2 & z <- @1 ){ *y + 5 } |
+    @1!(37) | @{"a"|for(b<-@Nil){*b}}!( ) | @2!(38) |
+    for( <<- @{for(c<-@Nil){*c}|"a"|Nil} ){ "yay" }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        "yay"
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        ( @ 1 ) ! ( 37 )
+      </send> <send>
+        ( @ 2 ) ! ( 38 )
+      </send> <send>
+        ( @ "a" | for ( b <- @ Nil ) { * b } ) ! ( )
+      </send> <send>
+        ( @ Nil ) ! ( 1 )
+      </send>
+    </sends>
+    <input>
+      <recs>
+        <rec>
+          for ( z <- @ 1 & y <- @ 2 ) { * y + 5 }
+        </rec>
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    ( @ Nil ) ! ( 1 ) | for ( y <- @ 2 & z <- @ 1 ) { * y + 5 } | ( @ 1 ) ! ( 37 ) | ( @ "a" | for ( b <- @ Nil ) { * b } ) ! ( ) | ( @ 2 ) ! ( 38 ) | for ( <<- @ for ( c <- @ Nil ) { * c } | "a" ) { "yay" }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <- @ 1 & boundN( 1 ) <- @ 2 ) { * boundN( 1 ) + 5 } | ( @ 1 ) ! ( 37 ) | @ "a" | for ( boundN( 2 ) <- @ Nil ) { * boundN( 2 ) } ! ( ) | ( @ 2 ) ! ( 38 ) | for ( <<- @ for ( boundN( 3 ) <- @ Nil ) { * boundN( 3 ) } | "a" ) { "yay" }
+  </OGdeBruijn>
+</T>
+*/

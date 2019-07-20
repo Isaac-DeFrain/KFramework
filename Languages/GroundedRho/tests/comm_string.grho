@@ -1,6 +1,6 @@
-// String - race condition
+// String
 
-    new x in { x!("Hello ") | for( y <<- x ){ *y ++ "world!" } }
+    new x in { x!("hello ") | for( y <<- x ){ "Well " ++ *y ++ "world!" } }
 
 /*
 Output:
@@ -8,7 +8,7 @@ Output:
   <activity>
     <task>
       <k>
-        "Hello world!"
+        "Well hello world!"
       </k>
     </task>
   </activity>
@@ -19,7 +19,7 @@ Output:
           @ unforgeable( 0 )
         </schan>
         <msg>
-          "Hello "
+          "hello "
         </msg>
         <arity>
           1
@@ -37,13 +37,16 @@ Output:
     1
   </nextLoc>
   <original>
-    new x in { x ! ( "Hello " ) | for ( y <<- x ) { * y ++ "world!" } }
+    new x in { x ! ( "hello " ) | for ( y <<- x ) { "Well " ++ * y ++ "world!" } }
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
   <OGdeBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( "Hello " ) | for ( boundN( 1 ) <<- boundN( 0 ) ) { * boundN( 1 ) ++ "world!" } }
+    new boundN( 0 ) in { boundN( 0 ) ! ( "hello " ) | for ( boundN( 1 ) <<- boundN( 0 ) ) { "Well " ++ * boundN( 1 ) ++ "world!" } }
   </OGdeBruijn>
 </T>
 */
