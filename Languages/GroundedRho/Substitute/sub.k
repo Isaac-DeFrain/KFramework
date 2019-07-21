@@ -123,6 +123,9 @@ module SUB-SYNTAX
                       | "#subKV(" Names    ";" NamePats ";" RhoKVPairs ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPairs ")" [function]
 
+  syntax       Proc ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Proc ")" [function, poly(0,3)]
+  syntax       Name ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Name ")" [function]
+
 // String expressions
   syntax InterpMaps ::= "#sub(" Procs    ";" Procs    ";" InterpMaps ")" [function]
                       | "#sub(" Procs    ";" ProcPats ";" InterpMaps ")" [function]
@@ -1060,7 +1063,7 @@ module SUB
   rule #sub( A:Proc ;    B:ProcPat /\ Uri          ; C:Proc )
     => #if isUri(A) orBool isBoundProc(A) orBool isEval(A)
        #then #sub(A;B;C) #else C #fi
-//  rule #sub( A:Proc ;       B:Proc /\ ClosedProc ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
+//  rule #sub( A:Proc ;       B:Proc /\ ClosedProc   ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;         Bool /\ B:Proc       ; C:Proc ) => #if        isBool(A) #then #sub(A;B;C) #else C #fi
   rule #sub( A:Proc ;         Bool /\ B:ProcPat    ; C:Proc )
     => #if isBExp(A) #then #sub(A;B;C) #else C #fi
@@ -1088,6 +1091,27 @@ module SUB
 //  rule #sub( A:Proc ;  Unforgeable /\ B:Proc       ; C:Proc ) => #if isUnforgeable(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;          Uri /\ B:Proc       ; C:Proc ) => #if         isUri(A) #then #sub(A;B;C) #else C #fi
 //  rule #sub( A:Proc ;   ClosedProc /\ B:Proc       ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
+
+// sub RhoList for RhoList
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Name ) => #sub(A;B;C)
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Proc ) => #sub(A;B;C)
+
+// sub RhoMap for RhoMap
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Name ) => #sub(A;B;C)
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Proc ) => #sub(A;B;C)
+
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Name ) => #sub(A,B;C,D;E)
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Proc ) => #sub(A,B;C,D;E)
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Name ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+
+// sub RhoSet for RhoSet
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Name ) => #sub(A;B;C)
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Proc ) => #sub(A;B;C)
+
+// sub RhoTuple for RhoTuple
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Name ) => #sub(A;B;C)
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Proc ) => #sub(A;B;C)
 
 // sub Proc[Pat]s for ProcPats
   rule #sub( A:Proc    , B:Procs    ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
