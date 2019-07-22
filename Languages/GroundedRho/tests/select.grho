@@ -1,0 +1,58 @@
+// Select
+
+    select {
+      { a,b <- chan1 } |=> a!(*b)
+      { a,b <- chan2 } |=> [*a,*b]
+      { a,b <- chan1 } |=> Set(*a,*b)
+      { a,b <- chan1 } |=> { *a : *b }
+    }
+
+/*
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        <sum>
+          <branches>
+            <branch>
+              { a , b <- chan1 } |=> Set( * a , * b )
+            </branch> <branch>
+              { a , b <- chan1 } |=> a ! ( * b )
+            </branch> <branch>
+              { a , b <- chan1 } |=> { * a : * b }
+            </branch> <branch>
+              { a , b <- chan2 } |=> [ * a , * b ]
+            </branch>
+          </branches>
+        </sum>
+      </sums>
+    </input>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    select { { a , b <- chan1 } |=> a ! ( * b ) { a , b <- chan2 } |=> [ * a , * b ] { a , b <- chan1 } |=> Set( * a , * b ) { a , b <- chan1 } |=> { * a : * b } }
+  </original>
+  <OGfreevar>
+    SetItem ( chan1 :: name )
+    SetItem ( chan2 :: name )
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    #deBruijn( 0 ; select { { a , b <- chan1 } |=> a ! ( * b ) { a , b <- chan2 } |=> [ * a , * b ] { a , b <- chan1 } |=> Set( * a , * b ) { a , b <- chan1 } |=> { * a : * b } } ; .Map )
+  </OGdeBruijn>
+</T>
+*/
