@@ -1032,11 +1032,10 @@ module GRHO
 //--- Select operator semantics ---
 //---------------------------------
   rule
-  (<task> <k> select { { A:Lbind  } |=> P:Proc } </k> </task> => .Bag)
-  (.Bag => <sum> <branches> <branch> {A} |=> P </branch> </branches> </sum>)
-  rule
-  (<task> <k> select { { A:Lbinds } |=> P:Proc } </k> </task> => .Bag)
-  (.Bag => <sum> <branches> <branch> {A} |=> P </branch> </branches> </sum>)
+  (<task> <k> select { M:Branches } </k> </task> => .Bag)
+  (.Bag => <sum> <branches> <branch> M </branch> </branches> </sum>)
+  rule <branch> M:Branch N:Branches </branch>
+    => <branch> M </branch> <branch> N </branch>
 
 //-------------------
 //--- COMM EVENTS ---
