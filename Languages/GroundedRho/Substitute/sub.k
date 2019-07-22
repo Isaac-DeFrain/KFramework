@@ -279,6 +279,16 @@ module SUB-SYNTAX
   syntax       Bool ::= "#subGuard(" Procs ";" Names    ";" BExp ")" [function]
                       | "#subGuard(" Procs ";" NamePats ";" BExp ")" [function]
 
+// Substitution context checking
+  syntax       Bool ::= "#subcontext(" Proc    ";" Proc ";" Proc    ")" [function]
+                      | "#subcontext(" Proc    ";" Proc ";" ProcPat ")" [function]
+                      | "#subcontext(" ProcPat ";" Proc ";" Proc    ")" [function]
+                      | "#subcontext(" ProcPat ";" Proc ";" ProcPat ")" [function]
+                      | "#subcontext(" Name    ";" Name ";" Proc    ")" [function]
+                      | "#subcontext(" Name    ";" Name ";" ProcPat ")" [function]
+                      | "#subcontext(" NamePat ";" Name ";" Proc    ")" [function]
+                      | "#subcontext(" NamePat ";" Name ";" ProcPat ")" [function]
+
   syntax      KItem ::= Proc | Name
 
 endmodule
@@ -1147,10 +1157,30 @@ module SUB
   rule #sub( A:Name    , B:NamePats ; C:NamePat , D:NamePats ; E:Name ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:Name ) => #sub(B;D;#sub(A;C;E))
 
+//-------------------
+//--- #subcontext ---
+//-------------------
+// Funcdamental substitution contexts
+  // AExp
+  rule #subcontext(  A:Proc ;  \B:Var ; C:AExp ) => (B in #FPV(C)) impliesBool isAExp(A)
+  rule #subcontext( @A:Proc ; @\B:Var ; C:AExp ) => #subcontext(A;\B;C)
+  rule #subcontext( @A:Proc ;   B:Var ; C:AExp ) => (B in #FNV(C)) impliesBool isAExp(A)
+  // BExp
+  rule #subcontext( A:Proc  ;  \B:Var ; C:BExp ) => (B in #FPV(C)) impliesBool isBExp(A)
+  rule #subcontext( @A:Proc ; @\B:Var ; C:BExp ) => #subcontext(A;\B;C)
+  rule #subcontext( @A:Proc ;   B:Var ; C:BExp ) => (B in #FNV(C)) impliesBool isBExp(A)
+  // ListExp
+  rule #subcontext( A:Proc  ;  \B:Var ; C:ListExp ) => (B in #FPV(C)) impliesBool isListExp(A)
+  rule #subcontext( @A:Proc ; @\B:Var ; C:ListExp ) => #subcontext(A;\B;C)
+  rule #subcontext( @A:Proc ;   B:Var ; C:ListExp ) => (B in #FNV(C)) impliesBool isListExp(A)
+  // StringExp
+  rule #subcontext( A:Proc  ; \B:Var ; C:StringExp ) => (B in #FPV(C)) impliesBool isStringExp(A)
+  rule #subcontext( @A:Proc ; B:Var  ; C:StringExp ) => (B in #FNV(C)) impliesBool isStringExp(A)
+
 //----------------
 //--- #sub2map ---
 //----------------
-// mapping from a given substitution: #sub(A;B;C) = #sub(#sub2map(A;B);C)
+// mapping from a given substitution: #sub(A;B;C) == #sub(#sub2map(A;B);C)
 
 // Fundamental substitution mappings
   rule #sub2map( A:Proc ;  \B:Var ) => \B |->  A
