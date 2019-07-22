@@ -1,0 +1,10 @@
+// Substitution context - String
+
+    #subcontext( @"abc" ; y ; *y ++ "1" )
+
+/*
+Output:
+
+  true
+
+*/

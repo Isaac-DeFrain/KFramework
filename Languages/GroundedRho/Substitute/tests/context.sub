@@ -1,0 +1,10 @@
+// Substitution context
+
+    #subcontext( @3 ; y ; *y + 1 )
+
+/*
+Output:
+
+  true
+
+*/

@@ -1,0 +1,10 @@
+// Substitution context - List
+
+    #subcontext( @[ @1!( ) , for( @2 <= @3 ){ Nil } , 5 , "abc" ] ; y ; *y ++ [1] )
+
+/*
+Output:
+
+  true
+
+*/
