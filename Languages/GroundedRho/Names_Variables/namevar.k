@@ -24,6 +24,8 @@ module NAMEVAR-SYNTAX
                    | AnyBindPats
                    | MatchCases
                    | MCasePats
+                   | Branches
+                   | BranchPats
                    | MethodAndArgs
                    | InterpMaps
                    | Set
@@ -445,7 +447,15 @@ module NAMEVAR
   rule #V( { P:ProcPat } |=> Q:Proc ) => #V(P) #V(Q)
   rule #V( A:MatchCase B:MatchCases ) => #V(A) #V(B)
 
-// TODO: select & SelectPat
+// TODO: SelectPat
+  rule  V( select { B:Branches }   ) =>  V(B)
+  rule  V( { A:Lbind  } |=> B:Proc ) =>  V(A)  V(B)
+  rule  V( { A:Lbinds } |=> B:Proc ) =>  V(A)  V(B)
+  rule  V(   A:Branch B:Branches   ) =>  V(A)  V(B)
+  rule #V( select { B:Branches }   ) => #V(B)
+  rule #V( { A:Lbind  } |=> B:Proc ) => #V(A) #V(B)
+  rule #V( { A:Lbinds } |=> B:Proc ) => #V(A) #V(B)
+  rule #V(   A:Branch B:Branches   ) => #V(A) #V(B)
 
 // Method
   rule  V( P:Proc M:MethodAndArgs ) =>  V(P)  V(M)
@@ -973,7 +983,7 @@ module NAMEVAR
   rule #FV( A:IfThenPat else P:Proc    ) => #FV(A) #FV(P)
   rule #FV( A:IfThenPat else P:ProcPat ) => #FV(A) #FV(P)
 
-// Match -- TODO: patterns
+// Match -- TODO: MatchPat
   rule  FV( match { P:Proc } { M:MatchCases } ) =>  FV(P)  FV(M)
   rule #FV( match { P:Proc } { M:MatchCases } ) => #FV(P) #FV(M)
   // MatchCases -- free variables in to be matched Proc P are bound in resulting Proc Q ???
@@ -983,6 +993,16 @@ module NAMEVAR
   rule #FV( { P:Proc    } |=> Q:Proc ) => #FV(Q) -Set #FV(P) // must be empty for each MatchCase for Match to be closed, i.e. #FV(Q) <=Set #FV(P)
   rule #FV( { P:ProcPat } |=> Q:Proc ) => #FV(Q) -Set #FV(P) // must be empty for each MatchCase for Match to be closed, i.e. #FV(Q) <=Set #FV(P)
   rule #FV( A:MatchCase B:MatchCases ) => #FV(A) #FV(B)
+
+// Select -- TODO: SelectPat
+  rule  FV( select { B:Branches }   ) =>  FV(B)
+  rule  FV( { A:Lbind  } |=> B:Proc ) =>  RV(A) -Set FV+(B)
+  rule  FV( { A:Lbinds } |=> B:Proc ) =>  RV(A) -Set FV+(B)
+  rule  FV(   A:Branch B:Branches   ) =>  FV(A)  FV(B)
+  rule #FV( select { B:Branches }   ) => #FV(B)
+  rule #FV( { A:Lbind  } |=> B:Proc ) => #RV(A) -Set #FV(B)
+  rule #FV( { A:Lbinds } |=> B:Proc ) => #RV(A) -Set #FV(B)
+  rule #FV(   A:Branch B:Branches   ) => #FV(A) #FV(B)
 
 // Method
   rule  FV( P:Proc M:MethodAndArgs ) =>  FV(P)  FV(M)
