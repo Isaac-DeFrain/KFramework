@@ -6,86 +6,30 @@
 Output:
 <T>
   <activity>
-    .TaskCellBag
+    <task>
+      <k>
+        ( 1 , 2 ,)
+      </k>
+    </task>
   </activity>
   <tuplespace>
     <sends>
       <send>
-        <schan>
-          @ 1
-        </schan>
-        <msg>
-          unforgeable( 2 )
-        </msg>
-        <arity>
-          1
-        </arity>
-        <stype>
-          0
-        </stype>
+        ( @ 1 ) ! ( unforgeable( 2 ) )
       </send> <send>
-        <schan>
-          @ unforgeable( 0 )
-        </schan>
-        <msg>
-          1
-        </msg>
-        <arity>
-          1
-        </arity>
-        <stype>
-          0
-        </stype>
+        ( @ unforgeable( 0 ) ) ! ( 1 )
       </send> <send>
-        <schan>
-          @ unforgeable( 1 )
-        </schan>
-        <msg>
-          1
-        </msg>
-        <arity>
-          1
-        </arity>
-        <stype>
-          0
-        </stype>
-      </send> <send>
-        <schan>
-          @ unforgeable( 2 )
-        </schan>
-        <msg>
-          [ 1 , 2 ]
-        </msg>
-        <arity>
-          2
-        </arity>
-        <stype>
-          0
-        </stype>
+        { @ unforgeable( 1 ) } ! ( 1 )
       </send>
     </sends>
-    <receives>
-      <rec>
-        <rchan>
-          @ unforgeable( 2 )
-        </rchan>
-        <bvars>
-          @ [ \ x , \ y ]
-        </bvars>
-        <bnum>
-          1
-        </bnum>
-        <rtype>
-          0
-        </rtype>
-        <guard>
-          true
-        </guard>
-        <cont>
-          ( \ x , \ y ,)
-        </cont>
-      </rec>
-    </receives>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
   <nextLoc>
     3
@@ -97,10 +41,10 @@ Output:
     .Set
   </OGfreevar>
   <OGvarcontexts>
-    .Set
+    SetItem ( x )
   </OGvarcontexts>
   <OGdeBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) | new boundN( 1 ) in { boundN( 1 ) ! ( 1 ) } | new boundN( 2 ) in { @ 1 ! ( * boundN( 2 ) ) | for ( @ [ boundP( 3 ) , boundP( 4 ) ] <- boundN( 2 ) ) { ( boundP( 3 ) , boundP( 4 ) ,) } | boundN( 2 ) ! ( [ 1 , 2 ] ) } }
+    new boundN( 0 ) in { boundN( 0 ) ! ( 1 ) | new boundN( 1 ) in { boundN( 1 ) ! ( 1 ) } | new boundN( 2 ) in { ( @ 1 ) ! ( * boundN( 2 ) ) | for ( @ [ boundP( 3 ) , boundP( 4 ) ] <- boundN( 2 ) ) { ( boundP( 3 ) , boundP( 4 ) ,) } | boundN( 2 ) ! ( [ 1 , 2 ] ) } }
   </OGdeBruijn>
 </T>
 */
