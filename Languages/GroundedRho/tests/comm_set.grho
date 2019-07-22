@@ -1,0 +1,44 @@
+// Comm - set
+
+    new x in { x!(Set(1,2,true)) | for( @Set(\a,\b,\c) <- x ){ \a < \b and \c } }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        true
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new x in { x ! ( Set( 1 , 2 , true ) ) | for ( @ Set( \ a , \ b , \ c ) <- x ) { \ a < \ b and \ c } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    new boundN( 0 ) in { boundN( 0 ) ! ( Set( 1 , 2 , true ) ) | for ( @ Set( boundP( 1 ) , boundP( 2 ) , boundP( 3 ) ) <- boundN( 0 ) ) { boundP( 1 ) < boundP( 2 ) and boundP( 3 ) } }
+  </OGdeBruijn>
+</T>
+*/
