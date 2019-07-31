@@ -1,0 +1,12 @@
+// Count Branches/BranchPats
+
+    #length( select { { a,b,@{\c /\ Uri} <- chan1 } |=> [*a,(*b,\c,)]
+             { a,b,@\c          <- chan1 } |=> @{*a|*b}!(\c \/ Int)
+             {                  <- chan  } |=> Nil } )
+
+/*
+Output:
+
+  3
+
+*/

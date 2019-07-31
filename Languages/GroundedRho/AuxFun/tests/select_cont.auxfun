@@ -1,0 +1,10 @@
+// Bind in select branch
+
+    #cont( { a,b,@{\c /\ Uri} <- chan1 } |=> [*a,(*b,\c,)] )
+
+/*
+Output:
+
+  [ * a , ( * b , \ c ,) ]
+
+*/
