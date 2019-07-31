@@ -101,13 +101,33 @@ module SUB-SYNTAX
 
   syntax       Proc ::= "#subNew(" Int ";" Set ";" Proc ")" [function]
 
-  // Match substitution
-  syntax      Match ::= "#subMatch(" Procs    ";" Procs    ";" Match ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" Match ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" Match ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" Match ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" Match ")" [function]
-                      | "#subMatch(" NamePats ";" NamePats ";" Match ")" [function]
+  // Match substitution -- TODO
+  syntax  MatchCase ::= "#subMatch(" Procs    ";" Procs    ";" MatchCase  ")" [function]
+                      | "#subMatch(" Procs    ";" ProcPats ";" MatchCase  ")" [function]
+                      | "#subMatch(" ProcPats ";" ProcPats ";" MatchCase  ")" [function]
+                      | "#subMatch(" Names    ";" Names    ";" MatchCase  ")" [function]
+                      | "#subMatch(" Names    ";" NamePats ";" MatchCase  ")" [function]
+                      | "#subMatch(" NamePats ";" NamePats ";" MatchCase  ")" [function]
+  syntax MatchCases ::= "#subMatch(" Procs    ";" Procs    ";" MatchCases ")" [function]
+                      | "#subMatch(" Procs    ";" ProcPats ";" MatchCases ")" [function]
+                      | "#subMatch(" ProcPats ";" ProcPats ";" MatchCases ")" [function]
+                      | "#subMatch(" Names    ";" Names    ";" MatchCases ")" [function]
+                      | "#subMatch(" Names    ";" NamePats ";" MatchCases ")" [function]
+                      | "#subMatch(" NamePats ";" NamePats ";" MatchCases ")" [function]
+
+// Select sub -- TODO
+  syntax     Branch ::= "#subBranch(" Proc     ";" Proc     ";" Branch   ")" [function]
+                      | "#subBranch(" Procs    ";" ProcPats ";" Branch   ")" [function]
+                      | "#subBranch(" ProcPats ";" ProcPats ";" Branch   ")" [function]
+                      | "#subBranch(" Names    ";" Names    ";" Branch   ")" [function]
+                      | "#subBranch(" Names    ";" NamePats ";" Branch   ")" [function]
+                      | "#subBranch(" NamePats ";" NamePats ";" Branch   ")" [function]
+  syntax   Branches ::= "#subBranch(" Proc     ";" Proc     ";" Branches ")" [function]
+                      | "#subBranch(" Procs    ";" ProcPats ";" Branches ")" [function]
+                      | "#subBranch(" ProcPats ";" ProcPats ";" Branches ")" [function]
+                      | "#subBranch(" Names    ";" Names    ";" Branches ")" [function]
+                      | "#subBranch(" Names    ";" NamePats ";" Branches ")" [function]
+                      | "#subBranch(" NamePats ";" NamePats ";" Branches ")" [function]
 
 // RhoMap
   syntax  RhoKVPair ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPair  ")" [function]
@@ -122,9 +142,31 @@ module SUB-SYNTAX
                       | "#subKV(" Names    ";" Names    ";" RhoKVPairs ")" [function]
                       | "#subKV(" Names    ";" NamePats ";" RhoKVPairs ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPairs ")" [function]
+  syntax   RhoKVPat ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPat   ")" [function]
+                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPat   ")" [function]
+                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPat   ")" [function]
+                      | "#subKV(" Names    ";" Names    ";" RhoKVPat   ")" [function]
+                      | "#subKV(" Names    ";" NamePats ";" RhoKVPat   ")" [function]
+                      | "#subKV(" NamePats ";" NamePats ";" RhoKVPat   ")" [function]
+  syntax  RhoKVPats ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPats  ")" [function]
+                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPats  ")" [function]
+                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPats  ")" [function]
+                      | "#subKV(" Names    ";" Names    ";" RhoKVPats  ")" [function]
+                      | "#subKV(" Names    ";" NamePats ";" RhoKVPats  ")" [function]
+                      | "#subKV(" NamePats ";" NamePats ";" RhoKVPats  ")" [function]
 
-  syntax       Proc ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Proc ")" [function, poly(0,3)]
-  syntax       Name ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Name ")" [function]
+  syntax       Proc ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Proc    ")" [function, poly(0,3)]
+                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" Proc    ")" [function, poly(0,3)]
+                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" Proc    ")" [function, poly(0,3)]
+  syntax    ProcPat ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" ProcPat ")" [function]
+                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" ProcPat ")" [function]
+                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" ProcPat ")" [function]
+  syntax       Name ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Name    ")" [function]
+                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" Name    ")" [function]
+                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" Name    ")" [function]
+  syntax    NamePat ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" NamePat ")" [function]
+                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" NamePat ")" [function]
+                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" NamePat ")" [function]
 
 // String expressions
   syntax InterpMaps ::= "#sub(" Procs    ";" Procs    ";" InterpMaps ")" [function]
@@ -300,6 +342,7 @@ module SUB
 
   syntax KResult ::= Proc | Procs | Bind | Binds | New | Match | InterpMaps | RhoKVPair | RhoKVPairs
                    | ProcPat | ProcPats | BindPat | BindPats | NewPat | MatchPat
+                   | MatchCase | MatchCases | Branch | Branches
                    | Name | Names | NamePat | NamePats
 
 // BoundName/Proc subs for ALPHA
@@ -438,7 +481,7 @@ module SUB
   rule #subRec( A:Proc ; \B:Var ; for( RB:Rbind   if G:BExp ){ Cont:Proc } ) => for( #subBind(A;\B;;RB)  if #sub(A;\B;G) ){ #sub(A;\B;Cont) }
   rule #subRec( A:Proc ; \B:Var ; for( RBs:Rbinds if G:BExp ){ Cont:Proc } ) => for( #subBind(A;\B;;RBs) if #sub(A;\B;G) ){ #sub(A;\B;Cont) }
 
-  // Binds -- TODO: add patterns
+  // Binds
     // Linear
   rule #subBind( A:Proc ; B:Proc ;;            <- X:Name  ) =>   <- #sub(A;B;X)
   rule #subBind( A:Proc ; B:Proc ;; Y:Names    <- X:Name  ) => Y <- #sub(A;B;X)
@@ -469,27 +512,53 @@ module SUB
 
 
 // sub Proc for Proc in Par -- apply after normalization
-  rule #sub( A:Proc ; B:Proc ; C:Proc | D:Proc ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Proc ; B:Proc ; C:Proc    | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Proc ; B:Proc ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Proc ; B:Proc ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isParPat(A)
+  rule #sub( A:Proc ; B:Proc ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isParPat(A)
 
-// sub Proc for Proc in Collections
+// sub Proc for Proc in Match -- TODO
+  rule #sub( A:Proc ; B:Proc ; match { C:Proc } { D:MatchCases } ) => match {#sub(A;B;C)} {#subMatch(A;B;D)}
+  // MatchCases
+  rule #subMatch( A:Proc ; B:Proc ; { C:Proc    } |=> D:Proc ) => {#sub(A;B;C)} |=> #sub(A;B;D)
+  rule #subMatch( A:Proc ; B:Proc ; { C:ProcPat } |=> D:Proc ) => {#sub(A;B;C)} |=> #sub(A;B;D)
+  rule #subMatch( A:Proc ; B:Proc ; C:MatchCase D:MatchCases ) => #subMatch(A;B;C) #subMatch(A;B;D)
+
+// sub Proc for Proc in Select -- TODO
+  rule #sub( A:Proc ; B:Proc ; select { C:Branches } ) => select { #subBranch(A;B;C) }
+  // Branches
+//  rule #subBranch( A:Proc ; B:Proc ; { C:Lbind  } |=> D:Proc ) => { #subBind(A;B;;C) } |=> ???
+//  rule #subBranch( A:Proc ; B:Proc ; { C:Lbinds } |=> D:Proc ) => { #subBind(A;B;;C) } |=> ???
+//  rule #subBranch( A:Proc ; B:Proc ; C:Branch D:Branches ) => #subBranch(A;B;C) #subBranch(A;B;D)
+
+// sub Proc for Proc in Collections -- TODO: patterns
   // RhoList
   rule #sub( _:Proc ; _:Proc ; [ ] ) => [ ]
-  rule #sub( A:Proc ; B:Proc ; [ C:Proc , D:Procs ] ) => [ #sub(A;B;C) , #sub(A;B;D) ]
+  rule #sub( A:Proc ; B:Proc ; [ C:Procs    ] ) => [ #sub(A;B;C) ]
+  rule #sub( A:Proc ; B:Proc ; [ C:ProcPats ] ) => [ #sub(A;B;C) ]
 
   // RhoMap
   rule #sub( _:Proc ; _:Proc ; { } ) => { }
-  rule #sub( A:Proc ; B:Proc ; { C:RhoKVPair  } ) => { #subKV(A;B;C) }
-  rule #sub( A:Proc ; B:Proc ; { C:RhoKVPair , D:RhoKVPairs } ) => { #subKV(A;B;C) , #subKV(A;B;D) }
-    // RhoKVPairs
-  rule #subKV( A:Proc ; B:Proc ; C:Proc : D:Proc ) => #sub(A;B;C) : #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; { C:RhoKVPairs } ) => { #subKV(A;B;C) }
+  rule #sub( A:Proc ; B:Proc ; { C:RhoKVPats  } ) => { #subKV(A;B;C) }
+    // RhoKVPairs/Pats
+  rule #subKV( A:Proc ; B:Proc ; C:Proc    : D:Proc    ) => #sub(A;B;C) : #sub(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:Proc    : D:ProcPat ) => #sub(A;B;C) : #sub(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:ProcPat : D:Proc    ) => #sub(A;B;C) : #sub(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:ProcPat : D:ProcPat ) => #sub(A;B;C) : #sub(A;B;D)
   rule #subKV( A:Proc ; B:Proc ; C:RhoKVPair , D:RhoKVPairs ) => #subKV(A;B;C) , #subKV(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:RhoKVPair , D:RhoKVPats  ) => #subKV(A;B;C) , #subKV(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:RhoKVPat  , D:RhoKVPairs ) => #subKV(A;B;C) , #subKV(A;B;D)
+  rule #subKV( A:Proc ; B:Proc ; C:RhoKVPat  , D:RhoKVPats  ) => #subKV(A;B;C) , #subKV(A;B;D)
 
   // RhoSet
   rule #sub( _:Proc ; _:Proc ; Set( ) ) => Set( )
-  rule #sub( A:Proc ; B:Proc ; Set( C:Proc , D:Procs ) ) => Set( #sub(A;B;C) , #sub(A;B;D) )
+  rule #sub( A:Proc ; B:Proc ; Set( C:Procs    ) ) => Set( #sub(A;B;C) )
+  rule #sub( A:Proc ; B:Proc ; Set( C:ProcPats ) ) => Set( #sub(A;B;C) )
 
   // RhoTuple
-  rule #sub( A:Proc ; B:Proc ; ( C:Procs ,) ) => ( #sub(A;B;C) ,)
+  rule #sub( A:Proc ; B:Proc ; ( C:Procs    ,) ) => ( #sub(A;B;C) ,)
+  rule #sub( A:Proc ; B:Proc ; ( C:ProcPats ,) ) => ( #sub(A;B;C) ,)
 
 // sub Proc for Proc in New
   rule    #sub( A:Proc ; \B:Var  ; P:New ) => #subNew(A;\B;P)
@@ -535,19 +604,39 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:ProcPat matches D:ProcPat ) => #sub(A;B;C) matches #sub(A;B;D)
 
 // sub Proc for Proc in Names
-  rule #sub( A:Proc ; B:Proc ; C:Name , D:Names ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Name    , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
+// sub Proc for Proc in NamePats
+  rule #sub( A:Proc ; B:Proc ; C:Name    , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:NamePat , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:NamePat , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
 // sub Proc for Proc in Procs
-  rule #sub( A:Proc ; B:Proc ; C:Proc , D:Procs ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:Proc    , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
+// sub Proc for Proc in ProcPats
+  rule #sub( A:Proc ; B:Proc ; C:Proc    , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:ProcPat , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:Proc ; B:Proc ; C:ProcPat , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
 
-// Several Procs substitutions
-  // sub Procs for Procs in Name -- applies after #match predicate so lengths are assumed equal
-  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; N:Name ) => #sub(B;D;#sub(A;C;N))
+// Several Procs substitutions -- only applies after #match predicate so lengths are assumed equal
+  // sub Procs for Procs in Name
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; N:Name    ) => #sub(B;D;#sub(A;C;N))
+  // sub Procs for Procs in NamePat
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; N:NamePat ) => #sub(B;D;#sub(A;C;N))
   // sub Procs for Procs in Proc
-  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; P:Proc ) => #sub(B;D;#sub(A;C;P))
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; P:Proc    ) => #sub(B;D;#sub(A;C;P))
+  // sub Procs for Procs in ProcPat
+  rule #sub( A:Proc , B:Procs ; C:Proc , D:Procs ; P:ProcPat ) => #sub(B;D;#sub(A;C;P))
   // sub Procs for Procs in Names
   rule #sub( A:Procs ; B:Procs ; M:Name , N:Names ) => #append(#sub(A;B;M);#sub(A;B;N))
+  // sub Procs for Procs in NamePats
+  rule #sub( A:Procs ; B:Procs ; M:Name    , N:NamePats ) => #append(#sub(A;B;M);#sub(A;B;N))
+  rule #sub( A:Procs ; B:Procs ; M:NamePat , N:Names    ) => #append(#sub(A;B;M);#sub(A;B;N))
+  rule #sub( A:Procs ; B:Procs ; M:NamePat , N:NamePats ) => #append(#sub(A;B;M);#sub(A;B;N))
 // sub Procs for Procs in Procs
   rule #sub( A:Procs ; B:Procs ; P:Proc , Q:Procs ) => #append(#sub(A;B;P);#sub(A;B;Q))
+// sub Procs for Procs in ProcPats
+  rule #sub( A:Procs ; B:Procs ; P:Proc    , Q:ProcPats ) => #append(#sub(A;B;P);#sub(A;B;Q))
+  rule #sub( A:Procs ; B:Procs ; P:ProcPat , Q:Procs    ) => #append(#sub(A;B;P);#sub(A;B;Q))
+  rule #sub( A:Procs ; B:Procs ; P:ProcPat , Q:ProcPats ) => #append(#sub(A;B;P);#sub(A;B;Q))
 
 // sub Proc for Proc in Map
   rule #sub( _:Proc ; _:Proc ; .Map ) => .Map
@@ -681,9 +770,8 @@ module SUB
   rule #sub( A:Name ; B:Name ; @C:Proc ) => @ #sub(A;B;C)
 
   // sub Name for Name in *Name
-  rule #sub( A:Name ; B:Name ; *C:Name ) => * #sub(A;B;C)
-
-  rule #sub( A:Var ; @B:Proc ; C:Proc ) => #sub(*A;B;C)
+  rule #sub( A:Name ;  B:Name ; *C:Name ) => * #sub(A;B;C)
+  rule #sub( A:Var  ; @B:Proc ;  C:Proc ) => #sub(*A;B;C)
 
   // sub @Proc for @Proc in Name & Proc - drop quotes
   rule #sub( @A:Proc ; @B:Proc ; C:Name ) => #sub(A;B;C)
@@ -756,26 +844,26 @@ module SUB
   rule #sub( A:Name ; B:Name ; C:Name !! ( D:Procs ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
   // sub Name for Name in Par
-  rule #sub( A:Name ; B:Name ; C:Proc | D:Proc ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Name ; B:Name ; C:Proc    | D:Proc ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Name ; B:Name ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isPar(A)
+  rule #sub( A:Name ; B:Name ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isParPat(A)
+  rule #sub( A:Name ; B:Name ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D) requires notBool isParPat(A)
 
   // sub Name for Name in Collections
     // RhoList
   rule #sub( _:Name ; _:Name ; [ ] ) => [ ]
-  rule #sub( A:Name ; B:Name ; [ C:Proc ] ) => [ #sub(A;B;C) ]
-  rule #sub( A:Name ; B:Name ; [ C:Proc , D:Procs ] ) => [ #sub(A;B;C) , #sub(A;B;D) ]
+  rule #sub( A:Name ; B:Name ; [ C:Procs ] ) => [ #sub(A;B;C) ]
 
     // RhoMap
   rule #sub( _:Name ; _:Name ; { } ) => { }
-  rule #sub( A:Name ; B:Name ; { C:RhoKVPair } ) => { #subKV(A;B;C) }
-  rule #sub( A:Name ; B:Name ; { C:RhoKVPair , D:RhoKVPairs } ) => { #subKV(A;B;C) , #subKV(A;B;D) }
+  rule #sub( A:Name ; B:Name ; { C:RhoKVPairs } ) => { #subKV(A;B;C) }
       // RhoKVPairs
   rule #subKV( A:Name ; B:Name ; C:Proc : D:Proc ) => #sub(A;B;C) : #sub(A;B;D)
   rule #subKV( A:Name ; B:Name ; C:RhoKVPair , D:RhoKVPairs ) => #subKV(A;B;C) , #subKV(A;B;D)
 
     // RhoSet
   rule #sub( _:Name ; _:Name ; Set( ) ) => Set( )
-  rule #sub( A:Name ; B:Name ; Set( C:Proc ) ) => Set( #sub(A;B;C) )
-  rule #sub( A:Name ; B:Name ; Set( C:Proc , D:Procs ) ) => Set( #sub(A;B;C) , #sub(A;B;D) )
+  rule #sub( A:Name ; B:Name ; Set( C:Procs ) ) => Set( #sub(A;B;C) )
 
     // RhoTuple
   rule #sub( A:Name ; B:Name ; ( C:Procs ,) ) => ( #sub(A;B;C) ,)
@@ -929,7 +1017,7 @@ module SUB
   rule #sub( A:Proc ; B:Proc ; C:NamePat !! ( D:ProcPats ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:Name    !! ( D:ProcPats ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
-// sub Proc for SimplePat
+// sub Proc for SimplePat -- TODO: add remaining SimplePats & SimpleNamePats
   rule #sub( A:Proc ; Bool        ; C:Proc ) => #if        isBool(A) #then C #else .K #fi
   rule #sub( A:Proc ; Int         ; C:Proc ) => #if         isInt(A) #then C #else .K #fi
   rule #sub( A:Proc ; String      ; C:Proc ) => #if      isString(A) #then C #else .K #fi
@@ -939,6 +1027,14 @@ module SUB
   rule #sub( A:Proc ; Tuple       ; C:Proc ) => #if    isRhoTuple(A) #then C #else .K #fi
   rule #sub( A:Proc ; Unforgeable ; C:Proc ) => #if isUnforgeable(A) #then C #else .K #fi
   rule #sub( A:Proc ; Uri         ; C:Proc ) => #if         isUri(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Proc        ; C:Proc ) => #if        isProc(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Ground      ; C:Proc ) => #if      isGround(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Par         ; C:Proc ) => #if         isPar(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Send        ; C:Proc ) => #if        isSend(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Receive     ; C:Proc ) => #if     isReceive(A) #then C #else .K #fi
+  rule #sub( A:Proc ; ProcVar     ; C:Proc ) => #if     isProcVar(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Contract    ; C:Proc ) => #if    isContract(A) #then C #else .K #fi
+  rule #sub( A:Proc ; Method      ; C:Proc ) => #if      isMethod(A) #then C #else .K #fi
 
 // SimplePat -- sub invariant
   rule #sub( _:Name    ; _:Name    ; A:SimplePat ) => A
@@ -1103,25 +1199,37 @@ module SUB
 //  rule #sub( A:Proc ;   ClosedProc /\ B:Proc       ; C:Proc ) => #if #match(A;ClosedProc) #then #sub(A;B;C) #else C #fi
 
 // sub RhoList for RhoList
-  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Name ) => #sub(A;B;C)
-  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Proc ) => #sub(A;B;C)
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Name    ) => #sub(A;B;C)
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:NamePat ) => #sub(A;B;C)
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:Proc    ) => #sub(A;B;C)
+  rule #sub( [ A:Procs ] ; [ B:Procs ] ; C:ProcPat ) => #sub(A;B;C)
 
 // sub RhoMap for RhoMap
-  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Name ) => #sub(A;B;C)
-  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Proc ) => #sub(A;B;C)
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Name    ) => #sub(A;B;C)
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:NamePat ) => #sub(A;B;C)
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:Proc    ) => #sub(A;B;C)
+  rule #sub( { A:RhoKVPairs } ; { B:RhoKVPairs } ; C:ProcPat ) => #sub(A;B;C)
 
-  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Name ) => #sub(A,B;C,D;E)
-  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Proc ) => #sub(A,B;C,D;E)
-  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Name ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Proc ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Name    ) => #sub(A,B;C,D;E)
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:NamePat ) => #sub(A,B;C,D;E)
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:Proc    ) => #sub(A,B;C,D;E)
+  rule #sub( A:Proc : B:Proc ; C:Proc : D:Proc ; E:ProcPat ) => #sub(A,B;C,D;E)
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Name    ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
 
 // sub RhoSet for RhoSet
-  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Name ) => #sub(A;B;C)
-  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Proc ) => #sub(A;B;C)
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Name    ) => #sub(A;B;C)
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:NamePat ) => #sub(A;B;C)
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:Proc    ) => #sub(A;B;C)
+  rule #sub( Set( A:Procs ) ; Set( B:Procs ) ; C:ProcPat ) => #sub(A;B;C)
 
 // sub RhoTuple for RhoTuple
-  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Name ) => #sub(A;B;C)
-  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Proc ) => #sub(A;B;C)
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Name    ) => #sub(A;B;C)
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:NamePat ) => #sub(A;B;C)
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:Proc    ) => #sub(A;B;C)
+  rule #sub( ( A:Procs ,) ; ( B:Procs ,) ; C:ProcPat ) => #sub(A;B;C)
 
 // sub Proc[Pat]s for ProcPats
   rule #sub( A:Proc    , B:Procs    ; C:ProcPat , D:Procs    ; E:Proc ) => #sub(B;D;#sub(A;C;E))
