@@ -1,11 +1,14 @@
 // Select
 
+  new chan1,chan2 in {
+    chan1!(1,2) |
     select {
       { a,b <- chan1 } |=> a!(*b)
       { a,b <- chan2 } |=> [*a,*b]
       { a,b <- chan1 } |=> Set(*a,*b)
-      { a,b <- chan1 } |=> { *a : b!(\c) }
+      { a,b <- chan1 & @\c <- chan2 } |=> { *a : b!(\c) }
     }
+  }
 
 /*
 Output:
