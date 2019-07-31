@@ -1,7 +1,10 @@
-// Binding Variables of bind
+// Binding variables of Lbind
 
-  #bvar ( a,b,c,d,e,f,g <- x )
+    #bvar( a,b,c,d,e,f,g <- x )
 
 /*
-  Output: a , b , c , d , e , f , g 
+Output:
+
+  a , b , c , d , e , f , g
+
 */
