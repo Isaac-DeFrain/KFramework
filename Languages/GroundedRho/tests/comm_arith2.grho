@@ -1,6 +1,15 @@
-// send plus
+// AExp, BExp, StringExp continuation
+// TODO: prevevnt #interpolate from applying in #deBruijn
 
-    new x in { x!(41,true,@1!("the message")) | for( @\a,b,@{@{Int}!(\d)} <- x ){ \a + 1 | not *b | \d } }
+    new x in {
+
+      x!(41,true,@"a"!("the message")) |
+      for( @\a,b,@{@{\e /\ String}!(\d /\ String)} <- x ){
+
+           \a + 1 | not *b | [ "Message: " ++ \d , "Channel: ${chan}" %% { "chan" : \e } ]
+
+      }
+    }
 
 /*
 Output:
@@ -12,7 +21,7 @@ Output:
       </k>
     </task> <task>
       <k>
-        "the message"
+        [ "Message: the message" , "Channel: a" ]
       </k>
     </task> <task>
       <k>
@@ -24,21 +33,29 @@ Output:
     <sends>
       .SendCellBag
     </sends>
-    <receives>
-      .RecCellBag
-    </receives>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
   <nextLoc>
     1
   </nextLoc>
   <original>
-    new x in { x ! ( 41 , ( true , @ 1 ! ( "the message" ) ) ) | for ( @ \ a , b , @ ( @ Int ! ( \ d ) ) <- x ) { \ a + 1 | not * b | \ d } }
+    new x in { x ! ( 41 , true , @ "a" ! ( "the message" ) ) | for ( @ \ a , b , @ ( @ \ e /\ String ! ( \ d /\ String ) ) <- x ) { \ a + 1 | not * b | [ "Message: " ++ \ d , "Channel: ${chan}" %% { "chan" : \ e } ] } }
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
   <OGdeBruijn>
-    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true , @ 1 ! ( "the message" ) ) | for ( @ boundP( 1 ) , boundN( 2 ) , @ ( @ Int ! ( boundP( 3 ) ) ) <- boundN( 0 ) ) { boundP( 1 ) + 1 | not * boundN( 2 ) | boundP( 3 ) } }
+    new boundN( 0 ) in { boundN( 0 ) ! ( 41 , true , @ "a" ! ( "the message" ) ) | for ( @ boundP( 1 ) , boundN( 2 ) , @ ( @ boundP( 3 ) /\ String ! ( boundP( 4 ) /\ String ) ) <- boundN( 0 ) ) { boundP( 1 ) + 1 | not * boundN( 2 ) | [ "Message: " ++ boundP( 4 ) , #interpolate( "Channel: ${chan}" ; { "chan" : boundP( 3 ) } ) ] } }
   </OGdeBruijn>
 </T>
 */
