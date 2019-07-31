@@ -15,6 +15,14 @@ module AUXFUN-SYNTAX
                       | "#length(" AnyBindPats ")" [function]
                       | "#length(" RhoKVPairs  ")" [function]
                       | "#length(" RhoKVPats   ")" [function]
+                      | "#length(" Select      ")" [function]
+                      | "#length(" SelectPat   ")" [function]
+                      | "#length(" Branches    ")" [function]
+                      | "#length(" BranchPats  ")" [function]
+                      | "#length(" Match       ")" [function]
+                      | "#length(" MatchPat    ")" [function]
+                      | "#length(" MatchCases  ")" [function]
+                      | "#length(" MCasePats   ")" [function]
   // List & String [sub]expressions
   syntax        Int ::= "#length+(" ListOrVar   ")" [function]
                       | "#length+(" StringOrVar ")" [function]
@@ -425,6 +433,11 @@ module AUXFUN-SYNTAX
   syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
   syntax     String ::= "#eval(" StringOnlyExp ")" [function]
 
+// Select comms
+  syntax      Lbind ::= "#bind(" Branch ")" [function]
+//  syntax     Lbinds ::= "#bind(" Branch ")" [function]
+  syntax       Proc ::= "#cont(" Branch ")" [function]
+
   syntax      KItem ::= Name | Names | NamePat | NamePats
                       | Proc | Procs | ProcPat | ProcPats
 
@@ -565,6 +578,12 @@ module AUXFUN
   rule #bvar( A:Receive ) => #bvar(#bind(A))
   rule #chan( A:SRec ) => #chan(#bind(A))
   rule #chan( A:MRec ) => #chan(#bind(A))
+
+  // Branch
+  rule #bind( { A:Lbind  } |=> _:Proc ) => A [structural]
+//  rule #bind( { A:Lbinds } |=> _:Proc ) => A [structural]
+  rule #cont( { _:Lbind  } |=> A:Proc ) => A [structural]
+  rule #cont( { _:Lbinds } |=> A:Proc ) => A [structural]
 
   rule #cont( for ( _:Lbind  ){ P:Proc } ) => P
   rule #cont( for ( _:Lbinds ){ P:Proc } ) => P
@@ -1042,6 +1061,26 @@ module AUXFUN
   rule #length( B:PbindPats _:Guard ) => #length(B)
   rule #length( B:RbindPats _:Guard ) => #length(B)
 
+  rule #length( match { _:Proc    } { M:MatchCases } ) => #length(M) [structural]
+  rule #length( match { _:Proc    } { M:MCasePats  } ) => #length(M) [structural]
+  rule #length( match { _:ProcPat } { M:MatchCases } ) => #length(M) [structural]
+  rule #length( match { _:ProcPat } { M:MCasePats  } ) => #length(M) [structural]
+  rule #length( A:MatchCase ) => 1
+  rule #length( A:MCasePat  ) => 1
+  rule #length( A:MatchCase B:MatchCases ) => 1 +Int #length(B)
+  rule #length( A:MatchCase B:MCasePats  ) => 1 +Int #length(B)
+  rule #length( A:MCasePat  B:MatchCases ) => 1 +Int #length(B)
+  rule #length( A:MCasePat  B:MCasePats  ) => 1 +Int #length(B)
+
+  rule #length( select { B:Branches   } ) => #length(B) [structural]
+  rule #length( select { B:BranchPats } ) => #length(B) [structural]
+  rule #length( A:Branch    ) => 1
+  rule #length( A:BranchPat ) => 1
+  rule #length( A:Branch    B:Branches   ) => 1 +Int #length(B)
+  rule #length( A:Branch    B:BranchPats ) => 1 +Int #length(B)
+  rule #length( A:BranchPat B:Branches   ) => 1 +Int #length(B)
+  rule #length( A:BranchPat B:BranchPats ) => 1 +Int #length(B)
+
 // Concat
   // ConcatList
   rule #length+( _:ListOrVar   ) => 1
@@ -1270,7 +1309,7 @@ module AUXFUN
   // if key is not a string, bypass it
   rule #interpolate( S:String ; { A:Proc : _:Proc , KV:RhoKVPairs } ) => #interpolate(S;{KV}) requires notBool isString(A)
   // if all else fails, return the original string
-  rule #interpolate( S:String ; _:RhoMap ) => S [owise]
+  //rule #interpolate( S:String ; _:RhoMap ) => S [owise]
 
   rule #interpolate( S:String ; A:RhoMap %% B:InterpMaps )
     => #interpolate(#interpolate(S;A);B)
@@ -1571,10 +1610,11 @@ module AUXFUN
   rule #eval( A:IntExp + B:IntExp ) => #eval(A) +Int #eval(B)
   rule #eval( A:IntExp - B:IntExp ) => #eval(A) -Int #eval(B)
 
-// RhoListExp & StringExp
+// ListExp
   rule #eval( A:RhoList ) => A [structural]
   rule #eval( A:RhoList ++ B:ConcatRhoList ) => #concat(A;#eval(B))
 
+// StringExp
   rule #eval( A:String  ) => A [structural]
   rule #eval( A:String        ++ B:StringOnlyExp ) => A +String #eval(B)
   rule #eval( A:StringOnlyExp %% B:InterpMaps    ) => #interpolate(#eval(A);B)
