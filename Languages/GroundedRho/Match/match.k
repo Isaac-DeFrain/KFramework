@@ -1,6 +1,6 @@
-// Preliminary Pattern Matching Predicate for Rholang
-  // Types must be the same for match to be successful
-  // Lengths are checked only once
+// Pattern Matching (Structural Type Inclusion) Predicate for Rholang
+  // In general, structural types must be the same for match to be successful
+  // except in the case of variables, i.e. any Proc matches a ProcVar, etc.
 
 require "domains.k"
 require "../AlphaEquiv/alpha.k"
@@ -12,12 +12,19 @@ module MATCH-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
 
-// #match predicate checks that the terms match
+// #match predicate checks structural type inclusion of terms
 // Name & Proc
   syntax   Bool ::=   "#match(" Procs ";" Procs ")" [function]
                   |   "#match(" Names ";" Names ")" [function]
                   | "#matchif(" Procs ";" Procs ")" [function]
                   | "#matchif(" Names ";" Names ")" [function]
+
+  syntax   Bool ::=   "#match(" Lbinds ";" Lbinds ")" [function]
+                  |   "#match(" Pbinds ";" Pbinds ")" [function]
+                  |   "#match(" Rbinds ";" Rbinds ")" [function]
+                  | "#matchif(" Lbinds ";" Lbinds ")" [function]
+                  | "#matchif(" Pbinds ";" Pbinds ")" [function]
+                  | "#matchif(" Rbinds ";" Rbinds ")" [function]
 
 // subexpressions
   syntax   Bool ::=    "#match(" InterpMaps ";" InterpMaps ")" [function]
@@ -51,7 +58,8 @@ module MATCH-SYNTAX
   syntax    Int ::=  "#countProc(" Proc ";" Proc ")" [function]
   syntax    Set ::=    "#par2set(" Proc ")"          [function]
 
-  syntax  KItem ::= Name | Names | NamePat | NamePats | Proc | Procs | ProcPat | ProcPats
+  syntax  KItem ::= Name | Names | NamePat | NamePats
+                  | Proc | Procs | ProcPat | ProcPats
 
 endmodule
 
@@ -71,6 +79,10 @@ module MATCH
   rule #matchif( A:Procs      ; B:ProcPats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:ProcPats   ; B:ProcPats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:RhoKVPairs ; B:RhoKVPairs ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Lbinds     ; B:Lbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Pbinds     ; B:Pbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:Rbinds     ; B:Rbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
+// bind type
 
 //----------------------------
 //--- Name & Proc Matching ---
@@ -104,11 +116,12 @@ module MATCH
          orBool isPar(A) orBool isNameRef(A))
 
   // Send matching
+  // Send matches Send (if channels, type, and messages match), but only Send matches Send
   rule #match( A:Name !  (         ) ; C:Name !  (         ) ) => #match(A;C)
   rule #match( A:Name !  ( B:Procs ) ; C:Name !  ( D:Procs ) ) => #match(A;C) andBool #matchif(B;D)
   rule #match( A:Name !! (         ) ; C:Name !! (         ) ) => #match(A;C)
   rule #match( A:Name !! ( B:Procs ) ; C:Name !! ( D:Procs ) ) => #match(A;C) andBool #matchif(B;D)
-    // message length mismatch
+    // message length or send type mismatch
   rule #match( _:Send ; _:Send ) => false [owise]
     // type mismatch
   rule #match( _:ConSend   ; A:Proc      ) => false
@@ -122,26 +135,53 @@ module MATCH
        requires notBool isUnconSend(A)
 
   // Receive matching
-    // SRec
+  // Receive matches Receive (if channels, listening variable length, and appropriately
+  // substituted continuations match), but only Receive matches Receive
+    // UGSRec
   rule #match( for(            <-  A:Name ){ B:Proc } ; for(            <-  C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
   rule #match( for( X:Names    <-  A:Name ){ B:Proc } ; for( Y:Names    <-  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:NamePats <-  A:Name ){ B:Proc } ; for( Y:NamePats <-  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-
   rule #match( for(            <=  A:Name ){ B:Proc } ; for(            <=  C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
   rule #match( for( X:Names    <=  A:Name ){ B:Proc } ; for( Y:Names    <=  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:NamePats <=  A:Name ){ B:Proc } ; for( Y:NamePats <=  C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
-
   rule #match( for(            <<- A:Name ){ B:Proc } ; for(            <<- C:Name ){ D:Proc } ) =>   #match(A;C) andBool #match(B;D)
   rule #match( for( X:Names    <<- A:Name ){ B:Proc } ; for( Y:Names    <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
   rule #match( for( X:NamePats <<- A:Name ){ B:Proc } ; for( Y:NamePats <<- C:Name ){ D:Proc } ) => #matchif(X;Y) andBool #match(A;C) andBool #match(B;#sub(X;Y;D))
 
-  rule #match( _:Receive ; A:Proc ) => false
-       requires notBool (isReceive(A) orBool isProcVar(A)
-         orBool isPar(A) orBool isEval(A))
-  rule #match( A:Proc ; _:Receive ) => false requires notBool isReceive(A)
+  rule #match( _:UGSRec ; A:Proc ) => false
+       requires notBool (isUGSRec(A) orBool isProcVar(A) orBool isPar(A) orBool isEval(A))
+  rule #match( A:Proc ; _:UGSRec ) => false requires notBool isUGSRec(A)
 
-  // MRec -- TODO
-  // Guarded -- TODO
+    // UGMRec -- listens are ordered TODO
+    // binds match and appropriately substituted continuations match
+  rule #match( A:UGMRec ; B:UGMRec ) => #match(#bind(A);#bind(B)) andBool
+       #match(#cont(A);#sub(#bvar(#bind(A));#bvar(#bind(A));#cont(B)))
+  rule #match( _:UGMRec ; A:Proc   ) => false
+       requires notBool (isUGMRec(A) orBool isProcVar(A) orBool isPar(A) orBool isEval(A))
+  rule #match( A:Proc   ; _:UGMRec ) => false requires notBool isUGMRec(A)
+
+  // Bind matching -- corresponding listening variables and channels match
+  rule #match( A:Lbinds ; B:Lbinds ) => #match(#chan(A);#chan(B)) andBool #match(#bvar(A);#bvar(B))
+  rule #match( A:Pbinds ; B:Pbinds ) => #match(#chan(A);#chan(B)) andBool #match(#bvar(A);#bvar(B))
+  rule #match( A:Rbinds ; B:Rbinds ) => #match(#chan(A);#chan(B)) andBool #match(#bvar(A);#bvar(B))
+
+  // Guarded
+    // GSRec
+  rule #match( for( A:Lbind if B:BExp ){ C:Proc } ; for( D:Lbind if E:BExp ){ F:Proc } )
+    => #match(for(A){C};for(D){F}) andBool #match(B;E)
+  rule #match( for( A:Pbind if B:BExp ){ C:Proc } ; for( D:Pbind if E:BExp ){ F:Proc } )
+    => #match(for(A){C};for(D){F}) andBool #match(B;E)
+  rule #match( for( A:Rbind if B:BExp ){ C:Proc } ; for( D:Rbind if E:BExp ){ F:Proc } )
+    => #match(for(A){C};for(D){F}) andBool #match(B;E)
+
+  rule #match( _:GSRec ; A:Proc ) => false
+       requires notBool (isGSRec(A) orBool isProcVar(A) orBool isPar(A) orBool isEval(A))
+  rule #match( A:Proc ; _:GSRec ) => false requires notBool isGSRec(A)
+
+    // GMRec
+  rule #match( _:GMRec ; A:Proc ) => false
+       requires notBool (isGMRec(A) orBool isProcVar(A) orBool isPar(A) orBool isEval(A))
+  rule #match( A:Proc ; _:GMRec ) => false requires notBool isGMRec(A)
 
 // VarRef
   rule #match( A:Proc    ; _:NameRef ) => false
@@ -162,12 +202,12 @@ module MATCH
 
 // Par match - apply after normalization
   // works for A/\Par and A/\(~Par/\Proc)
+  // TODO: Par should only match Par[Pat] with matching terms of same length after normalization
   rule #match( A:Proc ; B:Par  ) => #includedIn(#par2set(A);#par2set(B))
   rule #match( A:Par  ; B:Proc ) => #includedIn(#par2set(A);#par2set(B))
 
 // Collection matching - empty structures are accomodated by the first rule
   // RhoList matches RhoList (if underlying Procs match), nothing else matches RhoList
-  rule #match( _:EmptyList ; _:EmptyList ) => true
   rule #match( A:RhoList   ; _:EmptyList ) => false requires notBool isEmptyList(A)
   rule #match( _:EmptyList ; A:RhoList   ) => false requires notBool isEmptyList(A)
   rule #match( [ A:Procs ] ; [ B:Procs ] ) => #matchif(A;B)
@@ -178,7 +218,6 @@ module MATCH
 
   // RhoMaps & RhoSets are unordered -> assume canonical ordering
   // RhoMap matches RhoMap (if underlying Procs match), nothing else matches RhoMap
-  rule #match( _:EmptyMap ; _:EmptyMap ) => true
   rule #match( A:RhoMap   ; _:EmptyMap ) => false requires notBool isEmptyMap(A)
   rule #match( _:EmptyMap ; A:RhoMap   ) => false requires notBool isEmptyMap(A)
   rule #match( A:RhoMap   ; B:RhoMap   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
@@ -190,9 +229,7 @@ module MATCH
   rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs )
     => #match(A;C) andBool #match(B;D)
 
-
   // RhoSet matches RhoSet (if underlying Procs match)
-  rule #match( Set( ) ; Set( ) ) => true
   rule #match( Set( A:Procs ) ; Set( B:Procs ) ) => #includedIn(#procs2set(A);#procs2set(B))
   rule #match( A:Proc ; _:RhoSet ) => false requires notBool isRhoSet(A)
   rule #match( _:RhoSet ; A:Proc ) => false
@@ -285,9 +322,7 @@ module MATCH
   rule #match( A:Proc ; B:BExp ) => false
        requires notBool (isBExp(A) orBool isBoolOrVar(B))
 
-// anything matches Par
-// Send matches other Send (if underlying channels and messages match), but only Send matches Send
-// Receive matches Receive (if the underlying channels, listening variables, and continuations match?), but only Receive matches Receive
+// only Par matches Par
 // every Proc matches ProcVar, but ProcVar only matches ProcVar
 // Method matches same Method (if Proc and arguments match), nothing else matches Method?
 //  rule #match( A:Proc . B:Method ( C:ProcPats )
@@ -309,6 +344,7 @@ module MATCH
        requires notBool (isMethodProc(A) orBool isProcVar(A)
          orBool isEval(A) orBool isPar(A))
 
+// TODO
 // Match matching?
 // Contract matches Contract like Receive, nothing else matches Contract
 // Invocation matches Invocation like Contract, nothing else matches Invocation
@@ -321,6 +357,7 @@ module MATCH
 //------------------------
 //--- Pattern Matching ---
 //------------------------
+
 // Patterns cannot match concrete Proc(s) or Name(s)
   rule #match(  A:ProcPat ; _:Proc  ) => false
        requires notBool (isPatExp(A) orBool isEvalPat(A) orBool isParPat(A))
@@ -356,7 +393,7 @@ module MATCH
   rule #match(  _:ProcPat ; \_ ) => true
   rule #match( *A:NamePat ; *B:NamePat ) => #match(A;B)
 
-// Simpe pattern
+// Simpe patterns
   rule #match( _:Bool        ; B:SimplePat ) => B ==K Bool
   rule #match( _:Int         ; B:SimplePat ) => B ==K Int
   rule #match( _:String      ; B:SimplePat ) => B ==K String
@@ -379,6 +416,13 @@ module MATCH
        requires notBool (isSimplePat(A) orBool isCollectionPat(A)
          orBool isPatExp(A) orBool isParPat(A))
   rule #match( A:NamePat   ; ClosedName  ) => A ==K ClosedName
+
+  rule #match( A:Proc    ; _EmptyList ) => isEmptyList(A)
+  rule #match( A:ProcPat ; _EmptyList ) => A ==K _EmptyList
+  rule #match( A:Proc    ; _EmptyMap  ) =>  isEmptyMap(A)
+  rule #match( A:ProcPat ; _EmptyMap  ) => A ==K _EmptyMap
+  rule #match( A:Proc    ; _EmptySet  ) =>  isEmptySet(A)
+  rule #match( A:ProcPat ; _EmptySet  ) => A ==K _EmptySet
 
 // #match(Contravariant;Covariant)
 // Pattern expression
@@ -718,10 +762,14 @@ module MATCH
        #fi requires notBool isPar(A)
 
 // Typed Names & Procs
-  rule #sub( A:Name ;  B:Var : C:NamePat ;  D:Var )
+  rule #sub( A:Name ;  B:Var :: C:NamePat     ; D:Var )
     => #sub(A;B;D) requires #match(A;C)
-  rule #sub( A:Proc ; \B:Var : C:ProcPat ; \D:Var )
-    => #sub(A;\B;\D) requires #match(A;C)
+  rule #sub( A:Name ; @B:ProcVar :: C:NamePat ; D:Var )
+    => #sub(A;@B;D) requires #match(A;C)
+  rule #sub( A:Proc ;  B:ProcVar :: C:ProcPat ; D:ProcVar )
+    => #sub(A;B;D) requires #match(A;C)
+  rule #sub( A:Proc ; *B:Var :: C:ProcPat     ; D:ProcVar )
+    => #sub(A;*B;D) requires #match(A;C)
 
 // Message set of Proc matching Names
 //  rule Msg( A:Name ; B:Names    ; C:Proc    ) => #SN(C)
