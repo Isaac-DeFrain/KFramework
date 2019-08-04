@@ -1,0 +1,42 @@
+// Typed name
+
+   new y in { {y::@Int}!(1) }
+
+/*
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        ( @ \ y :: Int ) ! ( 1 )
+      </send>
+    </sends>
+    <input>
+      <recs>
+        .RecCellBag
+      </recs>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    ( @ \ y :: Int ) ! ( 1 )
+  </original>
+  <OGfreevar>
+    FV( \ y :: Int )
+  </OGfreevar>
+  <OGvarcontexts>
+    .Set
+  </OGvarcontexts>
+  <OGdeBruijn>
+    @ #deBruijn( 0 ; \ y :: Int ; .Map ) ! ( 1 )
+  </OGdeBruijn>
+</T>
+*/

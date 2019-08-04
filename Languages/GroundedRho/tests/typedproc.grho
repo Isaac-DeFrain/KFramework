@@ -1,8 +1,0 @@
-// send plus
-
-   for( @\y <- x ){ {y : @Int}!(1) }
-
-/*
-Output:
-
-*/
