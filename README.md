@@ -2,11 +2,11 @@ This is a work in progress which is quickly evolving! Stay tuned.
 
 # Rholang & RChain
 
-Rholang is a concurrent programming language, with a focus on message-passing, formally modeled by the ρ-calculus, a reflective, higher-order extension of the π-calculus. It is designed to be used to implement protocols and "smart contracts" on a general-purpose blockchain, but could be used in other settings as well [RChain](https://github.com/rchain/rchain).
+[Rholang](https://github.com/rchain/rchain/tree/dev/rholang) is a concurrent programming language, with a focus on message-passing, formally modeled by the ρ-calculus, a reflective, higher-order extension of the π-calculus. It is designed to be used to implement protocols and "smart contracts" on a general-purpose blockchain, but could be used in other settings as well.
 
-The open-source RChain project is building a decentralized, economically secure, censorship-resistant, public, global compute infrastructure and blockchain. It will host and execute programs popularly referred to as smart contracts. It will be trustworthy, scalable, concurrent, with proof-of-stake consensus and content delivery.
+The open-source [RChain](https://github.com/rchain/rchain) project is building a decentralized, economically secure, censorship-resistant, public, global compute infrastructure and blockchain. It will host and execute programs popularly referred to as smart contracts. It will be trustworthy, scalable, concurrent, with proof-of-stake consensus and content delivery.
 
-My main Rholang work is going on in `/Languages/GroundedRho`. This work started as an implementation of the ρ-calculus with ground terms (Bool, Int, String) and name variables. It is quickly becoming a full scale implementation of RChain Rholang.
+My main Rholang work is going on in [/Languages/GroundedRho](https://github.com/Isaac-DeFrain/KFramework/tree/master/Languages/GroundedRho). This work started as an implementation of the ρ-calculus with ground terms (Bool, Int, String) and name variables. It is quickly becoming a full scale implementation of RChain Rholang.
 
 # K Framework Learning Materials
 
