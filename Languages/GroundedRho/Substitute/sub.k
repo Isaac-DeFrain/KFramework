@@ -417,20 +417,28 @@ module SUB
   rule #sub( A:Proc ; \B:Var   ; \B     ) =>  A
   rule #sub( _:Proc ; \B:Var   ; \C:Var ) => \C requires B =/=K C
   rule #sub( _:Proc ; \(_:Var) ;  A:Var ) =>  A
+  // Typed
+  rule #sub( A:Proc ; \B:Var ; \B     :: D:ProcPat ) =>  A // requires #match(A;D)???
+  rule #sub( A:Proc ; \B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;\B;D) requires B =/=K C
+  rule #sub( A:Proc ; \B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;\B;D)
 
   // sub Proc for *Var in Var or ProcVar
   rule #sub( A:Proc ; *B:Var ;  B     ) => @A
   rule #sub( A:Proc ; *B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Proc ; *_:Var ; \A:Var ) => \A
+  // Typed
+  rule #sub( A:Proc ; *B:Var ;  B     :: D:NamePat ) => @A // requires #match(A;D)???
+  rule #sub( A:Proc ; *B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;*B;D) requires B =/=K C
+  rule #sub( A:Proc ; *B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;*B;D)
 
   // TODO: sub for Uri for #match
 
 // Recusive cases -- destructuring substitution Proc or Name
   // sub Proc for Proc in @Proc
-  rule #sub( A:Proc ; B:Proc ; @C:Proc ) => @ #sub(A;B;C)
+  rule #sub( A:Proc ; B:Proc ; @C:Proc ) => @#sub(A;B;C)
 
   // sub Proc for Proc in *Name
-  rule #sub( A:Proc ; B:Proc ; *C:Name ) => * #sub(A;B;C)
+  rule #sub( A:Proc ; B:Proc ; *C:Name ) => *#sub(A;B;C)
 
   // sub *Name for *Name in Proc
   rule #sub( *A:Name ; *B:Name ; C:Proc ) => #sub(A;B;C) requires notBool isVar(B)
@@ -759,11 +767,19 @@ module SUB
   rule #sub( A:Name ; B:Var ;  B     ) =>  A
   rule #sub( A:Name ; B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Name ; _:Var ; \A:Var ) => \A
+  // Typed
+  rule #sub( A:Name ; B:Var ;  B     :: D:NamePat ) =>  A // requires #match(A;D)???
+  rule #sub( A:Name ; B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Name ; B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;B;D)
 
   // sub Name for @ProcVar in Var
   rule #sub( A:Name ; @\B:Var   ; \B     ) => *A
   rule #sub( A:Name ; @\B:Var   ; \C:Var ) => \C requires B =/=K C
   rule #sub( _:Name ; @\(_:Var) ;  A:Var ) =>  A
+  // Typed
+  rule #sub( A:Name ; @\B:Var ; \B     :: D:ProcPat ) => *A // requires #match(A;D)???
+  rule #sub( A:Name ; @\B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Name ; @\B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;B;D)
 
 // Recursive cases
   // sub Name for Name in @Proc
