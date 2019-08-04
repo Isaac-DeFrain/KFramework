@@ -1,0 +1,10 @@
+// Simple pattern match
+
+    #match( \a /\ Int ; *x )
+
+/*
+Output:
+
+    true
+
+*/
