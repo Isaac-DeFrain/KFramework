@@ -5,7 +5,7 @@
 TODO:
  - how to handle listens with several names & joins? -- Mem values for several Names/Procs in #dBound
  - more tests for substitutions in continuations for listens on chan
- - add remaining productions - MRec, Conditional, Bundle, etc.
+ - add remaining productions - MRec, Conditional, Bundle, Select
  - extend compositional definition
 */
 
@@ -25,7 +25,7 @@ module ALPHA-SYNTAX
   syntax        Procs ::= "#deBruijn(" Int ";" Procs    ";" Map ")" [function]
                         |   "#dBound(" Int ";" Procs    ";" Map ")" [function]
   // ProcPat
-  syntax      ProcPat ::= "#deBruijn(" Int ";" ProcPat  ";" Map ")" [function, poly(0,2)]
+  syntax      ProcPat ::= "#deBruijn(" Int ";" ProcPat  ";" Map ")" [function]
                         |   "#dBound(" Int ";" ProcPat  ";" Map ")" [function]
 
   syntax     ProcPats ::= "#deBruijn(" Int ";" ProcPats ";" Map ")" [function]
@@ -55,7 +55,7 @@ module ALPHA-SYNTAX
   syntax        Procs ::= "#deBruijn(" Int "," Int ";" Procs    ";" Map ")" [function]
                         |   "#dBound(" Int "," Int ";" Procs    ";" Map ")" [function]
   // ProcPat
-  syntax      ProcPat ::= "#deBruijn(" Int "," Int ";" ProcPat  ";" Map ")" [function, poly(0,3)]
+  syntax      ProcPat ::= "#deBruijn(" Int "," Int ";" ProcPat  ";" Map ")" [function]
                         |   "#dBound(" Int "," Int ";" ProcPat  ";" Map ")" [function]
 
   syntax     ProcPats ::= "#deBruijn(" Int "," Int ";" ProcPats ";" Map ")" [function]
@@ -425,7 +425,7 @@ module ALPHA
   rule #deBruijn( I:Int ; X:Name !! ( P:Procs ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( #deBruijn(I +Int size(#BV(X));P;Mem) )
   rule #deBruijn( I:Int ; X:Name !! (         ) ; Mem:Map ) => #deBruijn(I;X;Mem) !! ( )
 
-// Esubs -- just goes inside
+// Eval -- just goes inside
   rule #deBruijn( I:Int ; *X:Name ; Mem:Map ) => * #deBruijn(I;X;Mem)
 
 // Variables
@@ -436,10 +436,16 @@ module ALPHA
   rule #deBruijn( _:Int ; N:Var ; Mem:Map ) => #sub(Mem;N)
   rule #deBruijn( _:Int ; N:Var ( _:Uri ) ; Mem:Map ) => #sub(Mem;N)
 
+  rule #deBruijn( _:Int ;   A:Var :: B:NamePat ; Mem:Map ) =>  #sub(Mem; A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int ; @\A:Var :: B:NamePat ; Mem:Map ) => @#sub(Mem;\A) :: #sub(Mem;B)
+
   // ProcVar
     // nothing happens if ProcVar is free/fresh w.r.t. Mem
     // if ProcVar is bound w.r.t. Mem (i.e. is a key), replace it with the corresponding value
   rule #deBruijn( _:Int ; \P:Var ; Mem:Map ) => #sub(Mem;\P)
+
+  rule #deBruijn( _:Int ; \A:Var :: B:ProcPat ; Mem:Map ) =>  #sub(Mem;\A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int ; *A:Var :: B:ProcPat ; Mem:Map ) => *#sub(Mem; A) :: #sub(Mem;B)
 
 // Collections
   // RhoList
@@ -504,9 +510,11 @@ module ALPHA
   rule #deBruijn( I:Int ; A:Name !=  B:Name ; Mem:Map ) => #deBruijn(I;A;Mem) !=  #deBruijn(I +Int size(#BV(A));B;Mem)
   rule #deBruijn( I:Int ; A:Proc ==  B:Proc ; Mem:Map ) => #deBruijn(I;A;Mem) ==  #deBruijn(I +Int size(#BV(A));B;Mem)
   rule #deBruijn( I:Int ; A:Proc !=  B:Proc ; Mem:Map ) => #deBruijn(I;A;Mem) !=  #deBruijn(I +Int size(#BV(A));B;Mem)
-  rule #deBruijn( I:Int ; A:Proc matches B:Proc ; Mem:Map ) => #deBruijn(I;A;Mem) matches #deBruijn(I +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int ; A:Proc matches B:Proc    ; Mem:Map ) => #deBruijn(I;A;Mem) matches #deBruijn(I +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int ; A:Proc matches B:ProcPat ; Mem:Map ) => #deBruijn(I;A;Mem) matches #deBruijn(I +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int ; A:ProcPat matches B:ProcPat ; Mem:Map ) => #deBruijn(I;A;Mem) matches #deBruijn(I +Int size(#BV(A));B;Mem)
 
-// TODO: Other productions...
+// TODO: Match, Select, ...
 
 // Several Names
   // Lists of to-be-bound Names will only appear in listens (the Name declarations in New are dealt with separately)...
@@ -622,12 +630,16 @@ module ALPHA
   // Vars
     // nothing happens if Var is free w.r.t. Mem
     // if Var is bound w.r.t. Mem, replace it with its value
-  rule #deBruijn( _:Int , _:Int ; N:Var ; Mem:Map ) => #sub(Mem;N)
+  rule #deBruijn( _:Int , _:Int ;   N:Var ; Mem:Map ) => #sub(Mem;N)
+  rule #deBruijn( _:Int , _:Int ;   A:Var :: B:NamePat ; Mem:Map ) =>  #sub(Mem; A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ; @\A:Var :: B:NamePat ; Mem:Map ) => @#sub(Mem;\A) :: #sub(Mem;B)
 
   // ProcVars
     // nothing happens if ProcVar is free w.r.t. Mem
     // if ProcVar is bound w.r.t. Mem, replace it with its value
   rule #deBruijn( _:Int , _:Int ; \P:Var ; Mem:Map ) => #sub(Mem;\P)
+  rule #deBruijn( _:Int , _:Int ; \A:Var :: B:ProcPat ; Mem:Map ) =>  #sub(Mem;\A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ; *A:Var :: B:ProcPat ; Mem:Map ) => *#sub(Mem; A) :: #sub(Mem;B)
 
 // Collections
   // RhoList
@@ -683,7 +695,9 @@ module ALPHA
   rule #deBruijn( I:Int , J:Int ; A:Name !=  B:Name ; Mem:Map ) => #deBruijn(I,J;A;Mem) !=  #deBruijn(I,J +Int size(#BV(A));B;Mem)
   rule #deBruijn( I:Int , J:Int ; A:Proc ==  B:Proc ; Mem:Map ) => #deBruijn(I,J;A;Mem) ==  #deBruijn(I,J +Int size(#BV(A));B;Mem)
   rule #deBruijn( I:Int , J:Int ; A:Proc !=  B:Proc ; Mem:Map ) => #deBruijn(I,J;A;Mem) !=  #deBruijn(I,J +Int size(#BV(A));B;Mem)
-  rule #deBruijn( I:Int , J:Int ; A:Proc matches B:Proc ; Mem:Map ) => #deBruijn(I,J;A;Mem) matches #deBruijn(I,J +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int , J:Int ; A:Proc matches B:Proc    ; Mem:Map ) => #deBruijn(I,J;A;Mem) matches #deBruijn(I,J +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int , J:Int ; A:Proc matches B:ProcPat ; Mem:Map ) => #deBruijn(I,J;A;Mem) matches #deBruijn(I,J +Int size(#BV(A));B;Mem)
+  rule #deBruijn( I:Int , J:Int ; A:ProcPat matches B:ProcPat ; Mem:Map ) => #deBruijn(I,J;A;Mem) matches #deBruijn(I,J +Int size(#BV(A));B;Mem)
 
 // Several Names
   // Lists of to-be-bound Names will only appear in listens (the Name declarations in New are dealt with separately)...
@@ -1329,7 +1343,8 @@ module ALPHA
   rule #mapify( I:Int ; A:Proc ==  B:Proc ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
   rule #mapify( I:Int ; A:Proc !=  B:Proc ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
   rule #mapify( I:Int ; A:Proc matches B:Proc    ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
-//  rule #mapify( I:Int ; A:Proc matches B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
+  rule #mapify( I:Int ; A:Proc matches B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
+  rule #mapify( I:Int ; A:ProcPat matches B:ProcPat ; Mem:Map ) => #mapify(I;A;Mem) #mapify(I +Int size(#FV(A));#sub(#mapSub(#FV(A));B);Mem)
 
 // Pattern
   rule #mapify( _:Int ; _:SimplePat ; _:Map ) => .Map
