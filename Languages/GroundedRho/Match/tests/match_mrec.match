@@ -1,0 +1,11 @@
+// MRec match
+
+    #match( for( a <- @0 & @[@Nil!(*b),"a"] <- @1 ){ ( *a,  b!("a") ,) } ;
+            for( v <- y  & @[@Nil!(\w), \x] <- z  ){ ( *v,@\w!( \x) ,) } )
+
+/*
+Output:
+
+    true
+
+*/
