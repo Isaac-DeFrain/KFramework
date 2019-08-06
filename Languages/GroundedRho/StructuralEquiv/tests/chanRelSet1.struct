@@ -1,0 +1,12 @@
+// Channel relations set
+
+    #chanRelSet( for( @0 <<- x & b,c <<- @\x & d <<- @{x!(\x)} & e,f,g <<- @[\x,*x] ){ Nil } )
+
+/*
+Output:
+
+  SetItem ( 0 ; SetItem ( 2 ) SetItem ( 3 ) )
+  SetItem ( 1 ; SetItem ( 2 ) SetItem ( 3 ) )
+  SetItem ( 2 ; SetItem ( 3 ) )
+
+*/

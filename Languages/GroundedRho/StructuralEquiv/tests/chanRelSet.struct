@@ -1,0 +1,12 @@
+// Channel relations set
+
+    #chanRelSet( for( a,@(\b,) <- @\y & @Set(\c,*d) <- x & e <- @{x!(\y)} & f,g <- @[\y,*x] ){ Nil } )
+
+/*
+Output:
+
+  SetItem ( 0 ; SetItem ( 2 ) SetItem ( 3 ) )
+  SetItem ( 1 ; SetItem ( 2 ) SetItem ( 3 ) )
+  SetItem ( 2 ; SetItem ( 3 ) )
+
+*/
