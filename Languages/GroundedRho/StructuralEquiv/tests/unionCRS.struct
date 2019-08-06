@@ -1,0 +1,11 @@
+// Channel relations set union
+
+    #unionCRS( SetItem(0;.Set) ; #unionCRS( SetItem(1;SetItem(2)) ; SetItem(3;SetItem(4) SetItem(5)) ) )
+
+/*
+Output:
+
+  SetItem ( 1 ; SetItem ( 2 ) )
+  SetItem ( 3 ; SetItem ( 4 ) SetItem ( 5 ) )
+
+*/
