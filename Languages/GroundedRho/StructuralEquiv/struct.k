@@ -2,9 +2,7 @@
 
 /*
 TODO:
- - NonPar Proc
- - #structEq(ConSend;ConSend), #structEq(UnconSend;UnconSend)
- - Patterns
+ - Patterns!!!
  - Normalize before checking structural equiv (then notBool isPar(...) and notBool isEval(...) can be removed)
 */
 
@@ -38,7 +36,8 @@ module STRUCT-SYNTAX
                        | "#nameEqif(" NamePats ";" NamePats ")" [function]
 
 // Comm Predicate
-  syntax        Bool ::= "#matchComm(" Send ";;" AnyBind ")" [function]
+  syntax        Bool ::= "#matchComm(" Send ";;" AnyBind  ")" [function]
+  syntax        Bool ::= "#matchComm(" Send ";;" AnyBinds ")" [function]
 
 // Normalization functions
   syntax         Int ::=  "#parCount(" Proc ";" Proc  ")" [function]
@@ -48,15 +47,23 @@ module STRUCT-SYNTAX
   syntax         Set ::=    "#setify(" Proc ")"           [function]
 
 // Unary Ordering
-  syntax        Proc ::= "#order(" Proc ")" [function, pol(0,1)]
-  syntax        Name ::= "#order(" Name ")" [function]
+  syntax        Proc ::= "#order(" Proc    ")" [function, poly(0,1)]
+  syntax        Name ::= "#order(" Name    ")" [function]
+  syntax     ProcPat ::= "#order(" ProcPat ")" [function]
+  syntax     NamePat ::= "#order(" NamePat ")" [function]
 
-  syntax        Proc ::= "#orderEach(" Proc  ")" [function, pol(0,1)]
-  syntax       Procs ::=     "#order(" Procs ")" [function]
-                       | "#orderEach(" Procs ")" [function]
-  syntax        Name ::= "#orderEach(" Name  ")" [function]
-  syntax       Names ::=     "#order(" Names ")" [function]
-                       | "#orderEach(" Names ")" [function]
+  syntax        Proc ::= "#orderEach(" Proc     ")" [function, poly(0,1)]
+  syntax       Procs ::=     "#order(" Procs    ")" [function]
+                       | "#orderEach(" Procs    ")" [function]
+  syntax        Name ::= "#orderEach(" Name     ")" [function]
+  syntax       Names ::=     "#order(" Names    ")" [function]
+                       | "#orderEach(" Names    ")" [function]
+  syntax     ProcPat ::= "#orderEach(" ProcPat  ")" [function]
+  syntax    ProcPats ::=     "#order(" ProcPats ")" [function]
+                       | "#orderEach(" ProcPats ")" [function]
+  syntax     NamePat ::= "#orderEach(" NamePat  ")" [function]
+  syntax    NamePats ::=     "#order(" NamePats ")" [function]
+                       | "#orderEach(" NamePats ")" [function]
 
   syntax   RhoKVPair ::= "#order(" RhoKVPair ")" [function]
 
@@ -209,6 +216,36 @@ module STRUCT-SYNTAX
                        | "#reorder("           ";;" RhoKVPats  ";;"            ")" [function]
 */
 
+  // #chanRelSet: Receive/RecPat/Bind[Pat][s] -> set of seta of related channel indices
+  syntax         Set ::= "#chanRelSet(" Receive  ")" [function]
+                       | "#chanRelSet(" RecPat   ")" [function]
+  syntax         Set ::= "#chanRelSet(" Bind     ")" [function]
+                       | "#chanRelSet(" Binds    ")" [function]
+                       | "#chanRelSet(" BindPat  ")" [function]
+                       | "#chanRelSet(" BindPats ")" [function]
+  // recursively checks relations with first Bind
+  syntax         Set ::= "#chanRelSet(" Bind     ";;" Bind     ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" Binds    ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" Bind     ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" Binds    ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" BindPat  ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" BindPats ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" BindPat  ";;" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" BindPats ";;" Int ";" Int ")" [function]
+  // recursively checks all Bind relations
+  syntax         Set ::= "#chanRelSet(" Bind     ";;" Bind     ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" Bind     ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" BindPat  ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" Bind     ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" BindPat  ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet(" BindPat  ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet("          ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
+                       | "#chanRelSet("          ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
+  // chanRelSet union
+  syntax         Set ::= "#unionCRS(" Set ";" Set ")" [function]
+
 // Translation to built-ins -- other half in AuxFun
   syntax        List ::= "#rho2list(" RhoList ")" [function]
   syntax         Map ::=  "#rho2map(" RhoMap  ")" [function]
@@ -222,6 +259,8 @@ module STRUCT-SYNTAX
   syntax        Bool ::=    "#structEqs(" Proc ";" Procs ")" [function]
 // seq of left arg against all keys of RhoKVPairs
   syntax        Bool ::= "#key_structEq(" Proc ";" RhoKVPairs ")" [function]
+
+  syntax        KItem ::= Int ";" Set
 
 endmodule
 
@@ -293,13 +332,26 @@ module STRUCT
   rule #orderEach( A:Name , B:Names ) => #order(A) , #orderEach(B)
   rule #orderEach( A:Proc ) => #order(A)
   rule #orderEach( A:Proc , B:Procs ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:NamePat ) => #order(A)
+  rule #orderEach( A:Name    , B:NamePats ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:NamePat , B:Names    ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:NamePat , B:NamePats ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:ProcPat ) => #order(A)
+  rule #orderEach( A:Proc    , B:ProcPats ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:ProcPat , B:Procs    ) => #order(A) , #orderEach(B)
+  rule #orderEach( A:ProcPat , B:ProcPats ) => #order(A) , #orderEach(B)
 
   // TODO: finish unary order
   rule #order( @A:Proc ) => @#order(A)
   rule #order(  A:Var  ) => A
 
-  rule #order(  A:Proc   ) => A [owise]
-  rule #order(  A:Ground ) => A
+  rule #order(   A:Var :: B:NamePat ) =>   A :: #order(B)
+  rule #order( @\A:Var :: B:NamePat ) => @\A :: #order(B)
+  rule #order(  \A:Var :: B:ProcPat ) =>  \A :: #order(B)
+  rule #order(  *A:Var :: B:ProcPat ) =>  *A :: #order(B)
+
+  rule #order( A:Proc   ) => A [owise] // to be removed once definition is completed
+  rule #order( A:Ground ) => A
 
   rule #order( A:Receive ) => for(#reorder(#gbind(A))){#order(#cont(A))}
   rule #order( A:Name !  ( ) ) => #order(A)! ( )
@@ -346,6 +398,12 @@ module STRUCT
   rule #reorder( A:Lbind ) => #order(A)
   rule #reorder( A:Pbind ) => #order(A)
   rule #reorder( A:Rbind ) => #order(A)
+
+// Patterns -- TODO: continue
+  rule #order( A:SimplePat ) => A
+
+  rule #order(  A:SimpleNamePat ) => A
+  rule #order( @A:SimplePat     ) => @A
 
 //--------------------
 //--- Binary Order ---
@@ -961,15 +1019,446 @@ module STRUCT
   rule #structEqs( A:Proc ; B:Proc           ) => #structEq(A;B)
   rule #structEqs( A:Proc ; B:Proc , C:Procs ) => #structEq(A;B) orBool #structEqs(A;C)
 
-
 //------------------
 //--- #matchComm ---
 //------------------
-  rule #matchComm( S:Send ;; B:Bind )
+  rule #matchComm( S:Send ;; B:Lbind )
     => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
-  rule #matchComm( S:Send ;; B:GBind )
+  rule #matchComm( S:Send ;; B:Pbind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+  rule #matchComm( S:Send ;; B:Rbind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+  rule #matchComm( S:Send ;; B:GLbind )
     => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
        andBool #subGuard(#msg(S);#bvar(B);#guard(B))
+  rule #matchComm( S:Send ;; B:GPbind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+       andBool #subGuard(#msg(S);#bvar(B);#guard(B))
+  rule #matchComm( S:Send ;; B:GRbind )
+    => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
+       andBool #subGuard(#msg(S);#bvar(B);#guard(B))
+
+// TODO: Binds
+
+//-----------------------------
+//--- Channel Relations Set ---
+//-----------------------------
+  rule #chanRelSet( _:SRec    ) => .Set
+  rule #chanRelSet( _:SRecPat ) => .Set
+  rule #chanRelSet( A:MRec    ) => #chanRelSet( ;;#bind(A);;0;1;#lislen(A)) // initially check 0th bind against 1st
+  rule #chanRelSet( A:MRecPat ) => #chanRelSet( ;;#bind(A);;0;1;#lislen(A))
+
+  // first arg Bind is checked against other Bind(s) for channel relations
+  // after checking each, throw it away and repeat for the next Bind
+  // TODO: optimization oppurtunity: if #FV(#chan) = .Set, move on to next bind
+    // Lbinds
+  rule #chanRelSet( ;; A:Lbind &  B:Lbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L) // only called with I=0,J=1
+  rule #chanRelSet( ;; A:Lbind &  B:Lbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L) // only called with I=0,J=1
+      // Ith Bind fixed, traverse succeeding Binds
+  rule #chanRelSet(    A:Lbind ;; B:Lbind  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ) // think: A is the Ith bind, B is the Jth bind in original
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int)
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+      // recursively generates chanRelSet for each Bind
+  rule #chanRelSet( A:Lbind ;; B:Lbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+    // LbindPats
+  rule #chanRelSet( ;; A:LbindPat &  B:Lbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Lbind    &  B:LbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:LbindPat &  B:LbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:LbindPat &  B:Lbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Lbind    &  B:LbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:LbindPat &  B:LbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
+  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  // recursively generates chanRelSet for each Bind[Pat]
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPats    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+
+    // Pbinds
+  rule #chanRelSet( ;; A:Pbind &  B:Pbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Pbind &  B:Pbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  // Ith Bind fixed, traverse succeeding Binds
+  rule #chanRelSet(    A:Pbind ;; B:Pbind  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbind  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbinds ;; I:Int ; J:Int)
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  // recursively generates chanRelSet for each Bind
+  rule #chanRelSet( A:Pbind ;; B:Pbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbind  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbinds ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+    // PbindPats
+  rule #chanRelSet( ;; A:PbindPat &  B:Pbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Pbind    &  B:PbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:PbindPat &  B:PbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:PbindPat &  B:Pbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Pbind    &  B:PbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:PbindPat &  B:PbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
+  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  // recursively generates chanRelSet for each Bind[Pat]
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPats    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+
+    // Rbinds
+  rule #chanRelSet( ;; A:Rbind &  B:Rbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Rbind &  B:Rbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  // Ith Bind fixed, traverse succeeding Binds
+  rule #chanRelSet(    A:Rbind ;; B:Rbind  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbind  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbinds ;; I:Int ; J:Int)
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  // recursively generates chanRelSet for each Bind
+  rule #chanRelSet( A:Rbind ;; B:Rbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbind  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbinds ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+    // RbindPats
+  rule #chanRelSet( ;; A:RbindPat &  B:Rbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Rbind    &  B:RbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:RbindPat &  B:RbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:RbindPat &  B:Rbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:Rbind    &  B:RbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  rule #chanRelSet( ;; A:RbindPat &  B:RbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
+  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
+  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then .Set
+       #else SetItem(I;SetItem(J)) #fi
+  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int )
+    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
+       #then #chanRelSet(A;;C;;I;J +Int 1)
+       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
+  // recursively generates chanRelSet for each Bind[Pat]
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPats    ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int ; L:Int )
+    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
+
+// Channel relation set union
+  rule #unionCRS( S:Set ;  .Set ) => S
+  rule #unionCRS(  .Set ; S:Set ) => S
+  rule #unionCRS( SetItem( I:Int ; .Set ) ; S:Set ) => S
+  rule #unionCRS( S:Set ; SetItem( I:Int ; .Set ) ) => S
+  // if indices match, union inside
+  rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
+  // if indices do not match, union outside
+  rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
 
 //---//---//
 
