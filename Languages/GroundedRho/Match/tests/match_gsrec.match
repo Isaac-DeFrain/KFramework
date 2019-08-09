@@ -1,0 +1,10 @@
+// GSRec match
+
+    #match( for( a,b <- @0 if *a == *b ){ ( *a, b!(*a) ,) } ; for( u,v <- y if *v == *u ){ ( *u, v!(*u) ,) } )
+
+/*
+Output:
+
+    true
+
+*/

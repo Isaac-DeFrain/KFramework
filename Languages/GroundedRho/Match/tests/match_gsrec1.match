@@ -1,0 +1,10 @@
+// GSRec match
+
+    #match( *a matches b!(Int) ; *u matches v!(Int) )
+
+/*
+Output:
+
+    true
+
+*/
