@@ -99,6 +99,12 @@ module SUB-SYNTAX
                       | "#subNew(" Names    ";" NamePats ";" New ")" [function]
                       | "#subNew(" NamePats ";" NamePats ";" New ")" [function]
 
+  syntax        New ::= "#subNew+(" Var ";" Var ";" New ")" [function]
+
+  syntax        Var ::= "#subVar(" Var ";" Var ";" Var ")" [function]
+  syntax     VarDec ::= "#subDec(" Var ";" Var ";" VarDec  ")" [function]
+  syntax    VarDecs ::= "#subDec(" Var ";" Var ";" VarDecs ")" [function]
+
   syntax       Proc ::= "#subNew(" Int ";" Set ";" Proc ")" [function]
 
   // Match substitution -- TODO
@@ -286,7 +292,6 @@ module SUB-SYNTAX
                       | "#sub(" Names    ";" Names    ";" NamePat  ")" [function]
                       | "#sub(" Names    ";" NamePats ";" NamePat  ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" NamePat  ")" [function]
-                      | "#sub(" Map      ";" NamePat  ")"              [function]
 
   syntax   NamePats ::= "#sub(" Procs    ";" Procs    ";" NamePats ")" [function]
                       | "#sub(" Procs    ";" ProcPats ";" NamePats ")" [function]
@@ -294,7 +299,6 @@ module SUB-SYNTAX
                       | "#sub(" Names    ";" Names    ";" NamePats ")" [function]
                       | "#sub(" Names    ";" NamePats ";" NamePats ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" NamePats ")" [function]
-                      | "#sub(" Map ";" NamePats ")" [function]
 
   syntax        Map ::= "#sub(" Names ";" Names ";" Map ")" [function]
                       | "#sub(" Procs ";" Procs ";" Map ")" [function]
@@ -420,15 +424,15 @@ module SUB
   // Typed
   rule #sub( A:Proc ; \B:Var ; \B     :: D:ProcPat ) =>  A // requires #match(A;D)???
   rule #sub( A:Proc ; \B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;\B;D) requires B =/=K C
-  rule #sub( A:Proc ; \B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;\B;D)
+  rule #sub( A:Proc ; \B:Var ;  C:Var :: D:ProcPat ) =>  C :: #sub(A;\B;D)
 
   // sub Proc for *Var in Var or ProcVar
   rule #sub( A:Proc ; *B:Var ;  B     ) => @A
   rule #sub( A:Proc ; *B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Proc ; *_:Var ; \A:Var ) => \A
   // Typed
-  rule #sub( A:Proc ; *B:Var ;  B     :: D:NamePat ) => @A // requires #match(A;D)???
-  rule #sub( A:Proc ; *B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;*B;D) requires B =/=K C
+  rule #sub( A:Proc ; *B:Var ;  B     :: D:ProcPat ) => @A // requires #match(A;D)???
+  rule #sub( A:Proc ; *B:Var ;  C:Var :: D:ProcPat ) =>  C :: #sub(A;*B;D) requires B =/=K C
   rule #sub( A:Proc ; *B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;*B;D)
 
   // TODO: sub for Uri for #match
@@ -768,8 +772,8 @@ module SUB
   rule #sub( A:Name ; B:Var ;  C:Var ) =>  C requires B =/=K C
   rule #sub( _:Name ; _:Var ; \A:Var ) => \A
   // Typed
-  rule #sub( A:Name ; B:Var ;  B     :: D:NamePat ) =>  A // requires #match(A;D)???
-  rule #sub( A:Name ; B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Name ; B:Var ;  B     :: D:ProcPat ) =>  A // requires #match(A;D)???
+  rule #sub( A:Name ; B:Var ;  C:Var :: D:ProcPat ) =>  C :: #sub(A;B;D) requires B =/=K C
   rule #sub( A:Name ; B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;B;D)
 
   // sub Name for @ProcVar in Var
@@ -779,7 +783,7 @@ module SUB
   // Typed
   rule #sub( A:Name ; @\B:Var ; \B     :: D:ProcPat ) => *A // requires #match(A;D)???
   rule #sub( A:Name ; @\B:Var ; \C:Var :: D:ProcPat ) => \C :: #sub(A;B;D) requires B =/=K C
-  rule #sub( A:Name ; @\B:Var ;  C:Var :: D:NamePat ) =>  C :: #sub(A;B;D)
+  rule #sub( A:Name ; @\B:Var ;  C:Var :: D:ProcPat ) =>  C :: #sub(A;B;D)
 
 // Recursive cases
   // sub Name for Name in @Proc
@@ -887,6 +891,15 @@ module SUB
   // sub Name for Name in New -- if substitution variable is bound, no substitution occurs, else substitute in Proc
   rule #sub( A:Name ; B:Var ; P:New ) => #if (B in #DV(P)) #then P #else #subNew(A;B;P) #fi
   rule #subNew( A:Name ; B:Name ; new C:VarDecs in { D:Proc } ) => new C in { #sub(A;B;D) }
+
+  rule #subNew+( A:Var ; B:Var ; C:New )
+    => #if B in #DV(C)
+       #then new #subDec(A;B;#dec(C)) in { #sub(A;B;#newproc(C)) }
+       #else new #dec(C) in { #sub(A;B;#newproc(C)) } #fi
+
+  rule #subDec( A:Var ; B:Var ; C:Var ) => #sub(A;B;C)
+  rule #subDec( A:Var ; B:Var ; C:Var ( D:Uri ) ) => #subVar(A;B;C) (D)
+  rule #subDec( A:Var ; B:Var ; C:VarDec , D:VarDecs ) => #subDec(A;B;C) , #subDec(A;B;D)
 
 // Arithmetic Exps
   rule #sub( A:Name ; B:Name ; - C:AExp ) => - #sub(A;B;C)
