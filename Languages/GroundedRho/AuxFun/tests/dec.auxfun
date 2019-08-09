@@ -1,7 +1,10 @@
-// Name declaration
+// Name declaration variables
 
-  #dec( new a in { {1:2 , 2:3 , 3:2 , "a":5 , true:*x , Nil:@3!(3)} } )
+    #var( new a,b,c(`rho:io:stdout`) in { {1:2 , 2:3 , 3:2 , "a":5 , true:*x , Nil:@3!(3)} } )
 
 /*
-  Output: a
+Output:
+
+  a , b , c
+
 */
