@@ -1,0 +1,10 @@
+// New -- hidden variable sub
+
+    #subNew+( a ; x ; new x , y , z in { y!( *x | (\x, 1, true, *z ,) ) } )
+
+/*
+  Output:
+
+  new a , y , z in { y ! ( * a | ( \ x , 1 , true , * z ,) ) }
+
+*/
