@@ -1,0 +1,11 @@
+// ChanSet of Receive
+
+    #chanSet( for( @{@{ @2!( \_ | 3 ) }!( )} <<- @{*chan1 /\ Int} & @6 <<- chan2 ){ Nil } )
+
+/*
+Output:
+
+  SetItem ( 0 ; @ * chan1 /\ Int )
+  SetItem ( 1 ; chan2 )
+
+*/
