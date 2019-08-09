@@ -5,7 +5,7 @@
 /*
 Output:
 
-  SetItem ( 0 ; @ * chan1 /\ Int )
-  SetItem ( 1 ; chan2 )
+  SetItem ( 0 ; @ ( ( @ @ 2 ! ( \_ | 3 ) ) ! ( ) ) )
+  SetItem ( 1 ; @ 6 )
 
 */
