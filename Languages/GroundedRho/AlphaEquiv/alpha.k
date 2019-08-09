@@ -436,16 +436,16 @@ module ALPHA
   rule #deBruijn( _:Int ; N:Var ; Mem:Map ) => #sub(Mem;N)
   rule #deBruijn( _:Int ; N:Var ( _:Uri ) ; Mem:Map ) => #sub(Mem;N)
 
-  rule #deBruijn( _:Int ;   A:Var :: B:NamePat ; Mem:Map ) =>  #sub(Mem; A) :: #sub(Mem;B)
-  rule #deBruijn( _:Int ; @\A:Var :: B:NamePat ; Mem:Map ) => @#sub(Mem;\A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int ;    A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem; A)  :: #sub(Mem;B)
+  rule #deBruijn( _:Int ; (@\A:Var) :: B:ProcPat ; Mem:Map ) => (@#sub(Mem;\A)) :: #sub(Mem;B)
 
   // ProcVar
     // nothing happens if ProcVar is free/fresh w.r.t. Mem
     // if ProcVar is bound w.r.t. Mem (i.e. is a key), replace it with the corresponding value
   rule #deBruijn( _:Int ; \P:Var ; Mem:Map ) => #sub(Mem;\P)
 
-  rule #deBruijn( _:Int ; \A:Var :: B:ProcPat ; Mem:Map ) =>  #sub(Mem;\A) :: #sub(Mem;B)
-  rule #deBruijn( _:Int ; *A:Var :: B:ProcPat ; Mem:Map ) => *#sub(Mem; A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int ;  \A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem;\A)  :: #sub(Mem;B)
+  rule #deBruijn( _:Int ; (*A:Var) :: B:ProcPat ; Mem:Map ) => (*#sub(Mem; A)) :: #sub(Mem;B)
 
 // Collections
   // RhoList
@@ -630,16 +630,16 @@ module ALPHA
   // Vars
     // nothing happens if Var is free w.r.t. Mem
     // if Var is bound w.r.t. Mem, replace it with its value
-  rule #deBruijn( _:Int , _:Int ;   N:Var ; Mem:Map ) => #sub(Mem;N)
-  rule #deBruijn( _:Int , _:Int ;   A:Var :: B:NamePat ; Mem:Map ) =>  #sub(Mem; A) :: #sub(Mem;B)
-  rule #deBruijn( _:Int , _:Int ; @\A:Var :: B:NamePat ; Mem:Map ) => @#sub(Mem;\A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ;    N:Var ; Mem:Map ) => #sub(Mem;N)
+  rule #deBruijn( _:Int , _:Int ;    A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem; A)  :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ; (@\A:Var) :: B:ProcPat ; Mem:Map ) => (@#sub(Mem;\A)) :: #sub(Mem;B)
 
   // ProcVars
     // nothing happens if ProcVar is free w.r.t. Mem
     // if ProcVar is bound w.r.t. Mem, replace it with its value
-  rule #deBruijn( _:Int , _:Int ; \P:Var ; Mem:Map ) => #sub(Mem;\P)
-  rule #deBruijn( _:Int , _:Int ; \A:Var :: B:ProcPat ; Mem:Map ) =>  #sub(Mem;\A) :: #sub(Mem;B)
-  rule #deBruijn( _:Int , _:Int ; *A:Var :: B:ProcPat ; Mem:Map ) => *#sub(Mem; A) :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ;  \P:Var ; Mem:Map ) => #sub(Mem;\P)
+  rule #deBruijn( _:Int , _:Int ;  \A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem;\A)  :: #sub(Mem;B)
+  rule #deBruijn( _:Int , _:Int ; (*A:Var) :: B:ProcPat ; Mem:Map ) => (*#sub(Mem; A)) :: #sub(Mem;B)
 
 // Collections
   // RhoList
@@ -1182,6 +1182,10 @@ module ALPHA
 //--- #mapify ---
 //---------------
 // returns map from variables to De Bruijn indices
+  rule #mapify( A:Names    ) => #mapify(0;A;.Map)
+  rule #mapify( A:Procs    ) => #mapify(0;A;.Map)
+  rule #mapify( A:NamePats ) => #mapify(0;A;.Map)
+  rule #mapify( A:ProcPats ) => #mapify(0;A;.Map)
 
   // WildCard does not add any bindings
   rule #mapify( _:Int ; \_ ; Mem:Map ) => Mem
