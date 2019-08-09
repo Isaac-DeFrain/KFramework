@@ -1,0 +1,10 @@
+// Channel position
+
+    #chan( for(a,b,c,d <= x & @(1,\e,Int,) <= y & @{@Nil!(\f)} <= z){ Nil } ;; 1 )
+
+/*
+Output:
+
+  y
+
+*/
