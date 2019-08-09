@@ -246,6 +246,18 @@ module STRUCT-SYNTAX
   // chanRelSet union
   syntax         Set ::= "#unionCRS(" Set ";" Set ")" [function]
 
+// Matching Binds
+  syntax         Set ::= "#matchBindSet(" Binds ";;" Binds ")" [function]
+                       | "#matchBindSet(" Bind  ";;" Bind  ";;" Int ";" Int ")" [function]
+                       | "#matchBindSet(" Bind  ";;" Binds ";;" Int ";" Int ")" [function]
+                       | "#matchBindSet(" Binds ";;" Binds ";;" Int ";" Int ")" [function]
+                       | "#matchBindSet(" Bind  ";;" Bind  ";;" Int ";" Int ";" Int ")" [function]
+                       | "#matchBindSet(" Bind  ";;" Binds ";;" Int ";" Int ";" Int ")" [function]
+                       | "#matchBindSet(" Binds ";;" Binds ";;" Int ";" Int ";" Int ")" [function]
+
+  // matchBindSet Set union
+  syntax         Set ::= "#unionBMS(" Set ";" Set ")" [function]
+
 // Translation to built-ins -- other half in AuxFun
   syntax        List ::= "#rho2list(" RhoList ")" [function]
   syntax         Map ::=  "#rho2map(" RhoMap  ")" [function]
@@ -260,7 +272,8 @@ module STRUCT-SYNTAX
 // seq of left arg against all keys of RhoKVPairs
   syntax        Bool ::= "#key_structEq(" Proc ";" RhoKVPairs ")" [function]
 
-  syntax        KItem ::= Int ";" Set
+  syntax  IndexedSet ::= Int ";" Set
+  syntax       KItem ::= IndexedSet
 
 endmodule
 
@@ -345,10 +358,10 @@ module STRUCT
   rule #order( @A:Proc ) => @#order(A)
   rule #order(  A:Var  ) => A
 
-  rule #order(   A:Var :: B:NamePat ) =>   A :: #order(B)
-  rule #order( @\A:Var :: B:NamePat ) => @\A :: #order(B)
-  rule #order(  \A:Var :: B:ProcPat ) =>  \A :: #order(B)
-  rule #order(  *A:Var :: B:ProcPat ) =>  *A :: #order(B)
+  rule #order(    A:Var  :: B:ProcPat ) =>    A  :: #order(B)
+  rule #order( (@\A:Var) :: B:ProcPat ) => (@\A) :: #order(B)
+  rule #order(   \A:Var  :: B:ProcPat ) =>   \A  :: #order(B)
+  rule #order(  (*A:Var) :: B:ProcPat ) =>  (*A) :: #order(B)
 
   rule #order( A:Proc   ) => A [owise] // to be removed once definition is completed
   rule #order( A:Ground ) => A
@@ -1045,8 +1058,10 @@ module STRUCT
 //-----------------------------
   rule #chanRelSet( _:SRec    ) => .Set
   rule #chanRelSet( _:SRecPat ) => .Set
-  rule #chanRelSet( A:MRec    ) => #chanRelSet( ;;#bind(A);;0;1;#lislen(A)) // initially check 0th bind against 1st
-  rule #chanRelSet( A:MRecPat ) => #chanRelSet( ;;#bind(A);;0;1;#lislen(A))
+  rule #chanRelSet( A:Bind & B:Bind  ) => #chanRelSet(A;;B;;0;1;0)
+  rule #chanRelSet( A:Bind & B:Binds ) => #chanRelSet(A;;B;;0;1;0)
+  rule #chanRelSet( A:MRec    ) => #chanRelSet( ;;#bind(A);;0;1;0) // initially check 0th bind against all others
+  rule #chanRelSet( A:MRecPat ) => #chanRelSet( ;;#bind(A);;0;1;0)
 
   // first arg Bind is checked against other Bind(s) for channel relations
   // after checking each, throw it away and repeat for the next Bind
@@ -1459,6 +1474,36 @@ module STRUCT
   rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
   // if indices do not match, union outside
   rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
+
+  rule #matchBindSet( A:Lbind ;; B:Lbind ;; I:Int ; J:Int ) // A is Ith bind in first receive, B is Jth bind in second receive
+    => #if #matchif(A;B)
+       #then SetItem(I;SetItem(J))
+       #else SetItem(I;.Set) #fi
+  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int )
+    => #if #matchif(A;B)
+       #then SetItem(I;SetItem(J)) #matchBindSet(A;;C;;I;J +Int 1)
+       #else #matchBindSet(A;;C;;I;J +Int 1) #fi
+  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int )
+    => #if #matchif(A;B)
+       #then SetItem(I;SetItem(J)) #matchBindSet(A;;C;;I;J +Int 1)
+       #else #matchBindSet(A;;C;;I;J +Int 1) #fi
+  rule #matchBindSet( A:Lbind ;; B:Lbind  ;; I:Int ; J:Int ; 0 ) => #matchBindSet(A;;B;;I;J)
+  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ; 0 )
+    => #unionBMS(#matchBindSet(A;;B;;I;J);#matchBindSet(A;;C;;I;J +Int 1;0))
+  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int ; 0 )
+    => #unionBMS(#matchBindSet(A;;B;;I;J);#matchBindSet(A;;C;;I;J +Int 1;0))
+  rule #matchBindSet( A:Lbind & B:Lbind  ;; C:Lbinds ) => #matchBindSet(A;;C;;0;0;0) #matchBindSet(B;;C;;1;0;0)
+  rule #matchBindSet( A:Lbind & B:Lbinds ;; C:Lbinds ) => #matchBindSet(A;;C;;0;0;0) #matchBindSet(B;;C;;1;0;0)
+  rule #matchBindSet( A:Lbind & B:Lbind  ;; C:Lbinds ;; I:Int ; 0 ; 0 ) => #matchBindSet(A;;C;;I;0;0) #matchBindSet(B;;C;;I +Int 1;0;0)
+  rule #matchBindSet( A:Lbind & B:Lbinds ;; C:Lbinds ;; I:Int ; 0 ; 0 ) => #matchBindSet(A;;C;;I;0;0) #matchBindSet(B;;C;;I +Int 1;0;0)
+
+// Binds Matching Set union
+  rule #unionBMS( S:Set ;  .Set ) => S
+  rule #unionBMS(  .Set ; S:Set ) => S
+  // if indices match, union inside
+  rule #unionBMS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
+  // if indices do not match, union outside
+  rule #unionBMS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
 
 //---//---//
 
