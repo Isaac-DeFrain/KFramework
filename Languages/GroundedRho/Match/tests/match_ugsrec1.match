@@ -1,0 +1,10 @@
+// UGSRec match
+
+    #match( for( a,b <- @0 ){ ( *a, b!(*a) ,) } ; for( v,u <- y ){ ( *u, v!(*u) ,) } )
+
+/*
+Output:
+
+    false
+
+*/
