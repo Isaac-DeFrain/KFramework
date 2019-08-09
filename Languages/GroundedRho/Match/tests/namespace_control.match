@@ -1,0 +1,13 @@
+// Namespace control
+  // @0!(true) witnesses the formula @Int!(\_) /\ ~ { @{ ~ Int }!(\_) }
+  // which says that it will send it's next (single) message on an integer channel
+  // and it will not send it's next (single) message on a non-integer channel
+
+    #match( @0!(true) ; @Int!(\_) /\ ~ { @{ ~ Int }!(\_) } )
+
+/*
+Output:
+
+    true
+
+*/
