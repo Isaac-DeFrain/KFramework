@@ -1,0 +1,10 @@
+// New match
+
+    #match( new a,b,b,b in { a!(*b) | @0!(*a) } ; new x,y in { y!(*x) | @0!(*y) } )
+
+/*
+Output:
+
+    true
+
+*/
