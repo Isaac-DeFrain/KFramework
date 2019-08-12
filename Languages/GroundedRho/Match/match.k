@@ -135,6 +135,7 @@ module MATCH
   rule #match( *boundN( I:Int ) ;  boundP( J:Int ) ) => I ==Int J
 
   // the only Ground a Ground matches is itself
+  // Ground ::= "Nil" | Bool | Int | String | Unforgeable | Uri
   rule #match( A:Ground ; B:Ground ) => A ==K B
   rule #match( A:Ground ; B:Proc   ) => false
        requires notBool (isGround(B) orBool isProcVar(B) orBool isEval(B))
@@ -288,14 +289,14 @@ module MATCH
     => #match(A;C) andBool #match(B;D)
 
 // New matching
-  // New matches New (if same effective number of Names declared and Procs match)
+  // New matches New (if same "effective" number of Names declared and DeBruijnified Procs match)
   // nothing else matches New
+  rule #match( new A:VarDecs in { P:Proc } ; new B:VarDecs in { Q:Proc } )
+    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
   rule #match( _:New  ; A:Proc ) => false
        requires notBool (isNew(A) orBool isEval(A) orBool isPar(A)
          orBool isProcVar(A))
   rule #match( A:Proc ; _:New  ) => false requires notBool isNew(A)
-  rule #match( new A:VarDecs in { P:Proc } ; new B:VarDecs in { Q:Proc } )
-    => #match(P;#sub(A;B;Q))
 
 // Arithmetic Exps matching
   // AExp matches AExp with matching subexpressions, nothing else matches AExp
@@ -588,9 +589,9 @@ module MATCH
 
 // NewPat
   rule #match( new A:VarDecs in { P:Proc    } ; new B:VarDecs in { Q:ProcPat } )
-    => #length(A) ==Int #length(B) andBool #match(P;#sub(A;B;Q))
+    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
   rule #match( new A:VarDecs in { P:ProcPat } ; new B:VarDecs in { Q:ProcPat } )
-    => #length(A) ==Int #length(B) andBool #match(P;#sub(A;B;Q))
+    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
   // declaration length/type mismatch
   rule #match( _:Proc    ; _:NewPat ) => false [owise]
   rule #match( _:ProcPat ; _:NewPat ) => false [owise]
