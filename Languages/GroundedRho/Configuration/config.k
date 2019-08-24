@@ -35,11 +35,11 @@ module CONFIG
           </send>                                       //
         </sends>                                        //
         <input>                                         //
-          <recs>                                        //
-            <rec color="yellow" multiplicity="*">       //
+          <receives>                                    //
+            <receive color="yellow" multiplicity="*">   //
               .K                                        //
-            </rec>                                      //
-          </recs>                                       //
+            </receive>                                  //
+          </receives>                                   //
           <sums>                                        //
             <sum multiplicity="*">                      //
               <branches>                                //
@@ -51,14 +51,11 @@ module CONFIG
       </tuplespace>                                     //
       <nextLoc color="gray"> 0 </nextLoc>               //
       <original color="pink">                           //
-        $PGM                                            // parsed original program
+        $PGM                                            // parsed original program -- unordered, unidexed
       </original>                                       //
       <OGfreevar color="pink">                          //
         FV($PGM)                                        // set of kind free variables of original program
       </OGfreevar>                                      //
-      <OGvarcontexts color="pink">                      //
-        #VarContext($PGM)                               // intersection of name & proc variables
-      </OGvarcontexts>                                  //
       <OGdeBruijn color="pink">                         //
         #deBruijn(#order($PGM))                         // De Bruijn indexed original program
       </OGdeBruijn>                                     //
