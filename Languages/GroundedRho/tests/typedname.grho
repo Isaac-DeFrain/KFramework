@@ -1,6 +1,6 @@
 // Typed name
 
-   new y in { {y::@Int}!(1) }
+   new y in { {y::Int}!(1) }
 
 /*
 Output:
