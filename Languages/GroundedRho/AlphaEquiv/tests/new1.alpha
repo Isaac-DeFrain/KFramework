@@ -1,6 +1,10 @@
 // De Bruijn Levels
-// inside x shadows the outside x
 
-  new x,y in { *x | *y }
-  
-// Output: new bound( 0 ) in { new bound( 1 ) in { * bound( 1 ) } }
+    #deBruijn( new x,y in { *x | *y } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in { * n( 0 ) | * n( 1 ) }
+
+*/

@@ -1,14 +1,14 @@
 // Duplicated name declarations shadow
 
     #deBruijn( new x,x,y in { y!( *x ) } )
-  
-/*
-Output: 
 
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { boundN( 2 ) ! ( * boundN( 1 ) ) }
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in { n( 1 ) ! ( * n( 0 ) ) }
 
 RNode:
 
-    new x0, x1, x2 in { x2!(*x1) }
+  new x0, x1, x2 in { x2!(*x1) }
 
 */

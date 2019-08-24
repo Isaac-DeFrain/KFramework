@@ -1,14 +1,14 @@
 // Receive scoping
 
-    new x,y,z in { for ( @\z <- x ){ \z | *y } }
-  
-/*
-Output: 
+    #deBruijn( new x,y,z in { for ( z,@{new a in { a!(*y) }} <- z ){ *z | *y } } )
 
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { for ( @ boundP( 3 ) <- boundN( 0 ) ) { boundP( 3 ) | * boundN( 1 ) } }
+/*
+Output:
+
+    new n( 0 ) , n( 1 ) , n( 2 ) in { for ( @ x( 3 ) , @ new n( 1 , 0 ) in { n( 1 , 0 ) ! ( x( 4 ) ) } <- n( 2 ) ) { x( 3 ) | x( 4 ) } }
 
 RNode:
 
-    new x0, x1, x2 in { for( @{x3} <- x0 ){ x3 | *x1 } }
+  new x0, x1, x2 in { for( @{x3}, @{new y0 in { y0!(x4) }} <- x2 ) { x4 | x3 } }
 
 */

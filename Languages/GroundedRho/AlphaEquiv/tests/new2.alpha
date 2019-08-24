@@ -1,6 +1,10 @@
-// De Bruijn Levels
-// inside x shadows the outside x
+// De Bruijn indices -- nested new
 
-  new x in { new x in { *x } }
-  
-// Output: new bound( 0 ) in { new bound( 1 ) in { * bound( 1 ) } }
+    #deBruijn( new x in { new x in { new x in { *x } } } )
+
+/*
+Output:
+
+  new n( 0 ) in { new n( 1 ) in { new n( 2 ) in { * n( 2 ) } } }
+
+*/
