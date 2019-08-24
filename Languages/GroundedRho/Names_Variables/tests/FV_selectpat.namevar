@@ -1,0 +1,17 @@
+// Free Variables -- Select
+
+  #FV(select { { @\c,@{d!(3)} <- @{*b /\ Bool} & @\a <- @{ *a | *c | *e } } |=> d!(\c) | \a | \b | Int
+               { <- h & a,b,c,d <- @{for( @\a,@\b,@\c <= @0 ){ [\a,\c,\b] \/ String }} } |=> [*a,*b,*c,*d]
+             } )
+
+/*
+Output:
+
+  SetItem ( \ b )
+  SetItem ( a )
+  SetItem ( b )
+  SetItem ( c )
+  SetItem ( e )
+  SetItem ( h )
+
+*/
