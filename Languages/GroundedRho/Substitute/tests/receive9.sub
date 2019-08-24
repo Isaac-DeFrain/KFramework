@@ -1,0 +1,16 @@
+// MultiRec - complex name sub
+
+    #sub( @{@1!(Nil,0,true,"e")} ; @a!(\b,*c,\d,*e) ; for( a,@\b <- @{@{\b | \d}!(*a,*c,*e)} & @{c!(\d)},e <- a ){ a!(\b,\d) | c!(*e) } )
+
+/*
+Output:
+
+ a = @1
+\b = Nil
+ c = @0
+\d = true
+ e = @"e"
+
+  for ( a , @ \ b <- @ ( { @ Nil | true } ! ( 1 , ( 0 , "e" ) ) ) & @ ( c ! ( \ d ) ) , e <- @ 1 ) { a ! ( \ b , \ d ) | c ! ( * e ) }
+
+*/
