@@ -1,0 +1,17 @@
+// Select - name subs
+
+    #sub( @{@2}!(3),@1 ; @x!(3),y ;
+          select {
+            {  @3,x <- x   } |=> *y | x!(Nil)
+            { a,b,c <- @\x } |=> \x | [*a,*b,c!(*x)]
+          } )
+
+/*
+Output:
+
+  select {
+    { @ 3 , x <- @ 2 } |=> 1 | x ! ( Nil )
+    { a , b , c <- @ \ x } |=> \ x | [ * a , * b , c ! ( 2 ) ]
+  }
+
+*/
