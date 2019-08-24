@@ -1,0 +1,22 @@
+// Receive map
+
+    #deBruijn( new a,b in { for( @{ *x : 3 , Nil : \y },c <- a ){ *a | *x | *b | *c | \y } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in {
+    for ( @ { x( 2 ) : 3 , Nil : x( 3 ) } , @ x( 4 ) <- n( 0 ) ) {
+      * n( 0 ) | x( 2 ) | * n( 1 ) | x( 4 ) | x( 2 )
+    }
+  }
+
+RNode:
+
+  new x0, x1 in {
+    for( @{{Nil : x3, x2 : 3}}, @{x4} <- x0 ) {
+      x4 | x3 | x2 | *x1 | *x0
+    }
+  }
+
+*/

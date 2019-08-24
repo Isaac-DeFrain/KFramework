@@ -1,20 +1,17 @@
 // Multi receive indexing
 
-    #deBruijn( new x,y,z in { for( a,b <- x ; c <- y ; d,e,f <- z if *a+*d == *c ){ a!(*d | *x) | b!(*e) | c!(*f) } } )
-//                 0,1,2           3,4    0   5    1   6,7,8    2     3  6     5    3   6    0     4   7    5   8
-  
+    #deBruijn( new x,y,z in { for( a,@{for(x,y<-b1 & z<-b2){*x|*y|*z}} <- x & c <- y & d,e,@{f!(\g)} <- z ){ a!(*d | \g) | b1!(*b2 | *e) | c!(*f) } } )
+
 /*
-Output: 
+Output:
 
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { 
-
-      for ( boundN( 3 ) , boundN( 4 ) <- boundN( 0 ) ; 
-            boundN( 5 ) <- boundN( 1 ) ; 
-            boundN( 6 ) , boundN( 7 ) , boundN( 8 ) <- boundN( 2 ) if * boundN( 3 ) + * boundN( 6 ) == * boundN( 5 ) ) { 
-
-        boundN( 3 ) ! ( * boundN( 6 ) | * boundN( 0 ) ) | boundN( 4 ) ! ( * boundN( 7 ) ) | boundN( 5 ) ! ( * boundN( 8 ) ) 
-
-      }
+  new n( 0 ) , n( 1 ) , n( 2 ) in {
+    for ( @ x( 3 ) , @ for ( @ x( 1 , 0 ) , @ x( 1 , 1 ) <- @ x( 4 ) &
+                     @ x( 1 , 2 ) <- @ x( 5 ) ) { x( 1 , 0 ) | x( 1 , 1 ) | x( 1 , 2 ) } <- n( 0 ) &
+          @ x( 6 ) <- n( 1 ) &
+          @ x( 7 ) , @ x( 8 ) , @ ( { @ x( 9 ) } ! ( x( 10 ) ) ) <- n( 2 ) ) {
+      { @ x( 3 ) } ! ( x( 7 ) | x( 10 ) ) | { @ x( 4 ) } ! ( x( 5 ) | x( 8 ) ) | { @ x( 6 ) } ! ( x( 9 ) )
     }
+  }
 
 */

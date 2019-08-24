@@ -1,0 +1,23 @@
+// Select indexing
+
+    #deBruijn( new a,b,c,d,e,f,g,h in {
+       select { { @\c,@{d!(3)} <- b & @\a <- @{ *a | *c | *e } } |=> d!(\c) | \a
+                { <- h & a,b,c,d <- @{for( @\a,@\b,@\c <= @0 ){ [\a,\c,\b] }} } |=> [*a,*b,*c,*d]
+              } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) , n( 2 ) , n( 3 ) , n( 4 ) , n( 5 ) , n( 6 ) , n( 7 ) in {
+    select {
+      { @ x( 8 ) , @ ( { @ x( 9 ) } ! ( 3 ) ) <- n( 1 ) & @ x( 10 ) <- @ * n( 0 ) | * n( 2 ) | * n( 4 ) } |=> { @ x( 9 ) } ! ( x( 8 ) ) | x( 10 )
+      { <- n( 7 ) & @ x( 8 ) , @ x( 9 ) , @ x( 10 ) , @ x( 11 ) <- @ for ( @ x( 8 ) , @ x( 9 ) , @ x( 10 ) <= @ 0 ) { [ x( 8 ) , x( 10 ) , x( 9 ) ] } } |=>
+        [ x( 8 ) , x( 9 ) , x( 10 ) , x( 11 ) ]
+    }
+  }
+
+RNode:
+
+  What is the syntax for select???
+
+*/

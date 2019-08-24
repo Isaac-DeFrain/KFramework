@@ -1,51 +1,22 @@
-// Multi receive indexing
+// Guarded multi receive indexing
 
-    #deBruijn( new x,y,z in { for( a,@{for(x,y<-b1;z<-b2 if \t > *y ){*x|*y|*z}} <- x ; c <- y ; d,e,@{f!(\g)} <- z if *a+*d == *c-\g ){ a!(*d | \g) | b1!(*b2 | *e) | c!(*f) } } )
+    #deBruijn( new x,y,z in { for( a,b <- x & c <- y & d,e,f <- z if *a+*d == *c ){ a!(*d | *x) | b!(*e) | c!(*f) } } )
 
-// need to sub indexed free variables in for(x,y<-b1;z<-b2){*x|*y|*z} in the continuation of the outer for-comprehension
 /*
-x = 0
-y = 1
-z = 2
-a = 3
-b1= 4
-b2= 5
-c = 6
-d = 7
-e = 8
-f = 9
-\g= 10
-  x = 1,0
-  y = 1,1
-  z = 1,2
+Output:
 
+  new n( 0 ) , n( 1 ) , n( 2 ) in {
 
-Output: 
+    for ( @ x( 3 ) , @ x( 4 ) <- n( 0 ) &
+          @ x( 5 ) <- n( 1 ) &
+          @ x( 6 ) , @ x( 7 ) , @ x( 8 ) <- n( 2 ) if x( 3 ) + x( 6 ) == x( 5 ) ) {
 
-new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in { 
+      { @ x( 3 ) } ! ( x( 6 ) | * n( 0 ) ) | { @ x( 4 ) } ! ( x( 7 ) ) | { @ x( 5 ) } ! ( x( 8 ) )
+    }
+  }
 
-  for ( boundN( 3 ) , @ for ( #dBound( 4 ;; x , y <- b1 ; z <- b2 if \ t > * y ;; .Map ) ) { * boundN( 1 , 0 ) | * boundN( 1 , 1 ) | * boundN( 1 , 2 ) } <- boundN( 0 ) ; boundN( 7 ) <- boundN( 1 ) ; boundN( 8 ) , boundN( 9 ) , @ boundN( 10 ) ! ( boundP( 11 ) ) <- boundN( 2 ) if #deBruijn( 12 ; #sub( updateMap ( .Map , updateMap ( a |-> boundN( 3 ) , updateMap ( .Map , updateMap ( updateMap ( .Map , #mapify( 7 ; sub | sub | sub ; updateMap ( .Map , #mapify( 6 ; #sub( \ t |-> sub ; \ t > sub ) ; .Map )
-  b1 |-> boundN( 4 )
-  b2 |-> boundN( 5 ) ) ) ) , \ g |-> boundP( 11 )
-  c |-> boundN( 7 )
-  d |-> boundN( 8 )
-  e |-> boundN( 9 )
-  f |-> boundN( 10 ) ) ) ) ) ; * a + * d == * c - \ g ) ; .Map ) ) { #deBruijn( 12 ; #sub( updateMap ( .Map , updateMap ( a |-> boundN( 3 ) , updateMap ( .Map , updateMap ( updateMap ( .Map , #mapify( 7 ; sub | sub | sub ; updateMap ( .Map , #mapify( 6 ; #sub( \ t |-> sub ; \ t > sub ) ; .Map )
-  b1 |-> boundN( 4 )
-  b2 |-> boundN( 5 ) ) ) ) , \ g |-> boundP( 11 )
-  c |-> boundN( 7 )
-  d |-> boundN( 8 )
-  e |-> boundN( 9 )
-  f |-> boundN( 10 ) ) ) ) ) ; a ! ( * d | \ g ) | b1 ! ( * b2 | * e ) | c ! ( * f ) ) ; updateMap ( x |-> boundN( 0 )
-  y |-> boundN( 1 )
-  z |-> boundN( 2 ) , updateMap ( .Map , updateMap ( a |-> boundN( 3 ) , updateMap ( .Map , updateMap ( updateMap ( .Map , #mapify( 7 ; sub | sub | sub ; updateMap ( .Map , #mapify( 6 ; #sub( \ t |-> sub ; \ t > sub ) ; .Map )
-  b1 |-> boundN( 4 )
-  b2 |-> boundN( 5 ) ) ) ) , \ g |-> boundP( 11 )
-  c |-> boundN( 7 )
-  d |-> boundN( 8 )
-  e |-> boundN( 9 )
-  f |-> boundN( 10 ) ) ) ) ) ) ) } }
-</k>
-[Warning] Internal: Ignored exception thrown by hook _Map_ (null)
+RNode:
+
+  The current Coop Rholang implementation does not support input guards.
 
 */

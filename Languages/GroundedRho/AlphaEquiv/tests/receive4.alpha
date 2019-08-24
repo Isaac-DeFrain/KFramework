@@ -1,14 +1,14 @@
 // Receive scoping
 
-    new x in { for( x <= x ){ *x } }
-  
-/*
-Output: 
+    #deBruijn( new x in { for( x <= x ){ *x } } )
 
-    new boundN( 0 ) in { for ( boundN( 1 ) <= boundN( 0 ) ) { * boundN( 1 ) } }
+/*
+Output:
+
+  new n( 0 ) in { for ( @ x( 1 ) <= n( 0 ) ) { x( 1 ) } }
 
 RNode:
 
-    new x0 in { for( @{x1} <= x0 ) { x1 } }
+  new x0 in { for( @{x1} <= x0 ) { x1 } }
 
 */

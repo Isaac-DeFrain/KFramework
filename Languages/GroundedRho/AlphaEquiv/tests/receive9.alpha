@@ -1,0 +1,16 @@
+// Receive scoping -- indexing bound variables in listening patterns
+
+    #deBruijn( for( @{new a in { *a }} <- @1 ){ Nil } | for( @{new a in { *a }},@{new a in { *a }} <- @0 ){ Nil }  )
+
+/*
+Output:
+
+  for ( @ new n( 1 , 0 ) in { * n( 1 , 0 ) } <- @ 1 ) { Nil } |
+  for ( @ new n( 1 , 0 ) in { * n( 1 , 0 ) } , @ new n( 1 , 0 ) in { * n( 1 , 0 ) } <- @ 0 ) { Nil }
+
+RNode:
+
+  for( @{new y0 in { y0 }}, @{new y0 in { y0 }} <- @{0} ) { Nil } |
+  for( @{new y0 in { y0 }} <- @{1} ) { Nil }
+
+*/
