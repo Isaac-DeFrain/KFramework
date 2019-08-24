@@ -1,0 +1,18 @@
+// De Bruijn levels - nested new
+
+    #deBruijn( new x in { for( @{ new a in { for( @{ new b in { *b } } <- a ){ Nil } } } <- x ){ Nil } } )
+
+/*
+Output:
+
+  new n( 0 ) in {
+    for ( @ new n( 1 , 0 ) in { for ( @ new n( 2 , 0 ) in { * n( 2 , 0 ) } <- n( 1 , 0 ) ) { Nil } } <- n( 0 ) ) { Nil }
+  }
+
+From RNode:
+
+    new x0 in {
+      for( @{ new y0 in { for( @{ new z0 in { z0 } } <- y0 ){ Nil } } } <- x0 ){ Nil }
+    } // weird that there is no * on z0 here ^^^^
+
+*/
