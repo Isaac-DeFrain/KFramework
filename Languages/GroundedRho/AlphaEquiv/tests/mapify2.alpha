@@ -1,0 +1,12 @@
+// Mapify -- only free variables are indexed
+
+    #mapify( for( a,b,@\a <- x ){ \y | *a | \a | \b } )
+
+/*
+Output:
+
+  \ b |-> boundP( 2 )
+  \ y |-> boundP( 1 )
+    x |-> boundN( 0 )
+
+*/
