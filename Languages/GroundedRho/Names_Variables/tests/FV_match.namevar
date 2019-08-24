@@ -1,0 +1,18 @@
+// Free Variables - Match
+
+    #FV( new x in { match { \a | \b } {
+                      { for( y <- @Nil ){ y!(*x) } | a!(\c) } |=> [*a,\c,t!(*x)]
+                      { Set( 1, \x, [\y,\z] ) } |=> (\u,\v,\x,\y,\z,)
+                    }
+         } )
+
+/*
+Output:
+
+  SetItem ( \ a )
+  SetItem ( \ b )
+  SetItem ( \ u )
+  SetItem ( \ v )
+  SetItem ( t )
+
+*/

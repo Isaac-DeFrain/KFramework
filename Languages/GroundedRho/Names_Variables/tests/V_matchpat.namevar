@@ -1,0 +1,25 @@
+// Variables - Match Pattern
+
+    #V( new x in { match { @Int!(\a) | \b } {
+                      { for( y <- @Nil ){ y!(*x) } | a!(\c) } |=> [*a,\c,t!(*x)] \/ @Bool!(List)
+                      { Set( 1, \x, [\y,\z] ) } |=> (\u,\v,\x,\y,Int,)
+                    }
+         } )
+
+/*
+Output:
+
+  SetItem ( \ a )
+  SetItem ( \ b )
+  SetItem ( \ c )
+  SetItem ( \ u )
+  SetItem ( \ v )
+  SetItem ( \ x )
+  SetItem ( \ y )
+  SetItem ( \ z )
+  SetItem ( a )
+  SetItem ( t )
+  SetItem ( x )
+  SetItem ( y )
+
+*/
