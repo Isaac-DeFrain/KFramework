@@ -45,8 +45,8 @@ Output:
     select { { a , b <- chan1 } |=> a ! ( * b ) { a , b <- chan2 } |=> [ * a , * b ] { a , b <- chan1 } |=> Set( * a , * b ) { a , b <- chan1 } |=> { * a : * b } }
   </original>
   <OGfreevar>
-    SetItem ( chan1 :: name )
-    SetItem ( chan2 :: name )
+    SetItem ( chan1 : name )
+    SetItem ( chan2 : name )
   </OGfreevar>
   <OGvarcontexts>
     .Set
