@@ -1,0 +1,10 @@
+// Free Variables
+
+  #FV( @{for(x<=y){*x}} )
+
+/*
+Output:
+
+  SetItem ( y )
+
+*/
