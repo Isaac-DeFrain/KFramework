@@ -1,0 +1,10 @@
+// Structural equivalence
+
+    #structEq( for( a,b <- @\x if *a == b!(0) ){ ( *a, b!(*a) ,) } ; for( u,v <- y if v!(0) == *u ){ ( *u, v!(*u) ,) } )
+
+/*
+Output:
+
+  true
+
+*/
