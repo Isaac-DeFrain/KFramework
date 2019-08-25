@@ -1,0 +1,10 @@
+// Set remainder pattern match
+
+    #match( Set(1,2,3,Set(1,2),5,6,"a","b") ; Set(1,2,Int,Set(1,2) ... \x) )
+
+/*
+Output:
+
+  true
+
+*/
