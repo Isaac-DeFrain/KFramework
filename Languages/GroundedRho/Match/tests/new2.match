@@ -1,0 +1,10 @@
+// New match
+
+    #match( new a,b in { [*a,*b] } ; new b,a in { [*b,*a] } )
+
+/*
+Output:
+
+    true
+
+*/
