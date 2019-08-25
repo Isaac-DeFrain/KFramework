@@ -58,7 +58,11 @@ module MATCH-SYNTAX
 // subexpressions
   syntax   Bool ::=    "#match(" InterpMaps ";" InterpMaps ")" [function]
                   |    "#match(" RhoKVPairs ";" RhoKVPairs ")" [function]
+                  |    "#match(" RhoKVPairs ";" RhoKVPats  ")" [function]
+                  |    "#match(" RhoKVPats  ";" RhoKVPats  ")" [function]
                   |  "#matchif(" RhoKVPairs ";" RhoKVPairs ")" [function]
+                  |  "#matchif(" RhoKVPairs ";" RhoKVPats  ")" [function]
+                  |  "#matchif(" RhoKVPats  ";" RhoKVPats  ")" [function]
                   | "#matchif+(" ConcatList ";" ConcatList ")" [function]
                   | "#matchif+(" ConcatStr  ";" ConcatStr  ")" [function]
                   | "#matchif+(" InterpMaps ";" InterpMaps ")" [function]
@@ -96,6 +100,8 @@ module MATCH
   rule #matchif( A:ProcPats   ; B:Procs      ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:ProcPats   ; B:ProcPats   ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:RhoKVPairs ; B:RhoKVPairs ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:RhoKVPairs ; B:RhoKVPats  ) => #length(A) ==Int #length(B) andBool #match(A;B)
+  rule #matchif( A:RhoKVPats  ; B:RhoKVPats  ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:Lbinds     ; B:Lbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:Pbinds     ; B:Pbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
   rule #matchif( A:Rbinds     ; B:Rbinds     ) => #length(A) ==Int #length(B) andBool #match(A;B)
@@ -118,10 +124,9 @@ module MATCH
   rule #match( A:Name  ; @B:Proc ) => #match(*A;B)
   rule #match( @EmptyP ;  EmptyN ) => true // empty send/empty listen matching
   rule #match(  EmptyN ; @EmptyP ) => true // empty send/empty listen matching
-
-  rule #match(  boundN( I:Int ) ;  boundN( J:Int ) ) => I ==Int J
-  rule #match(  boundN( I:Int ) ; @boundP( J:Int ) ) => I ==Int J
-  rule #match( @boundP( I:Int ) ;  boundN( J:Int ) ) => I ==Int J
+  // declared name variables
+  rule #match( n( I:Int ) ; n( J:Int ) ) => I ==Int J
+//  rule #match( n( I:Int ) ; @x( J:Int ) ) => I ==Int J // TODO ???
 
 // Proc matching
   rule #match( A:Proc  ; A         ) => true // every Proc matches itself
@@ -129,10 +134,9 @@ module MATCH
   rule #match( A:Proc  ; *B:Name   ) => #match(@A;B)
   rule #match(  EmptyP ; *EmptyN   ) => true // empty send/empty listen matching
   rule #match( *EmptyN ;  EmptyP   ) => true // empty send/empty listen matching
-
-  rule #match(  boundP( I:Int ) ;  boundP( J:Int ) ) => I ==Int J
-  rule #match(  boundP( I:Int ) ; *boundN( J:Int ) ) => I ==Int J
-  rule #match( *boundN( I:Int ) ;  boundP( J:Int ) ) => I ==Int J
+  // bound process variables
+  rule #match( x( I:Int ) ; x( J:Int ) ) => I ==Int J
+// rule #match( x( I:Int ) ; *n( J:Int ) ) => I ==Int J // TODO ???
 
   // the only Ground a Ground matches is itself
   // Ground ::= "Nil" | Bool | Int | String | Unforgeable | Uri
@@ -235,7 +239,6 @@ module MATCH
   rule #match( =\A:Var   ; =\B:Var   ) => A ==K B
 
 // Par match - apply after normalization
-  // works for A/\Par and A/\(~Par/\Proc)
   // Par should only match Par[Pat] with matching terms of same length after normalization
     // check Par lengths
   rule #matchif+( A:Proc    ; B:Proc    ) => #parlength(A) ==Int #parlength(B)
@@ -257,14 +260,13 @@ module MATCH
        requires notBool (isRhoList(A) orBool isProcVar(A)
          orBool isEval(A) orBool isPar(A))
 
-  // RhoMaps & RhoSets are unordered -> assume canonical ordering
+  // RhoMaps & RhoSets are unordered -> assume normalized
   // RhoMap matches RhoMap (if underlying Procs match), nothing else matches RhoMap
   rule #match( A:RhoMap   ; _:EmptyMap ) => false requires notBool isEmptyMap(A)
   rule #match( _:EmptyMap ; A:RhoMap   ) => false requires notBool isEmptyMap(A)
-  rule #match( A:RhoMap   ; B:RhoMap   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
-       requires notBool (isEmptyMap(A) orBool isEmptyMap(B))
-  rule #match( A:RhoMap   ; B:MapPat   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
-  rule #match( A:MapPat   ; B:MapPat   ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+  rule #match( { A:RhoKVPairs } ; { B:RhoKVPairs } ) => #matchif(A;B)
+//  rule #match( A:RhoMap   ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
+//  rule #match( A:MapPat   ; B:MapPat ) => #includedIn(#KVs2map(#rho2KVs(A));#KVs2map(#rho2KVs(B)))
 
   rule #match( A:Proc : B:Proc ; C:Proc : D:Proc   ) => #match(A;C) andBool #match(B;D)
   rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPairs )
@@ -291,12 +293,11 @@ module MATCH
 // New matching
   // New matches New (if same "effective" number of Names declared and DeBruijnified Procs match)
   // nothing else matches New
-  rule #match( new A:VarDecs in { P:Proc } ; new B:VarDecs in { Q:Proc } )
-    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
-  rule #match( _:New  ; A:Proc ) => false
-       requires notBool (isNew(A) orBool isEval(A) orBool isPar(A)
-         orBool isProcVar(A))
-  rule #match( A:Proc ; _:New  ) => false requires notBool isNew(A)
+  rule #match( A:New ; B:New ) => size(#DV(A)) ==Int size(#DV(B)) andBool
+       #match(#subNew(0;#indecs(A);#newproc(A));#subNew(0;#indecs(B);#newproc(B)))
+  rule #match( _:New ; A:Proc ) => false
+       requires notBool (isNew(A) orBool isEval(A) orBool isProcVar(A))
+  rule #match( A:Proc ; _:New ) => false requires notBool isNew(A)
 
 // Arithmetic Exps matching
   // AExp matches AExp with matching subexpressions, nothing else matches AExp
@@ -395,7 +396,6 @@ module MATCH
 //------------------------
 //--- Pattern Matching ---
 //------------------------
-// TODO: assess neccessity of patterns matching patterns
 // Patterns cannot match concrete Proc(s) or Name(s)
   rule #match(  A:ProcPat ; _:Proc  ) => false
        requires notBool (isPatExp(A) orBool isEvalPat(A) orBool isParPat(A))
@@ -435,35 +435,34 @@ module MATCH
   rule #match( *A:NamePat ; *B:NamePat ) => #match(A;B)
 
 // Simpe patterns
-  rule #match( _:Bool        ; B:SimplePat ) => B ==K Bool
-  rule #match( _:Int         ; B:SimplePat ) => B ==K Int
-  rule #match( _:String      ; B:SimplePat ) => B ==K String
-  rule #match( _:RhoList     ; B:SimplePat ) => B ==K List
-  rule #match( _:RhoMap      ; B:SimplePat ) => B ==K Map
-  rule #match( _:RhoSet      ; B:SimplePat ) => B ==K Set
-  rule #match( _:RhoTuple    ; B:SimplePat ) => B ==K Tuple
-  rule #match( _:Unforgeable ; B:SimplePat ) => B ==K Unforgeable
-  rule #match( _:Uri         ; B:SimplePat ) => B ==K Uri
-  rule #match( A:Proc        ; ClosedProc  ) => #FV(A) ==K .Set
-  rule #match( A:Name        ; ClosedName  ) => #FV(A) ==K .Set
-//  rule #match( A:ProcPat   ; ClosedProcPat ) => A ==K ClosedProcPat
-//  rule #match( A:NamePat   ; ClosedNamePat ) => A ==K ClosedNamePat
-//  rule #match( A:SimplePat ; B:SimplePat ) => A ==K B
+  rule #match( _:Bool        ; B:SimplePat   ) => B ==K Bool
+  rule #match( _:Int         ; B:SimplePat   ) => B ==K Int
+  rule #match( _:String      ; B:SimplePat   ) => B ==K String
+  rule #match( _:RhoList     ; B:SimplePat   ) => B ==K List
+  rule #match( _:RhoMap      ; B:SimplePat   ) => B ==K Map
+  rule #match( _:RhoSet      ; B:SimplePat   ) => B ==K Set
+  rule #match( _:RhoTuple    ; B:SimplePat   ) => B ==K Tuple
+  rule #match( _:Unforgeable ; B:SimplePat   ) => B ==K Unforgeable
+  rule #match( _:Uri         ; B:SimplePat   ) => B ==K Uri
+  rule #match( A:Proc        ; ClosedProc    ) => #FV(A) ==K .Set
+  rule #match( A:Name        ; ClosedName    ) => #FV(A) ==K .Set
+  rule #match( A:ProcPat     ; ClosedProcPat ) => #FV(A) ==K .Set
+  rule #match( A:NamePat     ; ClosedNamePat ) => #FV(A) ==K .Set
+  rule #match( A:SimplePat   ; B:SimplePat   ) => A ==K B
 // TODO: contexts
   rule #match( _:ListPat   ; List  ) => true
   rule #match( _:TuplePat  ; Tuple ) => true
   rule #match( A:SimplePat ; B:SimplePat ) => A ==K B
   rule #match( A:ProcPat   ; _:SimplePat ) => false
-       requires notBool (isSimplePat(A) orBool isCollectionPat(A)
-         orBool isPatExp(A) orBool isParPat(A))
+       requires notBool (isSimplePat(A) orBool isCollectionPat(A) orBool isPatExp(A))
   rule #match( A:NamePat   ; ClosedName  ) => A ==K ClosedName
 
-  rule #match( A:Proc    ; _EmptyList ) => isEmptyList(A)
-  rule #match( A:ProcPat ; _EmptyList ) => A ==K _EmptyList
-  rule #match( A:Proc    ; _EmptyMap  ) =>  isEmptyMap(A)
-  rule #match( A:ProcPat ; _EmptyMap  ) => A ==K _EmptyMap
-  rule #match( A:Proc    ; _EmptySet  ) =>  isEmptySet(A)
-  rule #match( A:ProcPat ; _EmptySet  ) => A ==K _EmptySet
+  rule #match( A:Proc    ; EmptyListPat ) => isEmptyList(A)
+  rule #match( A:ProcPat ; EmptyListPat ) => A ==K EmptyListPat
+  rule #match( A:Proc    ; EmptyMapPat  ) =>  isEmptyMap(A)
+  rule #match( A:ProcPat ; EmptyMapPat  ) => A ==K EmptyMapPat
+  rule #match( A:Proc    ; EmptySetPat  ) =>  isEmptySet(A)
+  rule #match( A:ProcPat ; EmptySetPat  ) => A ==K EmptySetPat
 
 // Pattern expressions
   // match PatExp with Proc
@@ -588,61 +587,94 @@ module MATCH
          orBool isParPat(A) orBool isPatExp(A))
 
 // NewPat
-  rule #match( new A:VarDecs in { P:Proc    } ; new B:VarDecs in { Q:ProcPat } )
-    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
-  rule #match( new A:VarDecs in { P:ProcPat } ; new B:VarDecs in { Q:ProcPat } )
-    => size(#DV(A)) ==Int size(#DV(B)) andBool #match(#subNew(0;#DV(A);P);#subNew(0;#DV(B);Q))
+  rule #match( A:New    ; B:NewPat ) => size(#DV(A)) ==Int size(#DV(B)) andBool
+       #match(#subNew(0;#indecs(A);#newproc(A));#subNew(0;#indecs(B);#newproc(B)))
+  rule #match( A:NewPat ; B:NewPat ) => size(#DV(A)) ==Int size(#DV(B)) andBool
+       #match(#subNew(0;#indecs(A);#newproc(A));#subNew(0;#indecs(B);#newproc(B)))
   // declaration length/type mismatch
-  rule #match( _:Proc    ; _:NewPat ) => false [owise]
-  rule #match( _:ProcPat ; _:NewPat ) => false [owise]
+  rule #match( A:Proc    ; _:NewPat ) => false requires notBool isNew(A)
+  rule #match( A:ProcPat ; _:NewPat ) => false requires notBool isNewPat(A)
 
 // CollectionPat
   // List Pattern
   rule #match( [ A:Procs    ] ; [ B:ProcPats ] ) => #matchif(A;B)
   rule #match( [ A:ProcPats ] ; [ B:ProcPats ] ) => #matchif(A;B)
+  rule #match( [ A:Proc , _:Procs ] ; [ C:Proc                 ... _:ProcVar ] ) => #match(A;C)
+  rule #match( [ A:Proc , _:Procs ] ; [ C:ProcPat              ... _:ProcVar ] ) => #match(A;C)
+  rule #match( [ A:Proc , B:Procs ] ; [ C:Proc    , D:Procs    ... E:ProcVar ] ) => #match(A;C) andBool #match([B];[D...E])
+  rule #match( [ A:Proc , B:Procs ] ; [ C:Proc    , D:ProcPats ... E:ProcVar ] ) => #match(A;C) andBool #match([B];[D...E])
+  rule #match( [ A:Proc , B:Procs ] ; [ C:ProcPat , D:Procs    ... E:ProcVar ] ) => #match(A;C) andBool #match([B];[D...E])
+  rule #match( [ A:Proc , B:Procs ] ; [ C:ProcPat , D:ProcPats ... E:ProcVar ] ) => #match(A;C) andBool #match([B];[D...E])
 
   // Map Pattern
+  rule #match( { A:RhoKVPairs } ; { B:RhoKVPats } ) => #matchif(A;B)
+  rule #match( { A:RhoKVPats  } ; { B:RhoKVPats } ) => #matchif(A;B)
+  rule #match( { A:RhoKVPair , _:RhoKVPairs } ; { C:RhoKVPair                ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPair , _:RhoKVPairs } ; { C:RhoKVPat                 ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPair , D:RhoKVPairs ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPair , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPat  , D:RhoKVPairs ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPair , B:RhoKVPairs } ; { C:RhoKVPat  , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPair , _:RhoKVPats  } ; { C:RhoKVPair                ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPat  , _:RhoKVPairs } ; { C:RhoKVPat                 ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPair , _:RhoKVPats  } ; { C:RhoKVPat                 ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPat  , _:RhoKVPats  } ; { C:RhoKVPat                 ... _:ProcVar } ) => #match(A;C)
+  rule #match( { A:RhoKVPair , B:RhoKVPats  } ; { C:RhoKVPair , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPat  , B:RhoKVPairs } ; { C:RhoKVPat  , D:RhoKVPairs ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPat  , B:RhoKVPairs } ; { C:RhoKVPat  , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPat  , B:RhoKVPats  } ; { C:RhoKVPat  , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  rule #match( { A:RhoKVPair , B:RhoKVPats  } ; { C:RhoKVPat  , D:RhoKVPats  ... E:ProcVar } ) => #match(A;C) andBool #match({B};{D...E})
+  // KVPairs/Pats
+  rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPair , D:RhoKVPats  ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPat  , D:RhoKVPairs ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPair , B:RhoKVPairs ; C:RhoKVPat  , D:RhoKVPats  ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPat  , B:RhoKVPairs ; C:RhoKVPat  , D:RhoKVPairs ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPat  , B:RhoKVPairs ; C:RhoKVPat  , D:RhoKVPats  ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:RhoKVPat  , B:RhoKVPats  ; C:RhoKVPat  , D:RhoKVPats  ) => #match(A;C) andBool #match(B;D)
+
 
   // Set Pattern
-  rule #match( A:RhoSet ; B:RhoSet ) => #includedIn(#procs2set(#rho2procs(A));#procs2set(#rho2procs(B)))
-  rule #match( A:RhoSet ; B:SetPat ) => #includedIn(#procs2set(#rho2procs(A)); #pats2set( #rho2pats(B)))
-  rule #match( A:SetPat ; B:SetPat ) => #includedIn( #pats2set( #rho2pats(A)); #pats2set( #rho2pats(B)))
+  rule #match( Set( A:Procs    ) ; Set( B:ProcPats ) ) => #matchif(A;B)
+  rule #match( Set( A:ProcPats ) ; Set( B:ProcPats ) ) => #matchif(A;B)
+  rule #match( Set( A:Proc , _:Procs ) ; Set( C:Proc                 ... _:ProcVar ) ) => #match(A;C)
+  rule #match( Set( A:Proc , _:Procs ) ; Set( C:ProcPat              ... _:ProcVar ) ) => #match(A;C)
+  rule #match( Set( A:Proc , B:Procs ) ; Set( C:Proc    , D:Procs    ... E:ProcVar ) ) => #match(A;C) andBool #match(Set(B);Set(D...E))
+  rule #match( Set( A:Proc , B:Procs ) ; Set( C:Proc    , D:ProcPats ... E:ProcVar ) ) => #match(A;C) andBool #match(Set(B);Set(D...E))
+  rule #match( Set( A:Proc , B:Procs ) ; Set( C:ProcPat , D:Procs    ... E:ProcVar ) ) => #match(A;C) andBool #match(Set(B);Set(D...E))
+  rule #match( Set( A:Proc , B:Procs ) ; Set( C:ProcPat , D:ProcPats ... E:ProcVar ) ) => #match(A;C) andBool #match(Set(B);Set(D...E))
+//  rule #match( A:RhoSet ; B:RhoSet ) => #includedIn(#procs2set(#rho2procs(A));#procs2set(#rho2procs(B)))
+//  rule #match( A:RhoSet ; B:SetPat ) => #includedIn(#procs2set(#rho2procs(A)); #pats2set( #rho2pats(B)))
+//  rule #match( A:SetPat ; B:SetPat ) => #includedIn( #pats2set( #rho2pats(A)); #pats2set( #rho2pats(B)))
 
   // Tuple Pattern
   rule #match( ( A:Procs    ,) ; ( B:ProcPats ,) ) => #matchif(A;B)
   rule #match( ( A:ProcPats ,) ; ( B:ProcPats ,) ) => #matchif(A;B)
 
 // match Proc[Pat]s with ProcPats
-  rule #match( A:Proc    , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:Procs    ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:ProcPats ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Proc    , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:ProcPat , B:Procs    ; C:Proc    , D:ProcPats ) => false
-  rule #match( A:Proc    , B:ProcPats ; C:ProcPat , D:Procs    ) => false
-  rule #match( A:ProcPat , B:ProcPats ; C:ProcPat , D:Procs    ) => false
-  rule #match( A:ProcPat , B:ProcPats ; C:Proc    , D:ProcPats ) => false
+  rule #match( A:Proc     , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc     , B:Procs    ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc     , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:ProcPat  , B:Procs    ; C:ProcPat , D:Procs    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:ProcPat  , B:Procs    ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc     , B:ProcPats ; C:Proc    , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Proc     , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:ProcPat  , B:ProcPats ; C:ProcPat , D:ProcPats ) => #match(A;C) andBool #match(B;D)
+  rule #match( _:ProcPats ; _:ProcPats ) => false [owise]
 
 //--- Name & NamePat ---
   rule #match( _:Name    ; \_ ) => true
   rule #match( _:NamePat ; \_ ) => true
 
 // match Name[Pat]s with NamePats
-  rule #match( A:Name    , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:Names    ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:NamePats ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:Name    , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
-  rule #match( A:NamePat , B:Names    ; C:Name    , D:NamePats ) => false
-  rule #match( A:Name    , B:NamePats ; C:NamePat , D:Names    ) => false
-  rule #match( A:NamePat , B:NamePats ; C:NamePat , D:Names    ) => false
-  rule #match( A:NamePat , B:NamePats ; C:Name    , D:NamePats ) => false
+  rule #match( A:Name     , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name     , B:Names    ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name     , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePat  , B:Names    ; C:NamePat , D:Names    ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePat  , B:Names    ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name     , B:NamePats ; C:Name    , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:Name     , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePat  , B:NamePats ; C:NamePat , D:NamePats ) => #match(A;C) andBool #match(B;D)
+  rule #match( A:NamePats ; _:NamePats ) => false [owise]
 
 // MatchBind
   rule #matchBind( A:Send ;; B:AnyBind ) => #matchif(#quotes(#msg(A));#bvar(B))
