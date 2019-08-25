@@ -1071,30 +1071,37 @@ module AUXFUN
 // for RhoMap & RhoSet
   // RhoMap
   rule #size( { } ) => 0
-  rule #size( { A:RhoKVPairs } ) => size(#KVs2map(A))
-  rule #size( { A:RhoKVPats  } ) => size(#KVs2map(A))
+  rule #size( { A:RhoKVPairs } ) => #length(A) // size(#KVs2map(A))
+  rule #size( { A:RhoKVPats  } ) => #length(A) // size(#KVs2map(A))
+  rule #size( { A:RhoKVPairs ... _:ProcVar } ) => #length(A)
+  rule #size( { A:RhoKVPats  ... _:ProcVar } ) => #length(A)
 
   // RhoSet
   rule #size( Set( ) ) => 0
-  rule #size( Set( P:Procs    ) ) => size(#procs2set(P))
-  rule #size( Set( P:ProcPats ) ) => size( #pats2set(P))
+  rule #size( Set( A:Procs    ) ) => #length(A) // size(#procs2set(P))
+  rule #size( Set( A:ProcPats ) ) => #length(A) // size( #pats2set(P))
+  rule #size( Set( A:Procs    ... _:ProcVar ) ) => #length(A)
+  rule #size( Set( A:ProcPats ... _:ProcVar ) ) => #length(A)
 
 //---------------
 //--- #length ---
 //---------------
 // Proc[Pat]s
-  rule #length(  EmptyP   ) => 0
-  rule #length( A:Proc    ) => 1 requires notBool isEmptyProc(A)
+  rule #length(   EmptyP  ) => 0
+  rule #length(  *EmptyN  ) => 0
+  rule #length( A:Proc    ) => 1 [owise]
   rule #length( _:ProcPat ) => 1
-  rule #length( _:Proc    , P:Procs    ) => 1 +Int #length(P)
-  rule #length( _:Proc    , P:ProcPats ) => 1 +Int #length(P)
-  rule #length( _:ProcPat , P:Procs    ) => 1 +Int #length(P)
-  rule #length( _:ProcPat , P:ProcPats ) => 1 +Int #length(P)
+  rule #length( _:Proc    , A:Procs    ) => 1 +Int #length(A)
+  rule #length( _:Proc    , A:ProcPats ) => 1 +Int #length(A)
+  rule #length( _:ProcPat , A:Procs    ) => 1 +Int #length(A)
+  rule #length( _:ProcPat , A:ProcPats ) => 1 +Int #length(A)
 
   // RhoList
   rule #length [ ] => 0
-  rule #length [ P:Procs    ] => #length(P)
-  rule #length [ P:ProcPats ] => #length(P)
+  rule #length [ A:Procs    ] => #length(A)
+  rule #length [ A:ProcPats ] => #length(A)
+  rule #length [ A:Procs    ... _:ProcVar ] => #length(A)
+  rule #length [ A:ProcPats ... _:ProcVar ] => #length(A)
 
   // RhoKVPairs
   rule #length( EmptyP : EmptyP ) => 0
