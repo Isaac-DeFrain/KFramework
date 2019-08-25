@@ -1,0 +1,10 @@
+// Set remainder pattern
+
+    #sub( Set( 1,2,3,4,5,@0!(true) ) ; Set( 1,2,3 ... \x ) ; \x )
+
+/*
+Output:
+
+  Set( 4 , 5 , { @ 0 } ! ( true ) )
+
+*/

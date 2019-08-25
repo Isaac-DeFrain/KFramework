@@ -1,0 +1,10 @@
+// List remainder pattern
+
+    #sub( [1,2,3,4,5] ; [1,2 ... \x] ; @0!("abc",Int,\x) )
+
+/*
+Output:
+
+  @ 0 ! ( "abc" , Int , [ 3 , 4 , 5 ] )
+
+*/

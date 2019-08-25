@@ -1,0 +1,10 @@
+// Map remainder pattern
+
+    #sub( {1:2,3:4,5:@0!(true)} ; { 1:2 ... \x } ; \x )
+
+/*
+Output:
+
+  { 3 : 4 , 5 : { @ 0 } ! ( true ) }
+
+*/
