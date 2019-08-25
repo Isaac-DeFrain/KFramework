@@ -797,8 +797,8 @@ module GRHO-SYNTAX
                             | "EmptyListPat"
   // RhoMap pattern
     // match each Pat/Proc and bind remainder as RhoMap to ProcVar
-  syntax           MapPat ::= "{" ProcPats "..." ProcVar "}"
-                            | "{" Procs    "..." ProcVar "}"
+  syntax           MapPat ::= "{" RhoKVPats  "..." ProcVar "}"
+                            | "{" RhoKVPairs "..." ProcVar "}"
                             | "{" RhoKVPats "}"
                             | "EmptyMapPat"
     // RhoKVPat
