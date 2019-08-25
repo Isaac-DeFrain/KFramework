@@ -129,12 +129,12 @@ module AUXFUN-SYNTAX
   syntax   NamePats ::= "#bvar(" Receive ")" [function]
                       | "#bvar(" RecPat  ")" [function]
     // receive channel function
-  syntax       Name ::= "#chan(" SRec    ")" [function]
-                      | "#chan(" SRecPat ")" [function]
-  syntax      Names ::= "#chan(" MRec    ")" [function]
-                      | "#chan(" MRecPat ")" [function]
-  syntax    NamePat ::= "#chan(" SRecPat ")" [function]
-  syntax   NamePats ::= "#chan(" MRecPat ")" [function]
+  syntax       Name ::= "#chan(" Receive ")" [function]
+                      | "#chan(" RecPat  ")" [function]
+  syntax      Names ::= "#chan(" Receive ")" [function]
+                      | "#chan(" RecPat  ")" [function]
+  syntax    NamePat ::= "#chan(" RecPat  ")" [function]
+  syntax   NamePats ::= "#chan(" RecPat  ")" [function]
     // receive continuation function
   syntax       Proc ::= "#cont(" Receive ")" [function]
                       | "#cont(" RecPat  ")" [function]
@@ -298,6 +298,11 @@ module AUXFUN-SYNTAX
   syntax       Vars ::= "#var(" New     ")" [function]
                       | "#var(" NewPat  ")" [function]
                       | "#var(" VarDecs ")" [function]
+    // deletes duplicate name declarations and preserves syntactic order
+  syntax    VarDecs ::= "#indecs(" New     ")" [function]
+                      | "#indecs(" NewPat  ")" [function]
+                      | "#indecs(" VarDecs ")" [function]
+                      | "#indecs(" VarDecs ";" Set ";" VarDecs ")" [function]
 
   syntax       Proc ::= "#newproc(" New    ")" [function]
   syntax    ProcPat ::= "#newproc(" NewPat ")" [function]
@@ -307,6 +312,16 @@ module AUXFUN-SYNTAX
   syntax LinearMRec ::=    "#branch2rec(" Branch ")" [function]
   syntax     Branch ::= "#select2branch(" Select ")" [function]
   syntax   Branches ::= "#select2branch(" Select ")" [function]
+
+  syntax      Lbind ::= "#bind(" Branch    ")" [function]
+                      | "#bind(" BranchPat ")" [function]
+  syntax     Lbinds ::= "#bind(" Branch    ")" [function]
+                      | "#bind(" BranchPat ")" [function]
+  syntax   LbindPat ::= "#bind(" BranchPat ")" [function]
+  syntax  LbindPats ::= "#bind(" BranchPat ")" [function]
+  syntax       Proc ::= "#cont(" Branch    ")" [function]
+                      | "#cont(" BranchPat ")" [function]
+  syntax    ProcPat ::= "#cont(" BranchPat ")" [function]
 
   // IfThenElse
     // if function
@@ -368,6 +383,7 @@ module AUXFUN-SYNTAX
   syntax   NamePats ::= "#append(" Names    ";" NamePats ")" [function]
                       | "#append(" NamePats ";" Names    ")" [function]
                       | "#append(" NamePats ";" NamePats ")" [function]
+  syntax    VarDecs ::= "#append(" VarDecs  ";" VarDecs  ")" [function]
   // Procs & ProcPats
   syntax      Procs ::= "#append(" Procs    ";" Procs    ")" [function]
   syntax   ProcPats ::= "#append(" Procs    ";" ProcPats ")" [function]
@@ -531,12 +547,7 @@ module AUXFUN-SYNTAX
   syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
   syntax     String ::= "#eval(" StringOnlyExp ")" [function]
 
-// Select comms
-  syntax      Lbind ::= "#bind(" Branch ")" [function]
-  syntax     Lbinds ::= "#bind(" Branch ")" [function]
-  syntax       Proc ::= "#cont(" Branch ")" [function]
-
-  syntax      KItem ::= Name | Names | NamePat | NamePats
+  syntax      KItem ::= Name | Names | NamePat | NamePats | Var
                       | Proc | Procs | ProcPat | ProcPats
                       | Int ";" Name | Int ";" Names
                       | Int ";" NamePat | Int ";" NamePats
@@ -586,52 +597,52 @@ module AUXFUN
   rule #stype( _:UnconSend ) => 1
 
 // Receives
-  rule #bind( for ( B:Lbind  ){ _:Proc } ) => B
-  rule #bind( for ( B:Lbinds ){ _:Proc } ) => B
-  rule #bind( for ( B:Lbind  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Lbinds _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Pbind  ){ _:Proc } ) => B
-  rule #bind( for ( B:Pbinds ){ _:Proc } ) => B
-  rule #bind( for ( B:Pbind  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Pbinds _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Rbind  ){ _:Proc } ) => B
-  rule #bind( for ( B:Rbinds ){ _:Proc } ) => B
-  rule #bind( for ( B:Rbind  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Rbinds _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:Lbind  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbinds ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbind  _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbinds _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbind  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbinds ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbind  _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbinds _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbind  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbinds ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbind  _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbinds _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:LbindPat  ){ _:Proc } ) => B
-  rule #bind( for ( B:LbindPats ){ _:Proc } ) => B
-  rule #bind( for ( B:LbindPat  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:LbindPats _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:PbindPat  ){ _:Proc } ) => B
-  rule #bind( for ( B:PbindPats ){ _:Proc } ) => B
-  rule #bind( for ( B:PbindPat  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:PbindPats _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:RbindPat  ){ _:Proc } ) => B
-  rule #bind( for ( B:RbindPats ){ _:Proc } ) => B
-  rule #bind( for ( B:RbindPat  _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:RbindPats _:Guard ){ _:Proc } ) => B
-  rule #bind( for ( B:LbindPat  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:LbindPats ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Lbind             ){ _:Proc    } ) => B
+  rule #bind( for ( B:Lbinds            ){ _:Proc    } ) => B
+  rule #bind( for ( B:Lbind     _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Lbinds    _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Pbind             ){ _:Proc    } ) => B
+  rule #bind( for ( B:Pbinds            ){ _:Proc    } ) => B
+  rule #bind( for ( B:Pbind     _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Pbinds    _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Rbind             ){ _:Proc    } ) => B
+  rule #bind( for ( B:Rbinds            ){ _:Proc    } ) => B
+  rule #bind( for ( B:Rbind     _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Rbinds    _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:Lbind             ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Lbinds            ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Lbind     _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Lbinds    _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Pbind             ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Pbinds            ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Pbind     _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Pbinds    _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Rbind             ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Rbinds            ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Rbind     _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:Rbinds    _:Guard ){ _:ProcPat } ) => B
+  rule #bind( for ( B:LbindPat          ){ _:Proc    } ) => B
+  rule #bind( for ( B:LbindPats         ){ _:Proc    } ) => B
+  rule #bind( for ( B:LbindPat  _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:LbindPats _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:PbindPat          ){ _:Proc    } ) => B
+  rule #bind( for ( B:PbindPats         ){ _:Proc    } ) => B
+  rule #bind( for ( B:PbindPat  _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:PbindPats _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:RbindPat          ){ _:Proc    } ) => B
+  rule #bind( for ( B:RbindPats         ){ _:Proc    } ) => B
+  rule #bind( for ( B:RbindPat  _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:RbindPats _:Guard ){ _:Proc    } ) => B
+  rule #bind( for ( B:LbindPat          ){ _:ProcPat } ) => B
+  rule #bind( for ( B:LbindPats         ){ _:ProcPat } ) => B
   rule #bind( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:LbindPats _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:PbindPat  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:PbindPats ){ _:ProcPat } ) => B
+  rule #bind( for ( B:PbindPat          ){ _:ProcPat } ) => B
+  rule #bind( for ( B:PbindPats         ){ _:ProcPat } ) => B
   rule #bind( for ( B:PbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:PbindPats _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:RbindPat  ){ _:ProcPat } ) => B
-  rule #bind( for ( B:RbindPats ){ _:ProcPat } ) => B
+  rule #bind( for ( B:RbindPat          ){ _:ProcPat } ) => B
+  rule #bind( for ( B:RbindPats         ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => B
 
@@ -679,111 +690,76 @@ module AUXFUN
   rule #chan( A:SRec ) => #chan(#bind(A))
   rule #chan( A:MRec ) => #chan(#bind(A))
 
-  // Branch
-  rule #bind( { A:Lbind  } |=> _:Proc ) => A [structural]
-  rule #bind( { A:Lbinds } |=> _:Proc ) => A [structural]
-  rule #cont( { _:Lbind  } |=> A:Proc ) => A [structural]
-  rule #cont( { _:Lbinds } |=> A:Proc ) => A [structural]
+  // Branch[Pat]
+  rule #bind( { A:Lbind     } |=> _:Proc    ) => A [structural]
+  rule #bind( { A:Lbinds    } |=> _:Proc    ) => A [structural]
+  rule #bind( { A:Lbind     } |=> _:ProcPat ) => A [structural]
+  rule #bind( { A:Lbinds    } |=> _:ProcPat ) => A [structural]
+  rule #bind( { A:LbindPat  } |=> _:Proc    ) => A [structural]
+  rule #bind( { A:LbindPats } |=> _:Proc    ) => A [structural]
+  rule #bind( { A:LbindPat  } |=> _:ProcPat ) => A [structural]
+  rule #bind( { A:LbindPats } |=> _:ProcPat ) => A [structural]
+  rule #cont( { _:Lbind     } |=> A:Proc    ) => A [structural]
+  rule #cont( { _:Lbinds    } |=> A:Proc    ) => A [structural]
+  rule #cont( { _:Lbind     } |=> A:ProcPat ) => A [structural]
+  rule #cont( { _:Lbinds    } |=> A:ProcPat ) => A [structural]
+  rule #cont( { _:LbindPat  } |=> A:Proc    ) => A [structural]
+  rule #cont( { _:LbindPats } |=> A:Proc    ) => A [structural]
+  rule #cont( { _:LbindPat  } |=> A:ProcPat ) => A [structural]
+  rule #cont( { _:LbindPats } |=> A:ProcPat ) => A [structural]
 
-  rule #cont( for ( _:Lbind  ){ P:Proc } ) => P
-  rule #cont( for ( _:Lbinds ){ P:Proc } ) => P
-  rule #cont( for ( _:Lbind  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Lbinds _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Pbind  ){ P:Proc } ) => P
-  rule #cont( for ( _:Pbinds ){ P:Proc } ) => P
-  rule #cont( for ( _:Pbind  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Pbinds _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Rbind  ){ P:Proc } ) => P
-  rule #cont( for ( _:Rbinds ){ P:Proc } ) => P
-  rule #cont( for ( _:Rbind  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Rbinds _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:Lbind  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Lbinds ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Lbind  _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Lbinds _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Pbind  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Pbinds ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Pbind  _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Pbinds _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Rbind  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Rbinds ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Rbind  _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:Rbinds _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:LbindPat  ){ P:Proc } ) => P
-  rule #cont( for ( _:LbindPats ){ P:Proc } ) => P
-  rule #cont( for ( _:LbindPat  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:LbindPats _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:PbindPat  ){ P:Proc } ) => P
-  rule #cont( for ( _:PbindPats ){ P:Proc } ) => P
-  rule #cont( for ( _:PbindPat  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:PbindPats _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:RbindPat  ){ P:Proc } ) => P
-  rule #cont( for ( _:RbindPats ){ P:Proc } ) => P
-  rule #cont( for ( _:RbindPat  _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:RbindPats _:Guard ){ P:Proc } ) => P
-  rule #cont( for ( _:LbindPat  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:LbindPats ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Lbind             ){ P:Proc    } ) => P
+  rule #cont( for ( _:Lbinds            ){ P:Proc    } ) => P
+  rule #cont( for ( _:Lbind     _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Lbinds    _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Pbind             ){ P:Proc    } ) => P
+  rule #cont( for ( _:Pbinds            ){ P:Proc    } ) => P
+  rule #cont( for ( _:Pbind     _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Pbinds    _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Rbind             ){ P:Proc    } ) => P
+  rule #cont( for ( _:Rbinds            ){ P:Proc    } ) => P
+  rule #cont( for ( _:Rbind     _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Rbinds    _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:Lbind             ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Lbinds            ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Lbind     _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Lbinds    _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Pbind             ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Pbinds            ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Pbind     _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Pbinds    _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Rbind             ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Rbinds            ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Rbind     _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:Rbinds    _:Guard ){ P:ProcPat } ) => P
+  rule #cont( for ( _:LbindPat          ){ P:Proc    } ) => P
+  rule #cont( for ( _:LbindPats         ){ P:Proc    } ) => P
+  rule #cont( for ( _:LbindPat  _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:LbindPats _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:PbindPat          ){ P:Proc    } ) => P
+  rule #cont( for ( _:PbindPats         ){ P:Proc    } ) => P
+  rule #cont( for ( _:PbindPat  _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:PbindPats _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:RbindPat          ){ P:Proc    } ) => P
+  rule #cont( for ( _:RbindPats         ){ P:Proc    } ) => P
+  rule #cont( for ( _:RbindPat  _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:RbindPats _:Guard ){ P:Proc    } ) => P
+  rule #cont( for ( _:LbindPat          ){ P:ProcPat } ) => P
+  rule #cont( for ( _:LbindPats         ){ P:ProcPat } ) => P
   rule #cont( for ( _:LbindPat  _:Guard ){ P:ProcPat } ) => P
   rule #cont( for ( _:LbindPats _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:PbindPat  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:PbindPats ){ P:ProcPat } ) => P
+  rule #cont( for ( _:PbindPat          ){ P:ProcPat } ) => P
+  rule #cont( for ( _:PbindPats         ){ P:ProcPat } ) => P
   rule #cont( for ( _:PbindPat  _:Guard ){ P:ProcPat } ) => P
   rule #cont( for ( _:PbindPats _:Guard ){ P:ProcPat } ) => P
-  rule #cont( for ( _:RbindPat  ){ P:ProcPat } ) => P
-  rule #cont( for ( _:RbindPats ){ P:ProcPat } ) => P
+  rule #cont( for ( _:RbindPat          ){ P:ProcPat } ) => P
+  rule #cont( for ( _:RbindPats         ){ P:ProcPat } ) => P
   rule #cont( for ( _:RbindPat  _:Guard ){ P:ProcPat } ) => P
   rule #cont( for ( _:RbindPats _:Guard ){ P:ProcPat } ) => P
 
-//rule #lislen( A:SRec ) => #lislen(#bind(A))
-//rule #lislen( A:MRec ) => #length(#bind(A))
-  rule #lislen( for ( B:Lbind             ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds            ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Lbind     _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds    _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Pbind             ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds            ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Pbind     _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds    _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Rbind             ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds            ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Rbind     _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds    _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:Lbind             ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds            ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Lbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Lbinds    _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Pbind             ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds            ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Pbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Pbinds    _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Rbind             ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds            ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:Rbind     _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:Rbinds    _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:LbindPat          ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats         ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:LbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:PbindPat          ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats         ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:PbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:RbindPat          ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats         ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:RbindPat  _:Guard ){ _:Proc    } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats _:Guard ){ _:Proc    } ) => #length(B)
-  rule #lislen( for ( B:LbindPat          ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats         ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:LbindPats _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:PbindPat          ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats         ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:PbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:PbindPats _:Guard ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:RbindPat          ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats         ){ _:ProcPat } ) => #length(B)
-  rule #lislen( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => #lislen(B)
-  rule #lislen( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => #length(B)
+// listen length
+  rule #lislen( A:SRec ) => #lislen(#bind(A))
+  rule #lislen( A:MRec ) => #length(#bind(A))
 
 // listen lengths
   rule #lislens( A:MRec    ) => #lislens(#bind(A))
@@ -795,7 +771,7 @@ module AUXFUN
   rule #lislens( A:Rbind & B:Rbind  ) => #lislen(A) ,  #lislen(B)
   rule #lislens( A:Rbind & B:Rbinds ) => #lislen(A) , #lislens(B)
 
-// receive types - receive
+// receive types
   rule #rtype( _:LinearSRec     ) => 0
   rule #rtype( _:GLinearSRec    ) => 0
   rule #rtype( _:LinearMRec     ) => 0
@@ -1052,8 +1028,8 @@ module AUXFUN
 //--- #in ---
 //-----------
 // Int #int IntList
-  rule A:Int #int ( B:Int           ) => A ==Int B
-  rule A:Int #int ( B:Int , C:Procs ) => A ==Int B orBool A #int (C)
+  rule A:Int #int ( B:Int            ) => A ==Int B
+  rule A:Int #int ( B:Int , C:Procs  ) => A ==Int B orBool A #int (C)
 
 // Name #in Names
   rule _:Name #in ( EmptyN           ) => false
@@ -1077,10 +1053,21 @@ module AUXFUN
   rule #newproc( new _:VarDecs in { A:Proc    } ) => A
   rule #newproc( new _:VarDecs in { A:ProcPat } ) => A
 
+// #indecs deletes duplicates from a list of declared name variables
+  rule #indecs( A:Var ) => A
+  rule #indecs( A:Var ( _:Uri ) ) => A
+  rule #indecs( A:New    ) => #indecs(#dec(A))
+  rule #indecs( A:NewPat ) => #indecs(#dec(A))
+  // first variable is added to the set and list
+  rule #indecs( A:VarDec , B:VarDecs ) => #indecs(B;SetItem(#var(A));#var(A))
+  // later variables are checked for membership in the set, if not there add to set and end of list
+  rule #indecs( A:VarDec ; B:Set ; C:VarDecs ) => #if #var(A) in B #then C #else #append(C;#var(A)) #fi
+  rule #indecs( A:VarDec , B:VarDecs ; S:Set ; C:VarDecs )
+    => #if #var(A) in S #then #indecs(B;S;C) #else #indecs(B;S SetItem(#var(A));#append(C;#var(A))) #fi
+
 //-------------
 //--- #size ---
 //-------------
-// TODO: other pattern constructs
 // for RhoMap & RhoSet
   // RhoMap
   rule #size( { } ) => 0
@@ -1169,10 +1156,10 @@ module AUXFUN
   rule #length( B:PbindPats _:Guard ) => #length(B)
   rule #length( B:RbindPats _:Guard ) => #length(B)
 
-  rule #length( match { _:Proc    } { M:MatchCases } ) => #length(M) [structural]
-  rule #length( match { _:Proc    } { M:MCasePats  } ) => #length(M) [structural]
-  rule #length( match { _:ProcPat } { M:MatchCases } ) => #length(M) [structural]
-  rule #length( match { _:ProcPat } { M:MCasePats  } ) => #length(M) [structural]
+  rule #length( match _:Proc    { M:MatchCases } ) => #length(M) [structural]
+  rule #length( match _:Proc    { M:MCasePats  } ) => #length(M) [structural]
+  rule #length( match _:ProcPat { M:MatchCases } ) => #length(M) [structural]
+  rule #length( match _:ProcPat { M:MCasePats  } ) => #length(M) [structural]
   rule #length( A:MatchCase ) => 1
   rule #length( A:MCasePat  ) => 1
   rule #length( A:MatchCase B:MatchCases ) => 1 +Int #length(B)
@@ -1853,6 +1840,9 @@ module AUXFUN
 //--------------
 //--- Select ---
 //--------------
+  rule #bind( { A:Lbind  } |=> _:Proc ) => A
+  rule #bind( { A:Lbinds } |=> _:Proc ) => A
+
   rule #branch2rec( { A:Lbind  } |=> B:Proc ) => for(A){B}
   rule #branch2rec( { A:Lbinds } |=> B:Proc ) => for(A){B}
 
