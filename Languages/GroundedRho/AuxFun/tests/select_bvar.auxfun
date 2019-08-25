@@ -1,0 +1,10 @@
+// Binding names of bind in select branch
+
+    #bvar( #bind({ a,b,@{\c /\ Uri} <- chan1 } |=> [*a,(*b,\c,)]) )
+
+/*
+Output:
+
+  a , b , @ \ c /\ Uri
+
+*/
