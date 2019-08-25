@@ -1,0 +1,18 @@
+// Multi receive indexing
+
+    #deBruijn( new x,y,z in { for( a,@{for(x,y<-b1&z<-b2 if \t > *y ){*x|*z|*y}} <- x & c <- y & d,e,@{f!(\g)} <- z
+                                   if *a+*d == *c-\g ){ a!(*d | \g) | b1!(*b2 | *e) | c!(*f) } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) , n( 2 ) in {
+    for ( @ x( 3 ) , @ for ( #dBound( 4 ;; x , y <- b1 & z <- b2 if \ t > * y ) ) { x( 1 , 0 ) | x( 1 , 2 ) | x( 1 , 1 ) } <- n( 0 ) &
+          @ x( 7 ) <- n( 1 ) &
+          @ x( 8 ) , @ x( 9 ) , @ ( { @ x( 10 ) } ! ( x( 11 ) ) ) <- n( 2 )
+         if x( 3 ) + x( 8 ) == x( 7 ) - x( 11 ) ) {
+      { @ x( 3 ) } ! ( x( 8 ) | x( 11 ) ) | { @ x( 4 ) } ! ( x( 5 ) | x( 9 ) ) | { @ x( 7 ) } ! ( x( 10 ) )
+    }
+  }
+
+*/
