@@ -1,0 +1,15 @@
+// Match - name variable sub
+
+    #sub( @2 ; x ; match x!(true,1,@3!!(0),Send) {
+                          { [\x,1,Bool]  } |=> \x | x!(Nil)
+                          { x!(Bool,Int,Send) } |=> \x | [*a,*b,c!(*x)]
+                   } )
+
+/*
+Output:
+
+  match @ 2 ! ( true , ( 1 , { @ 3 } !! ( 0 ) , Send ) ) {
+    { [ \ x , 1 , Bool ] } |=> \ x | { @ 2 } ! ( Nil )
+    { x ! ( Bool , ( Int , Send ) ) } |=> \ x | [ * a , * b , c ! ( * x ) ] }
+
+*/
