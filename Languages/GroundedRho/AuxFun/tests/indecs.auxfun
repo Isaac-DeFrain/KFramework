@@ -1,0 +1,10 @@
+// Name declaration
+
+  #indecs( new a,b,b,c(`rho:io:stdout`),b,a,c in { {1:2 , 2:3 , 3:2 , "a":5 , true:*x , Nil:@3!(3) , Int:*a } } )
+
+/*
+Output:
+
+    a , b , c
+
+*/
