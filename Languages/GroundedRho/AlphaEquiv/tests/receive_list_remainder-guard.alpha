@@ -1,0 +1,18 @@
+// Receive list remainder pattern, input guard
+
+    #deBruijn( new a,b in { for( @[ *x,3,*d,\y ... \u ],c <- @{*a | *b} if \u matches [Int,Int,Bool] and x != d ){ \u | *a | *x | *b | *c | \y } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in {
+    for ( @ [ x( 3 ) , 3 , x( 4 ) , x( 5 ) ... x( 2 ) ] , @ x( 6 ) <- @ * n( 0 ) | * n( 1 ) if x( 2 ) matches [ Int , Int , Bool ] and { @ x( 3 ) } != @ x( 4 ) ) {
+      x( 2 ) | * n( 0 ) | x( 3 ) | * n( 1 ) | x( 6 ) | x( 5 )
+    }
+  }
+
+RNode:
+
+  No input guards...
+
+*/

@@ -1,0 +1,22 @@
+// Receive list remainder pattern
+
+    #deBruijn( new a,b in { for( @[ *x,3,*d,\y ... \u ],c <- @{*a | *b} ){ \u | *a | *x | *b | *c | \y } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in {
+    for ( @ [ x( 3 ) , 3 , x( 4 ) , x( 5 ) ... x( 2 ) ] , @ x( 6 ) <- @ * n( 0 ) | * n( 1 ) ) {
+      x( 2 ) | * n( 0 ) | x( 3 ) | * n( 1 ) | x( 6 ) | x( 5 )
+    }
+  }
+
+RNode:
+
+  new x0, x1 in {
+  for( @{[x3, 3, x4, x5...x2]}, @{x6} <- @{x1 | x0} ) {
+    x6 | x5 | x3 | x2 | *x1 | *x0
+  }
+}
+
+*/
