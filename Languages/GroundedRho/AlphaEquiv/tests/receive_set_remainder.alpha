@@ -1,0 +1,18 @@
+// Receive set remainder pattern
+
+    #deBruijn( new a,b in { for( @Set(*x,3,\y ... \u ),c,\_,@{@2!(3\/Bool)} <- @{*a | *b} ){ *a | *x | *b | c!(\u) | \y } } )
+
+/*
+Output:
+
+  new n( 0 ) , n( 1 ) in {
+    for ( @ Set( x( 3 ) , 3 , x( 4 ) ... x( 2 ) ) , @ x( 5 ) , \_ , @ @ 2 ! ( 3 \/ Bool ) <- @ * n( 0 ) | * n( 1 ) ) {
+      * n( 0 ) | x( 3 ) | * n( 1 ) | { @ x( 5 ) } ! ( x( 2 ) ) | x( 4 )
+    }
+  }
+
+RNode:
+
+  Error: coop.rchain.rholang.interpreter.errors$PatternReceiveError: Invalid pattern in the receive: \/ (disjunction) ...
+
+*/
