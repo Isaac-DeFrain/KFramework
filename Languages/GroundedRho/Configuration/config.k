@@ -1,5 +1,10 @@
 // Rholang Configuration
 
+/*
+TODO:
+ - contract mapping cell: contract keyword updates map with Name |-> Body & invocation looks up the given contract name add substitutes in provided values for the contract variables
+*/
+
 require "domains.k"
 require "../AuxFun/auxfun.k"
 require "../Names_Variables/namevar.k"
@@ -43,13 +48,25 @@ module CONFIG
           <sums>                                        //
             <sum multiplicity="*">                      //
               <branches>                                //
-                <branch multiplicity="*"> .K </branch>  //
+                <branch multiplicity="*"> .K </branch>  // TODO: may be better as a set of Branches (they should be mutually exclusive anyways)
               </branches>                               //
             </sum>                                      //
           </sums>                                       //
         </input>                                        //
       </tuplespace>                                     //
-      <nextLoc color="gray"> 0 </nextLoc>               //
+      <contracts> .Map </contracts>                     // mapping of contract names to bodies: contract
+/*
+      <registry>
+        <contracts>
+          <contractName> .Map </contractName>           // map from public contract name to location
+          <contractBody> .Map </contractBody>           // map from location to contract body
+          <nextContractLoc> 0 </nextContractLoc>        // contract location counter
+        </contracts>
+        <otherRegistryItems>
+        </otherRegistryItems>
+      </registry>
+*/
+      <nextLoc color="gray"> 0 </nextLoc>               // declared variable counter
       <original color="pink">                           //
         $PGM                                            // parsed original program -- unordered, unidexed
       </original>                                       //
@@ -64,26 +81,28 @@ module CONFIG
 /*
 // Execution guards
   syntax KItem ::= "Check_All"
-  rule (Check_All => Check_FreeVars ~> Check_VarContext) ~> _:Proc
+  rule (Check_All => Check_FreeVars ~> Check_Type ~> Normalize) ~> _:Proc
 
   // Free variable execution guard
   syntax KItem ::= "Check_FreeVars"
                  | "Error: Free Variables!"
-  // Remove free variable error guard if program is closed & check variable context
-  rule (Check_FreeVars ~> Check_VarContext ~> P:Proc) => #if FV(P) ==K .Set
-                                           #then (Check_VarContext ~> P)
-                                           #else Error: FreeVars! #fi
-// Variable context execution guard
-  syntax KItem ::= "Check_VarContext"
-                 | "Error: Variable used in both name and process contexts!"
-                 | "Error: VarContext!"
-// Remove variable context error guard and execute if program is well-formed
-  rule <k> (Check_VarContext ~> P:Proc) => #if #VarContext(P) ==K .Set
-                                             #then P // TODO: more execution constraints?
-                                             #else Error: Variable used in both name and process contexts! #fi
-       </k>
-*/
-// TODO: add other type constraints
+  // Remove free variable error guard if program is closed & check type
+  rule (Check_FreeVars ~> Check_Type ~> Normalize ~> P:Proc)
+    => #if FV(P) ==K .Set #then (Check_Type ~> Normalize ~> P) #else Error: Free Variables! #fi
 
+  // Type check execution guard
+  syntax KItem ::= "Check_Type"
+                 | "Error: Invalid Type"
+  // Remove type check guard if program is correct & normalize
+  rule (Check_Type ~> Normalize ~> P:Proc)
+    => #if #typeCheck(P) #then (Normalize ~> P) #else Error: Invalid Type #fi // TODO: #typeCheck
+
+// TODO: should contracts be loaded into the registry before normalization???
+
+  // Normalization
+  syntax KItem ::= "Normalize"
+  // Remove normalize guard & execute normalized process
+  rule (Normalize ~> P:Proc) => #normalize(P) // TODO: #normalize
+*/
 
 endmodule
