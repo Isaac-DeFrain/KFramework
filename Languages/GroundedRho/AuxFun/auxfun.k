@@ -47,12 +47,14 @@ module AUXFUN-SYNTAX
   // Receive/RecPat
     // receive bind function
   syntax      Lbind ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" LinearSRec ")" [function]
                       |  "#bind(" RecPat  ")" [function]
                       | "#gbind(" Receive ")" [function]
                       | "#gbind(" RecPat  ")" [function]
   syntax     GLbind ::= "#gbind(" Receive ")" [function]
                       | "#gbind(" RecPat  ")" [function]
   syntax     Lbinds ::=  "#bind(" Receive ")" [function]
+                      |  "#bind(" LinearMRec ")" [function]
                       |  "#bind(" RecPat  ")" [function]
                       | "#gbind(" Receive ")" [function]
                       | "#gbind(" RecPat  ")" [function]
@@ -152,72 +154,70 @@ module AUXFUN-SYNTAX
   syntax        Int ::= "#rtype(" Receive ")" [function]
                       | "#rtype(" RecPat  ")" [function]
 
-  // #chanSet: Receive/RecPat/Bind[Pat][s] -> set of channels with position
-  syntax        Set ::= "#chanSet(" Receive ")" [function]
-                      | "#chanSet(" RecPat  ")" [function]
-
-  syntax        Set ::= "#chanSet(" Bind     ";;" Int ")" [function]
-                      | "#chanSet(" Binds    ";;" Int ")" [function]
-                      | "#chanSet(" BindPat  ";;" Int ")" [function]
+  // #chanSet: RecPat/BindPat[s] ---> Set( position ; channel )
+  syntax        Set ::= "#chanSet(" RecPat   ")"          [function]
+  syntax        Set ::= "#chanSet(" BindPat  ";;" Int ")" [function]
                       | "#chanSet(" BindPats ";;" Int ")" [function]
+  // #chanMap: RecPat/BindPat[s] ---> Map( position |-> channel )
+  syntax        Map ::= "#chanMap(" RecPat   ")"          [function]
+  syntax        Map ::= "#chanMap(" BindPat  ";;" Int ")" [function]
+                      | "#chanMap(" BindPats ";;" Int ")" [function]
 
-  // #bvarSet: Receive/RecPat/Bind[Pat][s] -> set of listening name[pat]s with position
-  syntax        Set ::= "#bvarSet(" Receive ")" [function]
-                      | "#bvarSet(" RecPat  ")" [function]
+  // #bindSet: Receive/RecPat/Bind[Pat][s] ---> set of binds with position
+  syntax        Set ::= "#bindSet(" Receive ")"           [function]
+                      | "#bindSet(" RecPat  ")"           [function]
+  syntax        Set ::= "#bindSet(" Bind     ";;" Int ")" [function]
+                      | "#bindSet(" Binds    ";;" Int ")" [function]
+                      | "#bindSet(" BindPat  ";;" Int ")" [function]
+                      | "#bindSet(" BindPats ";;" Int ")" [function]
+  syntax    BindPat ::=  "#set2bind(" Int ";" Set ")"     [function]
+  syntax   BindPats ::= "#set2binds(" Set ")"             [function]
+                      | "#set2binds(" Int ";" Set ")"     [function]
+  // #bindMap: RecPat/BindPat[s] ---> Map( bind number |-> BindPat )
+  syntax        Map ::= "#bindMap(" RecPat  ")"           [function]
+  syntax        Map ::= "#bindMap(" BindPat  ";;" Int ")" [function]
+                      | "#bindMap(" BindPats ";;" Int ")" [function]
+    // bindMap ---> Bind[s]
+  syntax    BindPat ::=  "#map2bind(" Int ";" Map ")"     [function]
+  syntax   BindPats ::= "#map2binds(" Map ")"             [function]
+                      | "#map2binds(" Int ";" Map ")"     [function]
 
-  syntax        Set ::= "#bvarSet(" Bind     ";;" Int ")" [function]
-                      | "#bvarSet(" Binds    ";;" Int ")" [function]
-                      | "#bvarSet(" BindPat  ";;" Int ")" [function]
+  // #bvarSet: RecPat/BindPat[s] ---> set of listening name[pat]s with position
+  syntax        Set ::= "#bvarSet(" RecPat  ")"           [function]
+  syntax        Set ::= "#bvarSet(" BindPat  ";;" Int ")" [function]
                       | "#bvarSet(" BindPats ";;" Int ")" [function]
+    // bindSet ---> bvarSet
+  syntax        Set ::=   "#bvarSet(" Set ")"         [function]
+    // bvarSet ---> bvars
+  syntax   NamePats ::= "#set2bvars(" Set ")"         [function]
+                      | "#set2bvars(" Int ";" Set ")" [function]
+  syntax   NamePats ::=  "#set2bvar(" Int ";" Set ")" [function]
 
-  // #chanRelSet: Receive/RecPat/Bind[Pat][s] -> set of lists of related channels indices
+  // #bvarMap: RecPat/BindPat[s] ---> set of listening name[pat]s with position
+  syntax        Map ::= "#bvarMap(" RecPat  ")"           [function]
+  syntax        Map ::= "#bvarMap(" BindPat  ";;" Int ")" [function]
+                      | "#bvarMap(" BindPats ";;" Int ")" [function]
+    // bindMap ---> bvarMap
+  syntax        Map ::=   "#bvarMap(" Map ")"         [function]
+    // bvarMap ---> bvars
+  syntax   NamePats ::= "#map2bvars(" Map ")"         [function]
+                      | "#map2bvars(" Int ";" Map ")" [function]
+  syntax   NamePats ::=  "#map2bvar(" Int ";" Map ")" [function]
 
   // Bind at given position in Receive/RecPat/Bind[Pat][s]
-  syntax      Lbind ::= "#bind(" Receive   ";;" Int ")" [function]
-                      | "#bind(" RecPat    ";;" Int ")" [function]
-                      | "#bind(" Lbind     ";;" Int ")" [function]
-                      | "#bind(" Lbinds    ";;" Int ")" [function]
-                      | "#bind(" LbindPats ";;" Int ")" [function]
   syntax   LbindPat ::= "#bind(" RecPat    ";;" Int ")" [function]
                       | "#bind(" LbindPat  ";;" Int ")" [function]
                       | "#bind(" LbindPats ";;" Int ")" [function]
-  syntax      Pbind ::= "#bind(" Receive   ";;" Int ")" [function]
-                      | "#bind(" RecPat    ";;" Int ")" [function]
-                      | "#bind(" Pbind     ";;" Int ")" [function]
-                      | "#bind(" Pbinds    ";;" Int ")" [function]
-                      | "#bind(" PbindPats ";;" Int ")" [function]
   syntax   PbindPat ::= "#bind(" RecPat    ";;" Int ")" [function]
                       | "#bind(" PbindPat  ";;" Int ")" [function]
                       | "#bind(" PbindPats ";;" Int ")" [function]
-  syntax      Rbind ::= "#bind(" Receive   ";;" Int ")" [function]
-                      | "#bind(" RecPat    ";;" Int ")" [function]
-                      | "#bind(" Rbind     ";;" Int ")" [function]
-                      | "#bind(" Rbinds    ";;" Int ")" [function]
-                      | "#bind(" RbindPats ";;" Int ")" [function]
   syntax   RbindPat ::= "#bind(" RecPat    ";;" Int ")" [function]
                       | "#bind(" RbindPat  ";;" Int ")" [function]
                       | "#bind(" RbindPats ";;" Int ")" [function]
 
-  // Listening Name[Pat][s] at given position in Receive/RecPat/Bind[Pat][s]
-  syntax       Name ::= "#bvar(" Receive  ";;" Int ")" [function]
-                      | "#bvar(" RecPat   ";;" Int ")" [function]
-                      | "#bvar(" Bind     ";;" Int ")" [function]
-                      | "#bvar(" Binds    ";;" Int ")" [function]
-                      | "#bvar(" BindPats ";;" Int ")" [function]
-  syntax      Names ::= "#bvar(" Receive  ";;" Int ")" [function]
-                      | "#bvar(" RecPat   ";;" Int ")" [function]
-                      | "#bvar(" Bind     ";;" Int ")" [function]
-                      | "#bvar(" Binds    ";;" Int ")" [function]
-                      | "#bvar(" BindPats ";;" Int ")" [function]
-  syntax    NamePat ::= "#bvar(" Receive  ";;" Int ")" [function]
-                      | "#bvar(" RecPat   ";;" Int ")" [function]
-                      | "#bvar(" Bind     ";;" Int ")" [function]
-                      | "#bvar(" Binds    ";;" Int ")" [function]
-                      | "#bvar(" BindPats ";;" Int ")" [function]
-  syntax   NamePats ::= "#bvar(" Receive  ";;" Int ")" [function]
-                      | "#bvar(" RecPat   ";;" Int ")" [function]
-                      | "#bvar(" Bind     ";;" Int ")" [function]
-                      | "#bvar(" Binds    ";;" Int ")" [function]
+  // Listening NamePats at given position in RecPat/BindPat[s]
+  syntax   NamePats ::= "#bvar(" RecPat   ";;" Int ")" [function]
+                      | "#bvar(" BindPat  ";;" Int ")" [function]
                       | "#bvar(" BindPats ";;" Int ")" [function]
 
   // Channel Name[Pat] at given position in Receive/RecPat/Bind[Pat][s]
@@ -332,6 +332,12 @@ module AUXFUN-SYNTAX
                       | "#then(" Else   ")" [function]
                       | "#else(" IfThen ")" [function]
                       | "#else(" Else   ")" [function]
+
+  // Let
+  syntax    ProcVar ::=  "#letvar(" LetBind     ")" [function]
+  syntax      Procs ::=  "#letvar(" SimLetBinds ")" [function]
+  syntax       Proc ::= "#letproc(" LetBind     ")" [function]
+  syntax      Procs ::= "#letproc(" SimLetBinds ")" [function]
 
   // Procs <-> Par
   syntax       Proc ::= "#procs2par(" Procs    ")" [function]
@@ -481,6 +487,9 @@ module AUXFUN-SYNTAX
   syntax       Proc ::= "#val2Key(" Proc ";" Map ")" [function]
   syntax       Name ::= "#val2Key(" Name ";" Map ")" [function]
 
+// For MRec matching
+  syntax        Int ::= "#val(" Map ";" Int ")" [function]
+
 // Predicates -- List, RhoMap keys, & RhoSet inclusion
   syntax       Bool ::= Int   "#int" "(" Procs ")" [function]
                       | Name  "#in"  "(" Names ")" [function]
@@ -547,10 +556,12 @@ module AUXFUN-SYNTAX
   syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
   syntax     String ::= "#eval(" StringOnlyExp ")" [function]
 
-  syntax      KItem ::= Name | Names | NamePat | NamePats | Var
-                      | Proc | Procs | ProcPat | ProcPats
-                      | Int ";" Name | Int ";" Names
-                      | Int ";" NamePat | Int ";" NamePats
+  syntax      KItem ::= Name  | Names  | NamePat  | NamePats | Var
+                      | Proc  | Procs  | ProcPat  | ProcPats
+                      | Lbind | Lbinds | LbindPat | LbindPats
+                      | Pbind | Pbinds | PbindPat | PbindPats
+                      | Rbind | Rbinds | RbindPat | RbindPats
+                      | IndexedNames | IndexedBinds
 
 endmodule
 
@@ -1054,16 +1065,18 @@ module AUXFUN
   rule #newproc( new _:VarDecs in { A:ProcPat } ) => A
 
 // #indecs deletes duplicates from a list of declared name variables
+// i.e. it takes VarDecs and returns
   rule #indecs( A:Var ) => A
   rule #indecs( A:Var ( _:Uri ) ) => A
   rule #indecs( A:New    ) => #indecs(#dec(A))
   rule #indecs( A:NewPat ) => #indecs(#dec(A))
-  // first variable is added to the set and list
+  // the head VarDec is added to a running set and list
   rule #indecs( A:VarDec , B:VarDecs ) => #indecs(B;SetItem(#var(A));#var(A))
-  // later variables are checked for membership in the set, if not there add to set and end of list
-  rule #indecs( A:VarDec ; B:Set ; C:VarDecs ) => #if #var(A) in B #then C #else #append(C;#var(A)) #fi
+  // later variables are checked for membership in the running set, if not there, add it,
+  // and also add it to the end of the running list; #indecs is recursively called on remaining VarDecs
   rule #indecs( A:VarDec , B:VarDecs ; S:Set ; C:VarDecs )
     => #if #var(A) in S #then #indecs(B;S;C) #else #indecs(B;S SetItem(#var(A));#append(C;#var(A))) #fi
+  rule #indecs( A:VarDec ; B:Set ; C:VarDecs ) => #if #var(A) in B #then C #else #append(C;#var(A)) #fi
 
 //-------------
 //--- #size ---
@@ -1651,104 +1664,178 @@ module AUXFUN
   rule #unionSet( Set( A:ProcPats ) ; Set( B:Procs    ) ) => Set( #set2pats( #pats2set(A) #procs2set(B)))
   rule #unionSet( Set( A:ProcPats ) ; Set( B:ProcPats ) ) => Set( #set2pats( #pats2set(A)  #pats2set(B)))
 
-//---------------------------
-//--- Receive & Bind sets ---
-//---------------------------
-  rule #chanSet( for( A:Bind             ){ _:Proc    } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:BindPat          ){ _:Proc    } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:Bind             ){ _:ProcPat } ) => SetItem(0;#chan(A))
+//----------------------------------------------------
+//--- Channel, Bind, Binding Variables Sets & Maps ---
+//----------------------------------------------------
+// Channel set: RecPat
+// returns Set of (Int;NamePat) "bind number ; channel"
   rule #chanSet( for( A:BindPat          ){ _:ProcPat } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:GBind            ){ _:Proc    } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:GBindPat         ){ _:Proc    } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:GBind            ){ _:ProcPat } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:GBindPat         ){ _:ProcPat } ) => SetItem(0;#chan(A))
-  rule #chanSet( for( A:Binds            ){ _:Proc    } ) => #chanSet(A;;0)
-  rule #chanSet( for( A:Binds    _:Guard ){ _:Proc    } ) => #chanSet(A;;0)
-  rule #chanSet( for( A:Binds            ){ _:ProcPat } ) => #chanSet(A;;0)
-  rule #chanSet( for( A:Binds    _:Guard ){ _:ProcPat } ) => #chanSet(A;;0)
-  rule #chanSet( for( A:BindPats         ){ _:Proc    } ) => #chanSet(A;;0)
-  rule #chanSet( for( A:BindPats _:Guard ){ _:Proc    } ) => #chanSet(A;;0)
+  rule #chanSet( for( A:BindPat  _:Guard ){ _:ProcPat } ) => SetItem(0;#chan(A))
   rule #chanSet( for( A:BindPats         ){ _:ProcPat } ) => #chanSet(A;;0)
   rule #chanSet( for( A:BindPats _:Guard ){ _:ProcPat } ) => #chanSet(A;;0)
-
-  rule #chanSet( A:Lbind                  ;; I:Int ) => SetItem(I;#chan(A))
+  // Channel set: BindPat[s]
   rule #chanSet( A:LbindPat               ;; I:Int ) => SetItem(I;#chan(A))
-  rule #chanSet( A:Lbind    & B:Lbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Lbind    & B:Lbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:LbindPat & B:Lbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:LbindPat & B:Lbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Lbind    & B:LbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Lbind    & B:LbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:LbindPat & B:LbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:LbindPat & B:LbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Pbind                  ;; I:Int ) => SetItem(I;#chan(A))
   rule #chanSet( A:PbindPat               ;; I:Int ) => SetItem(I;#chan(A))
-  rule #chanSet( A:Pbind    & B:Pbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Pbind    & B:Pbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:PbindPat & B:Pbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:PbindPat & B:Pbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Pbind    & B:PbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Pbind    & B:PbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:PbindPat & B:PbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:PbindPat & B:PbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Rbind                  ;; I:Int ) => SetItem(I;#chan(A))
   rule #chanSet( A:RbindPat               ;; I:Int ) => SetItem(I;#chan(A))
-  rule #chanSet( A:Rbind    & B:Rbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Rbind    & B:Rbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:RbindPat & B:Rbind     ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:RbindPat & B:Rbinds    ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Rbind    & B:RbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
-  rule #chanSet( A:Rbind    & B:RbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:RbindPat & B:RbindPat  ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
   rule #chanSet( A:RbindPat & B:RbindPats ;; I:Int ) => SetItem(I;#chan(A)) #chanSet(B;;I +Int 1)
 
-  rule #bvarSet( for( A:Bind             ){ _:Proc    } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:BindPat          ){ _:Proc    } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:Bind             ){ _:ProcPat } ) => SetItem(0;#bvar(A))
+// Channel map: RecPat
+// returns Map of Int |-> NamePat: "bind number ; channel"
+  rule #chanMap( for( A:BindPat          ){ _:ProcPat } ) => 0 |-> #chan(A)
+  rule #chanMap( for( A:BindPat  _:Guard ){ _:ProcPat } ) => 0 |-> #chan(A)
+  rule #chanMap( for( A:BindPats         ){ _:ProcPat } ) => #chanMap(A;;0)
+  rule #chanMap( for( A:BindPats _:Guard ){ _:ProcPat } ) => #chanMap(A;;0)
+  // Channel set: BindPat[s]
+  rule #chanMap( A:LbindPat               ;; I:Int ) => I |-> #chan(A)
+  rule #chanMap( A:LbindPat & B:LbindPat  ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+  rule #chanMap( A:LbindPat & B:LbindPats ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+  rule #chanMap( A:PbindPat               ;; I:Int ) => I |-> #chan(A)
+  rule #chanMap( A:PbindPat & B:PbindPat  ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+  rule #chanMap( A:PbindPat & B:PbindPats ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+  rule #chanMap( A:RbindPat               ;; I:Int ) => I |-> #chan(A)
+  rule #chanMap( A:RbindPat & B:RbindPat  ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+  rule #chanMap( A:RbindPat & B:RbindPats ;; I:Int ) => I |-> #chan(A) #chanMap(B;;I +Int 1)
+
+// Bind set: Receive & RecPat
+// returns Set of (Int;Bind[Pat]) "bind number ; Bind[Pat]"
+  rule #bindSet( for( A:LbindPat          ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:PbindPat          ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:RbindPat          ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:LbindPat  _:Guard ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:PbindPat  _:Guard ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:RbindPat  _:Guard ){ _:ProcPat } ) => SetItem(0;A)
+  rule #bindSet( for( A:LbindPats         ){ _:ProcPat } ) => #bindSet(A;;0)
+  rule #bindSet( for( A:PbindPats         ){ _:ProcPat } ) => #bindSet(A;;0)
+  rule #bindSet( for( A:RbindPats         ){ _:ProcPat } ) => #bindSet(A;;0)
+  rule #bindSet( for( A:LbindPats _:Guard ){ _:ProcPat } ) => #bindSet(A;;0)
+  rule #bindSet( for( A:PbindPats _:Guard ){ _:ProcPat } ) => #bindSet(A;;0)
+  rule #bindSet( for( A:RbindPats _:Guard ){ _:ProcPat } ) => #bindSet(A;;0)
+  // Bind set: BindPat[s]
+  rule #bindSet( A:LbindPat               ;; I:Int ) => SetItem(I;A)
+  rule #bindSet( A:LbindPat & B:LbindPat  ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+  rule #bindSet( A:LbindPat & B:LbindPats ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+  rule #bindSet( A:PbindPat               ;; I:Int ) => SetItem(I;A)
+  rule #bindSet( A:PbindPat & B:PbindPat  ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+  rule #bindSet( A:PbindPat & B:PbindPats ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+  rule #bindSet( A:RbindPat               ;; I:Int ) => SetItem(I;A)
+  rule #bindSet( A:RbindPat & B:RbindPat  ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+  rule #bindSet( A:RbindPat & B:RbindPats ;; I:Int ) => SetItem(I;A) #bindSet(B;;I +Int 1)
+// set2binds: returns Binds from #bindSet
+  rule #set2binds( A:Set ) => #set2binds(0;A)
+  rule #set2binds( I:Int ; A:Set ) => #set2bind(I;A) & #set2binds(I +Int 1;A) requires I  <Int size(A) -Int 2
+  rule #set2binds( I:Int ; A:Set ) => #set2bind(I;A) &  #set2bind(I +Int 1;A) requires I ==Int size(A) -Int 2
+  rule  #set2bind( I:Int ; SetItem( I ; A:LbindPat ) ) => A
+  rule  #set2bind( I:Int ; SetItem( I ; A:PbindPat ) ) => A
+  rule  #set2bind( I:Int ; SetItem( I ; A:RbindPat ) ) => A
+  rule  #set2bind( I:Int ; SetItem( I ; A:LbindPat ) B:Set ) => A requires B =/=K .Set
+  rule  #set2bind( I:Int ; SetItem( I ; A:PbindPat ) B:Set ) => A requires B =/=K .Set
+  rule  #set2bind( I:Int ; SetItem( I ; A:RbindPat ) B:Set ) => A requires B =/=K .Set
+  rule  #set2bind( I:Int ; SetItem( J:Int ; A:LbindPat ) B:Set ) => #set2bind(I;B) requires B =/=K .Set andBool I =/=Int J
+  rule  #set2bind( I:Int ; SetItem( J:Int ; A:PbindPat ) B:Set ) => #set2bind(I;B) requires B =/=K .Set andBool I =/=Int J
+  rule  #set2bind( I:Int ; SetItem( J:Int ; A:RbindPat ) B:Set ) => #set2bind(I;B) requires B =/=K .Set andBool I =/=Int J
+
+// Bind map: RecPat
+// returns Map of Int |-> BindPat: "bind number |-> BindPat"
+  rule #bindMap( for( A:LbindPat          ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:PbindPat          ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:RbindPat          ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:LbindPat  _:Guard ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:PbindPat  _:Guard ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:RbindPat  _:Guard ){ _:ProcPat } ) => 0 |-> A
+  rule #bindMap( for( A:LbindPats         ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  rule #bindMap( for( A:PbindPats         ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  rule #bindMap( for( A:RbindPats         ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  rule #bindMap( for( A:LbindPats _:Guard ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  rule #bindMap( for( A:PbindPats _:Guard ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  rule #bindMap( for( A:RbindPats _:Guard ){ _:ProcPat } ) => #bindMap(A;;0) [structural]
+  // Bind map: BindPat[s]
+  rule #bindMap( A:LbindPat               ;; I:Int ) => I |-> A
+  rule #bindMap( A:LbindPat & B:LbindPat  ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  rule #bindMap( A:LbindPat & B:LbindPats ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  rule #bindMap( A:PbindPat               ;; I:Int ) => I |-> A
+  rule #bindMap( A:PbindPat & B:PbindPat  ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  rule #bindMap( A:PbindPat & B:PbindPats ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  rule #bindMap( A:RbindPat               ;; I:Int ) => I |-> A
+  rule #bindMap( A:RbindPat & B:RbindPat  ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  rule #bindMap( A:RbindPat & B:RbindPats ;; I:Int ) => I |-> A #bindMap(B;;I +Int 1)
+  // map2binds: returns Bind[Pat]s from #bindMap
+  rule #map2binds( A:Map ) => #map2binds(0;A)
+  rule #map2binds( I:Int ; A:Map ) => #map2bind(I;A) & #map2binds(I +Int 1;A) requires I  <Int size(A) -Int 2
+  rule #map2binds( I:Int ; A:Map ) => #map2bind(I;A) &  #map2bind(I +Int 1;A) requires I ==Int size(A) -Int 2
+  rule  #map2bind( I:Int ; I |-> A:LbindPat ) => A
+  rule  #map2bind( I:Int ; I |-> A:PbindPat ) => A
+  rule  #map2bind( I:Int ; I |-> A:RbindPat ) => A
+  rule  #map2bind( I:Int ; I |-> A:LbindPat B:Map ) => A requires B =/=K .Map
+  rule  #map2bind( I:Int ; I |-> A:PbindPat B:Map ) => A requires B =/=K .Map
+  rule  #map2bind( I:Int ; I |-> A:RbindPat B:Map ) => A requires B =/=K .Map
+  rule  #map2bind( I:Int ; J:Int |-> A:LbindPat B:Map ) => #map2bind(I;B) requires B =/=K .Map andBool I =/=Int J
+  rule  #map2bind( I:Int ; J:Int |-> A:PbindPat B:Map ) => #map2bind(I;B) requires B =/=K .Map andBool I =/=Int J
+  rule  #map2bind( I:Int ; J:Int |-> A:RbindPat B:Map ) => #map2bind(I;B) requires B =/=K .Map andBool I =/=Int J
+
+  // bvarSet from bindSet
+  rule #bvarSet( .Set ) => .Set
+  rule #bvarSet( SetItem( I ; A:LbindPat ) B:Set ) => SetItem(I;#bvar(A)) #bvarSet(B)
+  rule #bvarSet( SetItem( I ; A:PbindPat ) B:Set ) => SetItem(I;#bvar(A)) #bvarSet(B)
+  rule #bvarSet( SetItem( I ; A:RbindPat ) B:Set ) => SetItem(I;#bvar(A)) #bvarSet(B)
+  // set2bvars: returns binding patterns (#bvar) from #bvarSet
+  rule #set2bvars( A:Set ) => #set2bvars(0;A)
+  rule #set2bvars( I:Int ; A:Set ) => #append(#set2bvar(I;A);#set2bvars(I +Int 1;A)) requires I  <Int size(A) -Int 2
+  rule #set2bvars( I:Int ; A:Set ) => #append(#set2bvar(I;A); #set2bvar(I +Int 1;A)) requires I ==Int size(A) -Int 2
+  rule  #set2bvar( I:Int ; SetItem( I ; A:NamePats ) ) => A
+  rule  #set2bvar( I:Int ; SetItem( I ; A:NamePats ) B:Set ) => A requires B =/=K .Set
+  rule  #set2bvar( I:Int ; SetItem( J:Int ; A:NamePats ) B:Set ) => #set2bvar(I;B) requires B =/=K .Set andBool I =/=Int J
+
+// Binding variable set: RecPat
+// returns Set of (Int;NamePats) "bind number ; binding patterns"
   rule #bvarSet( for( A:BindPat          ){ _:ProcPat } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:GBind            ){ _:Proc    } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:GBindPat         ){ _:Proc    } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:GBind            ){ _:ProcPat } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:GBindPat         ){ _:ProcPat } ) => SetItem(0;#bvar(A))
-  rule #bvarSet( for( A:Binds            ){ _:Proc    } ) => #bvarSet(A;;0)
-  rule #bvarSet( for( A:Binds    _:Guard ){ _:Proc    } ) => #bvarSet(A;;0)
-  rule #bvarSet( for( A:Binds            ){ _:ProcPat } ) => #bvarSet(A;;0)
-  rule #bvarSet( for( A:Binds    _:Guard ){ _:ProcPat } ) => #bvarSet(A;;0)
-  rule #bvarSet( for( A:BindPats         ){ _:Proc    } ) => #bvarSet(A;;0)
-  rule #bvarSet( for( A:BindPats _:Guard ){ _:Proc    } ) => #bvarSet(A;;0)
+  rule #bvarSet( for( A:BindPat  _:Guard ){ _:ProcPat } ) => SetItem(0;#bvar(A))
   rule #bvarSet( for( A:BindPats         ){ _:ProcPat } ) => #bvarSet(A;;0)
   rule #bvarSet( for( A:BindPats _:Guard ){ _:ProcPat } ) => #bvarSet(A;;0)
-
-  rule #bvarSet( A:Lbind                  ;; I:Int ) => SetItem(I;#bvar(A))
+  // Binding variable set: BindPat[s]
   rule #bvarSet( A:LbindPat               ;; I:Int ) => SetItem(I;#bvar(A))
-  rule #bvarSet( A:Lbind    & B:Lbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Lbind    & B:Lbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:LbindPat & B:Lbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:LbindPat & B:Lbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Lbind    & B:LbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Lbind    & B:LbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:LbindPat & B:LbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:LbindPat & B:LbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Pbind                  ;; I:Int ) => SetItem(I;#bvar(A))
   rule #bvarSet( A:PbindPat               ;; I:Int ) => SetItem(I;#bvar(A))
-  rule #bvarSet( A:Pbind    & B:Pbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Pbind    & B:Pbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:PbindPat & B:Pbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:PbindPat & B:Pbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Pbind    & B:PbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Pbind    & B:PbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:PbindPat & B:PbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:PbindPat & B:PbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Rbind                  ;; I:Int ) => SetItem(I;#bvar(A))
   rule #bvarSet( A:RbindPat               ;; I:Int ) => SetItem(I;#bvar(A))
-  rule #bvarSet( A:Rbind    & B:Rbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Rbind    & B:Rbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:RbindPat & B:Rbind     ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:RbindPat & B:Rbinds    ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Rbind    & B:RbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
-  rule #bvarSet( A:Rbind    & B:RbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:RbindPat & B:RbindPat  ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
   rule #bvarSet( A:RbindPat & B:RbindPats ;; I:Int ) => SetItem(I;#bvar(A)) #bvarSet(B;;I +Int 1)
+
+  // bvarMap from bindMap
+  rule #bvarMap( .Map ) => .Map
+  rule #bvarMap( I |-> A:LbindPat B:Map ) => I |-> #bvar(A) #bvarMap(B)
+  rule #bvarMap( I |-> A:PbindPat B:Map ) => I |-> #bvar(A) #bvarMap(B)
+  rule #bvarMap( I |-> A:RbindPat B:Map ) => I |-> #bvar(A) #bvarMap(B)
+  // set2bvars: returns binding patterns (#bvar) from #bvarSet
+  rule #map2bvars( A:Map ) => #map2bvars(0;A)
+  rule #map2bvars( I:Int ; A:Map ) => #append(#map2bvar(I;A);#map2bvars(I +Int 1;A)) requires I  <Int size(A) -Int 2
+  rule #map2bvars( I:Int ; A:Map ) => #append(#map2bvar(I;A); #map2bvar(I +Int 1;A)) requires I ==Int size(A) -Int 2
+  rule  #map2bvar( I:Int ; I |-> A:NamePats ) => A
+  rule  #map2bvar( I:Int ; I |-> A:NamePats B:Map ) => A requires B =/=K .Map
+  rule  #map2bvar( I:Int ; J:Int |-> A:NamePats B:Map ) => #map2bvar(I;B) requires B =/=K .Map andBool I =/=Int J
+
+// Binding variable set: RecPat
+// returns Set of (Int;NamePats) "bind number ; binding patterns"
+  rule #bvarMap( for( A:BindPat          ){ _:ProcPat } ) => 0 |-> #bvar(A)
+  rule #bvarMap( for( A:BindPat  _:Guard ){ _:ProcPat } ) => 0 |-> #bvar(A)
+  rule #bvarMap( for( A:BindPats         ){ _:ProcPat } ) => #bvarMap(A;;0)
+  rule #bvarMap( for( A:BindPats _:Guard ){ _:ProcPat } ) => #bvarMap(A;;0)
+  // Binding variable set: BindPat[s]
+  rule #bvarMap( A:LbindPat               ;; I:Int ) => I |-> #bvar(A)
+  rule #bvarMap( A:LbindPat & B:LbindPat  ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
+  rule #bvarMap( A:LbindPat & B:LbindPats ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
+  rule #bvarMap( A:PbindPat               ;; I:Int ) => I |-> #bvar(A)
+  rule #bvarMap( A:PbindPat & B:PbindPat  ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
+  rule #bvarMap( A:PbindPat & B:PbindPats ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
+  rule #bvarMap( A:RbindPat               ;; I:Int ) => I |-> #bvar(A)
+  rule #bvarMap( A:RbindPat & B:RbindPat  ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
+  rule #bvarMap( A:RbindPat & B:RbindPats ;; I:Int ) => I |-> #bvar(A) #bvarMap(B;;I +Int 1)
 
 // Bind position
   rule #bind( A:Receive ;; I:Int ) => #bind(#bind(A);;I)
@@ -1833,6 +1920,18 @@ module AUXFUN
   rule #else( if ( _:BExp ) _:Proc ) => Nil
   rule #else( if ( _:BExp ) _:Proc else A:Proc ) => A
 
+//-----------
+//--- Let ---
+//-----------
+// Input: LetBind/SimLetBinds
+  rule #letvar( A:ProcVar <- _:Proc ) => A
+  rule #letvar( A:LetBind & B:LetBind     ) => #append(#letvar(A);#letvar(B))
+  rule #letvar( A:LetBind & B:SimLetBinds ) => #append(#letvar(A);#letvar(B))
+// Input: LetBind/SimLetBinds
+  rule #letproc( _:ProcVar <- A:Proc ) => A
+  rule #letproc( A:LetBind & B:LetBind     ) => #append(#letproc(A);#letproc(B))
+  rule #letproc( A:LetBind & B:SimLetBinds ) => #append(#letproc(A);#letproc(B))
+
 //--------------------
 //--- #vardecs2set ---
 //--------------------
@@ -1887,6 +1986,12 @@ module AUXFUN
   rule #eval( A:String        ++ B:StringOnlyExp ) => A +String #eval(B)
   rule #eval( A:StringOnlyExp %% B:InterpMaps    ) => #interpolate(#eval(A);B)
 
+
+// #val
+  rule #val( I:Int |-> J:Int ; I ) => J
+  rule #val( I:Int |-> J:Int A:Map ; I ) => J requires A =/=K .Map
+  rule #val( I:Int |-> J:Int A:Map ; L:Int ) => #val(A;L) requires A =/=K .Map andBool I =/=Int L
+
 /*
 // Methods
 //--------------
@@ -1928,5 +2033,17 @@ module AUXFUN
 
 //  rule #lengths( B:Pbind & C:Pbind  ) => #lislen(B) , #lislen(C)
 //  rule #lengths( B:Pbind & C:Pbinds ) => #lislen(B) , #lengths(C)
+
+//------------------
+//--- Structural ---
+//------------------
+// Nil = unit of |
+  rule Nil       | A:ProcPat => A [anywhere, structural]
+  rule A:ProcPat | Nil       => A [anywhere, structural]
+// @* = Id_NamePat & *@ = Id_ProcPat
+  rule @ * A:NamePat => A [anywhere, structural]
+  rule * @ A:ProcPat => A [anywhere, structural]
+// ~~ = Id_ProcPat
+  rule ~ ~ A:ProcPat => A [anywhere, structural]
 
 endmodule
