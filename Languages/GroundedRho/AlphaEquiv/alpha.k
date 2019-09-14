@@ -1,10 +1,5 @@
 // De Bruijn Index/Levels & Alpha Equivalence for Rholang
 
-/*
-TODO:
- - #deBruijn(Int,Int;Int;;Binds) -- nested Binds
-*/
-
 require "../grho.k"
 require "../Substitute/sub.k"
 
@@ -12,219 +7,95 @@ module ALPHA-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
 
-//--- Top level ---//
-  // Procs
-  syntax         Proc ::= "#deBruijn(" Proc ")"          [function, poly(0,1)]
-                        | "#deBruijn(" Int ";" Proc  ")" [function, poly(0,2)]
-                        |   "#dBound(" Int ";" Proc  ")" [function]
-  syntax        Procs ::= "#deBruijn(" Int ";" Procs ")" [function]
-                        |   "#dBound(" Int ";" Procs ")" [function]
-  // ProcPats
-  syntax      ProcPat ::= "#deBruijn(" Int ";" ProcPat  ")" [function]
-                        |   "#dBound(" Int ";" ProcPat  ")" [function]
-  syntax     ProcPats ::= "#deBruijn(" Int ";" ProcPats ")" [function]
-                        |   "#dBound(" Int ";" ProcPats ")" [function]
-  // Names
-  syntax         Name ::= "#deBruijn(" Int ";" Name  ")" [function]
-                        |   "#dBound(" Int ";" Name  ")" [function]
-  syntax        Names ::= "#deBruijn(" Int ";" Names ")" [function]
-                        |   "#dBound(" Int ";" Names ")" [function]
-  // NamePats
-  syntax      NamePat ::= "#deBruijn(" Int ";" NamePat  ")" [function]
-                        |   "#dBound(" Int ";" NamePat  ")" [function]
-  syntax     NamePats ::= "#deBruijn(" Int ";" NamePats ")" [function]
-                        |   "#dBound(" Int ";" NamePats ")" [function]
-  // VarDecs
-  syntax      VarDecs ::= "#dbNew(" Int ";" VarDecs ")" [function]
-
-//--- Nested ---//
 // Int params: level, index
+// Map: current indexing environment map
   // Procs
-  syntax         Proc ::= "#deBruijn(" Int "," Int ";" Proc  ")" [function, poly(0,3)]
-                        |   "#dBound(" Int "," Int ";" Proc  ")" [function]
-  syntax        Procs ::= "#deBruijn(" Int "," Int ";" Procs ")" [function]
-                        |   "#dBound(" Int "," Int ";" Procs ")" [function]
+  syntax         Proc ::= "#deBruijn(" Proc ")"                          [function, poly(0,1)]
+                        | "#deBruijn(" Int "," Int ";" Proc  ";" Map ")" [function, poly(0,3)]
+  syntax        Procs ::= "#deBruijn(" Int "," Int ";" Procs ";" Map ")" [function]
   // ProcPats
-  syntax      ProcPat ::= "#deBruijn(" Int "," Int ";" ProcPat  ")" [function]
-                        |   "#dBound(" Int "," Int ";" ProcPat  ")" [function]
-  syntax     ProcPats ::= "#deBruijn(" Int "," Int ";" ProcPats ")" [function]
-                        |   "#dBound(" Int "," Int ";" ProcPats ")" [function]
+  syntax      ProcPat ::= "#deBruijn(" Int "," Int ";" ProcPat ";" Map  ")" [function]
+  syntax     ProcPats ::= "#deBruijn(" Int "," Int ";" ProcPats ";" Map ")" [function]
   // Names
-  syntax         Name ::= "#deBruijn(" Int "," Int ";" Name  ")" [function]
-                        |   "#dBound(" Int "," Int ";" Name  ")" [function]
-  syntax        Names ::= "#deBruijn(" Int "," Int ";" Names ")" [function]
-                        |   "#dBound(" Int "," Int ";" Names ")" [function]
+  syntax         Name ::= "#deBruijn(" Int "," Int ";" Name  ";" Map ")" [function]
+  syntax        Names ::= "#deBruijn(" Int "," Int ";" Names ";" Map ")" [function]
   // NamePats
-  syntax      NamePat ::= "#deBruijn(" Int "," Int ";" NamePat  ")" [function]
-                        |   "#dBound(" Int "," Int ";" NamePat  ")" [function]
-  syntax     NamePats ::= "#deBruijn(" Int "," Int ";" NamePats ")" [function]
-                        |   "#dBound(" Int "," Int ";" NamePats ")" [function]
+  syntax      NamePat ::= "#deBruijn(" Int "," Int ";" NamePat  ";" Map ")" [function]
+  syntax     NamePats ::= "#deBruijn(" Int "," Int ";" NamePats ";" Map ")" [function]
   // VarDecs
+  syntax       VarDec ::= "#dbNew(" Int "," Int ";" VarDec  ")" [function]
   syntax      VarDecs ::= "#dbNew(" Int "," Int ";" VarDecs ")" [function]
 
 // Recursive functions
-  // TODO: add BindPats
-  // can Lbind, Pbind, Rbind be combined into a single Bind with [poly]???
-  syntax        Lbind ::= "#deBruijn(" Int         ";;" Lbind   ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Lbind   ")" [function] // for multiple binds, channel index ; variable index
-                        | "#deBruijn(" Int "," Int ";;" Lbind   ")" [function]
-                        |   "#dBound(" Int         ";;" Lbind   ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Lbind   ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Lbind   ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Lbind   ")" [function]
-  syntax       Lbinds ::= "#deBruijn(" Int         ";;" Lbinds  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Lbinds  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" Lbinds  ")" [function]
-                        |   "#dBound(" Int         ";;" Lbinds  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Lbinds  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Lbinds  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Lbinds  ")" [function]
-  syntax       GLbind ::= "#deBruijn(" Int         ";;" GLbind  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GLbind  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GLbind  ")" [function]
-                        |   "#dBound(" Int         ";;" GLbind  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GLbind  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GLbind  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GLbind  ")" [function]
-  syntax      GLbinds ::= "#deBruijn(" Int         ";;" GLbinds ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GLbinds ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GLbinds ")" [function]
-                        |   "#dBound(" Int         ";;" GLbinds ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GLbinds ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GLbinds ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GLbinds ")" [function]
-  syntax        Pbind ::= "#deBruijn(" Int         ";;" Pbind   ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Pbind   ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" Pbind   ")" [function]
-                        |   "#dBound(" Int         ";;" Pbind   ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Pbind   ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Pbind   ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Pbind   ")" [function]
-  syntax       Pbinds ::= "#deBruijn(" Int         ";;" Pbinds  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Pbinds  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" Pbinds  ")" [function]
-                        |   "#dBound(" Int         ";;" Pbinds  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Pbinds  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Pbinds  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Pbinds  ")" [function]
-  syntax       GPbind ::= "#deBruijn(" Int         ";;" GPbind  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GPbind  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GPbind  ")" [function]
-                        |   "#dBound(" Int         ";;" GPbind  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GPbind  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GPbind  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GPbind  ")" [function]
-  syntax      GPbinds ::= "#deBruijn(" Int         ";;" GPbinds ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GPbinds ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GPbinds ")" [function]
-                        |   "#dBound(" Int         ";;" GPbinds ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GPbinds ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GPbinds ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GPbinds ")" [function]
-  syntax        Rbind ::= "#deBruijn(" Int         ";;" Rbind   ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Rbind   ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" Rbind   ")" [function]
-                        |   "#dBound(" Int         ";;" Rbind   ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Rbind   ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Rbind   ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Rbind   ")" [function]
-  syntax       Rbinds ::= "#deBruijn(" Int         ";;" Rbinds  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" Rbinds  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" Rbinds  ")" [function]
-                        |   "#dBound(" Int         ";;" Rbinds  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" Rbinds  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" Rbinds  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" Rbinds  ")" [function]
-  syntax       GRbind ::= "#deBruijn(" Int         ";;" GRbind  ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GRbind  ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GRbind  ")" [function]
-                        |   "#dBound(" Int         ";;" GRbind  ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GRbind  ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GRbind  ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GRbind  ")" [function]
-  syntax      GRbinds ::= "#deBruijn(" Int         ";;" GRbinds ")" [function]
-                        | "#deBruijn(" Int ";" Int ";;" GRbinds ")" [function]
-                        | "#deBruijn(" Int "," Int ";;" GRbinds ")" [function]
-                        |   "#dBound(" Int         ";;" GRbinds ")" [function]
-                        |   "#dBound(" Int "," Int ";;" GRbinds ")" [function]
-                        |  "#dBound+(" Int         ";" Int ";;" GRbinds ")" [function]
-                        |  "#dBound+(" Int "," Int ";" Int ";;" GRbinds ")" [function]
-
-  // KV pairs
-  syntax    RhoKVPair ::= "#deBruijn(" Int         ";" RhoKVPair  ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPair  ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPair  ")" [function]
-                        | "#deBruijn(" Int "," Int ";" RhoKVPair  ")" [function]
-                        |   "#dBound(" Int "," Int ";" RhoKVPair  ")" [function]
-                        |   "#dBound(" Int "," Int ";" RhoKVPair  ")" [function]
-  syntax   RhoKVPairs ::= "#deBruijn(" Int         ";" RhoKVPairs ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPairs ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPairs ")" [function]
-                        | "#deBruijn(" Int "," Int ";" RhoKVPairs ")" [function]
-                        |   "#dBound(" Int "," Int ";" RhoKVPairs ")" [function]
-  syntax     RhoKVPat ::= "#deBruijn(" Int         ";" RhoKVPat   ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPat   ")" [function]
-                        | "#deBruijn(" Int "," Int ";" RhoKVPat   ")" [function]
-                        |   "#dBound(" Int "," Int ";" RhoKVPat   ")" [function]
-  syntax    RhoKVPats ::= "#deBruijn(" Int         ";" RhoKVPats  ")" [function]
-                        |   "#dBound(" Int         ";" RhoKVPats  ")" [function]
-                        | "#deBruijn(" Int "," Int ";" RhoKVPats  ")" [function]
-                        |   "#dBound(" Int "," Int ";" RhoKVPats  ")" [function]
-
+  // Bind[Pat]s
+    // Int params: level , channel index ; binding variable index
+  syntax        Lbind ::= "#deBruijn(" Int "," Int ";" Int ";;" Lbind      ";;" Map ")" [function]
+  syntax       Lbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" Lbinds     ";;" Map ")" [function]
+  syntax     LbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" LbindPat   ";;" Map ")" [function]
+  syntax    LbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" LbindPats  ";;" Map ")" [function]
+  syntax       GLbind ::= "#deBruijn(" Int "," Int ";" Int ";;" GLbind     ";;" Map ")" [function]
+  syntax      GLbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" GLbinds    ";;" Map ")" [function]
+  syntax    GLbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" GLbindPat  ";;" Map ")" [function]
+  syntax   GLbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" GLbindPats ";;" Map ")" [function]
+  syntax        Pbind ::= "#deBruijn(" Int "," Int ";" Int ";;" Pbind      ";;" Map ")" [function]
+  syntax       Pbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" Pbinds     ";;" Map ")" [function]
+  syntax     PbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" PbindPat   ";;" Map ")" [function]
+  syntax    PbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" PbindPats  ";;" Map ")" [function]
+  syntax       GPbind ::= "#deBruijn(" Int "," Int ";" Int ";;" GPbind     ";;" Map ")" [function]
+  syntax      GPbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" GPbinds    ";;" Map ")" [function]
+  syntax    GPbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" GPbindPat  ";;" Map ")" [function]
+  syntax   GPbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" GPbindPats ";;" Map ")" [function]
+  syntax        Rbind ::= "#deBruijn(" Int "," Int ";" Int ";;" Rbind      ";;" Map ")" [function]
+  syntax       Rbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" Rbinds     ";;" Map ")" [function]
+  syntax     RbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" RbindPat   ";;" Map ")" [function]
+  syntax    RbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" RbindPats  ";;" Map ")" [function]
+  syntax       GRbind ::= "#deBruijn(" Int "," Int ";" Int ";;" GRbind     ";;" Map ")" [function]
+  syntax      GRbinds ::= "#deBruijn(" Int "," Int ";" Int ";;" GRbinds    ";;" Map ")" [function]
+  syntax    GRbindPat ::= "#deBruijn(" Int "," Int ";" Int ";;" GRbindPat  ";;" Map ")" [function]
+  syntax   GRbindPats ::= "#deBruijn(" Int "," Int ";" Int ";;" GRbindPats ";;" Map ")" [function]
+  // LetBinds
+  syntax      LetBind ::= "#deBruijn(" Int "," Int ";;" LetBind     ";;" Map ")" [function]
+  syntax  SeqLetBinds ::= "#deBruijn(" Int "," Int ";;" SeqLetBinds ";;" Map ")" [function]
+  syntax  SimLetBinds ::= "#deBruijn(" Int "," Int ";;" SimLetBinds ";;" Map ")" [function]
+  syntax
+       SeqSimLetbinds ::= "#deBruijn(" Int "," Int ";;" SeqSimLetbinds ";;" Map ")" [function]
+  // KVPairs/KVPats
+  syntax    RhoKVPair ::= "#deBruijn(" Int "," Int ";" RhoKVPair  ";" Map ")" [function]
+  syntax   RhoKVPairs ::= "#deBruijn(" Int "," Int ";" RhoKVPairs ";" Map ")" [function]
+  syntax     RhoKVPat ::= "#deBruijn(" Int "," Int ";" RhoKVPat   ";" Map ")" [function]
+  syntax    RhoKVPats ::= "#deBruijn(" Int "," Int ";" RhoKVPats  ";" Map ")" [function]
   // InterpMaps
-  syntax   InterpMaps ::= "#deBruijn(" Int         ";" InterpMaps ")" [function]
-                        |   "#dBound(" Int         ";" InterpMaps ")" [function]
-                        | "#deBruijn(" Int "," Int ";" InterpMaps ")" [function]
-                        |   "#dBound(" Int "," Int ";" InterpMaps ")" [function]
-
+  syntax   InterpMaps ::= "#deBruijn(" Int "," Int ";" InterpMaps ";" Map ")" [function]
 // MatchCases
-  syntax    MatchCase ::= "#deBruijn(" Int         ";" MatchCase  ")" [function]
-                        |   "#dBound(" Int         ";" MatchCase  ")" [function]
-                        | "#deBruijn(" Int "," Int ";" MatchCase  ")" [function]
-                        |   "#dBound(" Int "," Int ";" MatchCase  ")" [function]
-  syntax   MatchCases ::= "#deBruijn(" Int         ";" MatchCases ")" [function]
-                        |   "#dBound(" Int         ";" MatchCases ")" [function]
-                        | "#deBruijn(" Int "," Int ";" MatchCases ")" [function]
-                        |   "#dBound(" Int "," Int ";" MatchCases ")" [function]
-
+  syntax    MatchCase ::= "#deBruijn(" Int "," Int ";" MatchCase  ";" Map ")" [function]
+  syntax   MatchCases ::= "#deBruijn(" Int "," Int ";" MatchCases ";" Map ")" [function]
+  syntax     MCasePat ::= "#deBruijn(" Int "," Int ";" MCasePat   ";" Map ")" [function]
+  syntax    MCasePats ::= "#deBruijn(" Int "," Int ";" MCasePats  ";" Map ")" [function]
 // Select Branches
-  syntax       Branch ::= "#deBruijn(" Int         ";" Branch   ")" [function]
-                        |   "#dBound(" Int         ";" Branch   ")" [function]
-                        | "#deBruijn(" Int "," Int ";" Branch   ")" [function]
-                        |   "#dBound(" Int "," Int ";" Branch   ")" [function]
-  syntax     Branches ::= "#deBruijn(" Int         ";" Branches ")" [function]
-                        |   "#dBound(" Int         ";" Branches ")" [function]
-                        | "#deBruijn(" Int "," Int ";" Branches ")" [function]
-                        |   "#dBound(" Int "," Int ";" Branches ")" [function]
+  syntax       Branch ::= "#deBruijn(" Int "," Int ";" Branch     ";" Map ")" [function]
+  syntax     Branches ::= "#deBruijn(" Int "," Int ";" Branches   ";" Map ")" [function]
+  syntax    BranchPat ::= "#deBruijn(" Int "," Int ";" BranchPat  ";" Map ")" [function]
+  syntax   BranchPats ::= "#deBruijn(" Int "," Int ";" BranchPats ";" Map ")" [function]
 
 // Top level DeBruijn index map for substitutions
-  // New Name declarations
-  syntax          Map ::= "#mapNew(" Int         ";" Names ")" [function]
-                        | "#mapNew(" Int "," Int ";" Names ")" [function]
-  //
-  syntax          Map ::= "#mapify(" Names    ")"          [function]
-                        | "#mapify(" NamePats ")"          [function]
-                        | "#mapify(" Procs    ")"          [function]
-                        | "#mapify(" ProcPats ")"          [function]
-                        | "#mapify(" Int ";"  Names    ")" [function]
-                        | "#mapify(" Int ";"  NamePats ")" [function]
-                        | "#mapify(" Int ";"  Procs    ")" [function]
-                        | "#mapify(" Int ";"  ProcPats ")" [function]
-                        | "#mapify(" Int ";;" AnyBind  ")" [function]
-                        | "#mapify(" Int ";;" AnyBinds ")" [function]
-
-  syntax          Map ::= "#mapify(" Int ";" RhoKVPairs ")" [function]
-                        | "#mapify(" Int ";" RhoKVPats  ")" [function]
-                        | "#mapify(" Int ";" Branches   ")" [function]
-                        | "#mapify(" Int ";" MatchCases ")" [function]
-
-// Nested Map updates
-  syntax          Map ::= "#mapify(" Int "," Int ";"  Names    ")" [function]
+  syntax          Map ::= "#mapNew(" Int "," Int ";" VarDecs ")"   [function]
+  syntax          Map ::= "#mapify(" Names    ")"                  [function]
+                        | "#mapify(" NamePats ")"                  [function]
+                        | "#mapify(" Procs    ")"                  [function]
+                        | "#mapify(" ProcPats ")"                  [function]
+                        | "#mapify(" Int "," Int ";"  Names    ")" [function]
                         | "#mapify(" Int "," Int ";"  NamePats ")" [function]
                         | "#mapify(" Int "," Int ";"  Procs    ")" [function]
                         | "#mapify(" Int "," Int ";"  ProcPats ")" [function]
                         | "#mapify(" Int "," Int ";;" AnyBind  ")" [function]
                         | "#mapify(" Int "," Int ";;" AnyBinds ")" [function]
+
+  syntax          Map ::= "#mapify(" Int "," Int ";" RhoKVPairs ")" [function]
+                        | "#mapify(" Int "," Int ";" RhoKVPats  ")" [function]
+                        | "#mapify(" Int "," Int ";" Branches   ")" [function]
+                        | "#mapify(" Int "," Int ";" BranchPats ")" [function]
+                        | "#mapify(" Int "," Int ";" MatchCases ")" [function]
+                        | "#mapify(" Int "," Int ";" MCasePats  ")" [function]
 
 // Alpha equivalence predicate
   syntax         Bool ::= Proc "#alpha" Proc [function]
@@ -240,1242 +111,809 @@ module ALPHA
                    | Bind | Binds | BindPat | BindPats
                    | RhoKVPair | RhoKVPairs | InterpMaps | Map
 
-// sugar for #deBruijn function call
-  rule #deBruijn( P:Proc ) => #deBruijn(0;P) // #FV(P) should be .Set if we are applying #deBruijn
+// sugar for top level #deBruijn function call
+  rule #deBruijn( A:Proc ) => #deBruijn(0,0;A;.Map)
+  // #deBruijn(L:Int,I:Int;A:Proc;M:Map) // #FV(A) <=Set keys(M) if we are applying #deBruijn
 
-// completely trivial cases -- no variables in expression
+// completely trivial indexing cases -- no variables in expression
 //  rule #deBruijn( A:Name    ) => A requires #V(A) ==K .Set
 //  rule #deBruijn( A:NamePat ) => A requires #V(A) ==K .Set
 //  rule #deBruijn( A:Proc    ) => A requires #V(A) ==K .Set
 //  rule #deBruijn( A:ProcPat ) => A requires #V(A) ==K .Set
 
-//----------------------------
-//--- Top Level Constructs ---
-//----------------------------
 // New
-  rule #deBruijn( I:Int ; new A:VarDecs in { B:Proc } )
-    => new #dbNew(I;#indecs(A)) in { #deBruijn(I +Int size(#DV(A));#sub(#mapNew(I;#indecs(A));B)) }
-
-  rule #dbNew( I:Int ; A:VarDec ) => n(I)
-  rule #dbNew( I:Int ; A:VarDec , B:VarDecs ) => n(I) , #dbNew(I +Int 1;B)
-
-  // Nested New -- mapify only variables
-  rule #deBruijn( I:Int , J:Int ; new A:VarDecs in { B:Proc } )
-    => new #dbNew(I,J;#indecs(A)) in { #deBruijn(I,J +Int size(#DV(A));#sub(#mapNew(I,J;#indecs(A));B)) }
-
-  rule #dbNew( I:Int , J:Int ; A:VarDec ) => n(I,J)
-  rule #dbNew( I:Int , J:Int ; A:VarDec , B:VarDecs ) => n(I,J) , #dbNew(I,J +Int 1;B)
+  rule #deBruijn( L:Int , I:Int ; new A:VarDecs in { B:Proc } ; M:Map )
+    => new #dbNew(L,I;#indecs(A)) in { #deBruijn(L,I +Int size(#DV(A));#sub(updateMap(M,#mapNew(L,I;#indecs(A)));B);updateMap(M,#mapNew(L,I;#indecs(A)))) }
+  rule  #dbNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then n(I) #else n(L,I) #fi
+  rule  #dbNew( L:Int , I:Int ; A:VarDec , B:VarDecs ) => #dbNew(L,I;A) , #dbNew(L,I +Int 1;B)
+  rule #mapNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then #var(A) |-> n(I) #else #var(A) |-> n(L,I) #fi
+  rule #mapNew( L:Int , I:Int ; A:VarDec , B:VarDecs ) => #mapNew(L,I;A) #mapNew(L,I +Int 1;B)
 
 // Ground & Bound Terms
-  rule #deBruijn( _:Int ; A:Ground    ) => A
-  rule #deBruijn( _:Int ; A:BoundName ) => A
-  rule #deBruijn( _:Int ; A:BoundProc ) => A
+  rule #deBruijn( _:Int , _:Int ; A:Ground    ; _:Map ) => A
+  rule #deBruijn( _:Int , _:Int ; A:BoundName ; _:Map ) => A
+  rule #deBruijn( _:Int , _:Int ; A:BoundProc ; _:Map ) => A
 
 // Parallel Composition
-// Index propogates to both branches
-  rule #deBruijn( I:Int ; P:Proc | Q:Proc ) => #deBruijn(I;P) | #deBruijn(I;Q)
+// substitute indices in current indexing environment in each process,
+// then continue from current value for bound terms
+  rule #deBruijn( L:Int , I:Int ; A:Proc    | B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) | #deBruijn(L,I;#sub(M;B);M) requires notBool    isPar(A)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    | B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) | #deBruijn(L,I;#sub(M;B);M) requires notBool    isPar(A)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat | B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) | #deBruijn(L,I;#sub(M;B);M) requires notBool isParPat(A)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat | B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) | #deBruijn(L,I;#sub(M;B);M) requires notBool isParPat(A)
 
-// Receives
-  // listening variables are indexed and substituted into continuation
-  // Linear
-    // Single
-  rule #deBruijn( I:Int ; for( B:Lbind ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Lbind if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-    // Multi
-  rule #deBruijn( I:Int ; for( B:Lbinds ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Lbinds if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  // Peek
-    // Single
-  rule #deBruijn( I:Int ; for( B:Pbind ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Pbind if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-    // Multi
-  rule #deBruijn( I:Int ; for( B:Pbinds ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Pbinds if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  // Repeat
-    // Single
-  rule #deBruijn( I:Int ; for( B:Rbind ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Rbind if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-    // Multi
-  rule #deBruijn( I:Int ; for( B:Rbinds ){ C:Proc } )
-    => for( #deBruijn(I;I;;B) ){
-         #deBruijn(I +Int size(#LV(B)) ;
-           #sub(#mapify(I;#bvar(B));C)) }
-  rule #deBruijn( I:Int ; for( B:Rbinds if G:BExp ){ C:Proc } )
-    => for( #deBruijn(I;I;;B if G) ){
-              #deBruijn(I +Int size(#LV(B)) ;
-              #sub(#mapify(I;#bvar(B));C)) }
-
-  // Binds -- increase index for listening variables, not for channels
-    // unguarded
-  rule #deBruijn( I:Int ; _:Int ;; <- A:Name ) => <- #deBruijn(I;A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Lbind   )
-    => #dBound(J;#bvar(A)) <-  #deBruijn(I;#chan(A)) requires notBool isEmptyLbind(A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Lbind & B:Lbind  )
-    => #deBruijn(I;J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-  rule #deBruijn( I:Int ; J:Int ;; A:Lbind & B:Lbinds )
-    => #deBruijn(I;J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-
-  rule #deBruijn( I:Int ; _:Int ;; <<- A:Name ) => <<- #deBruijn(I;A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Pbind    )
-    => #dBound(J;#bvar(A)) <<- #deBruijn(I;#chan(A)) requires notBool isEmptyPbind(A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Pbind & B:Pbind  )
-    => #deBruijn(J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-  rule #deBruijn( I:Int ; J:Int ;; A:Pbind & B:Pbinds )
-    => #deBruijn(J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-
-  rule #deBruijn( I:Int ; _:Int ;; <= A:Name ) => <= #deBruijn(I;A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Rbind   )
-    => #dBound(J;#bvar(A)) <=  #deBruijn(I;#chan(A)) requires notBool isEmptyRbind(A)
-  rule #deBruijn( I:Int ; J:Int ;; A:Rbind & B:Rbind  )
-    => #deBruijn(I;J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-  rule #deBruijn( I:Int ; J:Int ;; A:Rbind & B:Rbinds )
-    => #deBruijn(I;J;;A) & #deBruijn(I;J +Int size(#LV(A));;B)
-
+// Receive/RecPat
+  // unguarded
+    // SRec
+  rule #deBruijn( L:Int , I:Int ; for( B:Lbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Pbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Rbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // MRec
+  rule #deBruijn( L:Int , I:Int ; for( B:Lbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Pbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Rbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // SRecPat
+  rule #deBruijn( L:Int , I:Int ; for( B:LbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:PbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:RbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Lbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Pbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Rbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:LbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:PbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:RbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // MRecPat
+  rule #deBruijn( L:Int , I:Int ; for( B:LbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:PbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:RbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Lbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Pbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:Rbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:LbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:PbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:RbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
   // guarded
-  rule #deBruijn( I:Int ; J:Int ;; B:Lbind  if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
-  rule #deBruijn( I:Int ; J:Int ;; B:Lbinds if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
-  rule #deBruijn( I:Int ; J:Int ;; B:Pbind  if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
-  rule #deBruijn( I:Int ; J:Int ;; B:Pbinds if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
-  rule #deBruijn( I:Int ; J:Int ;; B:Rbind  if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
-  rule #deBruijn( I:Int ; J:Int ;; B:Rbinds if G:BExp )
-    => #deBruijn(I;J;;B) if #deBruijn(J +Int size(#LV(B));#sub(#mapify(J;#bvar(B));G))
+    // SRec
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbind  ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // MRec
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbinds ){ C:Proc } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // SRecPat
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbindPat  ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbind     ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbindPat  ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+    // MRecPat
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbindPats ){ C:Proc    } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbinds    ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GLbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GPbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
+  rule #deBruijn( L:Int , I:Int ; for( B:GRbindPats ){ C:ProcPat } ; M:Map )
+    => for( #deBruijn(L,I;I;;B;;M) ){
+            #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));C);updateMap(M,#mapify(L,I;#bvar(B)))) }
 
-// Sends
-// no free variables left once #deBruijn arrives at a Send -- map & index constant on channel and message
-  rule #deBruijn( I:Int ; A:Name !  ( B:Procs ) ) => #deBruijn(I;A) !  ( #deBruijn(I;B) )
-  rule #deBruijn( I:Int ; A:Name !  (         ) ) => #deBruijn(I;A) !  ( )
-  rule #deBruijn( I:Int ; A:Name !! ( B:Procs ) ) => #deBruijn(I;A) !! ( #deBruijn(I;B) )
-  rule #deBruijn( I:Int ; A:Name !! (         ) ) => #deBruijn(I;A) !! ( )
+  // Bind[Pat][s]
+    // unguarded
+    // binding variables: index starting from current value in binds, increase level for bound terms
+    // channel: substitute indices in environment, continue from current value for bound terms
+      // Lbind[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <-  A:Name  ;; M:Map )
+    => <-  #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:Lbind ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <-
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyLbind(A)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Lbind & B:Lbind  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Lbind & B:Lbinds ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+      // LbindPat[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <-  A:NamePat  ;; M:Map )
+    => <-  #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:LbindPat ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <-
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyLbindPat(A)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Lbind    & B:LbindPat  ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:LbindPat & B:Lbind     ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:LbindPat & B:LbindPat  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Lbind    & B:LbindPats ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:LbindPat & B:Lbinds    ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:LbindPat & B:LbindPats ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+      // Pbind[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <<- A:Name  ;; M:Map )
+    => <<- #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:Pbind ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <<-
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyPbind(A)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Pbind & B:Pbind  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Pbind & B:Pbinds ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+      // PbindPat[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <<- A:NamePat  ;; M:Map )
+    => <<- #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:PbindPat ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <<-
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyPbindPat(A)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Pbind    & B:PbindPat  ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:PbindPat & B:Pbind     ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:PbindPat & B:PbindPat  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Pbind    & B:PbindPats ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:PbindPat & B:Pbinds    ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:PbindPat & B:PbindPats ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+      // Rbind[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <=  A:Name  ;; M:Map )
+    => <=  #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:Rbind ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <=
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyRbind(A)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Rbind & B:Rbind  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Rbind & B:Rbinds ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+      // RbindPat[s]
+  rule #deBruijn( L:Int , I:Int ; _:Int ;; <=  A:NamePat  ;; M:Map )
+    => <=  #deBruijn(L,I;A;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;;     A:RbindPat ;; M:Map )
+    => #deBruijn(L +Int 1,0;#sub(#mapify(L,J;#bvar(A));#bvar(A));#mapify(L,J;#bvar(A))) <=
+       #deBruijn(L,I;#sub(M;#chan(A));M) requires notBool isEmptyRbindPat(A)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Rbind    & B:RbindPat  ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:RbindPat & B:Rbind     ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:RbindPat & B:RbindPat  ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:Rbind    & B:RbindPats ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+//  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:RbindPat & B:Rbinds    ;; M:Map )
+//    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; A:RbindPat & B:RbindPats ;; M:Map )
+    => #deBruijn(L,I;J;;A;;M) & #deBruijn(L,I;J +Int size(#LV(A));;B;;M)
+  // guarded
+    // bind[s]: indexed in the usual way
+    // guard: substitute indices in environment updated with the binding variable indices
+      // GLbind[Pat][s]
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Lbind     if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Lbinds    if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:LbindPat  if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:LbindPats if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+      // GPbind[Pat][s]
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Pbind     if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Pbinds    if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:PbindPat  if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:PbindPats if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+      // GRbind[Pat][s]
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Rbind     if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:Rbinds    if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:RbindPat  if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
+  rule #deBruijn( L:Int , I:Int ; J:Int ;; B:RbindPats if G:BExp ;; M:Map )
+    => #deBruijn(L,I;J;;B;;M) if
+       #deBruijn(L,I +Int size(#LV(B));#sub(updateMap(M,#mapify(L,I;#bvar(B)));G);updateMap(M,#mapify(L,I;#bvar(B))))
 
-// Eval
-  rule #deBruijn( I:Int ; *A:Name ) => *#deBruijn(I;A)
+// Contract[Pat]
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:NamePats ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat (            ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:NamePats ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:NamePat (            ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:ProcPat } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:Proc    } ; M:Map )
+    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+
+// Invocation[Pat]
+  rule #deBruijn( L:Int , I:Int ; A:NamePat ( B:NamePats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (                          )
+  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:NamePats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (                          )
+
+// VarRef
+  rule #deBruijn( L:Int , I:Int ; =  A:ProcVar ; M:Map ) => #deBruijn(L,I;#sub(M;= A);M)
+  rule #deBruijn( L:Int , I:Int ; =* A:Var     ; M:Map ) => #deBruijn(L,I;#sub(M;=*A);M)
+
+// LetExp
+  rule #deBruijn( L:Int , I:Int ; let A:LetBind in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
+       #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));#sub(updateMap(M,#mapify(L,I;#letvar(A)));B);updateMap(M,#mapify(L,I;#letvar(A)))) }
+  // LetBind
+  rule #deBruijn( L:Int , I:Int ;; A:ProcVar <- B:Proc ;; M:Map ) => #sub(#mapify(L,I;A);A) <- #deBruijn(L,I +Int 1;#sub(M;B);M)
+  // SeqLetBinds -- update index map with previous LetBind variable indices
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind ; B:LetBind     ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind ; B:SeqLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  // SimLetBinds -- simultaneous LetBinds do not update the index map
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind & B:LetBind     ;; M:Map )
+    => #deBruijn(L,I;;A;;M) & #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;M)
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind & B:SimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) & #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;M)
+/*  // SeqSimLetBinds
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind     ; B:SimLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds ; B:SimLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SimLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:LetBind        ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SeqLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:LetBind     ; B:SeqSimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds ; B:SeqSimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SeqSimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+*/
+// Send[Pat]
+// substitute indices in current environment into channel & message[s]
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !  ( B:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !  ( B:Procs    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !  (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (                          )
+  rule #deBruijn( L:Int , I:Int ; A:Name    !  ( B:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    !  ( B:Procs    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    !  (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (                          )
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !! ( B:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !! ( B:Procs    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:NamePat !! (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (                          )
+  rule #deBruijn( L:Int , I:Int ; A:Name    !! ( B:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    !! ( B:Procs    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (#deBruijn(L,I;#sub(M;B);M))
+  rule #deBruijn( L:Int , I:Int ; A:Name    !! (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !! (                          )
+
+// Eval[Pat]
+  // substitute indices in current environment
+  rule #deBruijn( L:Int , I:Int ; *A:Name    ; M:Map ) => *#deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; *A:NamePat ; M:Map ) => *#deBruijn(L,I;#sub(M;A);M)
 
 // Variables
   // Typed Name
-  rule #deBruijn( I:Int ; (@A:BoundProc) :: B:ProcPat ) => (@A) :: #deBruijn(I;B)
-  rule #deBruijn( I:Int ;   A:BoundName  :: B:ProcPat ) =>   A  :: #deBruijn(I;B)
+  rule #deBruijn( L:Int , I:Int ; (@A:BoundProc) :: B:Name    ; M:Map ) => (@A) :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; (@A:BoundProc) :: B:NamePat ; M:Map ) => (@A) :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ;   A:BoundName  :: B:Name    ; M:Map ) =>   A  :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ;   A:BoundName  :: B:NamePat ; M:Map ) =>   A  :: #deBruijn(L,I;#sub(M;B);M)
 
   // Typed Proc
-  rule #deBruijn( I:Int ;   A:BoundProc  :: B:ProcPat ) =>   A  :: #deBruijn(I;B)
-  rule #deBruijn( I:Int ; (*A:BoundName) :: B:ProcPat ) => (*A) :: #deBruijn(I;B)
+  rule #deBruijn( L:Int , I:Int ;   A:BoundProc  :: B:Proc    ; M:Map ) =>   A  :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ;   A:BoundProc  :: B:ProcPat ; M:Map ) =>   A  :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; (*A:BoundName) :: B:Proc    ; M:Map ) => (*A) :: #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; (*A:BoundName) :: B:ProcPat ; M:Map ) => (*A) :: #deBruijn(L,I;#sub(M;B);M)
 
-// Collections
-  // RhoList
-  rule #deBruijn( _:Int ; [ ] ) => [ ]
-  rule #deBruijn( I:Int ; [ A:Procs ] ) => [ #deBruijn(I;A) ]
+// Collection[Pat]
+  // RhoList/ListPat
+  rule #deBruijn( _:Int , _:Int ; [ ] ; _:Map ) => [ ]
+  rule #deBruijn( L:Int , I:Int ; [ A:Procs    ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ]
+  rule #deBruijn( L:Int , I:Int ; [ A:ProcPats ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ]
+  rule #deBruijn( L:Int , I:Int ; [ A:Procs    ... B:ProcVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
+  rule #deBruijn( L:Int , I:Int ; [ A:ProcPats ... B:ProcVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
+  // RhoMap/MapPat
+  rule #deBruijn( _:Int , _:Int ; { } ; _:Map ) => { }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPairs } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPats  } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPairs ... B:ProcVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPats  ... B:ProcVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
+    // KVPairs/KVPats
+      // single KVPair/KVPat
+  rule #deBruijn( L:Int , I:Int ; A:Proc    : B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) : #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    : B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) : #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat : B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) : #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat : B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) : #deBruijn(L,I;#sub(M;B);M)
+    // multiple KVPairs/KVPats
+  rule #deBruijn( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPairs ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPats  ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPairs ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPats  ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  // RhoSet/SetPat
+  rule #deBruijn( _:Int , _:Int ; Set( ) ; _:Map ) => Set( )
+  rule #deBruijn( L:Int , I:Int ; Set( A:Procs    ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) )
+  rule #deBruijn( L:Int , I:Int ; Set( A:ProcPats ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) )
+  rule #deBruijn( L:Int , I:Int ; Set( A:Procs    ... B:ProcVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
+  rule #deBruijn( L:Int , I:Int ; Set( A:ProcPats ... B:ProcVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
+  // RhoTuple/TuplePat
+  rule #deBruijn( L:Int , I:Int ; ( A:Procs    ,) ; M:Map ) => ( #deBruijn(L,I;#sub(M;A);M) ,)
+  rule #deBruijn( L:Int , I:Int ; ( A:ProcPats ,) ; M:Map ) => ( #deBruijn(L,I;#sub(M;A);M) ,)
 
-  // RhoMap
-  rule #deBruijn( _:Int ; { } ) => { }
-  rule #deBruijn( I:Int ; { A:RhoKVPairs } ) => { #deBruijn(I;A) }
-    // KVPairs
-  rule #deBruijn( I:Int ; A:Proc : B:Proc ) => #deBruijn(I;A) : #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:RhoKVPair , B:RhoKVPairs ) => #deBruijn(I;A) , #deBruijn(I;B)
-
-  // RhoSet
-  rule #deBruijn( _:Int ; Set( ) ) => Set( )
-  rule #deBruijn( I:Int ; Set( A:Procs ) ) => Set( #deBruijn(I;A) )
-
-  // RhoTuple
-  rule #deBruijn( I:Int ; ( A:Procs ,) ) => ( #deBruijn(I;A) ,)
-
-// Quotes
-  rule #deBruijn( I:Int ; @A:Proc ) => @#deBruijn(I;A)
+// Quote[Pat]
+  rule #deBruijn( L:Int , I:Int ; @A:Proc    ; M:Map ) => @#deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; @A:ProcPat ; M:Map ) => @#deBruijn(L,I;#sub(M;A);M)
 
 // Expressions
   // Arithmetic Exps
-  rule #deBruijn( I:Int ; - A:AExp ) => - #deBruijn(I;A)
-  rule #deBruijn( I:Int ; A:AExp * B:AExp ) => #deBruijn(I;A) * #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp / B:AExp ) => #deBruijn(I;A) / #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp + B:AExp ) => #deBruijn(I;A) + #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp - B:AExp ) => #deBruijn(I;A) - #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp % B:AExp ) => #deBruijn(I;A) % #deBruijn(I;B)
-
-  // List & String Expressions
-  rule #deBruijn( I:Int ; A:ListOrVar   ++ B:ListOrVar   ) => #deBruijn(I;A) ++ #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:ListOrVar   ++ B:ConcatList  ) => #deBruijn(I;A) ++ #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:StringOrVar ++ B:StringOrVar ) => #deBruijn(I;A) ++ #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:StringOrVar ++ B:ConcatStr   ) => #deBruijn(I;A) ++ #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:StringOrVar %% B:InterpMaps  ) => #deBruijn(I;A) %% #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:RhoMap      %% B:InterpMaps  ) => #deBruijn(I;A) %% #deBruijn(I;B)
+  rule #deBruijn( L:Int , I:Int ; - A:AExp ; M:Map ) => - #deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp * B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) * #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp / B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) / #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp + B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) + #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp - B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) - #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp % B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) % #deBruijn(L,I;#sub(M;B);M)
 
   // Boolean Exps
-  rule #deBruijn( I:Int ; not A:BExp ) => not #deBruijn(I;A)
-  rule #deBruijn( I:Int ; A:BExp and B:BExp ) => #deBruijn(I;A) and #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:BExp or  B:BExp ) => #deBruijn(I;A) or  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp <=  B:AExp ) => #deBruijn(I;A) <=  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp <   B:AExp ) => #deBruijn(I;A) <   #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp >=  B:AExp ) => #deBruijn(I;A) >=  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:AExp >   B:AExp ) => #deBruijn(I;A) >   #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Name ==  B:Name ) => #deBruijn(I;A) ==  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Name !=  B:Name ) => #deBruijn(I;A) !=  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Proc ==  B:Proc ) => #deBruijn(I;A) ==  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Proc !=  B:Proc ) => #deBruijn(I;A) !=  #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Proc    matches B:Proc    ) => #deBruijn(I;A) matches #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:Proc    matches B:ProcPat ) => #deBruijn(I;A) matches #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:ProcPat matches B:ProcPat ) => #deBruijn(I;A) matches #deBruijn(I;B)
+  rule #deBruijn( L:Int , I:Int ; not A:BExp ; M:Map ) => not #deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; A:BExp and B:BExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) and #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:BExp or  B:BExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) or  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp <=  B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) <=  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp <   B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) <   #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp >=  B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) >=  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:AExp >   B:AExp ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) >   #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Name ==  B:Name ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ==  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Name !=  B:Name ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !=  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc ==  B:Proc ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ==  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc !=  B:Proc ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !=  #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    matches B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) matches #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    matches B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) matches #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat matches B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) matches #deBruijn(L,I;#sub(M;B);M)
 
-// Match
-  rule #deBruijn( I:Int ; match A:Proc { B:MatchCases } ) => match #deBruijn(I;A) { #deBruijn(I;B) }
-  // MatchCases
-  rule #deBruijn( I:Int ; A:MatchCase B:MatchCases ) => #deBruijn(I;A) #deBruijn(I;B)
-  rule #deBruijn( I:Int ; { A:Proc    } |=> B:Proc )
-    => {#dBound(I;A)} |=> #deBruijn(I +Int size(#FV(A));#sub(#mapify(I;A);B))
-  rule #deBruijn( I:Int ; { A:ProcPat } |=> B:Proc )
-    => {#dBound(I;A)} |=> #deBruijn(I +Int size(#FV(A));#sub(#mapify(I;A);B))
+  // List & String Expressions
+  rule #deBruijn( L:Int , I:Int ; A:ListOrVar   ++ B:ListOrVar   ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ++ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ListOrVar   ++ B:ConcatList  ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ++ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:StringOrVar ++ B:StringOrVar ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ++ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:StringOrVar ++ B:ConcatStr   ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) ++ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:StringOrVar %% B:InterpMaps  ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) %% #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:RhoMap      %% B:InterpMaps  ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) %% #deBruijn(L,I;#sub(M;B);M)
 
-// Select
-  rule #deBruijn( I:Int ; select { A:Branches } ) => select { #deBruijn(I;A) }
-  // Branches
-  rule #deBruijn( I:Int ; A:Branch B:Branches ) => #deBruijn(I;A) #deBruijn(I;B)
-  rule #deBruijn( I:Int ; { A:Lbind  } |=> B:Proc )
-    => {#deBruijn(I;I;;A)} |=> #deBruijn(I +Int size(#LV(A));#sub(#mapify(I;#bvar(A));B))
-  rule #deBruijn( I:Int ; { A:Lbinds } |=> B:Proc )
-    => {#deBruijn(I;I;;A)} |=> #deBruijn(I +Int size(#LV(A));#sub(#mapify(I;#bvar(A));B))
+// Match[Pat]
+  rule #deBruijn( L:Int , I:Int ; match A:Proc    { B:MatchCases } ; M:Map ) => match #deBruijn(L,I;#sub(M;A);.Map) { #deBruijn(L,I;B;M) }
+  rule #deBruijn( L:Int , I:Int ; match A:Proc    { B:MCasePats  } ; M:Map ) => match #deBruijn(L,I;#sub(M;A);.Map) { #deBruijn(L,I;B;M) }
+  rule #deBruijn( L:Int , I:Int ; match A:ProcPat { B:MatchCases } ; M:Map ) => match #deBruijn(L,I;#sub(M;A);.Map) { #deBruijn(L,I;B;M) }
+  rule #deBruijn( L:Int , I:Int ; match A:ProcPat { B:MCasePats  } ; M:Map ) => match #deBruijn(L,I;#sub(M;A);.Map) { #deBruijn(L,I;B;M) }
+  // multiple MatchCases/MCasePats
+  rule #deBruijn( L:Int , I:Int ; A:MatchCase B:MatchCases ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:MatchCase B:MCasePats  ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:MCasePat  B:MatchCases ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:MCasePat  B:MCasePats  ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  // single MatchCase/MCasePat
+    // binding Proc[Pat]: index free variables at current level, then increase level for bound terms
+    // continuation: increase index according to corresponding binding Proc[Pat], then sub indices from outside environment updated by binding indices
+  rule #deBruijn( L:Int , I:Int ; { A:Proc    } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L +Int 1,0;#sub(#mapify(L,I;A);A);.Map)} |=>
+        #deBruijn(L,I +Int size(#FV(A));#sub(updateMap(M,#mapify(L,I;A));B);updateMap(M,#mapify(L,I;A)))
+  rule #deBruijn( L:Int , I:Int ; { A:ProcPat } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L +Int 1,0;#sub(#mapify(L,I;A);A);.Map)} |=>
+        #deBruijn(L,I +Int size(#FV(A));#sub(updateMap(M,#mapify(L,I;A));B);updateMap(M,#mapify(L,I;A)))
+  rule #deBruijn( L:Int , I:Int ; { A:Proc    } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L +Int 1,0;#sub(#mapify(L,I;A);A);.Map)} |=>
+        #deBruijn(L,I +Int size(#FV(A));#sub(updateMap(M,#mapify(L,I;A));B);updateMap(M,#mapify(L,I;A)))
+  rule #deBruijn( L:Int , I:Int ; { A:ProcPat } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L +Int 1,0;#sub(#mapify(L,I;A);A);.Map)} |=>
+        #deBruijn(L,I +Int size(#FV(A));#sub(updateMap(M,#mapify(L,I;A));B);updateMap(M,#mapify(L,I;A)))
 
-// Bundle
-  rule #deBruijn( I:Int ;  bundle{ A:Proc } ) =>  bundle{ #deBruijn(I;A) }
-  rule #deBruijn( I:Int ; bundle+{ A:Proc } ) => bundle+{ #deBruijn(I;A) }
-  rule #deBruijn( I:Int ; bundle-{ A:Proc } ) => bundle-{ #deBruijn(I;A) }
-  rule #deBruijn( I:Int ; bundle0{ A:Proc } ) => bundle0{ #deBruijn(I;A) }
-
-// Conditional
-  rule #deBruijn( I:Int ; if (A:BExp)   B:Proc ) => if (#deBruijn(I;A)) #deBruijn(I;B)
-  rule #deBruijn( I:Int ; A:IfThen else B:Proc ) => #deBruijn(I;A) else #deBruijn(I;B)
-
-// Several Procs -- appear in Collections and Sends
-  rule #deBruijn( I:Int ; A:Proc , B:Procs ) => #deBruijn(I;A) , #deBruijn(I;B)
-
-//-------------------------
-//--- Nested Constructs ---
-//-------------------------
-// Ground & bound terms
-  rule #deBruijn( _:Int , _:Int ; A:Ground    ) => A
-  rule #deBruijn( _:Int , _:Int ; A:BoundName ) => A
-  rule #deBruijn( _:Int , _:Int ; A:BoundProc ) => A
-
-// Parallel Composition
-// Level and index propogates to both branchs
-  rule #deBruijn( I:Int , J:Int ; P:Proc | Q:Proc ) => #deBruijn(I,J;P) | #deBruijn(I,J;Q)
-
-// Receives -- TODO: clean this up with #deBruijn(_:Int,_:Int;_:Int;;Binds)
-  // listening variables are indexed and substituted into continuation
-  // SRec
-    // Linear
-/*
-  rule #deBruijn( I:Int , J:Int ; for( <- X:Name ){ P:Proc } )
-    => for( <- #deBruijn(I,J;X) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Lbind   ){ P:Proc } )
-    => for( #dBound(I,J;#bvar(B);.Map) <- #deBruijn(I,J;#chan(B)) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyLbind(B)
-  rule #deBruijn( I:Int , J:Int ; for( <- X:Name if G:BExp ){ P:Proc } )
-    => for( <- #deBruijn(I,J;X) if #deBruijn(I,J;G) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Lbind   if G:BExp ){ P:Proc } )
-    => for( #dBound(I,J;#bvar(B);.Map) <- #deBruijn(I,J;#chan(B)) if #sub(#mapify(I,J;#bvar(B);.Map);G) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyLbind(B)
-    // Peek
-  rule #deBruijn( I:Int , J:Int ; for( <<- X:Name ){ P:Proc } )
-    => for( <<- #deBruijn(I,J;X) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Pbind   ){ P:Proc } )
-    => for( #dBound(I,J;#bvar(B);.Map) <<- #deBruijn(I,J +Int size(#LV(B));#chan(B)) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyPbind(B)
-  rule #deBruijn( I:Int , J:Int ; for( <<- X:Name if G:BExp ){ P:Proc } )
-    => for( <<- #deBruijn(I,J;X) if #deBruijn(I,J +Int size(#BV(X));G) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Pbind   if G:BExp ){ P:Proc } )
-    => for( #dBound(I,J;#bvar(B);.Map) <<- #deBruijn(I,J +Int size(#LV(B));#chan(B)) if #sub(#mapify(I,J;#bvar(B);.Map);G) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyPbind(B)
-    // Repeat
-  rule #deBruijn( I:Int , J:Int ; for( <= X:Name ){ P:Proc } )
-    => for( <= #deBruijn(I,J;X) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Rbind   ){ P:Proc } )
-    => for( #dBound(I,J;#bvar(B);.Map) <= #deBruijn(I,J;#chan(B)) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyRbind(B)
-  rule #deBruijn( I:Int , J:Int ; for( <= X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( <= #deBruijn(I,J;X) if #deBruijn(I,J;G) ){ #deBruijn(I,J;P) }
-  rule #deBruijn( I:Int , J:Int ; for( B:Rbind   if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;#bvar(B);.Map) <= #deBruijn(I,J;#chan(B)) if #sub(#mapify(I,J;#bvar(B);.Map);G) ){
-              #deBruijn(I,J +Int size(#LV(B)) ;
-              #sub(#mapify(I,J;#bvar(B);.Map);P)) }
-       requires notBool isEmptyRbind(B)
-
-  // MRec
-    // unguarded
-  rule #deBruijn( I:Int , J:Int ; for( A:Lbinds ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-  rule #deBruijn( I:Int , J:Int ; for( A:Pbinds ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-  rule #deBruijn( I:Int , J:Int ; for( A:Rbinds ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-    // guarded
-  rule #deBruijn( I:Int , J:Int ; for( A:Lbinds if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A if G;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) +Int size(#BV(G)) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-  rule #deBruijn( I:Int , J:Int ; for( A:Pbinds if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A if G;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) +Int size(#BV(G)) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-  rule #deBruijn( I:Int , J:Int ; for( A:Rbinds if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I,J;;A if G;;.Map) ){ #deBruijn(I,J +Int #dBoundSize(A) +Int size(#BV(G)) ;
-                                             #sub( #dBound(I,J;#bvar(A);.Map) ; #bvar(A) ; P ) ;
-                                             updateMap(Mem,#mapify(I,J;#bvar(A);.Map)) ) }
-*/
-// Sends
-// map constant on channel and message(s) -- check channel for bound variables
-  rule #deBruijn( I:Int , J:Int ; X:Name !  ( P:Procs ) ) => #deBruijn(I,J;X) !  ( #deBruijn(I,J;P) )
-  rule #deBruijn( I:Int , J:Int ; X:Name !  (         ) ) => #deBruijn(I,J;X) !  ( )
-  rule #deBruijn( I:Int , J:Int ; X:Name !! ( P:Procs ) ) => #deBruijn(I,J;X) !! ( #deBruijn(I,J;P) )
-  rule #deBruijn( I:Int , J:Int ; X:Name !! (         ) ) => #deBruijn(I,J;X) !! ( )
-
-// Eval -- just goes inside
-  rule #deBruijn( I:Int , J:Int ; *X:Name ) => *#deBruijn(I,J;X)
-
-// Variables -- TODO: needed???
-  // Vars
-    // nothing happens if Var is free w.r.t. Mem
-    // if Var is bound w.r.t. Mem, replace it with its value
-/*
-  rule #deBruijn( _:Int , _:Int ;    N:Var ; Mem:Map ) => #sub(Mem;N)
-  rule #deBruijn( _:Int , _:Int ;    A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem; A)  :: #sub(Mem;B)
-  rule #deBruijn( _:Int , _:Int ; (@\A:Var) :: B:ProcPat ; Mem:Map ) => (@#sub(Mem;\A)) :: #sub(Mem;B)
-
-  // ProcVars
-    // nothing happens if ProcVar is free w.r.t. Mem
-    // if ProcVar is bound w.r.t. Mem, replace it with its value
-  rule #deBruijn( _:Int , _:Int ;  \P:Var ; Mem:Map ) => #sub(Mem;\P)
-  rule #deBruijn( _:Int , _:Int ;  \A:Var  :: B:ProcPat ; Mem:Map ) =>   #sub(Mem;\A)  :: #sub(Mem;B)
-  rule #deBruijn( _:Int , _:Int ; (*A:Var) :: B:ProcPat ; Mem:Map ) => (*#sub(Mem; A)) :: #sub(Mem;B)
-*/
-
-// Collections
-  // RhoList
-  rule #deBruijn( _:Int , _:Int ; [ ]         ) => [ ]
-  rule #deBruijn( I:Int , J:Int ; [ P:Procs ] ) => [ #deBruijn(I,J;P) ]
-
-  // RhoMap -- TODO
-
-  // RhoSet
-  rule #deBruijn( _:Int , _:Int ; Set( )         ) => Set( )
-  rule #deBruijn( I:Int , J:Int ; Set( P:Procs ) ) => Set( #deBruijn(I,J;P) )
-
-  // RhoTuple
-  rule #deBruijn( I:Int , J:Int ; ( P:Procs ,) ) => ( #deBruijn(I,J;P) ,)
-
-// Quote
-  rule #deBruijn( I:Int , J:Int ; @P:Proc ) => @#deBruijn(I,J;P)
-
-// Expressions -- TODO: size(#BV) needed???
-  // Arithmetic Expressions
-  rule #deBruijn( I:Int , J:Int ; - A:AExp ) => - #deBruijn(I,J;A)
-  rule #deBruijn( I:Int , J:Int ; A:AExp * B:AExp ) => #deBruijn(I,J;A) *  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp / B:AExp ) => #deBruijn(I,J;A) /  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp + B:AExp ) => #deBruijn(I,J;A) +  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp - B:AExp ) => #deBruijn(I,J;A) -  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp % B:AExp ) => #deBruijn(I,J;A) %  #deBruijn(I,J;B)
-
-  // String Expressions
-  rule #deBruijn( I:Int , J:Int ; A:ListOrVar   ++ B:ListOrVar   )
-    => #deBruijn(I,J;A) ++ #deBruijn(I,J +Int size(#BV(A));B)
-  rule #deBruijn( I:Int , J:Int ; A:ListOrVar   ++ B:ConcatList  )
-    => #deBruijn(I,J;A) ++ #deBruijn(I,J +Int size(#BV(A));B)
-  rule #deBruijn( I:Int , J:Int ; A:StringOrVar ++ B:StringOrVar )
-    => #deBruijn(I,J;A) ++ #deBruijn(I,J +Int size(#BV(A));B)
-  rule #deBruijn( I:Int , J:Int ; A:StringOrVar ++ B:ConcatStr   )
-    => #deBruijn(I,J;A) ++ #deBruijn(I,J +Int size(#BV(A));B)
-  rule #deBruijn( I:Int , J:Int ; A:StringOrVar %% B:InterpMaps  )
-    => #deBruijn(I,J;A) %% #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:RhoMap      %% B:InterpMaps  )
-    => #deBruijn(I,J;A) %% #deBruijn(I,J;B)
-
-  // Boolean Expressions
-  rule #deBruijn( I:Int , J:Int ; not A:BExp ) => not #deBruijn(I,J;A)
-  rule #deBruijn( I:Int , J:Int ; A:BExp and B:BExp ) => #deBruijn(I,J;A) and #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:BExp or  B:BExp ) => #deBruijn(I,J;A) or  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp <=  B:AExp ) => #deBruijn(I,J;A) <=  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp <   B:AExp ) => #deBruijn(I,J;A) <   #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp >=  B:AExp ) => #deBruijn(I,J;A) >=  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:AExp >   B:AExp ) => #deBruijn(I,J;A) >   #deBruijn(I,J;B)
-    // may contain general Names & Procs -- check for bound variables to index
-  rule #deBruijn( I:Int , J:Int ; A:Name ==  B:Name ) => #deBruijn(I,J;A) ==  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:Name !=  B:Name ) => #deBruijn(I,J;A) !=  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:Proc ==  B:Proc ) => #deBruijn(I,J;A) ==  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:Proc !=  B:Proc ) => #deBruijn(I,J;A) !=  #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:Proc    matches B:Proc    ) => #deBruijn(I,J;A) matches #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:Proc    matches B:ProcPat ) => #deBruijn(I,J;A) matches #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:ProcPat matches B:ProcPat ) => #deBruijn(I,J;A) matches #deBruijn(I,J;B)
-
-// Match -- TODO: test
-  rule #deBruijn( I:Int , J:Int ; match A:Proc { B:MatchCases } )
-    => match #deBruijn(I,J;A) { #deBruijn(I,J;B) }
-  // MatchCases
-  rule #deBruijn( I:Int , J:Int ; A:MatchCase B:MatchCases ) => #deBruijn(I,J;A) #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; { A:Proc    } |=> B:Proc )
-    => {#dBound(I,J;A)} |=> #deBruijn(I,J +Int size(#FV(A));#sub(#mapify(I,J;A);B))
-  rule #deBruijn( I:Int , J:Int ; { A:ProcPat } |=> B:Proc )
-    => {#dBound(I,J;A)} |=> #deBruijn(I,J +Int size(#FV(A));#sub(#mapify(I,J;A);B))
-
-// Select -- TODO: test
-  rule #deBruijn( I:Int , J:Int ; select { A:Branches } ) => select { #deBruijn(I,J;A) }
-  // Branches
-  rule #deBruijn( I:Int , J:Int ; A:Branch B:Branches ) => #deBruijn(I,J;A) #deBruijn(I,J;B)
-  // TODO: indexing??
-//  rule #deBruijn( I:Int , J:Int ; { A:Lbind  } |=> B:Proc )
-//    => {#deBruijn(I;I;;A)} |=> #deBruijn(I,J +Int size(#LV(A));#sub(#mapify(I,J;#bvar(A));B))
-//  rule #deBruijn( I:Int , J:Int ; { A:Lbinds } |=> B:Proc )
-//    => {#deBruijn(I;I;;A)} |=> #deBruijn(I,J +Int size(#LV(A));#sub(#mapify(I,J;#bvar(A));B))
+// Select[Pat]
+  rule #deBruijn( L:Int , I:Int ; select { A:Branches   } ; M:Map ) => select { #deBruijn(L,I;A;M) }
+  rule #deBruijn( L:Int , I:Int ; select { A:BranchPats } ; M:Map ) => select { #deBruijn(L,I;A;M) }
+  // multiple Branches/BranchPats
+  rule #deBruijn( L:Int , I:Int ; A:Branch    B:Branches   ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:Branch    B:BranchPats ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:BranchPat B:Branches   ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  rule #deBruijn( L:Int , I:Int ; A:BranchPat B:BranchPats ; M:Map ) => #deBruijn(L,I;A;M) #deBruijn(L,I;B;M)
+  // single Branch[Pat]
+  rule #deBruijn( L:Int , I:Int ; { A:Lbind     } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:Lbinds    } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:Lbind     } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:Lbinds    } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:LbindPat  } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:LbindPats } |=> B:Proc    ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:LbindPat  } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
+  rule #deBruijn( L:Int , I:Int ; { A:LbindPats } |=> B:ProcPat ; M:Map )
+    => {#deBruijn(L,I;I;;A;;M)} |=> #deBruijn(L,I +Int size(#LV(A));#sub(updateMap(M,#mapify(L,I;#bvar(A)));B);updateMap(M,#mapify(L,I;#bvar(A))))
 
 // Bundle
-  rule #deBruijn( I:Int , J:Int ;  bundle{ A:Proc } ) =>  bundle{ #deBruijn(I,J;A) }
-  rule #deBruijn( I:Int , J:Int ; bundle+{ A:Proc } ) => bundle+{ #deBruijn(I,J;A) }
-  rule #deBruijn( I:Int , J:Int ; bundle-{ A:Proc } ) => bundle-{ #deBruijn(I,J;A) }
-  rule #deBruijn( I:Int , J:Int ; bundle0{ A:Proc } ) => bundle0{ #deBruijn(I,J;A) }
+  rule #deBruijn( L:Int , I:Int ;  bundle{ A:Proc } ; M:Map ) =>  bundle{ #deBruijn(L,I;#sub(M;A);M) }
+  rule #deBruijn( L:Int , I:Int ; bundle+{ A:Proc } ; M:Map ) => bundle+{ #deBruijn(L,I;#sub(M;A);M) }
+  rule #deBruijn( L:Int , I:Int ; bundle-{ A:Proc } ; M:Map ) => bundle-{ #deBruijn(L,I;#sub(M;A);M) }
+  rule #deBruijn( L:Int , I:Int ; bundle0{ A:Proc } ; M:Map ) => bundle0{ #deBruijn(L,I;#sub(M;A);M) }
 
 // Conditional
-  rule #deBruijn( I:Int , J:Int ; if (A:BExp)   B:Proc ) => if (#deBruijn(I,J;A)) #deBruijn(I,J;B)
-  rule #deBruijn( I:Int , J:Int ; A:IfThen else B:Proc ) => #deBruijn(I,J;A) else #deBruijn(I,J;B)
+  rule #deBruijn( L:Int , I:Int ; if (A:BExp)   B:Proc ; M:Map ) => if (#deBruijn(L,I;#sub(M;A);M)) #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:IfThen else B:Proc ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) else #deBruijn(L,I;#sub(M;B);M)
 
-// Several Procs
-  // Lists of to-be-bound Procs appear in Collections and Sends...
-  // want to do something like
-  rule #deBruijn( I:Int , J:Int ; A:Proc , B:Procs ) => #deBruijn(I,J;A) , #deBruijn(I,J;B)
+  // Name[Pat]s
+  rule #deBruijn( L:Int , I:Int ; A:Name    , B:Names    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:NamePat , B:Names    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Name    , B:NamePats ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:NamePat , B:NamePats ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
 
-//--------------
-//--- #alpha ---
-//--------------
+// Proc[Pat]s
+  rule #deBruijn( L:Int , I:Int ; A:Proc    , B:Procs    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    , B:ProcPats ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat , B:Procs    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat , B:ProcPats ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
 
-// Alpha Equivalence Predicate
-  // checks synactic equality of De Bruijn indexed terms
-  rule P:Proc #alpha Q:Proc => #deBruijn(P) ==K #deBruijn(Q)
+// Simple patterns
+  rule #deBruijn( _:Int , _:Int ; \_ ; _:Map ) => \_
+  rule #deBruijn( _:Int , _:Int ; A:SimplePat     ; _:Map ) => A
+  rule #deBruijn( _:Int , _:Int ; A:SimpleNamePat ; _:Map ) => A
 
-//---------------
-//--- #dBound ---
-//---------------
-// assigns DeBruijn indices to variables bound by a listen in a Receive/Select or to-be-matched Proc/Pattern in a Match
-// TODO: finish
-
-// Trivial cases
-//  #dBound( A:Names    ) => A requires #V(A) ==K .Set
-//  #dBound( A:NamePats ) => A requires #V(A) ==K .Set
-//  #dBound( A:Procs    ) => A requires #V(A) ==K .Set
-//  #dBound( A:ProcPats ) => A requires #V(A) ==K .Set
-
-// Name
-  rule #dBound( I:Int ;    _:Var     ) => @x(I)
-  rule #dBound( I:Int ; @\(_:Var)    ) => @x(I)
-  rule #dBound( I:Int ; @P:Proc      ) => @#dBound(I;P) requires notBool isProcVar(P)
-  rule #dBound( I:Int ; @P:ProcPat   ) => @#dBound(I;P) requires notBool isProcVar(P)
-  rule #dBound( _:Int ;  A:BoundName ) => A
-  rule #dBound( _:Int ; \_           ) => \_
-
-  rule #dBound( _:Int ; A:SimplePat ) => A
-  rule #dBound( I:Int ; A:Proc    /\ B:ProcPat ) => #dBound(I;A) /\ #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat /\ B:Proc    ) => #dBound(I;A) /\ #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat /\ B:ProcPat ) => #dBound(I;A) /\ #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:Proc    \/ B:ProcPat ) => #dBound(I;A) \/ #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat \/ B:Proc    ) => #dBound(I;A) \/ #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat \/ B:ProcPat ) => #dBound(I;A) \/ #dBound(I +Int size(#FV(A));B)
-
-  // several Name[Pat]s
-  rule #dBound( I:Int ; A:Name    , B:Names    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:NamePat , B:Names    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:Name    , B:NamePats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:NamePat , B:NamePats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-
-// TODO: finish!!! need another Int param for channel index
-// Binds -- increase level for listening variables, constant level for channels
-  // Linear
-    // unguarded
-  rule #dBound( I:Int ;; <- A:Name  ) =>  <- #dBound(I;A)
-  rule #dBound( I:Int ;;    B:Lbind ) => #dBound(1,0;#bvar(B)) <- #dBound(I;#chan(B))
-       requires notBool isEmptyLbind(B)
-  rule #dBound( I:Int ;; A:Lbind & B:Lbind )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound( I:Int ;; A:Lbind & B:Lbinds )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound+( I:Int ; _:Int ;; <- A:Name  ) =>  <- #dBound(I;A)
-  rule #dBound+( I:Int ; J:Int ;;    B:Lbind ) => #dBound(1,J;#bvar(B)) <- #dBound(I;#chan(B))
-       requires notBool isEmptyLbind(B)
-  rule #dBound+( I:Int ; J:Int ;; A:Lbind & B:Lbind )
-    => #dBound(1,J;#bvar(A)) <- #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-  rule #dBound+( I:Int ; J:Int ;; A:Lbind & B:Lbinds )
-    => #dBound(1,J;#bvar(A)) <- #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-    // guarded
-//  rule #dBound( I:Int ;; B:Lbind  if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-//  rule #dBound( I:Int ;; B:Lbinds if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-
-  // Peek
-    // unguarded
-  rule #dBound( I:Int ;; <<- A:Name  ) =>  <<- #dBound(I;A)
-  rule #dBound( I:Int ;;     B:Pbind ) => #dBound(1,0;#bvar(B)) <<- #dBound(I;#chan(B))
-       requires notBool isEmptyPbind(B)
-  rule #dBound( I:Int ;; A:Pbind & B:Pbind )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound( I:Int ;; A:Pbind & B:Pbinds )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound+( I:Int ; _:Int ;; <<- A:Name  ) => <<- #dBound(I;A)
-  rule #dBound+( I:Int ; J:Int ;;     B:Pbind )=> #dBound(1,J;#bvar(B)) <<- #dBound(I;#chan(B))
-       requires notBool isEmptyPbind(B)
-  rule #dBound+( I:Int ; J:Int ;; A:Pbind & B:Pbind )
-    => #dBound(1,J;#bvar(A)) <<- #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-  rule #dBound+( I:Int ; J:Int ;; A:Pbind & B:Pbinds )
-    => #dBound(1,J;#bvar(A)) <<- #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-    // guarded
-//  rule #dBound( I:Int ;; B:Pbind  if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-//  rule #dBound( I:Int ;; B:Pbinds if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-
-  // Repeat
-    // unguarded
-  rule #dBound( I:Int ;; <= A:Name  ) =>  <= #dBound(I;A)
-  rule #dBound( I:Int ;;    B:Rbind ) => #dBound(1,0;#bvar(B)) <= #dBound(I;#chan(B))
-       requires notBool isEmptyRbind(B)
-  rule #dBound( I:Int ;; A:Rbind & B:Rbind )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound( I:Int ;; A:Rbind & B:Rbinds )
-    => #dBound(I;;A) & #dBound+(I +Int size(#RV(A));size(#LV(A));;B)
-  rule #dBound+( I:Int ; _:Int ;; <= A:Name  ) => <= #dBound(I;A)
-  rule #dBound+( I:Int ; J:Int ;;    B:Rbind ) => #dBound(1,J;#bvar(B)) <= #dBound(I;#chan(B))
-       requires notBool isEmptyRbind(B)
-  rule #dBound+( I:Int ; J:Int ;; A:Rbind & B:Rbind )
-    => #dBound(1,J;#bvar(A)) <= #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-  rule #dBound+( I:Int ; J:Int ;; A:Rbind & B:Rbinds )
-    => #dBound(1,J;#bvar(A)) <= #dBound(I;#chan(A)) &
-       #dBound+(I +Int size(#RV(A));J +Int size(#LV(A));;B)
-    // guarded
-//  rule #dBound( I:Int ;; B:Rbind  if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-//  rule #dBound( I:Int ;; B:Rbinds if G:BExp )
-//    => #dBound(I;;B) if #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));G))
-
-// Proc
-  rule #dBound( _:Int ;  A:Ground    ) =>  A
-  rule #dBound( I:Int ; \(_:Var)     ) =>  x(I)
-  rule #dBound( I:Int ; *_:Var       ) =>  x(I)
-  rule #dBound( I:Int ; *A:Name      ) => *#dBound(I;A)
-  rule #dBound( _:Int ;  A:BoundProc ) =>  A
-
-  // Send
-  rule #dBound( I:Int ; A:Name    !  ( B:ProcPats ) ) => #dBound(I;A) !  ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:Name    !  ( B:Procs    ) ) => #dBound(I;A) !  ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:Name    !  (            ) ) => #dBound(I;A) !  ( )
-  rule #dBound( I:Int ; A:NamePat !  ( B:ProcPats ) ) => #dBound(I;A) !  ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:NamePat !  ( B:Procs    ) ) => #dBound(I;A) !  ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:NamePat !  (            ) ) => #dBound(I;A) !  ( )
-  rule #dBound( I:Int ; A:Name    !! ( B:ProcPats ) ) => #dBound(I;A) !! ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:Name    !! ( B:Procs    ) ) => #dBound(I;A) !! ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:Name    !! (            ) ) => #dBound(I;A) !! ( )
-  rule #dBound( I:Int ; A:NamePat !! ( B:ProcPats ) ) => #dBound(I;A) !! ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:NamePat !! ( B:Procs    ) ) => #dBound(I;A) !! ( #dBound(I +Int size(#FV(A));B) )
-  rule #dBound( I:Int ; A:NamePat !! (            ) ) => #dBound(I;A) !! ( )
-
-  // Receive -- increase level for listening variables, constant for channel variables -- TODO: fix
-  // Linear
-    // Single
-      // unguarded
-  rule #dBound( I:Int ; for( B:Lbind ){ C:Proc } )
-    => for( #dBound(I;;B) ){#dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C))}
-      // guarded
-  rule #dBound( I:Int ; for( B:Lbind if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B) if #sub(#mapify(1,0;#bvar(B));G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-    // Multi
-      // unguarded
-  rule #dBound( I:Int ; for( B:Lbinds ){ C:Proc } )
-    => for( #dBound(I;;B) ){
-       #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C)) }
-      // guarded
-  rule #dBound( I:Int ; for( B:Lbinds if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B if G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-
-  // Peek
-    // Single
-      // unguarded
-  rule #dBound( I:Int ; for( B:Pbind ){ C:Proc } )
-    => for( #dBound(I;;B) ){
-       #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C)) }
-      // guarded
-  rule #dBound( I:Int ; for( B:Pbind if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B if G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-    // Multi
-      // unguarded
-  rule #dBound( I:Int ; for( B:Pbinds ){ C:Proc } )
-    => for( #dBound(I;;B) ){
-       #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C)) }
-      // guarded
-  rule #dBound( I:Int ; for( B:Pbinds if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B if G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-
-  // Repeated
-    // Single
-      // unguarded
-  rule #dBound( I:Int ; for( B:Rbind ){ C:Proc } )
-    => for( #dBound(I;;B) ){
-       #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C)) }
-      // guarded
-  rule #dBound( I:Int ; for( B:Rbind if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B if G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-    // Multi
-      // unguarded
-  rule #dBound( I:Int ; for( B:Rbinds ){ C:Proc } )
-    => for( #dBound(I;;B) ){
-       #dBound(I +Int size(#RV(B));#sub(#mapify(1,0;#bvar(B));C)) }
-      // guarded
-  rule #dBound( I:Int ; for( B:Rbinds if G:BExp ){ C:Proc } )
-    => for( #dBound(I;;B if G) ){
-       #dBound(I +Int size(#RV(B)) +Int size(#FV(G));#sub(#mapify(1,0;#bvar(B));C)) }
-
-  // Par -- index A & increase index for B by size(#FV(A))
-  rule #dBound( I:Int ; A:Proc | B:Proc ) => #dBound(I;A) | #dBound(I +Int size(#FV(A));B)
-       requires notBool isPar(A)
-
-  // New -- increase level for declared variables -- TODO: test
-  rule #dBound( I:Int ; new A:VarDecs in { B:Proc    } )
-    => new #dbNew(1,0;#indecs(A)) in { #dBound(I;#sub(#mapNew(1,0;#indecs(A));B)) }
-  rule #dBound( I:Int ; new A:VarDecs in { B:ProcPat } )
-    => new #dbNew(1,0;#indecs(A)) in { #dBound(I;#sub(#mapNew(1,0;#indecs(A));B)) }
-    // only applied after #indecs
-  rule #mapNew( I:Int ; A:Var                ) => A |-> n(I)
-  rule #mapNew( I:Int ; A:Var ( _:Uri )      ) => A |-> n(I)
-  rule #mapNew( I:Int ; A:VarDec , B:VarDecs ) => #mapNew(I;A) #mapNew(I +Int 1;B)
-
- // Collection
-  // RhoLists -- TODO: other ListPats
-  rule #dBound( _:Int ; [ ] ) => [ ]
-  rule #dBound( I:Int ; [ A:Procs ] ) => [ #dBound(I;A) ]
-  // RhoMaps -- TODO: other MapPats
-    // applied after normalization
-  rule #dBound( _:Int ; { } ) => { }
-  rule #dBound( I:Int ; { A:RhoKVPairs } ) => { #dBound(I;A) }
-  rule #dBound( I:Int ; { A:RhoKVPats  } ) => { #dBound(I;A) }
-    // KVPairs
-  rule #dBound( I:Int ; A:Proc    : B:Proc    ) => #dBound(I;A) : #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:Proc    : B:ProcPat ) => #dBound(I;A) : #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat : B:Proc    ) => #dBound(I;A) : #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat : B:ProcPat ) => #dBound(I;A) : #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:RhoKVPair , B:RhoKVPairs ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:RhoKVPair , B:RhoKVPats  ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:RhoKVPat  , B:RhoKVPairs ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:RhoKVPat  , B:RhoKVPats  ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  // RhoSets -- TODO: other SetPats
-    // applied after normalization
-  rule #dBound( _:Int ; Set( ) ) => Set( )
-  rule #dBound( I:Int ; Set( A:Procs    ) ) => Set( #dBound(I;A) )
-  rule #dBound( I:Int ; Set( A:ProcPats ) ) => Set( #dBound(I;A) )
-  // RhoTuples
-  rule #dBound( I:Int ; ( A:Procs    ,) ) => ( #dBound(I;A) ,)
-  rule #dBound( I:Int ; ( A:ProcPats ,) ) => ( #dBound(I;A) ,)
-
-  // several Names -- increase index for each free variable
-  rule #dBound( I:Int ; A:Name    , B:Names    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:Name    , B:NamePats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:NamePat , B:Names    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:NamePat , B:NamePats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-
-  // several Procs -- increase index for each free variable
-  rule #dBound( I:Int ; A:Proc    , B:Procs    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:Proc    , B:ProcPats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat , B:Procs    ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-  rule #dBound( I:Int ; A:ProcPat , B:ProcPats ) => #dBound(I;A) , #dBound(I +Int size(#FV(A));B)
-
-// Match -- TODO
-
-// Select -- TODO
-
-//--- Nested ---//
-  // Name
-  rule #dBound( I:Int , J:Int ;  _:Var       ) => @x(I,J)
-  rule #dBound( I:Int , J:Int ; @A:Proc      ) => @#dBound(I,J;A)
-  rule #dBound( _:Int , _:Int ;  A:BoundName ) => A
-
-    // several Names
-  rule #dBound( I:Int , J:Int ; A:Name , B:Names )
-    => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-
-// Binds -- TODO: guards & simplify
-  // single -- increase level & restart index at new level on variables
-    // unguarded
-  rule #dBound( I:Int , J:Int ;; Y:NamePats <-  X:Name )
-    => #dBound(I +Int 1,0;Y) <- #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; Y:Names    <-  X:Name )
-    => #dBound(I +Int 1,0;Y) <- #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; <-  X:Name ) =>  <- #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; Y:NamePats <=  X:Name )
-    => #dBound(I +Int 1,0;Y) <= #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; Y:Names    <=  X:Name )
-    => #dBound(I +Int 1,0;Y) <= #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; <=  X:Name ) =>  <= #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; Y:NamePats <<- X:Name )
-    => #dBound(I +Int 1,0;Y) <<- #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; Y:Names    <<- X:Name )
-    => #dBound(I +Int 1,0;Y) <<- #dBound(I,J;X)
-  rule #dBound( I:Int , J:Int ;; <<- X:Name ) => <<- #dBound(I,J;X)
-    // guarded
-//  rule #dBound( I:Int , J:Int ;; B:Lbind if G:BExp )
-//    => #dBound(I,J;;B) if #dBound(I,J +Int size(#BV(#chan(B)));#sub(#mapify(I +Int 1,0;#bvar(B));G))
-
-//  rule #dBound( I:Int , J:Int ;; B:Pbind if G:BExp )
-//    => #dBound(I,J;;B) if #dBound(I,J +Int size(#BV(#chan(B)));#sub(#mapify(I +Int 1,0;#bvar(B));G))
-
-//  rule #dBound( I:Int , J:Int ;; B:Rbind if G:BExp )
-//    => #dBound(I,J;;B) if #dBound(I,J +Int size(#BV(#chan(B)));#sub(#mapify(I +Int 1,0;#bvar(B));G))
-
-  // multiple -- TODO: check levels & channels
-    // unguarded
-  rule #dBound( I:Int , J:Int ;; A:Lbind & B:Lbind  )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-  rule #dBound( I:Int , J:Int ;; A:Lbind & B:Lbinds )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-  rule #dBound( I:Int , J:Int ;; A:Pbind & B:Pbind  )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-  rule #dBound( I:Int , J:Int ;; A:Pbind & B:Pbinds )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-  rule #dBound( I:Int , J:Int ;; A:Rbind & B:Rbind  )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-  rule #dBound( I:Int , J:Int ;; A:Rbind & B:Rbinds )
-    => #dBound(I,J;;A) & #dBound(I,J +Int size(#LV(A));;B)
-    // guarded
-//  rule #dBound( I:Int , J:Int ;; A:Lbinds if G:BExp )
-//    => #dBound(I,J;;A) if #dBound(I,J +Int size(#LV(A));#sub(#dBound(I,J;#bvar(A));#bvar(A);G))
-
-//  rule #dBound( I:Int , J:Int ;; A:Pbinds if G:BExp )
-//    => #dBound(I,J;;A) if #dBound(I,J +Int size(#LV(A));#sub(#dBound(I,J;#bvar(A));#bvar(A);G))
-
-//  rule #dBound( I:Int , J:Int ;; A:Rbinds if G:BExp )
-//    => #dBound(I,J;;A) if #dBound(I,J +Int size(#LV(A));#sub(#dBound(I,J;#bvar(A));#bvar(A);G))
-
-  // Proc
-  rule #dBound( _:Int , _:Int ;   A:Ground    ) =>  A
-  rule #dBound( I:Int , J:Int ; \(_:Var)      ) =>  x(I,J)
-  rule #dBound( I:Int , J:Int ;  *A:Name      ) => *#dBound(I,J;A)
-  rule #dBound( _:Int , _:Int ;   A:BoundProc ) =>  A
-
-    // Send
-  rule #dBound( I:Int , J:Int ; A:Name    !  ( B:ProcPats ) ) => #dBound(I,J;A) ! ( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:Name    !  ( B:Procs    ) ) => #dBound(I,J;A) ! ( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:Name    !  (            ) ) => #dBound(I,J;A) ! (  )
-  rule #dBound( I:Int , J:Int ; A:NamePat !  ( B:ProcPats ) ) => #dBound(I,J;A) ! ( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:NamePat !  ( B:Procs    ) ) => #dBound(I,J;A) ! ( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:NamePat !  (            ) ) => #dBound(I,J;A) ! (  )
-  rule #dBound( I:Int , J:Int ; A:Name    !! ( B:ProcPats ) ) => #dBound(I,J;A) !!( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:Name    !! ( B:Procs    ) ) => #dBound(I,J;A) !!( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:Name    !! (            ) ) => #dBound(I,J;A) !!(  )
-  rule #dBound( I:Int , J:Int ; A:NamePat !! ( B:ProcPats ) ) => #dBound(I,J;A) !!( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:NamePat !! ( B:Procs    ) ) => #dBound(I,J;A) !!( #dBound(I,J +Int size(#FV(A));B) )
-  rule #dBound( I:Int , J:Int ; A:NamePat !! (            ) ) => #dBound(I,J;A) !!(  )
-/*
-    // Receive -- increase nesting index for bound Names -- TODO: simplify
-  // linear
-    // no listening variables
-  rule #dBound( I:Int , J:Int ; for( B:Lbind ){ P:Proc } )
-    => for( #dBound(I,J;;B) ){ #dBound(I,J;#sub(#mapify(I,J;;B);P)) }
-    // listening for Var
-      // if Var is fresh w.r.t. Mem, do usual substitution for Var
-      // if Var is not fresh w.r.t. Mem, substitute for the value associated with Var
-  rule #dBound( I:Int , J:Int ; for( Y:Var <- X:Name ){ P:Proc } )
-    => for( @x(I +Int 1,0) <- #dBound(I,J;X) ){
-            #dBound(I,J; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Var <- X:Name if B:BExp ){ P:Proc } )
-    => for( @x(I +Int 1,0) <- #dBound(I,J;X;Mem) if #sub(@x(I +Int 1,0);#sub(Mem;Y);B) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-    // listening for @ProcVar
-      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
-      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <- X:Name ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <- #dBound(I,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)); #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <- #dBound(I,J;X;Mem) if #sub(x(I +Int 1,0);#sub(Mem;Y);B) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <- X:Name ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-    // several Name listens
-  rule #dBound( I:Int , J:Int ; for( Y:Names <- X:Name ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <- #dBound(I +Int 1,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Names <- X:Name if B:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;B) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-
-  // repeated
-    // no listening variables
-  rule #dBound( I:Int , J:Int ; for(  <= X:Name ){ P:Proc } ; Mem:Map )
-    => for( <= #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
-    // listening for Var
-      // if Var is fresh w.r.t. Mem, do usual substitution for Var
-      // if Var is not fresh w.r.t. Mem, substitute for the value associated with Var
-  rule #dBound( I:Int , J:Int ; for( Y:Var <= X:Name ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <= #dBound(I,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Var <= X:Name if B:BExp ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <= #dBound(I,J;X;Mem) if #sub(@x(I +Int 1,0);#sub(Mem;Y);B) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-    // listening for @ProcVar
-      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
-      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <= X:Name ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <= #dBound(I,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)); #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <= X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <= #dBound(I,J;X;Mem) if #sub(x(I +Int 1,0);#sub(Mem;Y);G) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <= X:Name ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <= X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-    // several Name listens
-  rule #dBound( I:Int , J:Int ; for( Y:Names <= X:Name ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <= #dBound(I +Int 1,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Names <= X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <= #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-
-  // peek
-    // no listening variables
-  rule #dBound( I:Int , J:Int ; for(  <<- X:Name ){ P:Proc } ; Mem:Map )
-    => for( <<- #dBound(I,J;X;Mem) ){ #dBound(I,J +Int size(#FV(X));P;Mem) }
-    // listening for Var
-      // if Var is fresh w.r.t. Mem, do usual substitution for Var
-      // if Var is not fresh w.r.t. Mem, substitute for the value associated with Var
-  rule #dBound( I:Int , J:Int ; for( Y:Var <<- X:Name ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <<- #dBound(I,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Var <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <<- #dBound(I,J;X;Mem) if #sub(@x(I +Int 1,0);#sub(Mem;Y);G) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(@x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> @x(I +Int 1,0) ) ) }
-    // listening for @ProcVar
-      // if ProcVar is fresh w.r.t. Mem, do usual substitution for ProcVar
-      // if ProcVar is not fresh w.r.t. Mem, substitute for the value associated with ProcVar
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <<- X:Name ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <<- #dBound(I,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)); #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:ProcVar <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @x(I +Int 1,0) <<- #dBound(I,J;X;Mem) if #sub(x(I +Int 1,0);#sub(Mem;Y);G) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(x(I +Int 1,0);#sub(Mem;Y);P) ; updateMap( Mem , Y |-> x(I +Int 1,0) ) ) }
-    // listening for @Proc for general Proc -- free variables in Proc are bound in the continuation
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <<- X:Name ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( @Y:Proc <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( @#dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){
-             #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-       requires notBool isProcVar(Y)
-    // several Name listens
-  rule #dBound( I:Int , J:Int ; for( Y:Names <<- X:Name ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I +Int 1,J;X;Mem) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-        // guarded
-  rule #dBound( I:Int , J:Int ; for( Y:Names <<- X:Name if G:BExp ){ P:Proc } ; Mem:Map )
-    => for( #dBound(I +Int 1,0;Y;.Map) <<- #dBound(I,J;X;Mem) if #sub(#dBound(I +Int 1,0;Y;.Map);Y;G) ){
-            #dBound( I,J +Int size(#FV(X)) ; #sub(#dBound(I +Int 1,0;Y;.Map);Y;P) ; updateMap( Mem , #mapify(I +Int 1,0;Y;.Map) ) ) }
-*/
-  // Par
-  rule #dBound( I:Int , J:Int ; A:Proc | B:Proc ) => #dBound(I,J;A) | #dBound(I,J +Int size(#FV(A));B)
-       requires notBool isPar(A)
-
-  // New -- TODO: test
-    // if new A:VarDecs in { B:Proc[Pat] } appears in a matching pattern,
-    // the index level is increased for the declared variables A,
-    // and remains unchanged for variables appearing in the Proc[Pat] B
-  rule #dBound( I:Int , J:Int ; new A:VarDecs in { B:Proc    } )
-    => new #dbNew(I +Int 1,0;#indecs(A)) in { #dBound(I,J;#sub(#mapNew(I +Int 1,0;#indecs(A));B)) }
-  rule #dBound( I:Int , J:Int ; new A:VarDecs in { B:ProcPat } )
-    => new #dbNew(I +Int 1,0;#indecs(A)) in { #dBound(I,J;#sub(#mapNew(I +Int 1,0;#indecs(A));B)) }
-    // only applied after #indecs
-  rule #mapNew( I:Int , J:Int  ; A:Var                ) => A |-> n(I,J)
-  rule #mapNew( I:Int , J:Int  ; A:Var ( _:Uri )      ) => A |-> n(I,J)
-  rule #mapNew( I:Int , J:Int  ; A:VarDec , B:VarDecs ) => #mapNew(I,J;A) #mapNew(I,J +Int 1; B)
-
-  // Procs
-  rule #dBound( I:Int , J:Int ; A:Proc , B:Procs ) => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-
-  // Collections
-    // RhoLists
-  rule #dBound( _:Int , _:Int ; [ ] ) => [ ]
-  rule #dBound( I:Int , J:Int ; [ A:Procs    ] ) => [ #dBound(I,J;A) ]
-  rule #dBound( I:Int , J:Int ; [ A:ProcPats ] ) => [ #dBound(I,J;A) ]
-    // RhoMaps
-  rule #dBound( _:Int , _:Int ; { } ) => { }
-  rule #dBound( I:Int , J:Int ; { A:RhoKVPairs } ) => { #dBound(I,J;A) }
-  rule #dBound( I:Int , J:Int ; { A:RhoKVPats  } ) => { #dBound(I,J;A) }
-    // KVPairs
-  rule #dBound( I:Int , J:Int ; A:Proc    : B:Proc    ) => #dBound(I,J;A) : #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:Proc    : B:ProcPat ) => #dBound(I,J;A) : #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:ProcPat : B:Proc    ) => #dBound(I,J;A) : #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:ProcPat : B:ProcPat ) => #dBound(I,J;A) : #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:RhoKVPair , B:RhoKVPairs ) => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:RhoKVPair , B:RhoKVPats  ) => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:RhoKVPat  , B:RhoKVPairs ) => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-  rule #dBound( I:Int , J:Int ; A:RhoKVPat  , B:RhoKVPats  ) => #dBound(I,J;A) , #dBound(I,J +Int size(#FV(A));B)
-  // RhoSets
-  rule #dBound( _:Int , _:Int ; Set( ) ) => Set( )
-  rule #dBound( I:Int , J:Int ; Set( A:Procs    ) ) => Set( #dBound(I,J;A) )
-  rule #dBound( I:Int , J:Int ; Set( A:ProcPats ) ) => Set( #dBound(I,J;A) )
-  // RhoTuples
-  rule #dBound( I:Int , J:Int ; ( A:Procs    ,) ) => ( #dBound(I,J;A) ,)
-  rule #dBound( I:Int , J:Int ; ( A:ProcPats ,) ) => ( #dBound(I,J;A) ,)
-
-// Match -- TODO
-// Select -- TODO
+// PatExp
+  rule #deBruijn( L:Int , I:Int ; ~ A:Proc    ; M:Map ) => ~ #deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; ~ A:ProcPat ; M:Map ) => ~ #deBruijn(L,I;#sub(M;A);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    /\ B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) /\ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    /\ B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) /\ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat /\ B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) /\ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat /\ B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) /\ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    \/ B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) \/ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:Proc    \/ B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) \/ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat \/ B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) \/ #deBruijn(L,I;#sub(M;B);M)
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat \/ B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) \/ #deBruijn(L,I;#sub(M;B);M)
 
 //---------------
 //--- #mapify ---
 //---------------
-// returns map from top-level variables to (dBound) DeBruijn indices
-// input always comes from a matching pattern in a Receive, Match, or Select
-  rule #mapify( A:Names    ) => #mapify(0;A)
-  rule #mapify( A:Procs    ) => #mapify(0;A)
-  rule #mapify( A:NamePats ) => #mapify(0;A)
-  rule #mapify( A:ProcPats ) => #mapify(0;A)
-
-  // WildCard does not add any bindings
-  rule #mapify( _:Int ; \_ ) => .Map
-
-  // Empty Name & Proc
-  rule #mapify( _:Int ; EmptyN ) => .Map
-  rule #mapify( _:Int ; EmptyP ) => .Map
-
-// Name
-  rule #mapify( I:Int ; A:Var       ) => A |-> @x(I)
-  rule #mapify( _:Int ; _:BoundName ) => .Map
-  rule #mapify( I:Int ; @A:Proc     ) => #mapify(I;A)
-  rule #mapify( I:Int ; @A:ProcPat  ) => #mapify(I;A)
-  rule #mapify( _:Int ; @sub        ) => .Map
-
-  // several Names -- channels in Binds
-  rule #mapify( I:Int ; A:Name    , B:Names    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name    , B:NamePats ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat , B:Names    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat , B:NamePats ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-
-// Proc
-  rule #mapify( _:Int ;  _:Ground    ) => .Map
-  rule #mapify( I:Int ; \A:Var       ) => \A |-> x(I)
-  rule #mapify( _:Int ;  _:BoundProc ) => .Map
-  rule #mapify( I:Int ; *A:Name      ) => #mapify(I;A)
-  rule #mapify( _:Int ;    sub       ) => .Map
-
-  // several Procs
-  rule #mapify( I:Int ; A:Proc    , B:Procs    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc    , B:ProcPats ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat , B:Procs    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat , B:ProcPats ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-
-  // New
-    // if @{new A:VarDecs in { B:Proc[Pat] }} appears in a listen pattern,
-    // the only listen-level binding variables come from #FV(B) -Set #DV(A)
-    // so the declared variables are hidden from #mapify
-  rule #mapify( I:Int ; new A:VarDecs in { B:Proc    } ) => #mapify(I;#sub(#mapSub(#DV(A));B))
-  rule #mapify( I:Int ; new A:VarDecs in { B:ProcPat } ) => #mapify(I;#sub(#mapSub(#DV(A));B))
-
-  // Par
-  rule #mapify( I:Int ; A:Proc    | B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-       requires notBool isPar(A)
-  rule #mapify( I:Int ; A:Proc    | B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-       requires notBool isPar(A)
-  rule #mapify( I:Int ; A:ProcPat | B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-       requires notBool isParPat(A)
-  rule #mapify( I:Int ; A:ProcPat | B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-       requires notBool isParPat(A)
-
-// TODO: Match & Select
-
-  // Send
-  rule #mapify( I:Int ; A:Name    !  ( B:ProcPats ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name    !  ( B:Procs    ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name    !  (            ) ) => #mapify(I;A)
-  rule #mapify( I:Int ; A:NamePat !  ( B:ProcPats ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat !  ( B:Procs    ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat !  (            ) ) => #mapify(I;A)
-  rule #mapify( I:Int ; A:Name    !! ( B:ProcPats ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name    !! ( B:Procs    ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name    !! (            ) ) => #mapify(I;A)
-  rule #mapify( I:Int ; A:NamePat !! ( B:ProcPats ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat !! ( B:Procs    ) ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:NamePat !! (            ) ) => #mapify(I;A)
-
-  // Receive
-    // TODO: more testing & simplify?
-    // mapSub used to hide listening variables from generating additional substitution mappings
-       // collect variables from the channel first, then from the guard with listening variables hidden,
-       // then from the continuation with listen variables hidden
-  rule #mapify( I:Int ; A:Receive )
-    => #mapify(I;#chan(A)) #mapify(I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
-       #mapify(I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
-  rule #mapify( I:Int ; A:RecPat )
-    => #mapify(I;#chan(A)) #mapify(I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
-       #mapify(I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
-
-  rule #mapify( I:Int ;; A:Bind ) => #mapify(I;#chan(A))
-  rule #mapify( I:Int ;; A:Bind & B:Bind  ) => #mapify(I;#chan(A)) #mapify(I +Int size(#LV(A));;B)
-  rule #mapify( I:Int ;; A:Bind & B:Binds ) => #mapify(I;#chan(A)) #mapify(I +Int size(#LV(A));;B)
-//  rule #mapify( I:Int ;; A:Pbind ) => updateMap( Mem , #mapify(I;#chan(A);Mem) )
-//  rule #mapify( I:Int ;; A:Pbind & B:Pbind  ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
-//  rule #mapify( I:Int ;; A:Pbind & B:Pbinds ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
-//  rule #mapify( I:Int ;; A:Rbind ) => updateMap( Mem , #mapify(I;#chan(A);Mem) )
-//  rule #mapify( I:Int ;; A:Rbind & B:Rbind  ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
-//  rule #mapify( I:Int ;; A:Rbind & B:Rbinds ) => updateMap( Mem , #mapify(I;#chan(A);Mem) #mapify(I +Int size(#LV(A));;B;;Mem) )
-
-// Collection
-  // RhoLists
-  rule #mapify( _:Int ; [ ] ) => .Map
-  rule #mapify( I:Int ; [ A:Procs    ] ) => #mapify(I;A)
-  rule #mapify( I:Int ; [ A:ProcPats ] ) => #mapify(I;A)
-  // RhoMaps
-    // applied after normalization
-  rule #mapify( _:Int ; { } ) => .Map
-  rule #mapify( I:Int ; { A:RhoKVPairs } ) => #mapify(I;A)
-  rule #mapify( I:Int ; { A:RhoKVPats  } ) => #mapify(I;A)
-    // KV Pairs
-  rule #mapify( I:Int ; A:Proc    : B:Proc    ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:Proc    : B:ProcPat ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:ProcPat : B:Proc    ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:ProcPat : B:ProcPat ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:RhoKVPair , B:RhoKVPairs ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:RhoKVPair , B:RhoKVPats  ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:RhoKVPat  , B:RhoKVPairs ) => #mapify(I;A) #mapify(I;B)
-  rule #mapify( I:Int ; A:RhoKVPat  , B:RhoKVPats  ) => #mapify(I;A) #mapify(I;B)
-  // RhoSets
-    // applied after normalization
-  rule #mapify( _:Int ; Set( ) ) => .Map
-  rule #mapify( I:Int ; Set( A:Procs    ) ) => #mapify(I;A)
-  rule #mapify( I:Int ; Set( A:ProcPats ) ) => #mapify(I;A)
-  // RhoTuples
-  rule #mapify( I:Int ; ( A:Procs    ,) ) => #mapify(I;A)
-  rule #mapify( I:Int ; ( A:ProcPats ,) ) => #mapify(I;A)
-
-// Expressions -- TODO: AExp, List, String
-  // BExp
-  rule #mapify( I:Int ; not A:BExp ) => #mapify(I;A)
-  rule #mapify( I:Int ; A:BExp and B:BExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:BExp or  B:BExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:AExp <=  B:AExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:AExp <   B:AExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:AExp >=  B:AExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:AExp >   B:AExp ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name ==  B:Name ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Name !=  B:Name ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc ==  B:Proc ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc !=  B:Proc ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc    matches B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc    matches B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat matches B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-
-  // Pattern expressions
-  rule #mapify( _:Int ; _:SimplePat ) => .Map
-  rule #mapify( I:Int ; ~ A:Proc    ) => #mapify(I;A)
-  rule #mapify( I:Int ; ~ A:ProcPat ) => #mapify(I;A)
-  rule #mapify( I:Int ; A:Proc    /\ B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat /\ B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat /\ B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc    \/ B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:Proc    \/ B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat \/ B:Proc    ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-  rule #mapify( I:Int ; A:ProcPat \/ B:ProcPat ) => #mapify(I;A) #mapify(I +Int size(#FV(A));B)
-
-  // NamePat
-  rule #mapify( _:Int ; _:SimpleNamePat ) => .Map
-  rule #mapify( I:Int ; @A:ProcPat ) => #mapify(I;A)
-
-//----------------------
-//--- Nested #mapify ---
-//----------------------
-  rule #mapify( _:Int , _:Int ; \_               ) => .Map
-  rule #mapify( _:Int , _:Int ;  _:SimplePat     ) => .Map
-  rule #mapify( _:Int , _:Int ;  _:SimpleNamePat ) => .Map
-
-  // Empty Name & Proc
+// Empty Name & Proc
   rule #mapify( _:Int , _:Int ; EmptyN ) => .Map
   rule #mapify( _:Int , _:Int ; EmptyP ) => .Map
 
-  // Name
-  rule #mapify( I:Int , J:Int ;  A:Var      ) => A |-> @x(I,J)
-  rule #mapify( I:Int , J:Int ; @A:Proc     ) => #mapify(I,J;A)
-  rule #mapify( _:Int , _:Int ; @sub        ) => .Map
+// Name[Pat]
+  rule #mapify( _:Int , _:Int ;   @sub      ) => .Map
   rule #mapify( _:Int , _:Int ; _:BoundName ) => .Map
+  rule #mapify( L:Int , I:Int ;  A:Var      ) => #if L ==Int 0 #then A |-> @x(I) #else A |-> @x(L,I) #fi
+  rule #mapify( L:Int , I:Int ; @A:Proc     ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; @A:ProcPat  ) => #mapify(L,I;A)
+  // Name[Pat]s
+  rule #mapify( L:Int , I:Int ; A:Name    , B:Names    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name    , B:NamePats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat , B:Names    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat , B:NamePats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-    // several Name[Pat]s
-  rule #mapify( I:Int , J:Int ; A:Name    , B:Names    ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat , B:Names    ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Name    , B:NamePats ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat , B:NamePats ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-
-  // Proc
-  rule #mapify( _:Int , _:Int ;  _:Ground    ) => .Map
-  rule #mapify( I:Int , J:Int ; \A:Var       ) => \A |-> x(I,J)
-  rule #mapify( _:Int , _:Int ;  _:BoundProc ) => .Map
-  rule #mapify( I:Int , J:Int ; *A:Name      ) => #mapify(I,J;A)
+// Proc[Pat]
   rule #mapify( _:Int , _:Int ;    sub       ) => .Map
-    // several Proc[Pat]s
-  rule #mapify( I:Int , J:Int ; A:Proc    , B:Procs    ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:ProcPat , B:Procs    ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Proc    , B:ProcPats ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:ProcPat , B:ProcPats ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
+  rule #mapify( _:Int , _:Int ;  _:Ground    ) => .Map
+  rule #mapify( _:Int , _:Int ;  _:BoundProc ) => .Map
+  rule #mapify( L:Int , I:Int ; \A:Var       ) => #if L==Int 0 #then \A |-> x(I) #else \A |-> x(L,I) #fi
+  rule #mapify( L:Int , I:Int ; *A:Name      ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; *A:NamePat   ) => #mapify(L,I;A)
+  // Proc[Pat]s
+  rule #mapify( L:Int , I:Int ; A:Proc    , B:Procs    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    , B:ProcPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat , B:Procs    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat , B:ProcPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-  // New
-    // if @{new A:VarDecs in { B:Proc[Pat] }} appears in a listen pattern,
-    // the only listen-level binding variables come from #FV(B) -Set #DV(A)
-    // so the declared variables are hidden from #mapify
-  rule #mapify( I:Int , J:Int ; new A:VarDecs in { B:Proc    } ) => #mapify(I,J;#sub(#mapSub(#DV(A));B))
-  rule #mapify( I:Int , J:Int ; new A:VarDecs in { B:ProcPat } ) => #mapify(I,J;#sub(#mapSub(#DV(A));B))
+// New[Pat]
+  // if @{new A:VarDecs in { B:Proc[Pat] }} appears in a listen pattern,
+  // the only listen-level binding variables come from #FV(B) -Set #DV(A)
+  // so the declared variables are hidden from #mapify
+  rule #mapify( L:Int , I:Int ; new A:VarDecs in { B:Proc    } ) => #mapify(L,I;#sub(#mapSub(#DV(A));B))
+  rule #mapify( L:Int , I:Int ; new A:VarDecs in { B:ProcPat } ) => #mapify(L,I;#sub(#mapSub(#DV(A));B))
 
-  // Par
-  rule #mapify( I:Int , J:Int ; A:Proc | B:Proc ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-       requires notBool isPar(A)
+// Par[Pat]
+  rule #mapify( L:Int , I:Int ; A:Proc    | B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool    isPar(A)
+  rule #mapify( L:Int , I:Int ; A:Proc    | B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool    isPar(A)
+  rule #mapify( L:Int , I:Int ; A:ProcPat | B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool isParPat(A)
+  rule #mapify( L:Int , I:Int ; A:ProcPat | B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool isParPat(A)
 
-  // Send
-  rule #mapify( I:Int , J:Int ; A:Name    !  ( B:ProcPats ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Name    !  ( B:Procs    ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Name    !  (            ) ) => #mapify(I,J;A)
-  rule #mapify( I:Int , J:Int ; A:NamePat !  ( B:ProcPats ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat !  ( B:Procs    ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat !  (            ) ) => #mapify(I,J;A)
-  rule #mapify( I:Int , J:Int ; A:Name    !! ( B:ProcPats ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Name    !! ( B:Procs    ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:Name    !! (            ) ) => #mapify(I,J;A)
-  rule #mapify( I:Int , J:Int ; A:NamePat !! ( B:ProcPats ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat !! ( B:Procs    ) ) => #mapify(I,J;A) #mapify(I,J +Int size(#FV(A));B)
-  rule #mapify( I:Int , J:Int ; A:NamePat !! (            ) ) => #mapify(I,J;A)
+// Send[Pat]
+  rule #mapify( L:Int , I:Int ; A:Name    !  ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name    !  ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name    !  (            ) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; A:NamePat !  ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat !  ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat !  (            ) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; A:Name    !! ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name    !! ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name    !! (            ) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; A:NamePat !! ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat !! ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:NamePat !! (            ) ) => #mapify(L,I;A)
 
-  // Receive -- TODO: MRec
-    // TODO: more testing
-    // mapSub used to hide listening variables from generating additional substitution mappings
-    // unguarded
-  rule #mapify( I:Int , J:Int ; for( B:Lbind  ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Lbinds ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
+// Receive/RecPat
+  // mapSub used to hide listening variables from generating additional substitution mappings
+  rule #mapify( L:Int , I:Int ; A:UGSRec )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:UGMRec )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:GSRec  )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
+       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:GMRec  )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
+       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:UGSRecPat )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:UGMRecPat )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:GSRecPat )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
+       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
+  rule #mapify( L:Int , I:Int ; A:GMRecPat )
+    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
+       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
 
-  rule #mapify( I:Int , J:Int ; for( B:Pbind  ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Pbinds ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
+// TOD: Contract
+// TODO: Invocation[pat]
+// TODO: VarRef
+// TODO: LetExp
 
-  rule #mapify( I:Int , J:Int ; for( B:Rbind  ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Rbinds ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));C))
+// Match[Pat] -- free variables in MatchCase continuations must be distinct
+  rule #mapify( L:Int , I:Int ; match A:Proc    { B:MatchCases } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; match A:Proc    { B:MCasePats  } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; match A:ProcPat { B:MatchCases } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; match A:ProcPat { B:MCasePats  } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // multiple MatchCases/MCasePats
+  rule #mapify( L:Int , I:Int ; A:MatchCase B:MatchCases ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:MatchCase B:MCasePats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:MCasePat  B:MatchCases ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:MCasePat  B:MCasePats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // single MatchCase/MCasePat
+  rule #mapify( L:Int , I:Int ; { A:Proc    } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:ProcPat } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:Proc    } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:ProcPat } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
 
-    // guarded
-       // collect variables from the channel first, then from the guard with listening variables hidden,
-       // then from the continuation with listen variables hidden
-  rule #mapify( I:Int , J:Int ; for( B:Lbind  if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Lbinds if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
+// Select[Pat]
+  rule #mapify( L:Int , I:Int ; select { A:Branches   } ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; select { A:BranchPats } ) => #mapify(L,I;A)
+  // multiple Branches/BranchPats
+  rule #mapify( L:Int , I:Int ; A:Branch    B:Branches   ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Branch    B:BranchPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:BranchPat B:Branches   ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:BranchPat B:BranchPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // single Branch[Pat]
+  rule #mapify( L:Int , I:Int ; { A:Lbind     } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:Lbinds    } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:LbindPat  } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:LbindPats } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:Lbind     } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:Lbinds    } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:LbindPat  } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:LbindPats } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
 
-  rule #mapify( I:Int , J:Int ; for( B:Pbind  if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Pbinds if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
+// Collection[Pat]
+  // RhoLists
+  rule #mapify( _:Int , _:Int ; [ ] ) => .Map
+  rule #mapify( L:Int , I:Int ; [ A:Procs    ] ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; [ A:ProcPats ] ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; [ A:Procs    ... B:ProcVar ] ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+  rule #mapify( L:Int , I:Int ; [ A:ProcPats ... B:ProcVar ] ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+  // RhoMaps
+    // applied after normalization
+  rule #mapify( _:Int , _:Int ; { } ) => .Map
+  rule #mapify( L:Int , I:Int ; { A:RhoKVPairs } ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; { A:RhoKVPats  } ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; { A:RhoKVPairs ... B:ProcVar } ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+  rule #mapify( L:Int , I:Int ; { A:RhoKVPats  ... B:ProcVar } ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+    // KV Pairs
+  rule #mapify( L:Int , I:Int ; A:Proc    : B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    : B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat : B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat : B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPairs ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPairs ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // RhoSets
+    // applied after normalization
+  rule #mapify( _:Int , _:Int ; Set( ) ) => .Map
+  rule #mapify( L:Int , I:Int ; Set( A:Procs    ) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; Set( A:ProcPats ) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; Set( A:Procs    ... B:ProcVar ) ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+  rule #mapify( L:Int , I:Int ; Set( A:ProcPats ... B:ProcVar ) ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
+  // RhoTuples
+  rule #mapify( L:Int , I:Int ; ( A:Procs    ,) ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; ( A:ProcPats ,) ) => #mapify(L,I;A)
 
-  rule #mapify( I:Int , J:Int ; for( B:Rbind  if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
-  rule #mapify( I:Int , J:Int ; for( B:Rbinds if G:BExp ){ C:Proc } )
-    => #mapify(I,J;#chan(B)) #mapify(I,J +Int size(#RV(B));#sub(#mapSub(#LV(B));G))
-       #mapify(I,J +Int size(#RV(B)) +Int size(#FV(G) -Set #LV(B));#sub(#mapSub(#LV(B));C))
+// Expressions -- TODO: AExp, List, String
+  // BExp
+  rule #mapify( L:Int , I:Int ; not A:BExp ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; A:BExp and B:BExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:BExp or  B:BExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:AExp <=  B:AExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:AExp <   B:AExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:AExp >=  B:AExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:AExp >   B:AExp ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name ==  B:Name ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Name !=  B:Name ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc ==  B:Proc ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc !=  B:Proc ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    matches B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    matches B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat matches B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-  rule #mapify( I:Int , J:Int ;; A:Bind ) => #mapify(I,J;#chan(A))
-  rule #mapify( I:Int , J:Int ;; A:Bind & B:Bind  ) => #mapify(I,J;#chan(A)) #mapify(I,J +Int size(#LV(A));;B)
-  rule #mapify( I:Int , J:Int ;; A:Bind & B:Binds ) => #mapify(I,J;#chan(A)) #mapify(I,J +Int size(#LV(A));;B)
+// Patterns
+  rule #mapify( _:Int , _:Int ; \_ ) => .Map
+  rule #mapify( _:Int , _:Int ;  _:SimplePat     ) => .Map
+  rule #mapify( _:Int , _:Int ;  _:SimpleNamePat ) => .Map
 
+  // Pattern expressions
+  rule #mapify( L:Int , I:Int ; ~ A:Proc    ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; ~ A:ProcPat ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ; A:Proc    /\ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    /\ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat /\ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat /\ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    \/ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:Proc    \/ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat \/ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat \/ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-  rule   @ * N:Name => N  [anywhere, structural]
-  rule   * @ P:Proc => P  [anywhere, structural]
-//  rule   A:Name    !  ( EmptyP ) => A!  ( )  [anywhere, structural]
-//  rule   A:Name    !! ( EmptyP ) => A!! ( )  [anywhere, structural]
-//  rule   A:NamePat !  ( EmptyP ) => A!  ( )  [anywhere, structural]
-//  rule   A:NamePat !! ( EmptyP ) => A!  ( )  [anywhere, structural]
+//--------------
+//--- #alpha ---
+//--------------
+// Alpha Equivalence Predicate
+  // checks synactic equality of indexed terms -- need to normalize terms first
+  rule P:Proc #alpha Q:Proc => #deBruijn(P) ==K #deBruijn(Q)
+
+//------------------
+//--- Structural ---
+//------------------
+// Nil = unit of |
+  rule Nil       | A:ProcPat => A [anywhere, structural]
+  rule A:ProcPat | Nil       => A [anywhere, structural]
+// @* = Id_NamePat & *@ = Id_ProcPat
+  rule @ * A:NamePat => A [anywhere, structural]
+  rule * @ A:ProcPat => A [anywhere, structural]
+// ~~ = Id_ProcPat
+  rule ~ ~ A:ProcPat => A [anywhere, structural]
+
+//  rule   A:Name    !  ( EmptyP ) => A!  ( ) [anywhere, structural]
+//  rule   A:Name    !! ( EmptyP ) => A!! ( ) [anywhere, structural]
+//  rule   A:NamePat !  ( EmptyP ) => A!  ( ) [anywhere, structural]
+//  rule   A:NamePat !! ( EmptyP ) => A!  ( ) [anywhere, structural]
 
 endmodule
