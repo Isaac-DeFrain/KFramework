@@ -1,25 +1,24 @@
-// De Bruijn levels - nested receives
+// De Bruijn indices - nested receives
 
-    #deBruijn( 0 ; new x in { for( @\a,b <- x ){ for( @\a <- x ){ for( @\a,b <- @\a ){ for( @\a <- x ){ b!(\a) } } | *b } } } ; .Map )
+    #deBruijn( new x in { for( @\a,b <- x ){ for( @\a,b <- x ){ for( @\a,b <- @\a ){ for( @\a <- x ){ b!(\a) } } | *b } | *b } } )
 
 /*
 Output:
 
-    new boundN( 0 ) in { 
-      for ( @ boundP( 1 ) , boundN( 2 ) <- boundN( 0 ) ) { 
-        for ( @ boundP( 3 ) <- boundN( 0 ) ) { 
-          for ( @ boundP( 4 ) , boundN( 5 ) <- @ boundP( 3 ) ) { 
-            for ( @ boundP( 6 ) <- boundN( 0 ) ) { 
-              boundN( 5 ) ! ( boundP( 6 ) ) 
-            } 
-          } | 
-          * boundN( 2 ) 
-        } 
-      } 
+  new n( 0 ) in {
+    for ( @ x( 1 ) , @ x( 2 ) <- n( 0 ) ) {
+      for ( @ x( 3 ) , @ x( 4 ) <- n( 0 ) ) {
+        for ( @ x( 5 ) , @ x( 6 ) <- @ x( 3 ) ) {
+          for ( @ x( 7 ) <- n( 0 ) ) {
+            { @ x( 6 ) } ! ( x( 7 ) )
+          }
+        } | x( 4 )
+      } | x( 2 )
     }
+  }
 
-From RNode: 
+From RNode:
 
-    
+
 
 */

@@ -1,19 +1,20 @@
 // De Bruijn levels
 
-    #deBruijn( new x,a,b in { x!(for( y <- @1 ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) } )
-  
-/* Output: 
-   
-    new boundN( 0 ) , boundN( 1 ) , boundN( 2 ) in {
+    #deBruijn( new x,a,b in { x!(for( @for( a,b,c <= y ){ Set(*a,*b,*c) } <- @{*a | *b | new a,b in { a!!(*b) } } ){ *y | *x | for( b <- a ){ for( c <- b ){ *b | *c } } } ) | a!(*b) } )
 
-      boundN( 0 ) ! ( for ( boundN( 3 ) <- @ 1 ) { 
-        * boundN( 3 ) | * boundN( 0 ) | for ( boundN( 4 ) <- boundN( 1 ) ) {
-          for ( boundN( 5 ) <- boundN( 4 ) ) {
-            * boundN( 4 ) | * boundN( 5 )
-          } 
-        } 
-      } ) | 
-      boundN( 1 ) ! ( * boundN( 2 ) ) 
-    }
+/* Output:
+
+  new n( 0 ) , n( 1 ) , n( 2 ) in {
+    n( 0 ) ! ( for ( @ for ( @ x( 1 , 0 ) , @ x( 1 , 1 ) , @ x( 1 , 2 ) <= @ x( 3 ) ) {
+                         Set( x( 1 , 0 ) , x( 1 , 1 ) , x( 1 , 2 ) )
+                       } <- @ * n( 1 ) | * n( 2 ) | new n( 3 ) , n( 4 ) in { n( 3 ) !! ( * n( 4 ) ) } ) {
+                                                      x( 3 ) | * n( 0 ) | for ( @ x( 4 ) <- n( 1 ) ) {
+                                                                            for ( @ x( 5 ) <- @ x( 4 ) ) {
+                                                                              x( 4 ) | x( 5 )
+                                                                            }
+                                                                          }
+                 }
+               ) | n( 1 ) ! ( * n( 2 ) )
+  }
 
 */

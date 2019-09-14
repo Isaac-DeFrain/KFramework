@@ -1,10 +1,10 @@
 // De Bruijn levels - receive several names
 
-    #deBruijn(0 ; for( x,a,b,@\c <- @Nil ){ *x | @\c!(*a | *b ) } ; .Map )
-  
+    #deBruijn( for( @{\x /\ Int},a,b,@\c <- @Nil ){ \x | a!(\c | *b ) } )
+
 /*
 Output:
 
-   for ( boundN( 0 ) , boundN( 1 ) , boundN( 2 ) , @ boundP( 3 ) <- @ Nil ) { * boundN( 0 ) | ( @ boundP( 3 ) ) ! ( * boundN( 1 ) | * boundN( 2 ) ) }
+  for ( @ x( 0 ) /\ Int , @ x( 1 ) , @ x( 2 ) , @ x( 3 ) <- @ Nil ) { x( 0 ) | { @ x( 1 ) } ! ( x( 3 ) | x( 2 ) ) }
 
 */

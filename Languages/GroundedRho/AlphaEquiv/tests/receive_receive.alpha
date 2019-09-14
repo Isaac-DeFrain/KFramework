@@ -1,10 +1,15 @@
 // De Bruijn levels - receive
 
-  #deBruijn(0 ; for( @{for( y <- x ){ Nil }} <- @Nil ){ *x } ; .Map )
-  
+
+    #deBruijn( new a,b,c in { for( @{for( y <- @{*x | *z} ){ y!(0) }} <- @{ a!!(*b) } ){ [*x,(*z,)] | for( a<<-c){*a} } } )
+
 /*
 Output:
 
-    for ( @ for ( boundN( 1 , 0 ) <- boundN( 0 ) ) { Nil } <- @ Nil ) { * boundN( 0 ) }
+  new n( 0 ) , n( 1 ) , n( 2 ) in {
+    for ( @ for ( @ x( 1 , 0 ) <- @ x( 3 ) | x( 4 ) ) { { @ x( 1 , 0 ) } ! ( 0 ) } <- @ ( n( 0 ) !! ( * n( 1 ) ) ) ) {
+      [ x( 3 ) , ( x( 4 ) ,) ] | for ( @ x( 5 ) <<- n( 2 ) ) { x( 5 ) }
+    }
+ }
 
 */
