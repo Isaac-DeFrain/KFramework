@@ -1,0 +1,10 @@
+// Match -- single Map
+
+    #match( 0|->0 1|->1 ; 0|->1 1|->0 ;; [*a,*b] ; [*b,*a] ; a,b ; a,b ; SetItem( 0 ; a ) SetItem( 1 ; b ) )
+
+/*
+Output:
+
+  true
+
+*/

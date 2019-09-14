@@ -1,0 +1,10 @@
+// Match -- MultiRec
+
+  #matchMRec( for( @[\a,\b] <- @0 & @1 <- @0 ){ [\a,\b] } ; for( a <- @0 & @1 <- @0 ){ *a } )
+
+/*
+Output:
+
+  true
+
+*/

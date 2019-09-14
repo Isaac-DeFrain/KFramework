@@ -1,0 +1,14 @@
+// Match -- multiple Maps
+/*
+  Auxiliary step in computing:
+  #matchMRec( for( a <- @0 & b <- @0 ){ [*a,*b] } ; for( a <- @0 & b <- @0 ){ [*b,*a] } )
+*/
+
+    #match( 0|->0 1|->1 ; 0|->1 1|->0 ;; [*a,*b] ; [*b,*a] ; a,b ; a,b ; SetItem( 0 ; a ) SetItem( 1 ; b ) )
+
+/*
+Output:
+
+  true
+
+*/

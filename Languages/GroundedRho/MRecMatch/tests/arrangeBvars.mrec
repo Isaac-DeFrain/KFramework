@@ -1,0 +1,25 @@
+// Rearrange BvarSet
+
+    #arrangeBvars( 0|->0 1|->2 2|->1 3|->3 4|->5 5|->6 6|->7 7|->4 ;
+      SetItem ( 0 ; a )
+      SetItem ( 1 ; b , c , d )
+      SetItem ( 2 ; @ \ a /\ String )
+      SetItem ( 3 ; e , f , g , h )
+      SetItem ( 4 ; p , @ q ! ( \ b /\ Int ) )
+      SetItem ( 5 ; @ 1 )
+      SetItem ( 6 ; @ 1 )
+      SetItem ( 7 ; s , t ) )
+
+/*
+Output:
+
+  SetItem ( 0 ; a )
+  SetItem ( 1 ; @ \ a /\ String )
+  SetItem ( 2 ; b , c , d )
+  SetItem ( 3 ; e , f , g , h )
+  SetItem ( 4 ; s , t )
+  SetItem ( 5 ; p , @ q ! ( \ b /\ Int ) )
+  SetItem ( 6 ; @ 1 )
+  SetItem ( 7 ; @ 1 )
+
+*/

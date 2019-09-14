@@ -1,0 +1,10 @@
+// Bind Maps from matchBindSet
+
+    #matchBindMaps( for( a <- @0 & b <- @0 ){ Nil } ; for( a <- @0 & b <- @0 ){ Nil } )
+
+/*
+Output:
+
+  0 |-> 0 1 |-> 1 ; 0 |-> 1 1 |-> 0
+
+*/

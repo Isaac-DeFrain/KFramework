@@ -1,0 +1,12 @@
+// Rearrange BindSet
+
+    #arrangeBinds( 0 |-> 0 1 |-> 2 2 |-> 1 ; SetItem( 0 ; a <- @0 ) SetItem( 1 ; b <- @0 ) SetItem( 2 ; c <- @0 ) )
+
+/*
+Output:
+
+  SetItem ( 0 ; a <- @ 0 )
+  SetItem ( 1 ; c <- @ 0 )
+  SetItem ( 2 ; b <- @ 0 )
+
+*/

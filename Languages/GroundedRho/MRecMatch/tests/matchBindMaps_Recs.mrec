@@ -1,0 +1,11 @@
+// Bind Maps from receives
+
+    #matchBindMaps( for( a <- @0 & b <- @1 & c <- @1 ){ [*a,*b,*c] } ; for( a <- @0 & b <- @1 & c <- @1 ){ [*a,*c,*b] } )
+
+/*
+Output:
+
+  0 |-> 0 1 |-> 1 2 |-> 2 ;
+  0 |-> 0 1 |-> 2 2 |-> 1
+
+*/

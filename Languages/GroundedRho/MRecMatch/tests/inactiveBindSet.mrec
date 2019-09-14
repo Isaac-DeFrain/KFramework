@@ -1,0 +1,10 @@
+// Inactive Binds
+
+    #inactiveBindSet( for( a,b,@{c!(\d)} <<- @0 & e <<- @1 & f,@(\g,) <<- @2 ){ a!(\d) | b!(f!(0)) } )
+
+/*
+Output:
+
+  SetItem ( 1 ; e <<- @ 1 )
+
+*/

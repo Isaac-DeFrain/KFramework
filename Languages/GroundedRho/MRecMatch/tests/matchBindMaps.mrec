@@ -1,0 +1,11 @@
+// matchBindMaps from matchBindSet
+
+    #matchBindMaps( SetItem(0 ; SetItem(0) SetItem(1) SetItem(2)) SetItem(1 ; SetItem(0) SetItem(1) SetItem(2)) SetItem(2 ; SetItem(0)) )
+
+/*
+Output:
+
+  0 |-> 1 1 |-> 2 2 |-> 0 ;
+  0 |-> 2 1 |-> 1 2 |-> 0
+
+*/
