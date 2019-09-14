@@ -1,0 +1,10 @@
+// Procs of SimLetBinds
+
+    #letproc( \a <- 0 & \b <- 1 & \c <- true & \d <- @2!([]) )
+
+/*
+Output:
+
+  0 , 1 , true , { @ 2 } ! ( [ ] )
+
+*/

@@ -1,0 +1,10 @@
+// Proc of LetBind
+
+    #letproc( \a <- 0 )
+
+/*
+Output:
+
+  0
+
+*/

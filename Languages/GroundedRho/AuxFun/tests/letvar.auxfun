@@ -1,0 +1,10 @@
+// Variable of LetBind
+
+    #letvar( \a <- 0 )
+
+/*
+Output:
+
+  \ a
+
+*/

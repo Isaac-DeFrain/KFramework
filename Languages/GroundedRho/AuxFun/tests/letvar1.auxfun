@@ -1,0 +1,10 @@
+// Variables of SimLetBinds
+
+    #letvar( \a <- 0 & \b <- 1 & \c <- true & \d <- @2!([]) )
+
+/*
+Output:
+
+  \ a , \ b , \ c , \ d
+
+*/
