@@ -1,0 +1,19 @@
+// Binding variables from bvarSet
+
+  #set2bvars(
+  SetItem ( 0 ; a )
+  SetItem ( 1 ; b , c , d )
+  SetItem ( 2 ; @ \ a /\ String )
+  SetItem ( 3 ; e , f , g , h )
+  SetItem ( 4 ; p , @ q ! ( \ b /\ Int ) )
+  SetItem ( 5 ; @ 1 )
+  SetItem ( 6 ; @ 1 )
+  SetItem ( 7 ; s , t )
+  )
+
+/*
+Output:
+
+  a , b , c , d , @ \ a /\ String , e , f , g , h , p , @ q ! ( \ b /\ Int ) , @ 1 , @ 1 , s , t
+
+*/
