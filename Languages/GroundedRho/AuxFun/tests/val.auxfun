@@ -1,0 +1,10 @@
+// Value associated with given key in Int Map
+
+    #val( 0|->0 1|->2 2|->1 ; 1 )
+
+/*
+Output:
+
+  2
+
+*/
