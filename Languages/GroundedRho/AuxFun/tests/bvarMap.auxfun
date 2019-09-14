@@ -1,0 +1,11 @@
+// indexed binding pattern map
+
+    #bvarMap( for( @{@{ @2!( \_ | 3 ) }!( )},@String,a,b <<- @{*chan1 /\ Int} & @6,@[\x,\y,\z] <<- chan2 ){ Nil } )
+
+/*
+Output:
+
+  0 |-> @ ( ( @ ( @ 2 ! ( \_ | 3 ) ) ) ! ( ) ) , @ String , a , b
+  1 |-> @ 6 , @ [ \ x , \ y , \ z ]
+
+*/

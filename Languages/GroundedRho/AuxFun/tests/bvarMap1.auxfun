@@ -1,0 +1,26 @@
+// bvarMap from bindMap
+
+    #bvarMap(
+      0 |-> a <<- u
+      1 |-> b , c , d <<- v
+      2 |-> @ \ a /\ String <<- w
+      3 |-> e , f , g , h <<- x
+      4 |-> p , @ q ! ( \ b /\ Int ) <<- y
+      5 |-> @ 1 <<- @ 0
+      6 |-> @ 1 <<- @ 0
+      7 |-> s , t <<- z
+    )
+
+/*
+Output:
+
+  0 |-> a
+  1 |-> b , c , d
+  2 |-> @ \ a /\ String
+  3 |-> e , f , g , h
+  4 |-> p , @ ( q ! ( \ b /\ Int ) )
+  5 |-> @ 1
+  6 |-> @ 1
+  7 |-> s , t
+
+*/

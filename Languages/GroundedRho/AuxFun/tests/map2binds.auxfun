@@ -1,0 +1,19 @@
+// bindMap to Binds
+
+    #map2binds(
+        0 |-> a <<- u
+        1 |-> b , c , d <<- v
+        2 |-> @ \ a /\ String <<- w
+        3 |-> e , f , g , h <<- x
+        4 |-> p , @ q ! ( \ b /\ Int ) <<- y
+        5 |-> @ 1 <<- @ 0
+        6 |-> @ 1 <<- @ 0
+        7 |-> s , t <<- z
+    )
+
+/*
+Output:
+
+  a <<- u & b , c , d <<- v & @ \ a /\ String <<- w & e , f , g , h <<- x & p , @ ( q ! ( \ b /\ Int ) ) <<- y & @ 1 <<- @ 0 & @ 1 <<- @ 0 & s , t <<- z
+
+*/

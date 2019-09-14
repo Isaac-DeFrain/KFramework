@@ -1,0 +1,11 @@
+// Indexed channel map of Receive
+
+    #chanMap( for( @{@{ @2!( \_ | 3 ) }!( )} <<- @{*chan1 /\ Int} & @6 <<- chan2 ){ Nil } )
+
+/*
+Output:
+
+  0 |-> @ * chan1 /\ Int
+  1 |-> chan2
+
+*/

@@ -1,0 +1,19 @@
+// Binding variables from bvarMap
+
+    #map2bvars(
+      0 |-> a
+      1 |-> b , c , d
+      2 |-> @ \ a /\ String
+      3 |-> e , f , g , h
+      4 |-> p , @ q ! ( \ b /\ Int )
+      5 |-> @ 1
+      6 |-> @ 1
+      7 |-> s , t
+    )
+
+/*
+Output:
+
+  a , b , c , d , @ \ a /\ String , e , f , g , h , p , @ ( q ! ( \ b /\ Int ) ) , @ 1 , @ 1 , s , t
+
+*/
