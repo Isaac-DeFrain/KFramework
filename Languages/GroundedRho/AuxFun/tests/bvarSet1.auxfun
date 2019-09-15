@@ -1,0 +1,26 @@
+// bvarSet from bindSet
+
+  #bvarSet(
+  SetItem ( 0 ; a <- u )
+  SetItem ( 1 ; b , c , d <- v )
+  SetItem ( 2 ; @ \ a /\ String <- w )
+  SetItem ( 3 ; e , f , g , h <- x )
+  SetItem ( 4 ; p , @ q ! ( \ b /\ Int ) <- y )
+  SetItem ( 5 ; @ 1 <- @ 0 )
+  SetItem ( 6 ; @ 1 <- @ 0 )
+  SetItem ( 7 ; s , t <- z )
+  )
+
+/*
+Output:
+
+  SetItem ( 0 ; a )
+  SetItem ( 1 ; b , c , d )
+  SetItem ( 2 ; @ \ a /\ String )
+  SetItem ( 3 ; e , f , g , h )
+  SetItem ( 4 ; p , @ q ! ( \ b /\ Int ) )
+  SetItem ( 5 ; @ 1 )
+  SetItem ( 6 ; @ 1 )
+  SetItem ( 7 ; s , t )
+
+*/
