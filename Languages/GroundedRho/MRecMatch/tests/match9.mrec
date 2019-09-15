@@ -1,0 +1,11 @@
+// Match -- MultiRec
+  // no to-be-matched bind is matched by the last candidate bind
+
+  #matchMRec( for( @[\a,\b] <- @0 & c <- @0 & \_ <- @1 ){ [\a,\b] } ; for( a <- @0 & b <- @0 & \_ <- @0 ){ *b } )
+
+/*
+Output:
+
+  false
+
+*/

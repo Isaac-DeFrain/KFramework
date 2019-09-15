@@ -1,0 +1,11 @@
+// Match -- MultiRec
+  // incorrect flow of information
+
+  #matchMRec( for( @[\a,\b] <= @0 & c <= @1 ){ [\a,\b] } ; for( a <= @0 & b <= @1 ){ *b } )
+
+/*
+Output:
+
+  false
+
+*/
