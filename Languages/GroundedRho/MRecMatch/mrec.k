@@ -38,9 +38,9 @@ module MREC-SYNTAX
                       | "#append(" Maps ";;" Map  ")" [function]
                       | "#append(" Maps ";;" Maps ")" [function]
 // Checks a match for each matchBindMap
-  syntax       Bool ::=   "#match(" Maps ";;" ProcPat ";" ProcPat ";" NamePats ";" NamePats ";" Set ")" [function]
+  syntax       Bool ::=   "#match(" Maps ";;" ProcPat ";" ProcPat ";" NamePats ";" Set ")" [function]
 // checks that each BindPat has a match before doing #match
-  syntax       Bool ::= "#matchif(" Set  ";;" ProcPat ";" ProcPat ";" NamePats ";" NamePats ";" Set ")" [function]
+  syntax       Bool ::= "#matchif(" Set  ";;" ProcPat ";" ProcPat ";" NamePats ";" Set ")" [function]
 // MultiRec matching
   syntax       Bool ::= "#matchMRec(" MRecPat ";" MRecPat ")" [function]
 
@@ -102,27 +102,42 @@ module MREC
   rule #combineMaps( A:Map ;  B:Maps ;; C:Maps ) => #append(#combineMaps(A;;C);;#combineMaps(B;;C))
        requires notBool isMap(C)
 
-// MRec matching predicate
+// MRec matching predicate -- checks number of binds match, then #matchif
+  // Linear
+  rule #matchMRec( for( _:LbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
+    => false requires notBool isLbindPats(C)
   rule #matchMRec( for( A:LbindPats ){ B:ProcPat } ; for( C:LbindPats ){ D:ProcPat } )
-    => #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvar(C);#bvarSet(A;;0))
+    => #length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
+  // Peek
+  rule #matchMRec( for( _:PbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
+    => false requires notBool isPbindPats(C)
   rule #matchMRec( for( A:PbindPats ){ B:ProcPat } ; for( C:PbindPats ){ D:ProcPat } )
-    => #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvar(C);#bvarSet(A;;0))
+    => #length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
+  // Repeat
+  rule #matchMRec( for( _:RbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
+    => false requires notBool isRbindPats(C)
   rule #matchMRec( for( A:RbindPats ){ B:ProcPat } ; for( C:RbindPats ){ D:ProcPat } )
-    => #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvar(C);#bvarSet(A;;0))
+    => #length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
 
   // TODO: change bvarSet to bvarMap
-  // #matchif( matchBindSet ;; cont1 ; cont2 ; bvar1 ; bvar2 ; bvarSet1 )
-  rule #matchif( A:Set ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:NamePats ; F:Set )
-    => #checkMBS(A) andBool #match(#matchBindMaps(A);;B;C;D;E;F)
+  // #matchif( matchBindSet ;; cont1 ; cont2 ; bvar1 ; bvarSet2 )
+    // checks that each candidate bind matches, each to-be-matched bind is matched,
+    // and then checks each bind matching arrangement for an indexed continuation match
+  rule #matchif( A:Set ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:Set )
+    => #checkMBS(A) andBool #checkMBS+(A) andBool
+       #match(#matchBindMaps(A);;#sub(#mapify(0,0;D);B);C;#sub(#mapify(0,0;D);D);E)
 
-  // #match( matchBindMaps ;; cont1 ; cont2 ; bvar1 ; bvar2 ; bvarSet1 )
-    // rearranges bvarSet1 according to each Map in matchBindMaps and checks for successful #match+
-      // single Map
-  rule #match( A:Map ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:NamePats ; F:Set )
-    => #match(#sub(#mapify(0,0;#set2bvars(#arrangeBvars(A;F)));B);#sub(#mapify(0,0;D);#sub(D;E;C)))
+  // #match( matchBindMaps ;; indexed cont1 ; cont2 ; indexed bvar1 ; bvarSet2 )
+    // rearranges bvarSet2 according to each Map in matchBindMaps and checks for successful #match+
+      // single Map --
+  rule #match( A:Map ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:Set )
+    => #match(B;#sub(D;#set2bvars(#arrangeBvars(A;E));C))
       // multiple Maps
-  rule #match( A1:Map ; A2:Maps ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:NamePats ; F:Set )
-    => #match(A1;;B;C;D;E;F) orBool #match(A2;;B;C;D;E;F)
+  rule #match( A1:Map ; A2:Maps ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:Set )
+    => #match(A1;;B;C;D;E) orBool #match(A2;;B;C;D;E)
 
 // Active & Inactive Binds -- #[in]activeBindSet( bind number ; number of binds ; bindSet ; Cont ; bindSet )
   // partitions bindSet according to whether binding variables are used in the continuation
