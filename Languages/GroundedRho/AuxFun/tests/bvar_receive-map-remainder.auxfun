@@ -1,0 +1,10 @@
+// Receive map remainder pattern -- binding patterns
+
+    #bvar(  for( @{ *x : 3 , *d : \y ... \u },c <= n(0) ){ *n(0) | *x | *n(1) | *c | \y }  )
+
+/*
+Output:
+
+  @ { * x : 3 , Nil : \ y ... \ u } , c
+
+*/
