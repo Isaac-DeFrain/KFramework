@@ -1,0 +1,12 @@
+// Map substitution variables
+
+    #mapVarSub( \a , \b , \c )
+
+/*
+Output:
+
+  \ a |-> pvar( 0 )
+  \ b |-> pvar( 1 )
+  \ c |-> pvar( 2 )
+
+*/

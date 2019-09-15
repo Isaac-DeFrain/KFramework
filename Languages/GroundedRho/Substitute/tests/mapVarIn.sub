@@ -1,0 +1,12 @@
+// Map substitution variables
+
+    #mapVarIn( \a /\ Uri , \b , \c )
+
+/*
+Output:
+
+  pvar( 0 ) |-> \ a /\ Uri
+  pvar( 1 ) |-> \ b
+  pvar( 2 ) |-> \ c
+
+*/
