@@ -1,0 +1,11 @@
+// Match -- MultiRec
+  // correct order of variables
+
+    #matchif( SetItem(0;SetItem(0)SetItem(1)) SetItem(1;SetItem(0)SetItem(1)) ;; [\a,\b] ; *b ; @[\a,\b],c ; SetItem(0;a) SetItem(1;b) )
+
+/*
+Output:
+
+  true
+
+*/
