@@ -1,6 +1,6 @@
 // Length of bind list
 
-  #length( a <- x ; b,c <- y ; d,e,f,g <- z ; a1,a2 <- x1 ; a <- y ; s,t <- x )
+  #length( a <- x & b,c <- y & d,e,f,g <- z & a1,a2 <- x1 & a <- y & s,t <- x )
 
 /*
   Output: 6
