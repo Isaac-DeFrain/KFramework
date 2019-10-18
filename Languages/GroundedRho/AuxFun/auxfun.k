@@ -268,22 +268,13 @@ module AUXFUN-SYNTAX
 
   // Send[Pat]
     // send channel function
-  syntax       Name ::= "#chan(" Send    ")" [function]
-                      | "#chan(" SendPat ")" [function]
-  syntax    NamePat ::= "#chan(" SendPat ")" [function]
+  syntax    NamePat ::=   "#chan(" SendPat ")" [function]
     // send message function
-  syntax       Proc ::= "#msg(" Send    ")" [function]
-                      | "#msg(" SendPat ")" [function]
-  syntax      Procs ::= "#msg(" Send    ")" [function]
-                      | "#msg(" SendPat ")" [function]
-  syntax    ProcPat ::= "#msg(" SendPat ")" [function]
-  syntax   ProcPats ::= "#msg(" SendPat ")" [function]
+  syntax   ProcPats ::=    "#msg(" SendPat ")" [function]
     // send message length function
-  syntax        Int ::= "#msglen(" Send    ")" [function]
-                      | "#msglen(" SendPat ")" [function]
+  syntax        Int ::= "#msglen(" SendPat ")" [function]
     // send type function
-  syntax        Int ::= "#stype(" Send    ")" [function]
-                      | "#stype(" SendPat ")" [function]
+  syntax        Int ::=  "#stype(" SendPat ")" [function]
 
   // New[Pat]
     // declared names function
@@ -308,19 +299,13 @@ module AUXFUN-SYNTAX
   syntax    ProcPat ::= "#newproc(" NewPat ")" [function]
 
   // Select
-  syntax LinearSRec ::=    "#branch2rec(" Branch ")" [function]
-  syntax LinearMRec ::=    "#branch2rec(" Branch ")" [function]
-  syntax     Branch ::= "#select2branch(" Select ")" [function]
-  syntax   Branches ::= "#select2branch(" Select ")" [function]
+  syntax     RecPat ::=    "#branch2rec(" BranchPat ")" [function]
+  syntax BranchPats ::= "#select2branch(" SelectPat ")" [function]
 
-  syntax      Lbind ::= "#bind(" Branch    ")" [function]
-                      | "#bind(" BranchPat ")" [function]
-  syntax     Lbinds ::= "#bind(" Branch    ")" [function]
-                      | "#bind(" BranchPat ")" [function]
   syntax   LbindPat ::= "#bind(" BranchPat ")" [function]
   syntax  LbindPats ::= "#bind(" BranchPat ")" [function]
-  syntax       Proc ::= "#cont(" Branch    ")" [function]
-                      | "#cont(" BranchPat ")" [function]
+  syntax  GLbindPat ::= "#bind(" BranchPat ")" [function]
+  syntax GLbindPats ::= "#bind(" BranchPat ")" [function]
   syntax    ProcPat ::= "#cont(" BranchPat ")" [function]
 
   // IfThenElse
@@ -334,10 +319,14 @@ module AUXFUN-SYNTAX
                       | "#else(" Else   ")" [function]
 
   // Let
-  syntax    ProcVar ::=  "#letvar(" LetBind     ")" [function]
-  syntax      Procs ::=  "#letvar(" SimLetBinds ")" [function]
-  syntax       Proc ::= "#letproc(" LetBind     ")" [function]
-  syntax      Procs ::= "#letproc(" SimLetBinds ")" [function]
+  syntax    ProcVar ::=  "#letvar(" LetBind        ")" [function]
+  syntax      Procs ::=  "#letvar(" SeqLetBinds    ")" [function]
+                      |  "#letvar(" SimLetBinds    ")" [function]
+                      |  "#letvar(" SeqSimLetBinds ")" [function]
+  syntax       Proc ::= "#letproc(" LetBind        ")" [function]
+  syntax      Procs ::= "#letproc(" SeqLetBinds    ")" [function]
+                      | "#letproc(" SimLetBinds    ")" [function]
+                      | "#letproc(" SeqSimLetBinds ")" [function]
 
   // Procs <-> Par
   syntax       Proc ::= "#procs2par(" Procs    ")" [function]
@@ -372,15 +361,9 @@ module AUXFUN-SYNTAX
                       |  "#pats2set(" NamePats ")" [function]
 
 // Quotes
-  syntax       Name ::= "#quotes(" Proc     ")" [function]
-  syntax      Names ::= "#quotes(" Procs    ")" [function]
-  syntax    NamePat ::= "#quotes(" ProcPat  ")" [function]
   syntax   NamePats ::= "#quotes(" ProcPats ")" [function]
 
 // Evals -- *( A , B , ... ) => *A , *B , ...
-  syntax       Proc ::= "#evals(" Name     ")" [function]
-  syntax      Procs ::= "#evals(" Names    ")" [function]
-  syntax    ProcPat ::= "#evals(" NamePat  ")" [function]
   syntax   ProcPats ::= "#evals(" NamePats ")" [function]
 
 // Append
@@ -395,62 +378,22 @@ module AUXFUN-SYNTAX
   syntax   ProcPats ::= "#append(" Procs    ";" ProcPats ")" [function]
                       | "#append(" ProcPats ";" Procs    ")" [function]
                       | "#append(" ProcPats ";" ProcPats ")" [function]
-  // Binds & BindPats
-  syntax     Lbinds ::= "#append(" Lbind  ";;" Lbind  ")" [function]
-                      | "#append(" Lbind  ";;" Lbinds ")" [function]
-                      | "#append(" Lbinds ";;" Lbind  ")" [function]
-                      | "#append(" Lbinds ";;" Lbinds ")" [function]
-  syntax     Pbinds ::= "#append(" Pbind  ";;" Pbind  ")" [function]
-                      | "#append(" Pbind  ";;" Pbinds ")" [function]
-                      | "#append(" Pbinds ";;" Pbind  ")" [function]
-                      | "#append(" Pbinds ";;" Pbinds ")" [function]
-  syntax     Rbinds ::= "#append(" Rbind  ";;" Rbind  ")" [function]
-                      | "#append(" Rbind  ";;" Rbinds ")" [function]
-                      | "#append(" Rbinds ";;" Rbind  ")" [function]
-                      | "#append(" Rbinds ";;" Rbinds ")" [function]
-
-  syntax  LbindPats ::= "#append(" Lbind     ";;" LbindPat  ")" [function]
-                      | "#append(" Lbind     ";;" LbindPats ")" [function]
-                      | "#append(" LbindPat  ";;" Lbind     ")" [function]
-                      | "#append(" LbindPat  ";;" Lbinds    ")" [function]
-                      | "#append(" LbindPat  ";;" LbindPat  ")" [function]
+  // BindPats
+  syntax  LbindPats ::= "#append(" LbindPat  ";;" LbindPat  ")" [function]
                       | "#append(" LbindPat  ";;" LbindPats ")" [function]
-                      | "#append(" Lbinds    ";;" LbindPat  ")" [function]
-                      | "#append(" Lbinds    ";;" LbindPats ")" [function]
-                      | "#append(" LbindPats ";;" Lbind     ")" [function]
-                      | "#append(" LbindPats ";;" Lbinds    ")" [function]
                       | "#append(" LbindPats ";;" LbindPat  ")" [function]
                       | "#append(" LbindPats ";;" LbindPats ")" [function]
-  syntax  PbindPats ::= "#append(" Pbind     ";;" PbindPat  ")" [function]
-                      | "#append(" Pbind     ";;" PbindPats ")" [function]
-                      | "#append(" PbindPat  ";;" Pbind     ")" [function]
-                      | "#append(" PbindPat  ";;" Pbinds    ")" [function]
-                      | "#append(" PbindPat  ";;" PbindPat  ")" [function]
+  syntax  PbindPats ::= "#append(" PbindPat  ";;" PbindPat  ")" [function]
                       | "#append(" PbindPat  ";;" PbindPats ")" [function]
-                      | "#append(" Pbinds    ";;" PbindPat  ")" [function]
-                      | "#append(" Pbinds    ";;" PbindPats ")" [function]
-                      | "#append(" PbindPats ";;" Pbind     ")" [function]
-                      | "#append(" PbindPats ";;" Pbinds    ")" [function]
                       | "#append(" PbindPats ";;" PbindPat  ")" [function]
                       | "#append(" PbindPats ";;" PbindPats ")" [function]
-  syntax  RbindPats ::= "#append(" Rbind     ";;" RbindPat  ")" [function]
-                      | "#append(" Rbind     ";;" RbindPats ")" [function]
-                      | "#append(" RbindPat  ";;" Rbind     ")" [function]
-                      | "#append(" RbindPat  ";;" Rbinds    ")" [function]
-                      | "#append(" RbindPat  ";;" RbindPat  ")" [function]
+  syntax  RbindPats ::= "#append(" RbindPat  ";;" RbindPat  ")" [function]
                       | "#append(" RbindPat  ";;" RbindPats ")" [function]
-                      | "#append(" Rbinds    ";;" RbindPat  ")" [function]
-                      | "#append(" Rbinds    ";;" RbindPats ")" [function]
-                      | "#append(" RbindPats ";;" Rbind     ")" [function]
-                      | "#append(" RbindPats ";;" Rbinds    ")" [function]
                       | "#append(" RbindPats ";;" RbindPat  ")" [function]
                       | "#append(" RbindPats ";;" RbindPats ")" [function]
 
   // RhoKVPairs & Pats
-  syntax RhoKVPairs ::= "#append(" RhoKVPairs ";" RhoKVPairs ")" [function]
-  syntax  RhoKVPats ::= "#append(" RhoKVPairs ";" RhoKVPats  ")" [function]
-                      | "#append(" RhoKVPats  ";" RhoKVPairs ")" [function]
-                      | "#append(" RhoKVPats  ";" RhoKVPats  ")" [function]
+  syntax  RhoKVPats ::= "#append(" RhoKVPats  ";" RhoKVPats  ")" [function]
 
 // Methods
   syntax     RhoSet ::=  "#keys(" RhoMap ")"            [function]
@@ -460,7 +403,8 @@ module AUXFUN-SYNTAX
                       | "#truncate(" RhoList "," Int ")"         [function]
 
 // Substitution
-  syntax        Map ::= "#mapSub(" Set ")" [function]
+  syntax        Map ::= "#mapSub(" Set ")" [function] // for hiding bound variables
+                      | "#mapNil(" Set ")" [function] // for Par substitution
 
 // Par Normalization
   syntax       Proc ::=   "#normPar(" Proc  ")"          [function, poly(0,1)]
@@ -538,13 +482,7 @@ module AUXFUN-SYNTAX
   syntax      Names ::= "#list2names(" List ")" [function]
   syntax   NamePats ::=  "#list2pats(" List ")" [function]
 
-  syntax       Name ::= "#set2pats(" Set ")" [function]
-  syntax      Names ::= "#set2pats(" Set ")" [function]
-  syntax    NamePat ::= "#set2pats(" Set ")" [function]
   syntax   NamePats ::= "#set2pats(" Set ")" [function]
-  syntax       Proc ::= "#set2pats(" Set ")" [function]
-  syntax      Procs ::= "#set2pats(" Set ")" [function]
-  syntax    ProcPat ::= "#set2pats(" Set ")" [function]
   syntax   ProcPats ::= "#set2pats(" Set ")" [function]
 
   syntax        Set ::= "#vardecs2set(" VarDecs ")" [function]
@@ -555,6 +493,9 @@ module AUXFUN-SYNTAX
   syntax        Int ::= "#eval(" IntExp        ")" [function]
   syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
   syntax     String ::= "#eval(" StringOnlyExp ")" [function]
+
+// Explicit sort chechking functions
+  syntax       Bool ::= "#isBranches(" BranchPats ")" [function]
 
   syntax      KItem ::= Name  | Names  | NamePat  | NamePats | Var
                       | Proc  | Procs  | ProcPat  | ProcPats
@@ -575,75 +516,22 @@ module AUXFUN
                    | Bool | Int   | String  | List | Map | Set
 
 // Sends
-  rule #chan( N:Name    !  (            ) ) => N
-  rule #chan( N:Name    !  ( _:Procs    ) ) => N
-  rule #chan( N:Name    !  ( _:ProcPats ) ) => N
   rule #chan( N:NamePat !  (            ) ) => N
-  rule #chan( N:NamePat !  ( _:Procs    ) ) => N
   rule #chan( N:NamePat !  ( _:ProcPats ) ) => N
-  rule #chan( N:Name    !! (            ) ) => N
-  rule #chan( N:Name    !! ( _:Procs    ) ) => N
-  rule #chan( N:Name    !! ( _:ProcPats ) ) => N
   rule #chan( N:NamePat !! (            ) ) => N
-  rule #chan( N:NamePat !! ( _:Procs    ) ) => N
   rule #chan( N:NamePat !! ( _:ProcPats ) ) => N
 
-  rule #msg( _:Name    !  (            ) ) => EmptyP
-  rule #msg( _:Name    !  ( P:Procs    ) ) => P
-  rule #msg( _:Name    !  ( P:ProcPats ) ) => P
   rule #msg( _:NamePat !  (            ) ) => EmptyP
-  rule #msg( _:NamePat !  ( P:Procs    ) ) => P
   rule #msg( _:NamePat !  ( P:ProcPats ) ) => P
-  rule #msg( _:Name    !! (            ) ) => EmptyP
-  rule #msg( _:Name    !! ( P:Procs    ) ) => P
-  rule #msg( _:Name    !! ( P:ProcPats ) ) => P
   rule #msg( _:NamePat !! (            ) ) => EmptyP
-  rule #msg( _:NamePat !! ( P:Procs    ) ) => P
   rule #msg( _:NamePat !! ( P:ProcPats ) ) => P
 
-  rule #msglen( S:Send    ) => #length(#msg(S))
   rule #msglen( S:SendPat ) => #length(#msg(S))
 
-  rule #stype( _:ConSend   ) => 0
-  rule #stype( _:UnconSend ) => 1
+  rule #stype( _:CSendPat ) => 0
+  rule #stype( _:USendPat ) => 1
 
 // Receives
-  rule #bind( for ( B:Lbind             ){ _:Proc    } ) => B
-  rule #bind( for ( B:Lbinds            ){ _:Proc    } ) => B
-  rule #bind( for ( B:Lbind     _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Lbinds    _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Pbind             ){ _:Proc    } ) => B
-  rule #bind( for ( B:Pbinds            ){ _:Proc    } ) => B
-  rule #bind( for ( B:Pbind     _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Pbinds    _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Rbind             ){ _:Proc    } ) => B
-  rule #bind( for ( B:Rbinds            ){ _:Proc    } ) => B
-  rule #bind( for ( B:Rbind     _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Rbinds    _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:Lbind             ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbinds            ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbind     _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Lbinds    _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbind             ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbinds            ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbind     _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Pbinds    _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbind             ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbinds            ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbind     _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:Rbinds    _:Guard ){ _:ProcPat } ) => B
-  rule #bind( for ( B:LbindPat          ){ _:Proc    } ) => B
-  rule #bind( for ( B:LbindPats         ){ _:Proc    } ) => B
-  rule #bind( for ( B:LbindPat  _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:LbindPats _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:PbindPat          ){ _:Proc    } ) => B
-  rule #bind( for ( B:PbindPats         ){ _:Proc    } ) => B
-  rule #bind( for ( B:PbindPat  _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:PbindPats _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:RbindPat          ){ _:Proc    } ) => B
-  rule #bind( for ( B:RbindPats         ){ _:Proc    } ) => B
-  rule #bind( for ( B:RbindPat  _:Guard ){ _:Proc    } ) => B
-  rule #bind( for ( B:RbindPats _:Guard ){ _:Proc    } ) => B
   rule #bind( for ( B:LbindPat          ){ _:ProcPat } ) => B
   rule #bind( for ( B:LbindPats         ){ _:ProcPat } ) => B
   rule #bind( for ( B:LbindPat  _:Guard ){ _:ProcPat } ) => B
@@ -657,26 +545,7 @@ module AUXFUN
   rule #bind( for ( B:RbindPat  _:Guard ){ _:ProcPat } ) => B
   rule #bind( for ( B:RbindPats _:Guard ){ _:ProcPat } ) => B
 
-  rule #gbind( R:UGRec    ) => #bind(R) [structural]
   rule #gbind( R:UGRecPat ) => #bind(R) [structural]
-  rule #gbind( for( B:GLbind     ){ _:Proc    } ) => B
-  rule #gbind( for( B:GPbind     ){ _:Proc    } ) => B
-  rule #gbind( for( B:GRbind     ){ _:Proc    } ) => B
-  rule #gbind( for( B:GLbinds    ){ _:Proc    } ) => B
-  rule #gbind( for( B:GPbinds    ){ _:Proc    } ) => B
-  rule #gbind( for( B:GRbinds    ){ _:Proc    } ) => B
-  rule #gbind( for( B:GLbind     ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GPbind     ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GRbind     ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GLbinds    ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GPbinds    ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GRbinds    ){ _:ProcPat } ) => B
-  rule #gbind( for( B:GLbindPat  ){ _:Proc    } ) => B
-  rule #gbind( for( B:GPbindPat  ){ _:Proc    } ) => B
-  rule #gbind( for( B:GRbindPat  ){ _:Proc    } ) => B
-  rule #gbind( for( B:GLbindPats ){ _:Proc    } ) => B
-  rule #gbind( for( B:GPbindPats ){ _:Proc    } ) => B
-  rule #gbind( for( B:GRbindPats ){ _:Proc    } ) => B
   rule #gbind( for( B:GLbindPat  ){ _:ProcPat } ) => B
   rule #gbind( for( B:GPbindPat  ){ _:ProcPat } ) => B
   rule #gbind( for( B:GRbindPat  ){ _:ProcPat } ) => B
@@ -684,12 +553,6 @@ module AUXFUN
   rule #gbind( for( B:GPbindPats ){ _:ProcPat } ) => B
   rule #gbind( for( B:GRbindPats ){ _:ProcPat } ) => B
 
-  rule #bind( A:Lbind     _:Guard ) => A
-  rule #bind( A:Pbind     _:Guard ) => A
-  rule #bind( A:Rbind     _:Guard ) => A
-  rule #bind( A:Lbinds    _:Guard ) => A
-  rule #bind( A:Pbinds    _:Guard ) => A
-  rule #bind( A:Rbinds    _:Guard ) => A
   rule #bind( A:LbindPat  _:Guard ) => A
   rule #bind( A:PbindPat  _:Guard ) => A
   rule #bind( A:RbindPat  _:Guard ) => A
@@ -697,7 +560,7 @@ module AUXFUN
   rule #bind( A:PbindPats _:Guard ) => A
   rule #bind( A:RbindPats _:Guard ) => A
 
-  rule #bvar( A:Receive ) => #bvar(#bind(A))
+  rule #bvar( A:RecPat ) => #bvar(#bind(A))
   rule #chan( A:SRec ) => #chan(#bind(A))
   rule #chan( A:MRec ) => #chan(#bind(A))
 
@@ -1142,36 +1005,15 @@ module AUXFUN
 //--- Bind[Pat]s ---
 // Binds - number of listens in a join[pat]
   // Lbind[Pat]s
-  rule #length( _:Lbind    & _:Lbind     ) => 2
-  rule #length( _:Lbind    & _:LbindPat  ) => 2
-  rule #length( _:LbindPat & _:Lbind     ) => 2
   rule #length( _:LbindPat & _:LbindPat  ) => 2
-  rule #length( _:Lbind    & A:Lbinds    ) => 1 +Int #length(A)
-  rule #length( _:Lbind    & A:LbindPats ) => 1 +Int #length(A)
-  rule #length( _:LbindPat & A:Lbinds    ) => 1 +Int #length(A)
   rule #length( _:LbindPat & A:LbindPats ) => 1 +Int #length(A)
   // Pbind[Pat]s
-  rule #length( _:Pbind    & _:Pbind     ) => 2
-  rule #length( _:Pbind    & _:PbindPat  ) => 2
-  rule #length( _:PbindPat & _:Pbind     ) => 2
   rule #length( _:PbindPat & _:PbindPat  ) => 2
-  rule #length( _:Pbind    & A:Pbinds    ) => 1 +Int #length(A)
-  rule #length( _:Pbind    & A:PbindPats ) => 1 +Int #length(A)
-  rule #length( _:PbindPat & A:Pbinds    ) => 1 +Int #length(A)
   rule #length( _:PbindPat & A:PbindPats ) => 1 +Int #length(A)
   // Rbind[Pat]s
-  rule #length( _:Rbind    & _:Rbind     ) => 2
-  rule #length( _:Rbind    & _:RbindPat  ) => 2
-  rule #length( _:RbindPat & _:Rbind     ) => 2
   rule #length( _:RbindPat & _:RbindPat  ) => 2
-  rule #length( _:Rbind    & A:Rbinds    ) => 1 +Int #length(A)
-  rule #length( _:Rbind    & A:RbindPats ) => 1 +Int #length(A)
-  rule #length( _:RbindPat & A:Rbinds    ) => 1 +Int #length(A)
   rule #length( _:RbindPat & A:RbindPats ) => 1 +Int #length(A)
   // Guarded
-  rule #length( B:Lbinds    _:Guard ) => #length(B)
-  rule #length( B:Pbinds    _:Guard ) => #length(B)
-  rule #length( B:Rbinds    _:Guard ) => #length(B)
   rule #length( B:LbindPats _:Guard ) => #length(B)
   rule #length( B:PbindPats _:Guard ) => #length(B)
   rule #length( B:RbindPats _:Guard ) => #length(B)
@@ -1187,13 +1029,8 @@ module AUXFUN
   rule #length( A:MCasePat  B:MatchCases ) => 1 +Int #length(B)
   rule #length( A:MCasePat  B:MCasePats  ) => 1 +Int #length(B)
 
-  rule #length( select { B:Branches   } ) => #length(B) [structural]
   rule #length( select { B:BranchPats } ) => #length(B) [structural]
-  rule #length( A:Branch    ) => 1
   rule #length( A:BranchPat ) => 1
-  rule #length( A:Branch    B:Branches   ) => 1 +Int #length(B)
-  rule #length( A:Branch    B:BranchPats ) => 1 +Int #length(B)
-  rule #length( A:BranchPat B:Branches   ) => 1 +Int #length(B)
   rule #length( A:BranchPat B:BranchPats ) => 1 +Int #length(B)
 
 // Concat
@@ -1319,21 +1156,6 @@ module AUXFUN
 //--- #bvar ---
 //-------------
 // binding variables
-// Bind
-  rule #bvar(            <-  _:Name ) => EmptyN
-  rule #bvar( N:Names    <-  _:Name ) => N
-  rule #bvar( N:NamePats <-  _:Name ) => N
-  rule #bvar(            <=  _:Name ) => EmptyN
-  rule #bvar( N:Names    <=  _:Name ) => N
-  rule #bvar( N:NamePats <=  _:Name ) => N
-  rule #bvar(            <<- _:Name ) => EmptyN
-  rule #bvar( N:Names    <<- _:Name ) => N
-  rule #bvar( N:NamePats <<- _:Name ) => N
-  // Guraded
-  rule #bvar( B:Lbind _:Guard ) => #bvar(B)
-  rule #bvar( B:Pbind _:Guard ) => #bvar(B)
-  rule #bvar( B:Rbind _:Guard ) => #bvar(B)
-
 // BindPat
   rule #bvar(            <-  _:NamePat ) => EmptyN
   rule #bvar( N:Names    <-  _:NamePat ) => N
@@ -1344,37 +1166,19 @@ module AUXFUN
   rule #bvar(            <<- _:NamePat ) => EmptyN
   rule #bvar( N:Names    <<- _:NamePat ) => N
   rule #bvar( N:NamePats <<- _:NamePat ) => N
-  // Guraded
+  // guarded
   rule #bvar( B:LbindPat _:Guard ) => #bvar(B)
   rule #bvar( B:PbindPat _:Guard ) => #bvar(B)
   rule #bvar( B:RbindPat _:Guard ) => #bvar(B)
 
 // Multiple Bindings
-  rule #bvar( B:Lbind    & C:Lbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    & C:Lbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    & C:LbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Lbind    & C:LbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat & C:Lbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:LbindPat & C:Lbinds    ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:LbindPat & C:LbindPat  ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:LbindPat & C:LbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    & C:Pbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    & C:Pbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    & C:PbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Pbind    & C:PbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat & C:Pbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:PbindPat & C:Pbinds    ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:PbindPat & C:PbindPat  ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:PbindPat & C:PbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    & C:Rbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    & C:Rbinds    ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    & C:RbindPat  ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:Rbind    & C:RbindPats ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat & C:Rbind     ) => #append(#bvar(B);#bvar(C))
-  rule #bvar( B:RbindPat & C:Rbinds    ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:RbindPat & C:RbindPat  ) => #append(#bvar(B);#bvar(C))
   rule #bvar( B:RbindPat & C:RbindPats ) => #append(#bvar(B);#bvar(C))
-
+  // guarded
   rule #bvar( B:LbindPats _:Guard ) => #bvar(B)
   rule #bvar( B:PbindPats _:Guard ) => #bvar(B)
   rule #bvar( B:RbindPats _:Guard ) => #bvar(B)
@@ -1382,22 +1186,13 @@ module AUXFUN
 //---------------
 //--- #quotes ---
 //---------------
-  rule #quotes( A:Proc    ) => @A
   rule #quotes( A:ProcPat ) => @A
-  rule #quotes( A:Proc    , B:Procs    ) => @A , #quotes(B)
-  rule #quotes( A:Proc    , B:ProcPats ) => @A , #quotes(B)
-  rule #quotes( A:ProcPat , B:Procs    ) => @A , #quotes(B)
   rule #quotes( A:ProcPat , B:ProcPats ) => @A , #quotes(B)
 
 //--------------
 //--- #evals ---
 //--------------
-  rule #evals( \_        ) => *\_
-  rule #evals( A:Name    ) => *A
-  rule #evals( A:NamePat ) => *A requires notBool isWildCard(A)
-  rule #evals( A:Name    , B:Names    ) => *A , #evals(B)
-  rule #evals( A:Name    , B:NamePats ) => *A , #evals(B)
-  rule #evals( A:NamePat , B:Names    ) => *A , #evals(B)
+  rule #evals( A:NamePat ) => *A
   rule #evals( A:NamePat , B:NamePats ) => *A , #evals(B)
 
 //--------------------
@@ -1453,6 +1248,10 @@ module AUXFUN
   rule #mapSub( .Set ) => .Map
   rule #mapSub( SetItem( A:Name ) S:Set ) => A |-> @sub #mapSub(S)
   rule #mapSub( SetItem( A:Proc ) S:Set ) => A |->  sub #mapSub(S)
+
+  // #mapNil -- for Par matching/sub
+  rule #mapNil( .Set ) => .Map
+  rule #mapNil( SetItem( A:Proc ) S:Set ) => A |->  Nil #mapNil(S)
 
 //------------------
 //--- #normPar ---
@@ -1524,17 +1323,12 @@ module AUXFUN
   rule #procs2par( A:Proc , B:Procs ) => A | #procs2par(B)
 
 // #par2pats
-  rule #par2pats( A:Proc    | B:ProcPat ) => A,B requires notBool (isPar(A) orBool isParPat(B))
-  rule #par2pats( A:Proc    | B:ParPat  ) => A,#par2pats( B) requires notBool isPar(A)
-  rule #par2pats( A:ProcPat | B:Par     ) => A,#par2procs(B) requires notBool isParPat(A)
-  rule #par2pats( A:ProcPat | B:ParPat  ) => A,#par2pats( B) requires notBool isParPat(A)
+  rule #par2pats( A:ProcPat | B:ProcPat ) => A,#par2pats(B) requires notBool isParPat(A)
   rule #par2pats( A:ProcPat ) => A requires notBool isParPat(A)
 
 // #pats2par
   rule #pats2par( A:ProcPat ) => A
-  rule #pats2par( A:Proc    , B:ProcPats ) => A |  #pats2par(B)
-  rule #pats2par( A:ProcPat , B:Procs    ) => A | #procs2par(B)
-  rule #pats2par( A:ProcPat , B:ProcPats ) => A |  #pats2par(B)
+  rule #pats2par( A:ProcPat , B:ProcPats ) => A | #pats2par(B)
 
 //----------------------------
 //--- #set2procs/name/pats ---
@@ -1923,14 +1717,26 @@ module AUXFUN
 //-----------
 //--- Let ---
 //-----------
-// Input: LetBind/SimLetBinds
-  rule #letvar( A:ProcVar <- _:Proc ) => A
-  rule #letvar( A:LetBind & B:LetBind     ) => #append(#letvar(A);#letvar(B))
-  rule #letvar( A:LetBind & B:SimLetBinds ) => #append(#letvar(A);#letvar(B))
-// Input: LetBind/SimLetBinds
+// Let variables
+  rule #letvar(  A:ProcVar <- _:Proc ) => A
+  rule #letvar(  A:LetBind ; B:LetBind     ) => #letvar(A),#letvar(B)
+  rule #letvar(  A:LetBind ; B:SeqLetBinds ) => #letvar(A),#letvar(B)
+  rule #letvar(  A:LetBind & B:SimLetBinds ) => #letvar(A),#letvar(B)
+  rule #letvar(  A:SeqLetBinds > B:SimLetBinds    ) => #append(#letvar(A);#letvar(B))
+  rule #letvar(  A:SimLetBinds > B:SeqLetBinds    ) => #append(#letvar(A);#letvar(B))
+  rule #letvar(  A:SimLetBinds > B:SimLetBinds    ) => #append(#letvar(A);#letvar(B))
+  rule #letvar(  A:SeqLetBinds > B:SeqSimLetBinds ) => #append(#letvar(A);#letvar(B))
+  rule #letvar(  A:SimLetBinds > B:SeqSimLetBinds ) => #append(#letvar(A);#letvar(B))
+// Let procs
   rule #letproc( _:ProcVar <- A:Proc ) => A
-  rule #letproc( A:LetBind & B:LetBind     ) => #append(#letproc(A);#letproc(B))
-  rule #letproc( A:LetBind & B:SimLetBinds ) => #append(#letproc(A);#letproc(B))
+  rule #letproc( A:LetBind ; B:LetBind     ) => #letproc(A),#letproc(B)
+  rule #letproc( A:LetBind ; B:SeqLetBinds ) => #letproc(A),#letproc(B)
+  rule #letproc( A:LetBind & B:SimLetBinds ) => #letproc(A),#letproc(B)
+  rule #letproc(  A:SeqLetBinds > B:SimLetBinds    ) => #append(#letproc(A);#letproc(B))
+  rule #letproc(  A:SimLetBinds > B:SeqLetBinds    ) => #append(#letproc(A);#letproc(B))
+  rule #letproc(  A:SimLetBinds > B:SimLetBinds    ) => #append(#letproc(A);#letproc(B))
+  rule #letproc(  A:SeqLetBinds > B:SeqSimLetBinds ) => #append(#letproc(A);#letproc(B))
+  rule #letproc(  A:SimLetBinds > B:SeqSimLetBinds ) => #append(#letproc(A);#letproc(B))
 
 //--------------------
 //--- #vardecs2set ---
@@ -1946,14 +1752,17 @@ module AUXFUN
 //--------------
 //--- Select ---
 //--------------
-  rule #bind( { A:Lbind  } |=> _:Proc ) => A
-  rule #bind( { A:Lbinds } |=> _:Proc ) => A
+  rule #bind( { A:LbindPat   } |=> _:Proc ) => A
+  rule #bind( { A:LbindPats  } |=> _:Proc ) => A
+  rule #bind( { A:GLbindPat  } |=> _:Proc ) => A
+  rule #bind( { A:GLbindPats } |=> _:Proc ) => A
 
-  rule #branch2rec( { A:Lbind  } |=> B:Proc ) => for(A){B}
-  rule #branch2rec( { A:Lbinds } |=> B:Proc ) => for(A){B}
+  rule #branch2rec( { A:LbindPat   } |=> B:Proc ) => for(A){B}
+  rule #branch2rec( { A:LbindPats  } |=> B:Proc ) => for(A){B}
+  rule #branch2rec( { A:GLbindPat  } |=> B:Proc ) => for(A){B}
+  rule #branch2rec( { A:GLbindPats } |=> B:Proc ) => for(A){B}
 
-  rule #select2branch( select { A:Branch   } ) => A
-  rule #select2branch( select { A:Branches } ) => A requires notBool isBranch(A)
+  rule #select2branch( select { A:BranchPats } ) => A
 
 //-------------------
 // --- Evaluation ---
@@ -2033,6 +1842,8 @@ module AUXFUN
 
 //  rule #lengths( B:Pbind & C:Pbind  ) => #lislen(B) , #lislen(C)
 //  rule #lengths( B:Pbind & C:Pbinds ) => #lislen(B) , #lengths(C)
+
+  rule #isBranches( A:BranchPats ) => isBranches(A)
 
 //------------------
 //--- Structural ---
