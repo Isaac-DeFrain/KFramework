@@ -1,0 +1,10 @@
+// Select to Branch function
+
+    #select2branch( select { { a,b,c <- @0 } |=> *a + *b + *c { d,@0 <- @1 } |=> ["a",*d] { @\e,@true <- @2 } |=> Nil } )
+
+/*
+Output:
+
+  { a , b , c <- @ 0 } |=> * a + * b + * c { d , @ 0 <- @ 1 } |=> [ "a" , * d ] { @ \ e , @ true <- @ 2 } |=> Nil
+
+*/
