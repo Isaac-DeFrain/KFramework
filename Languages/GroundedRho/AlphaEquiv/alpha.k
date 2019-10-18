@@ -58,7 +58,7 @@ module ALPHA-SYNTAX
   syntax  SeqLetBinds ::= "#deBruijn(" Int "," Int ";;" SeqLetBinds ";;" Map ")" [function]
   syntax  SimLetBinds ::= "#deBruijn(" Int "," Int ";;" SimLetBinds ";;" Map ")" [function]
   syntax
-       SeqSimLetbinds ::= "#deBruijn(" Int "," Int ";;" SeqSimLetbinds ";;" Map ")" [function]
+       SeqSimLetBinds ::= "#deBruijn(" Int "," Int ";;" SeqSimLetBinds ";;" Map ")" [function]
   // KVPairs/KVPats
   syntax    RhoKVPair ::= "#deBruijn(" Int "," Int ";" RhoKVPair  ";" Map ")" [function]
   syntax   RhoKVPairs ::= "#deBruijn(" Int "," Int ";" RhoKVPairs ";" Map ")" [function]
@@ -433,50 +433,56 @@ module ALPHA
   rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:NamePats ) = { C:ProcPat } ; M:Map )
     => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
        {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:ProcPat } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:ProcPat } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
   rule #deBruijn( L:Int , I:Int ; contract A:NamePat (            ) = { C:ProcPat } ; M:Map )
     => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
-  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:NamePats ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:NamePat (            ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:ProcPat } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:ProcPat } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:ProcPat } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
-       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
-  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:Proc    } ; M:Map )
-    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+//  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:NamePats ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:NamePat ( B:Names    ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:NamePat (            ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:ProcPat } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:ProcPat } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:ProcPat } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:NamePats ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    ( B:Names    ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L +Int 1,0;#sub(#mapify(L,I;B);B);#mapify(L,I;B))) =
+//       {#deBruijn(L,I +Int size(#FV(B));#sub(updateMap(M,#mapify(L,I;B));C);updateMap(M,#mapify(L,I;B)))}
+//  rule #deBruijn( L:Int , I:Int ; contract A:Name    (            ) = { C:Proc    } ; M:Map )
+//    => contract #deBruijn(L,I;#sub(M;A);M) ( ) = { #deBruijn(L,I;#sub(M;C);M) }
 
-// Invocation[Pat]
+// InvocationPat
   rule #deBruijn( L:Int , I:Int ; A:NamePat ( B:NamePats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
-  rule #deBruijn( L:Int , I:Int ; A:NamePat ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+//  rule #deBruijn( L:Int , I:Int ; A:NamePat ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
   rule #deBruijn( L:Int , I:Int ; A:NamePat (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (                          )
-  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:NamePats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
-  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
-  rule #deBruijn( L:Int , I:Int ; A:Name    (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (                          )
+//  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:NamePats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+//  rule #deBruijn( L:Int , I:Int ; A:Name    ( B:Names    ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (#deBruijn(L,I;#sub(M;B);M))
+//  rule #deBruijn( L:Int , I:Int ; A:Name    (            ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) (                          )
 
 // VarRef
   rule #deBruijn( L:Int , I:Int ; =  A:ProcVar ; M:Map ) => #deBruijn(L,I;#sub(M;= A);M)
   rule #deBruijn( L:Int , I:Int ; =* A:Var     ; M:Map ) => #deBruijn(L,I;#sub(M;=*A);M)
 
 // LetExp
-  rule #deBruijn( L:Int , I:Int ; let A:LetBind in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
+  rule #deBruijn( L:Int , I:Int ; let A:LetBind        in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
+       #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));#sub(updateMap(M,#mapify(L,I;#letvar(A)));B);updateMap(M,#mapify(L,I;#letvar(A)))) }
+  rule #deBruijn( L:Int , I:Int ; let A:SeqLetBinds    in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
+       #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));#sub(updateMap(M,#mapify(L,I;#letvar(A)));B);updateMap(M,#mapify(L,I;#letvar(A)))) }
+  rule #deBruijn( L:Int , I:Int ; let A:SimLetBinds    in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
+       #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));#sub(updateMap(M,#mapify(L,I;#letvar(A)));B);updateMap(M,#mapify(L,I;#letvar(A)))) }
+  rule #deBruijn( L:Int , I:Int ; let A:SeqSimLetBinds in { B:Proc } ; M:Map ) => let #deBruijn(L,I;;A;;M) in {
        #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));#sub(updateMap(M,#mapify(L,I;#letvar(A)));B);updateMap(M,#mapify(L,I;#letvar(A)))) }
   // LetBind
   rule #deBruijn( L:Int , I:Int ;; A:ProcVar <- B:Proc ;; M:Map ) => #sub(#mapify(L,I;A);A) <- #deBruijn(L,I +Int 1;#sub(M;B);M)
@@ -486,28 +492,20 @@ module ALPHA
   rule #deBruijn( L:Int , I:Int ;; A:LetBind ; B:SeqLetBinds ;; M:Map )
     => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
   // SimLetBinds -- simultaneous LetBinds do not update the index map
-  rule #deBruijn( L:Int , I:Int ;; A:LetBind & B:LetBind     ;; M:Map )
-    => #deBruijn(L,I;;A;;M) & #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;M)
   rule #deBruijn( L:Int , I:Int ;; A:LetBind & B:SimLetBinds ;; M:Map )
     => #deBruijn(L,I;;A;;M) & #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;M)
-/*  // SeqSimLetBinds
-  rule #deBruijn( L:Int , I:Int ;; A:LetBind     ; B:SimLetBinds    ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds ; B:SimLetBinds    ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SimLetBinds    ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:LetBind        ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SeqLetBinds    ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:LetBind     ; B:SeqSimLetBinds ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds ; B:SeqSimLetBinds ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds ; B:SeqSimLetBinds ;; M:Map )
-    => #deBruijn(L,I;;A;;M) ; #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
-*/
+  // SeqSimLetBinds -- TODO: sub Map in subsequent binds
+  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds > B:SimLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) > #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds > B:SeqLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) > #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds > B:SimLetBinds    ;; M:Map )
+    => #deBruijn(L,I;;A;;M) > #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SeqLetBinds > B:SeqSimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) > #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+  rule #deBruijn( L:Int , I:Int ;; A:SimLetBinds > B:SeqSimLetBinds ;; M:Map )
+    => #deBruijn(L,I;;A;;M) > #deBruijn(L,I +Int 1 +Int size(#FV(A) -Set keys(M));;B;;updateMap(M,#mapify(L,I;#letvar(A))))
+
 // Send[Pat]
 // substitute indices in current environment into channel & message[s]
   rule #deBruijn( L:Int , I:Int ; A:NamePat !  ( B:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) !  (#deBruijn(L,I;#sub(M;B);M))
@@ -706,74 +704,49 @@ module ALPHA
 //---------------
 //--- #mapify ---
 //---------------
+  rule #mapify( A:NamePats ) => #mapify(0,0;A)
+  rule #mapify( A:ProcPats ) => #mapify(0,0;A)
+
 // Empty Name & Proc
   rule #mapify( _:Int , _:Int ; EmptyN ) => .Map
   rule #mapify( _:Int , _:Int ; EmptyP ) => .Map
 
-// Name[Pat]
+// NamePat
   rule #mapify( _:Int , _:Int ;   @sub      ) => .Map
   rule #mapify( _:Int , _:Int ; _:BoundName ) => .Map
   rule #mapify( L:Int , I:Int ;  A:Var      ) => #if L ==Int 0 #then A |-> @x(I) #else A |-> @x(L,I) #fi
-  rule #mapify( L:Int , I:Int ; @A:Proc     ) => #mapify(L,I;A)
+       requires notBool isBoundName(A)
   rule #mapify( L:Int , I:Int ; @A:ProcPat  ) => #mapify(L,I;A)
-  // Name[Pat]s
-  rule #mapify( L:Int , I:Int ; A:Name    , B:Names    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Name    , B:NamePats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:NamePat , B:Names    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // NamePats
   rule #mapify( L:Int , I:Int ; A:NamePat , B:NamePats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-// Proc[Pat]
+// ProcPat
   rule #mapify( _:Int , _:Int ;    sub       ) => .Map
   rule #mapify( _:Int , _:Int ;  _:Ground    ) => .Map
   rule #mapify( _:Int , _:Int ;  _:BoundProc ) => .Map
-  rule #mapify( L:Int , I:Int ; \A:Var       ) => #if L==Int 0 #then \A |-> x(I) #else \A |-> x(L,I) #fi
-  rule #mapify( L:Int , I:Int ; *A:Name      ) => #mapify(L,I;A)
+  rule #mapify( L:Int , I:Int ;  A:ProcVar   ) => #if L==Int 0 #then A |-> x(I) #else A |-> x(L,I) #fi
+       requires notBool isBoundProc(A)
   rule #mapify( L:Int , I:Int ; *A:NamePat   ) => #mapify(L,I;A)
-  // Proc[Pat]s
-  rule #mapify( L:Int , I:Int ; A:Proc    , B:Procs    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    , B:ProcPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:ProcPat , B:Procs    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // ProcPats
   rule #mapify( L:Int , I:Int ; A:ProcPat , B:ProcPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-// New[Pat]
+// NewPat
   // if @{new A:VarDecs in { B:Proc[Pat] }} appears in a listen pattern,
   // the only listen-level binding variables come from #FV(B) -Set #DV(A)
   // so the declared variables are hidden from #mapify
-  rule #mapify( L:Int , I:Int ; new A:VarDecs in { B:Proc    } ) => #mapify(L,I;#sub(#mapSub(#DV(A));B))
   rule #mapify( L:Int , I:Int ; new A:VarDecs in { B:ProcPat } ) => #mapify(L,I;#sub(#mapSub(#DV(A));B))
 
-// Par[Pat]
-  rule #mapify( L:Int , I:Int ; A:Proc    | B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool    isPar(A)
-  rule #mapify( L:Int , I:Int ; A:Proc    | B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool    isPar(A)
-  rule #mapify( L:Int , I:Int ; A:ProcPat | B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool isParPat(A)
+// ParPat
   rule #mapify( L:Int , I:Int ; A:ProcPat | B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B) requires notBool isParPat(A)
 
-// Send[Pat]
-  rule #mapify( L:Int , I:Int ; A:Name    !  ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Name    !  ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Name    !  (            ) ) => #mapify(L,I;A)
+// SendPat
   rule #mapify( L:Int , I:Int ; A:NamePat !  ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:NamePat !  ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:NamePat !  (            ) ) => #mapify(L,I;A)
-  rule #mapify( L:Int , I:Int ; A:Name    !! ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Name    !! ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Name    !! (            ) ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; A:NamePat !! ( B:ProcPats ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:NamePat !! ( B:Procs    ) ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:NamePat !! (            ) ) => #mapify(L,I;A)
 
-// Receive/RecPat
-  // mapSub used to hide listening variables from generating additional substitution mappings
-  rule #mapify( L:Int , I:Int ; A:UGSRec )
-    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
-  rule #mapify( L:Int , I:Int ; A:UGMRec )
-    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
-  rule #mapify( L:Int , I:Int ; A:GSRec  )
-    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
-       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
-  rule #mapify( L:Int , I:Int ; A:GMRec  )
-    => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
-       #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
+// RecPat
+  // mapSub hides listening variables from generating additional substitution mappings
   rule #mapify( L:Int , I:Int ; A:UGSRecPat )
     => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#cont(A)))
   rule #mapify( L:Int , I:Int ; A:UGMRecPat )
@@ -785,77 +758,42 @@ module ALPHA
     => #mapify(L,I;#chan(A)) #mapify(L,I +Int size(#RV(A));#sub(#mapSub(#LV(A));#guard(A)))
        #mapify(L,I +Int size(#RV(A)) +Int size(#FV(#guard(A)) -Set #LV(A));#sub(#mapSub(#LV(A));#cont(A)))
 
-// TOD: Contract
-// TODO: Invocation[pat]
-// TODO: VarRef
-// TODO: LetExp
-
-// Match[Pat] -- free variables in MatchCase continuations must be distinct
-  rule #mapify( L:Int , I:Int ; match A:Proc    { B:MatchCases } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; match A:Proc    { B:MCasePats  } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; match A:ProcPat { B:MatchCases } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+// MatchPat -- free variables in MatchCase continuations must be distinct
   rule #mapify( L:Int , I:Int ; match A:ProcPat { B:MCasePats  } ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  // multiple MatchCases/MCasePats
-  rule #mapify( L:Int , I:Int ; A:MatchCase B:MatchCases ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:MatchCase B:MCasePats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:MCasePat  B:MatchCases ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:MCasePat  B:MCasePats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  // single MatchCase/MCasePat
-  rule #mapify( L:Int , I:Int ; { A:Proc    } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:ProcPat } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:Proc    } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
+  // single MCasePat
   rule #mapify( L:Int , I:Int ; { A:ProcPat } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#FV(A));B))
+  // multiple MCasePats
+  rule #mapify( L:Int , I:Int ; A:MCasePat  B:MCasePats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-// Select[Pat]
-  rule #mapify( L:Int , I:Int ; select { A:Branches   } ) => #mapify(L,I;A)
+// SelectPat
   rule #mapify( L:Int , I:Int ; select { A:BranchPats } ) => #mapify(L,I;A)
-  // multiple Branches/BranchPats
-  rule #mapify( L:Int , I:Int ; A:Branch    B:Branches   ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Branch    B:BranchPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:BranchPat B:Branches   ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  // single BranchPat
+  rule #mapify( L:Int , I:Int ; { A:LbindPat   } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:LbindPats  } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:GLbindPat  } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  rule #mapify( L:Int , I:Int ; { A:GLbindPats } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
+  // multiple BranchPats
   rule #mapify( L:Int , I:Int ; A:BranchPat B:BranchPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  // single Branch[Pat]
-  rule #mapify( L:Int , I:Int ; { A:Lbind     } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:Lbinds    } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:LbindPat  } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:LbindPats } |=> B:Proc    ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:Lbind     } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:Lbinds    } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:LbindPat  } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
-  rule #mapify( L:Int , I:Int ; { A:LbindPats } |=> B:ProcPat ) => #mapify(L,I;#sub(#mapSub(#LV(A));B))
 
-// Collection[Pat]
+// CollectionPat
   // RhoLists
   rule #mapify( _:Int , _:Int ; [ ] ) => .Map
-  rule #mapify( L:Int , I:Int ; [ A:Procs    ] ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; [ A:ProcPats ] ) => #mapify(L,I;A)
-  rule #mapify( L:Int , I:Int ; [ A:Procs    ... B:ProcVar ] ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
   rule #mapify( L:Int , I:Int ; [ A:ProcPats ... B:ProcVar ] ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
   // RhoMaps
     // applied after normalization
   rule #mapify( _:Int , _:Int ; { } ) => .Map
-  rule #mapify( L:Int , I:Int ; { A:RhoKVPairs } ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; { A:RhoKVPats  } ) => #mapify(L,I;A)
-  rule #mapify( L:Int , I:Int ; { A:RhoKVPairs ... B:ProcVar } ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
   rule #mapify( L:Int , I:Int ; { A:RhoKVPats  ... B:ProcVar } ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
     // KV Pairs
-  rule #mapify( L:Int , I:Int ; A:Proc    : B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    : B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:ProcPat : B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:ProcPat : B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPairs ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:RhoKVPair , B:RhoKVPats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPairs ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:RhoKVPat  , B:RhoKVPats  ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:ProcPat  : B:ProcPat   ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+  rule #mapify( L:Int , I:Int ; A:RhoKVPat , B:RhoKVPats ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   // RhoSets
     // applied after normalization
   rule #mapify( _:Int , _:Int ; Set( ) ) => .Map
-  rule #mapify( L:Int , I:Int ; Set( A:Procs    ) ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; Set( A:ProcPats ) ) => #mapify(L,I;A)
-  rule #mapify( L:Int , I:Int ; Set( A:Procs    ... B:ProcVar ) ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
   rule #mapify( L:Int , I:Int ; Set( A:ProcPats ... B:ProcVar ) ) => #mapify(L,I;B) #mapify(L,I +Int 1;A)
   // RhoTuples
-  rule #mapify( L:Int , I:Int ; ( A:Procs    ,) ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; ( A:ProcPats ,) ) => #mapify(L,I;A)
 
 // Expressions -- TODO: AExp, List, String
@@ -871,9 +809,9 @@ module ALPHA
   rule #mapify( L:Int , I:Int ; A:Name !=  B:Name ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:Proc ==  B:Proc ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:Proc !=  B:Proc ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    matches B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    matches B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:ProcPat matches B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
+
+// TODO: Bundle, Conditional,Contract, Invocation, VarRef, Method
 
 // Patterns
   rule #mapify( _:Int , _:Int ; \_ ) => .Map
@@ -881,15 +819,8 @@ module ALPHA
   rule #mapify( _:Int , _:Int ;  _:SimpleNamePat ) => .Map
 
   // Pattern expressions
-  rule #mapify( L:Int , I:Int ; ~ A:Proc    ) => #mapify(L,I;A)
   rule #mapify( L:Int , I:Int ; ~ A:ProcPat ) => #mapify(L,I;A)
-  rule #mapify( L:Int , I:Int ; A:Proc    /\ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    /\ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:ProcPat /\ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:ProcPat /\ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    \/ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:Proc    \/ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
-  rule #mapify( L:Int , I:Int ; A:ProcPat \/ B:Proc    ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:ProcPat \/ B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
 //--------------
