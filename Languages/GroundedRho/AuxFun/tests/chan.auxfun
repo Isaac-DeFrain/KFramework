@@ -1,10 +1,10 @@
-// Chan of Send
+// Channel of Send
 
     #chan( @{ @2!( \_ | 3 ) }!( ) )
 
 /*
 Output:
 
-    @ @ 2 ! ( \_ | 3 )
+  @ @ 2 ! ( \_ | 3 )
 
 */
