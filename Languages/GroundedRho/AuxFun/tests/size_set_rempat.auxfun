@@ -1,0 +1,10 @@
+// Size of set remainder pattern
+
+    #size( Set( 1 , 2 , 3 , "a" , true , @3!(3) ... \x ) )
+
+/*
+Output:
+
+  6
+
+*/

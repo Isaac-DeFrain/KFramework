@@ -1,0 +1,10 @@
+// Length of list remainder pattern
+
+    #length [ 1, 2, 3, "a" ... \x ]
+
+/*
+Output:
+
+  4
+
+*/

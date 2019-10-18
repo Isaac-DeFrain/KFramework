@@ -1,0 +1,10 @@
+// Size of map remainder pattern
+
+    #size( { 1:2 , 2:3 , 3:2 , "a":5 , true:*x , Nil:@3!(3) ... \x } )
+
+/*
+Output:
+
+  6
+
+*/
