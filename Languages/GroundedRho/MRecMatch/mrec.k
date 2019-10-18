@@ -44,6 +44,23 @@ module MREC-SYNTAX
 // MultiRec matching
   syntax       Bool ::= "#matchMRec(" MRecPat ";" MRecPat ")" [function]
 
+//--------------------
+//--- Par Matching ---
+//--------------------
+  // Par matching works by establishing 2 sets to determine if they match & how variables are bound
+  // these functions apply to the Par pattern to-be-matched
+  syntax     Set ::=       "#varSet(" ProcPat ")"         [function]
+                   |       "#varSet(" ProcPat ";" Int ")" [function]
+                   | "#mustMatchSet(" ProcPat ")"         [function]
+                   |      "#addEnum(" Set ";" Set ")"     [function]
+                   |        "#minus(" Set ";" Set ")"     [function]
+
+  syntax    Bool ::= "#matchSet(" Set ";" Set ")"                         [function]
+                   | "#matchSet(" Set ";" Set ";" Set ";" Int ";" Int ")" [function]
+                   | "#matchPar(" ParPat ";" ParPat ")"                   [function]
+
+  syntax     Int ::= "#enum(" Set ")" [function]
+
   syntax      KItem ::= Int | IndexedBinds | IndexedNames | IndexedSet
 
 endmodule
@@ -107,28 +124,28 @@ module MREC
   rule #matchMRec( for( _:LbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
     => false requires notBool isLbindPats(C)
   rule #matchMRec( for( A:LbindPats ){ B:ProcPat } ; for( C:LbindPats ){ D:ProcPat } )
-    => #length(A) ==Int #length(C) andBool
-       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
+    => for(A){B} ==K for(C){D} orBool (#length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0)))
   // Peek
   rule #matchMRec( for( _:PbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
     => false requires notBool isPbindPats(C)
   rule #matchMRec( for( A:PbindPats ){ B:ProcPat } ; for( C:PbindPats ){ D:ProcPat } )
-    => #length(A) ==Int #length(C) andBool
-       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
+    => for(A){B} ==K for(C){D} orBool (#length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0)))
   // Repeat
   rule #matchMRec( for( _:RbindPats ){ _:ProcPat } ; for( C:BindPats  ){ _:ProcPat } )
     => false requires notBool isRbindPats(C)
   rule #matchMRec( for( A:RbindPats ){ B:ProcPat } ; for( C:RbindPats ){ D:ProcPat } )
-    => #length(A) ==Int #length(C) andBool
-       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0))
+    => for(A){B} ==K for(C){D} orBool (#length(A) ==Int #length(C) andBool
+       #matchif(#matchBindSet(for(A){B};;for(C){D});;B;D;#bvar(A);#bvarSet(C;;0)))
 
-  // TODO: change bvarSet to bvarMap
+  // TODO: change bvarSet to bvarMap?
   // #matchif( matchBindSet ;; cont1 ; cont2 ; bvar1 ; bvarSet2 )
     // checks that each candidate bind matches, each to-be-matched bind is matched,
     // and then checks each bind matching arrangement for an indexed continuation match
   rule #matchif( A:Set ;; B:ProcPat ; C:ProcPat ; D:NamePats ; E:Set )
     => #checkMBS(A) andBool #checkMBS+(A) andBool
-       #match(#matchBindMaps(A);;#sub(#mapify(0,0;D);B);C;#sub(#mapify(0,0;D);D);E)
+       #match(#matchBindMaps(A);;#sub(#mapify(D);B);C;#sub(#mapify(D);D);E)
 
   // #match( matchBindMaps ;; indexed cont1 ; cont2 ; indexed bvar1 ; bvarSet2 )
     // rearranges bvarSet2 according to each Map in matchBindMaps and checks for successful #match+
@@ -189,5 +206,75 @@ module MREC
 // Clean up Maps
   rule .Map  ; A:Maps => A [anywhere, structural]
   rule A:Map ;  .Map  => A [anywhere, structural]
+
+//--------------------
+//--- Par Matching ---
+//--------------------
+// collects all EvalVar/ProcVar appearing in Par pattern
+// indexedSet of variables
+  rule #varSet( A:ProcPat ) => .Set
+       requires notBool (isParPat(A) orBool isEvalVar(A) orBool isProcVar(A))
+  rule #varSet( A:ProcPat ) => SetItem(0;A)
+       requires isEvalVar(A) orBool isProcVar(A)
+  rule #varSet( A:ParPat ) => #varSet(A;0)
+  rule #varSet( A:ProcPat ; I:Int ) => SetItem(I;A)
+       requires isEvalVar(A) orBool isProcVar(A)
+  rule #varSet( A:ProcPat ; I:Int ) => .Set
+       requires notBool (isParPat(A) orBool isEvalVar(A) orBool isProcVar(A))
+  rule #varSet( A:ProcPat | B:ProcPat ; I:Int )
+    => #if isEvalVar(A) orBool isProcVar(A)
+       #then SetItem(I;A) #varSet(B;I +Int 1)
+       #else #varSet(B;I) #fi
+       requires notBool isParPat(A)
+
+// terms in mustMatchSet must be matched by components of the candidate Par
+// non variable terms with free variables
+// eneumerated set
+  rule #mustMatchSet( A:ProcPat ) => .Set requires isEvalVar(A) orBool isProcVar(A)
+  rule #mustMatchSet( A:ProcPat ) => SetItem(1;A)
+       requires notBool (isParPat(A) orBool isEvalVar(A) orBool isProcVar(A))
+  rule #mustMatchSet( A:ProcPat | B:ProcPat )
+    => #addEnum(#mustMatchSet(A);#mustMatchSet(B))
+       requires notBool isParPat(A)
+
+  // enumerate set elements
+  rule #addEnum( A:Set ;  .Set ) => A
+  rule #addEnum(  .Set ; A:Set ) => A
+  rule #addEnum( SetItem( I:Int ; A:ProcPat ) ; SetItem( J:Int ; A ) C:Set ) => SetItem(I +Int J;A) C
+  rule #addEnum( SetItem( I:Int ; A:ProcPat ) ; SetItem( J:Int ; B:ProcPat ) C:Set )
+    => #addEnum(SetItem(I;A);C) SetItem(J;B) requires A =/=K B
+
+// TODO: better explanation & more tests
+// #matchSet: checks if candidate indexed ParSet matches pattern mustMatchSet
+// #matchSet( indexedSet of normalized Par ; #mustMatchSet of ParPat )
+  // if no patterns to match - all good
+  rule #matchSet( A:Set ;  .Set ) => true
+  // otherwise - set it up
+  rule #matchSet( A:Set ; B:Set ) => #matchSet(A;.Set;B;0;size(A))
+  // once all patterns are matched - we good
+  rule #matchSet( _:Set ; _:Set ; .Set ; _:Int ; _:Int ) => true
+  // if we run out of Par components to match the patterns - we bad
+  rule #matchSet(  .Set ;  .Set ; A:Set ; _:Int ; _:Int ) => A ==K .Set
+  // index matches
+  rule #matchSet( SetItem( I:Int ; A:ProcPat ) B:Set ; C:Set ; D:Set ; I ; M:Int )
+    => #matchSet(B C;.Set;#minus(SetItem(I;A);D);I +Int 1;M) requires I <=Int M
+  // index doesn't match - set aside until match
+  rule #matchSet( SetItem( I:Int ; A:ProcPat ) B:Set ; C:Set ; D:Set ; J:Int ; M:Int )
+    => #matchSet(B;SetItem(I;A) C;D;J;M) requires J <=Int M andBool I =/=Int J
+  rule #matchSet( .Set ; A:Set ; B:Set ; J:Int ; M:Int )
+    => #matchSet(A;.Set;B;J +Int 1;M) requires J <=Int M andBool A =/=K .Set
+  // after all Par components have been checked for a matching pattern - are there any patterns left?
+  rule #matchSet( _:Set ; _:Set ; A:Set ; M:Int ; N:Int ) => A ==K .Set requires M -Int N ==Int 1
+
+// #minus: subtracting matched indexed patterns from mustMatchSet
+  rule #minus( _:Set ; .Set ) => .Set
+  rule #minus( SetItem( I:Int ; A:ProcPat ) ; SetItem( N:Int ; B:ProcPat ) C:Set )
+    => #if #match(A;B)
+       #then #if N >Int 1 #then SetItem(N -Int 1;B) C #else C #fi
+       #else SetItem(N;B) #minus(SetItem(I;A);C) #fi
+
+// #enum: enumerates elements in an enumSet
+  rule #enum( .Set ) => 0
+  rule #enum( SetItem( N:Int ; _:ProcPat ) A:Set ) => N +Int #enum(A)
 
 endmodule
