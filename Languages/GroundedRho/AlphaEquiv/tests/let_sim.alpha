@@ -1,0 +1,10 @@
+// LetExp
+
+    #deBruijn( let \a <- 0 & \b <- @0!("a") in { [\a,\b] } )
+
+/*
+Output:
+
+  let x( 0 ) <- 0 & ( x( 1 ) <- { @ 0 } ! ( "a" ) ) in { [ x( 0 ) , x( 1 ) ] }
+
+*/
