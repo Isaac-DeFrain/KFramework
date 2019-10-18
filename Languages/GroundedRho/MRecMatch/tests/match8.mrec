@@ -1,5 +1,5 @@
 // Match -- MultiRec
-  // no candidate bind matches the last to-be-matched bind
+  // no candidate bind matches the last to-be-matched bind, i.e. #checkMBS+ fails
 
   #matchMRec( for( @[\a,\b] <- @0 & c <- @0 & d <- @0 ){ [\a,\b] } ; for( a <- @0 & b <- @0 & \_ <- @1 ){ *b } )
 

@@ -1,6 +1,7 @@
 // matchif predicate
+  // #match( for( a <- @0 & b <- @1 ){ [*a,*b] } ; for( a <- @1 & b <- @0 ){ [*b,*a] } )
 
-    #matchif( SetItem(0;SetItem(0) SetItem(1)) SetItem(1;SetItem(0) SetItem(1)) ;; [*a,*b] ; [*b,*a] ; a,b ; SetItem(0;a) SetItem(1;b) )
+    #matchif( 0 |-> SetItem(0) SetItem(1) 1 |-> SetItem(0) SetItem(1) ;; [*a,*b] ; [*b,*a] ; a,b ; SetItem(0;a) SetItem(1;b) )
 
 /*
 Output:
