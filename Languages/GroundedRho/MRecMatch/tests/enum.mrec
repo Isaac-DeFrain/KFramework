@@ -1,0 +1,10 @@
+// enumeration of enumSet
+
+    #enum( SetItem ( 1 ; 1 ) SetItem ( 3 ; "a" ) SetItem ( 1 ; { @ 0 } ! ( \ a ) ) SetItem ( 2 ; [ 1 , 2 ] ) )
+
+/*
+Output:
+
+  7
+
+*/

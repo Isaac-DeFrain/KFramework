@@ -1,0 +1,12 @@
+// variable set for Par matching
+
+    #varSet( 1 | "a" | *x | @0!(\a) | \b | \c )
+
+/*
+Output:
+
+  SetItem ( 0 ; * x )
+  SetItem ( 1 ; \ b )
+  SetItem ( 2 ; \ c )
+
+*/

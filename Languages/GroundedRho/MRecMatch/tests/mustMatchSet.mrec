@@ -1,0 +1,13 @@
+// must match set for Par matching
+
+    #mustMatchSet( 1 | "a" | *x | [1,2|Nil] | @0!(\a) | \b | \c | [1,2] )
+
+/*
+Output:
+
+  SetItem ( 1 ; 1 )
+  SetItem ( 1 ; "a" )
+  SetItem ( 1 ; { @ 0 } ! ( \ a ) )
+  SetItem ( 2 ; [ 1 , 2 ] )
+
+*/

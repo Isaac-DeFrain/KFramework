@@ -1,0 +1,11 @@
+// match set predicate for Par matching
+
+    #matchSet( SetItem ( 0 ; 1 ) SetItem ( 1 ; "a" )    SetItem ( 2 ; "b" ) SetItem ( 3 ; { @ 0 } ! ( 1 ) ) ;
+               SetItem ( 1 ; 1 ) SetItem ( 1 ; String ) SetItem ( 1 ; { @ 0 } ! ( \ a ) ) )
+
+/*
+Output:
+
+  true
+
+*/

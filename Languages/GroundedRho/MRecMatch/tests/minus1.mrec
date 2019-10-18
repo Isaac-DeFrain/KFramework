@@ -1,0 +1,12 @@
+// minus set operation for Par matching
+
+    #minus( SetItem ( 0 ; 1 ) ; SetItem ( 4 ; 1 ) SetItem ( 1 ; String ) SetItem ( 1 ; { @ 0 } ! ( \ a ) ) )
+
+/*
+Output:
+
+  SetItem ( 1 ; String )
+  SetItem ( 1 ; { @ 0 } ! ( \ a ) )
+  SetItem ( 3 ; 1 )
+
+*/
