@@ -1,0 +1,17 @@
+// Check matchBindSet
+  // all candidate binds match at least one to-be-matched bind so #checkMBS evaluates to true
+  // notice however that not all to-be-matched binds are matched (the 3rd bind is not matched), so #checkMBS+ will evaluate to false
+
+    #checkMBS(
+      SetItem(0 ; SetItem(0) SetItem(1))
+      SetItem(1 ; SetItem(2))
+      SetItem(2 ; SetItem(2))
+      SetItem(3 ; SetItem(0) SetItem(1))
+    )
+
+/*
+Output:
+
+  true
+
+*/

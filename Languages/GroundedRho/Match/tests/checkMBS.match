@@ -1,0 +1,16 @@
+// Check matchBindSet
+  // checks for nonmatching candidate binds, i.e. _:Int ; .Set in matchBindSet
+
+    #checkMBS(
+      SetItem(0 ; SetItem(0)SetItem(1))
+      SetItem(1 ; SetItem(2)SetItem(3))
+      SetItem(2 ; .Set)
+      SetItem(3 ; SetItem(0)SetItem(1))
+    )
+
+/*
+Output:
+
+  false
+
+*/
