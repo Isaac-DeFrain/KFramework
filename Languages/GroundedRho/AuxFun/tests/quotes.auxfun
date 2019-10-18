@@ -1,7 +1,7 @@
 // Quote proc lists
 
-  #quotes ( x!(Nil) , *y , *z , *a , Nil )
+    #quotes( x!(Nil) , *y , *z , \_ , Nil )
 
 /*
-  Output: @ ( x!(Nil) ) , @ * y , @ * z , @ * a , @ Nil
+  @ ( x ! ( Nil ) ) , y , z , @ \_ , @ Nil
 */
