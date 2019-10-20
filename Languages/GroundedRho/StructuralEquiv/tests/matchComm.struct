@@ -1,4 +1,4 @@
-// Structurally Equivalent Set Inclusion
+// MatchComm predicate
 
     #matchComm( @{2|1}!(42,@0!("a"),[1,2,3,4],37) ;;
 
