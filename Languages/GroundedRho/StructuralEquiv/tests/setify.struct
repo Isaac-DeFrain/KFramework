@@ -1,10 +1,10 @@
 // Setify
 
-  #setify(Nil)
-  
+    #setify(Nil)
+
 /*
 Output:
 
-    SetItem ( Nil , 1 )
+  SetItem ( 1 ; Nil )
 
 */

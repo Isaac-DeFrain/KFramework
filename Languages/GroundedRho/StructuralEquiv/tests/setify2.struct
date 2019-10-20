@@ -1,0 +1,11 @@
+// Setify
+
+    #setify(Nil | "a" | @0!(1) | @{0|Nil}!(1) | @0!(Nil|1) | Nil)
+
+/*
+Output:
+
+  SetItem ( 1 ; "a" )
+  SetItem ( 3 ; { @ 0 } ! ( 1 ) )
+
+*/

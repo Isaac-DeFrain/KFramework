@@ -1,0 +1,15 @@
+// Setify
+
+    #setify( "a" | @0!(1) | @{0|Nil}!(1) | \a | \b | Nil | *x | *y )
+
+/*
+Output:
+
+  SetItem ( 1 ; "a" )
+  SetItem ( 1 ; * x )
+  SetItem ( 1 ; * y )
+  SetItem ( 1 ; \ a )
+  SetItem ( 1 ; \ b )
+  SetItem ( 2 ; { @ 0 } ! ( 1 ) )
+
+*/

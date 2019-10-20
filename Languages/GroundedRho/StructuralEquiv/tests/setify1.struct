@@ -1,10 +1,11 @@
 // Setify
+  // because Nil | Nil | Nil == Nil
 
-  #setify(Nil | Nil | Nil)
-  
+    #setify(Nil | Nil | Nil)
+
 /*
-Output: because Nil | Nil | Nil == Nil and #setify(P) ==K .Set for all P:Proc == Nil
+Output:
 
-    .Set
+  SetItem ( 1 ; Nil )
 
 */
