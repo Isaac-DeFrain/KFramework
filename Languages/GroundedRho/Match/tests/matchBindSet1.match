@@ -1,0 +1,14 @@
+// Matching Binds Set -- Binds inputs
+
+//                  0            1          2           3          0        1          2             3
+  #matchBindSet( a <- @\x & b,c <- @0 & e,f <- @\x & d <- @1 ;; a <- x & b <- x & c,d <- @0 & e,@\f <- @0 )
+
+/*
+Output:
+
+  SetItem ( 0 ; SetItem ( 0 ) SetItem ( 1 ) )
+  SetItem ( 1 ; SetItem ( 2 ) SetItem ( 3 ) )
+  SetItem ( 2 ; .Set )
+  SetItem ( 3 ; SetItem ( 0 ) SetItem ( 1 ) )
+
+*/

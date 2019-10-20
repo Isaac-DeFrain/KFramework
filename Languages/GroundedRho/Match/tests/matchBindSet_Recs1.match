@@ -1,0 +1,11 @@
+// Matching Binds Set -- Rec inputs
+
+  #matchBindSet( for( @[\a,\b] <= @0 & c <= @1 ){ [\a,\b] } ;; for( a <= @0 & b <= @1 ){ *b } )
+
+/*
+Output:
+
+  SetItem ( 0 ; SetItem ( 0 ) )
+  SetItem ( 1 ; SetItem ( 1 ) )
+
+*/
