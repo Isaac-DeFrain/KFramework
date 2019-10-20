@@ -3,16 +3,16 @@
 ## Names
 ```
        Name ::= Bundle        // Bundled process
-              | Quote         // Quoted process
               | Var           // Name variable
+              > Quote         // Quoted process
               > VarDec        // Variable declaration -- Var or Var(Uri)
               > TypedName     // Typed name variable
 
   // Meta-level names
        Name ::= EmptyName
-       Name ::= BoundName
-  BoundName ::= "boundN(" Int ")"
-              | "boundN(" Int "," Int ")"
+        Var ::= BoundName
+  BoundName ::= "n(" Int ")"
+              | "n(" Int "," Int ")"
 ```
 
 ## Name Patterns
@@ -45,9 +45,8 @@
 
 ## Process Patterns
 ```
-    ProcPat ::= Nullity       // Null pattern
+    ProcPat ::= Proc          // Concrete process
               > WildCard      // WildCard
-              > PatVar        // Pattern variable
               > PatExp        // Pattern expression
               > NewPat        // New pattern
               | CollectionPat // Collection pattern
@@ -61,7 +60,5 @@
               | InvocationPat // Contract invocation pattern
               | SendPat       // Send pattern
               > CondPat       // If...then(...else) pattern
-              > Recurse       // Recursion
-              | Quantify      // Quantification
               > ParPat        // Par pattern
 ```
