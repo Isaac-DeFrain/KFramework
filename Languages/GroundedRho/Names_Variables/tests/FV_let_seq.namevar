@@ -1,0 +1,11 @@
+// Free variables
+
+    #FV( let \a <- @1!(\b) ; \c <- [@0!(*e),\a] ; \d <- "a" ++ \c in { [\a,\c] } )
+
+/*
+Output:
+
+  SetItem ( \ b )
+  SetItem ( e )
+
+*/

@@ -1,0 +1,10 @@
+// Free variables
+
+    #FV( let \a <- 1 in { 2 | \a } )
+
+/*
+Output:
+
+  .Set
+
+*/
