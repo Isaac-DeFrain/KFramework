@@ -1,10 +1,10 @@
 // Match
 
-  match { @Nil!("Hello") } {
-        { x!("hello") }    :=> [ 1 , *x ]
-        { x!(\x) }         :=> [ { "chan":*x } , { "msg":\x } ]
-        { @Nil!("hello") } :=> 3
-        { @Nil!("Hello") } :=> 4
+  match @Nil!("Hello") {
+        { x!("hello") }    |=> [ 1 , *x ]
+        { x!(\x) }         |=> [ { "chan":*x } , { "msg":\x } ]
+        { @Nil!("hello") } |=> 3
+        { @Nil!("Hello") } |=> 4
   }
 
 /*

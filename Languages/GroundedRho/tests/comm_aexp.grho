@@ -1,6 +1,6 @@
 // Nondeterministic comm
 
-    @Nil!(1) | for( y <= @Nil ){ *y + 5 } | @Nil!(37) | @Nil!(37,true) | @Nil!(38)
+    @Nil!(1) | for( y <- @Nil ){ *y + 5 } | @Nil!(37) | @Nil!(38)
 
 /*
 Output:
@@ -8,49 +8,41 @@ Output:
   <activity>
     <task>
       <k>
-        6
-      </k>
-    </task> <task>
-      <k>
         42
-      </k>
-    </task> <task>
-      <k>
-        43
       </k>
     </task>
   </activity>
   <tuplespace>
     <sends>
       <send>
-        @ Nil ! ( 37 , true )
+        @ Nil ! ( 1 )
+      </send> <send>
+        { @ Nil } ! ( 38 )
       </send>
     </sends>
     <input>
-      <recs>
-        <rec>
-          for ( y <= @ Nil ) { * y + 5 }
-        </rec>
-      </recs>
+      <receives>
+        .ReceiveCellBag
+      </receives>
       <sums>
         .SumCellBag
       </sums>
     </input>
   </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
   <nextLoc>
     0
   </nextLoc>
   <original>
-    ( @ Nil ) ! ( 1 ) | for ( y <= @ Nil ) { * y + 5 } | @ Nil ! ( 37 ) | @ Nil ! ( 37 , true ) | @ Nil ! ( 38 )
+    @ Nil ! ( 1 ) | for ( y <- @ Nil ) { * y + 5 } | @ Nil ! ( 37 ) | { @ Nil } ! ( 38 )
   </original>
   <OGfreevar>
     .Set
   </OGfreevar>
-  <OGvarcontexts>
-    .Set
-  </OGvarcontexts>
   <OGdeBruijn>
-    ( @ Nil ) ! ( 1 ) | for ( boundN( 0 ) <= @ Nil ) { * boundN( 0 ) + 5 } | @ Nil ! ( 37 ) | @ Nil ! ( 37 , true ) | @ Nil ! ( 38 )
+    for ( @ x( 0 ) <- @ Nil ) { x( 0 ) + 5 } | @ Nil ! ( 1 ) | @ Nil ! ( 37 ) | { @ Nil } ! ( 38 )
   </OGdeBruijn>
 </T>
 */

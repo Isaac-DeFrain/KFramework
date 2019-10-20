@@ -1,48 +1,50 @@
 // Contract
 
-    contract Name ( ) = { Nil }
+    contract @0( x ) = { [Nil,*x] } | @0( @2 ) | let \a <- @0(@1) in {\a ++ [true]}
 
 /*
 Output:
 <T>
-  <threads>
-    .ThreadCellBag
-  </threads>
+  <activity>
+    <task>
+      <k>
+        [ Nil , 1 , true ]
+      </k>
+    </task> <task>
+      <k>
+        [ Nil , 2 ]
+      </k>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       .SendCellBag
     </sends>
-    <receives>
-      <rec>
-        <rchan>
-          Name
-        </rchan>
-        <bvars>
-          EmptyN
-        </bvars>
-        <bnum>
-          0
-        </bnum>
-        <rtype>
-          1
-        </rtype>
-        <guard>
-          true
-        </guard>
-        <cont>
-          Nil
-        </cont>
-      </rec>
-    </receives>
+    <input>
+      <receives>
+        <receive>
+          for ( x <= @ 0 ) { [ Nil , * x ] }
+        </receive>
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
+  <contracts>
+    @ 0 ( x ) |-> [ Nil , * x ]
+  </contracts>
   <nextLoc>
     0
   </nextLoc>
-  <freeVars>
-    SetItem ( Name : name )
-  </freeVars>
-  <deBruijn>
-    for ( <= Name ) { Nil }
-  </deBruijn>
+  <original>
+    contract @ 0 ( x ) = { [ Nil , * x ] } | @ 0 ( @ 2 ) | let \ a <- ( @ 0 ) ( @ 1 ) in { \ a ++ [ true ] }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    contract @ 0 ( @ x( 0 ) ) = { [ Nil , x( 0 ) ] } | @ 0 ( @ 2 ) | let x( 0 ) <- ( @ 0 ) ( @ 1 ) in { x( 0 ) ++ [ true ] }
+  </OGdeBruijn>
 </T>
 */

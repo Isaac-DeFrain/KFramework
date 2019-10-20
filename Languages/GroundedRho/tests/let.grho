@@ -1,0 +1,46 @@
+// Let expression
+
+    let \myVar <- @0!("a") in { @"a"!(\myVar) | for( @0 <- @\myVar ){ [1,2,\myVar,4,5] } }
+
+/*
+Output:
+
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      <send>
+        ( @ "a" ) ! ( ( @ 0 ) ! ( "a" ) )
+      </send>
+    </sends>
+    <input>
+      <receives>
+        <receive>
+          for ( @ 0 <- @ ( ( @ 0 ) ! ( "a" ) ) ) { [ 1 , 2 , ( @ 0 ) ! ( "a" ) , 4 , 5 ] }
+        </receive>
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    let ( \ myVar <- ( @ 0 ) ! ( "a" ) ) in { ( @ "a" ) ! ( \ myVar ) | for ( @ 0 <- @ \ myVar ) { [ 1 , 2 , \ myVar , 4 , 5 ] } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    let x( 0 ) <- ( @ 0 ) ! ( "a" ) in { ( @ "a" ) ! ( x( 0 ) ) | for ( @ 0 <- @ x( 0 ) ) { [ 1 , 2 , x( 0 ) , 4 , 5 ] } }
+  </OGdeBruijn>
+</T>
+
+*/
