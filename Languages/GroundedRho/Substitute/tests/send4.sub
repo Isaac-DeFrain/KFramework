@@ -1,12 +1,11 @@
 // Send
 
-    @"a"!( 0 , 1 , 2 , 3 )
+    #sub( @{@0!(\c)}!(1,2) ; @{a!(\b)}!(\c,\d) ; [*a,\b,\c,\d] )
 
 /* Output:
 
-    ( @ "a" ) ! ( 0 , ( 1 , 2 , 3 ) )
+  [ 0 , 1 , 1 , 2 ]
 
-KAST:
-    `<k>`(`_!(_)_GRHO-SYNTAX`(`@__GRHO-SYNTAX`(#token("\"a\"","String")),`_,__GRHO-SYNTAX`(#token("0","Int"),`_,__GRHO-SYNTAX`(#token("1","Int"),`_,__GRHO-SYNTAX`(#token("2","Int"),#token("3","Int"))))))
+// substitution is not capture-free yet
 
 */

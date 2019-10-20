@@ -1,10 +1,12 @@
-// Receive
+// MultiRec sub
 
-  #sub( for( x,@1 <- @"chan1" ; @2,@{@"a"!("b")},@\x <- @"chan2" ){ *x | \x | "yes" } ; for( a,b <- chan1 ; e,@{f!(\g)},@\h <- chan2 ){ *a | f!(\d) } ; *b | a!(*chan1 | chan2!(\d)) | *e | *f | \g | *h )
+    #sub( for( x,@1 <- @"chan1" & @2,@{@"a"!("b")},@\x <- @"chan2" ){ *x | \x | "yes" } ;
+          for( a,b  <- chan1    & e,@{@\f!(\g)},   @\h <- chan2    ){ *a | \f | \d    } ;
+          *b | a!(*chan1 | chan2!(\d)) | *e | *f | \g | *h )
 
 /*
 Output:
 
-    * b | a ! ( "chan1" | ( @ "chan2" ) ! ( "yes" ) ) | * e | * f | \ g | * h
+  * b | a ! ( "chan1" | { @ "chan2" } ! ( "yes" ) ) | * e | * f | \ g | * h
 
 */

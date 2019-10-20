@@ -1,10 +1,10 @@
-// Receive
+// Receive sub -- MultiRec
 
-  #sub( 2 ; \x ; for( @3 , @\x <- @\x ){ \x | true } )
+    #sub( @2 ; x ; for( @3 , x <= @x!(0) & a,b,c <= @0 ){ x!([*a,*b,*c]) | true } )
 
 /*
 Output:
 
-    for ( @ 3 , @ \ x <- @ 2 ) { \ x | true }
+  for ( @ 3 , x <= @ ( { @ 2 } ! ( 0 ) ) & a , b , c <= @ 0 ) { x ! ( [ * a , * b , * c ] ) | true }
 
 */
