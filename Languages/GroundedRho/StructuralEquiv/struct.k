@@ -9,19 +9,15 @@ TODO:
 
 require "../grho.k"
 require "../AlphaEquiv/alpha.k"
+require "../AuxFun/auxfun.k"
+require "../Match/match.k"
 
 module STRUCT-SYNTAX
   import DOMAINS
   import GRHO-SYNTAX
 
 // Structural equivalence relation
-  syntax        Bool ::=   "#structEq(" Procs    ";" Procs    ")" [function]
-                       |   "#structEq(" Procs    ";" ProcPats ")" [function]
-                       |   "#structEq(" ProcPats ";" Procs    ")" [function]
-                       |   "#structEq(" ProcPats ";" ProcPats ")" [function]
-                       | "#structEqif(" Procs    ";" Procs    ")" [function]
-                       | "#structEqif(" Procs    ";" ProcPats ")" [function]
-                       | "#structEqif(" ProcPats ";" Procs    ")" [function]
+  syntax        Bool ::=   "#structEq(" ProcPats ";" ProcPats ")" [function]
                        | "#structEqif(" ProcPats ";" ProcPats ")" [function]
 
   syntax        Bool ::=   "#structEq(" Map ";" Map ")" [function]
@@ -33,13 +29,7 @@ module STRUCT-SYNTAX
   syntax        Bool ::= "#structEq(" RhoKVPats  ";" RhoKVPats  ")" [function]
 
 // Name equivalence relation
-  syntax        Bool ::=   "#nameEq(" Names    ";" Names    ")" [function]
-                       |   "#nameEq(" Names    ";" NamePats ")" [function]
-                       |   "#nameEq(" NamePats ";" Names    ")" [function]
-                       |   "#nameEq(" NamePats ";" NamePats ")" [function]
-                       | "#nameEqif(" Names    ";" Names    ")" [function]
-                       | "#nameEqif(" Names    ";" NamePats ")" [function]
-                       | "#nameEqif(" NamePats ";" Names    ")" [function]
+  syntax        Bool ::=   "#nameEq(" NamePats ";" NamePats ")" [function]
                        | "#nameEqif(" NamePats ";" NamePats ")" [function]
 
 // Comm Predicate
@@ -47,11 +37,10 @@ module STRUCT-SYNTAX
   syntax        Bool ::= "#matchComm(" Send ";;" AnyBinds ")" [function]
 
 // Normalization functions
-  syntax         Int ::=  "#parCount(" Proc ";" Proc  ")" [function]
-  syntax        Proc ::= "#parRemove(" Proc ";" Proc  ")" [function]
-                       | "#removeNil(" Proc ")"           [function]
-                       |   "#parnorm(" Proc ")"           [function]
-  syntax         Set ::=    "#setify(" Proc ")"           [function]
+  syntax         Int ::=  "#parCount(" ProcPat ";" ProcPat  ")" [function]
+  syntax     ProcPat ::= "#parRemove(" ProcPat ";" ProcPat  ")" [function]
+                       |   "#parnorm(" ProcPat ")"              [function]
+  syntax         Set ::=    "#setify(" ProcPat ")"              [function]
 
 // Unary Ordering
   syntax        Proc ::= "#order(" Proc    ")" [function, poly(0,1)]
@@ -77,143 +66,125 @@ module STRUCT-SYNTAX
   syntax  RhoKVPairs ::=     "#order(" RhoKVPairs ")" [function]
                        | "#orderEach(" RhoKVPairs ")" [function]
 
+  syntax    RhoKVPat ::= "#order(" RhoKVPat ")" [function]
+
+  syntax   RhoKVPats ::=     "#order(" RhoKVPats ")" [function]
+                       | "#orderEach(" RhoKVPats ")" [function]
+
 // Binary Ordering
-  syntax        Bool ::=   "#order(" Procs  ";" Procs ")" [function]
-                       |   "#order(" Names  ";" Names ")" [function]
-                       | "#orderif(" Procs  ";" Procs ")" [function]
-                       | "#orderif(" Names  ";" Names ")" [function]
+  syntax        Bool ::=   "#order(" ProcPats  ";" ProcPats ")" [function]
+                       |   "#order(" NamePats  ";" NamePats ")" [function]
+                       | "#orderif(" ProcPats  ";" ProcPats ")" [function]
+                       | "#orderif(" NamePats  ";" NamePats ")" [function]
 
   // subexpression ordering
-    // Binds
-  syntax       Lbind ::= "#order(" Lbind      ")" [function]
-  syntax      GLbind ::= "#order(" GLbind     ")" [function]
-  syntax      Lbinds ::= "#order(" Lbinds     ")" [function]
-  syntax     GLbinds ::= "#order(" GLbinds    ")" [function]
+    // BindPats
   syntax    LbindPat ::= "#order(" LbindPat   ")" [function]
   syntax   GLbindPat ::= "#order(" GLbindPat  ")" [function]
   syntax   LbindPats ::= "#order(" LbindPats  ")" [function]
   syntax  GLbindPats ::= "#order(" GLbindPats ")" [function]
-  syntax       Pbind ::= "#order(" Pbind      ")" [function]
-  syntax      GPbind ::= "#order(" GPbind     ")" [function]
-  syntax      Pbinds ::= "#order(" Pbinds     ")" [function]
-  syntax     GPbinds ::= "#order(" GPbinds    ")" [function]
   syntax    PbindPat ::= "#order(" PbindPat   ")" [function]
   syntax   GPbindPat ::= "#order(" GPbindPat  ")" [function]
   syntax   PbindPats ::= "#order(" PbindPats  ")" [function]
   syntax  GPbindPats ::= "#order(" GPbindPats ")" [function]
-  syntax       Rbind ::= "#order(" Rbind      ")" [function]
-  syntax      GRbind ::= "#order(" GRbind     ")" [function]
-  syntax      Rbinds ::= "#order(" Rbinds     ")" [function]
-  syntax     GRbinds ::= "#order(" GRbinds    ")" [function]
   syntax    RbindPat ::= "#order(" RbindPat   ")" [function]
   syntax   GRbindPat ::= "#order(" GRbindPat  ")" [function]
   syntax   RbindPats ::= "#order(" RbindPats  ")" [function]
   syntax  GRbindPats ::= "#order(" GRbindPats ")" [function]
 
-  syntax        Bool ::=   "#order(" Bind  ";;" Bind  ")" [function]
-                       |   "#order(" Bind  ";;" Binds ")" [function]
-                       |   "#order(" Binds ";;" Bind  ")" [function]
-                       |   "#order(" Binds ";;" Binds ")" [function]
-                       | "#orderif(" Binds ";;" Binds ")" [function]
-    // RhoKVPairs
-  syntax        Bool ::=   "#order(" RhoKVPairs ";;" RhoKVPairs ")" [function]
-                       | "#orderif(" RhoKVPairs ";;" RhoKVPairs ")" [function]
+  syntax        Bool ::=   "#order(" BindPat  ";;" BindPat  ")" [function]
+                       |   "#order(" BindPat  ";;" BindPats ")" [function]
+                       |   "#order(" BindPats ";;" BindPat  ")" [function]
+                       |   "#order(" BindPats ";;" BindPats ")" [function]
+                       | "#orderif(" BindPats ";;" BindPats ")" [function]
+
     // RhoKVPats
-  syntax        Bool ::=   "#order(" RhoKVPats  ";;" RhoKVPats  ")" [function]
-                       | "#orderif(" RhoKVPats  ";;" RhoKVPats  ")" [function]
+  syntax        Bool ::=   "#order(" RhoKVPats ";;" RhoKVPats  ")" [function]
+                       | "#orderif(" RhoKVPats ";;" RhoKVPats  ")" [function]
 
-// Reordering
-  syntax        Proc ::= "#reorder(" Proc  ")"                      [function]
-  syntax       Procs ::= "#reorder(" Procs ")"                      [function]
-                       | "#reorder("      ";;"       ";;" Procs ")" [function]
-                       | "#reorder("      ";;" Procs ";;" Procs ")" [function]
-                       | "#reorder(" Proc ";;" Procs ";;" Procs ")" [function]
-                       | "#reorder(" Proc ";;" Procs ";;"       ")" [function]
-                       | "#reorder("      ";;" Procs ";;"       ")" [function]
+// Reordering -- TODO: change to Pats
+  syntax     ProcPat ::= "#reorder(" ProcPat  ")"                            [function]
+  syntax    ProcPats ::= "#reorder(" ProcPats ")"                            [function]
+                       | "#reorder("         ";;"          ";;" ProcPats ")" [function]
+                       | "#reorder("         ";;" ProcPats ";;" ProcPats ")" [function]
+                       | "#reorder(" ProcPat ";;" ProcPats ";;" ProcPats ")" [function]
+                       | "#reorder(" ProcPat ";;" ProcPats ";;"          ")" [function]
+                       | "#reorder("         ";;" ProcPats ";;"          ")" [function]
 
-  syntax        Name ::= "#reorder(" Name  ")"                      [function]
-  syntax       Names ::= "#reorder(" Names ")"                      [function]
-                       | "#reorder("      ";;"       ";;" Names ")" [function]
-                       | "#reorder("      ";;" Names ";;" Names ")" [function]
-                       | "#reorder(" Name ";;" Names ";;" Names ")" [function]
-                       | "#reorder(" Name ";;" Names ";;"       ")" [function]
-                       | "#reorder("      ";;" Names ";;"       ")" [function]
+  syntax     NamePat ::= "#reorder(" NamePat  ")"                            [function]
+  syntax    NamePats ::= "#reorder(" NamePats ")"                            [function]
+                       | "#reorder("         ";;"          ";;" NamePats ")" [function]
+                       | "#reorder("         ";;" NamePats ";;" NamePats ")" [function]
+                       | "#reorder(" NamePat ";;" NamePats ";;" NamePats ")" [function]
+                       | "#reorder(" NamePat ";;" NamePats ";;"          ")" [function]
+                       | "#reorder("         ";;" NamePats ";;"          ")" [function]
 
   // Binds
-  syntax       Lbind ::= "#reorder(" Lbind   ")"                       [function]
-  syntax      GLbind ::= "#reorder(" GLbind  ")"                       [function]
-  syntax     GLbinds ::= "#reorder(" GLbinds ")"                       [function]
-  syntax      Lbinds ::= "#reorder(" Lbinds  ")"                       [function]
-                       | "#reorder("       ";;"        ";;" Lbinds ")" [function]
-                       | "#reorder("       ";;" Lbind  ";;" Lbind  ")" [function]
-                       | "#reorder("       ";;" Lbind  ";;" Lbinds ")" [function]
-                       | "#reorder("       ";;" Lbinds ";;" Lbind  ")" [function]
-                       | "#reorder("       ";;" Lbinds ";;" Lbinds ")" [function]
-                       | "#reorder(" Lbind ";;" Lbind  ";;" Lbind  ")" [function]
-                       | "#reorder(" Lbind ";;" Lbind  ";;" Lbinds ")" [function]
-                       | "#reorder(" Lbind ";;" Lbinds ";;" Lbind  ")" [function]
-                       | "#reorder(" Lbind ";;" Lbinds ";;" Lbinds ")" [function]
-                       | "#reorder(" Lbind ";;" Lbind  ";;"        ")" [function]
-                       | "#reorder(" Lbind ";;" Lbinds ";;"        ")" [function]
-                       | "#reorder("       ";;" Lbinds ";;"        ")" [function]
-  syntax       Pbind ::= "#reorder(" Pbind   ")"                       [function]
-  syntax      GPbind ::= "#reorder(" GPbind  ")"                       [function]
-  syntax     GPbinds ::= "#reorder(" GPbinds ")"                       [function]
-  syntax      Pbinds ::= "#reorder(" Pbinds  ")"                       [function]
-                       | "#reorder("       ";;"        ";;" Pbinds ")" [function]
-                       | "#reorder("       ";;" Pbind  ";;" Pbind  ")" [function]
-                       | "#reorder("       ";;" Pbind  ";;" Pbinds ")" [function]
-                       | "#reorder("       ";;" Pbinds ";;" Pbind  ")" [function]
-                       | "#reorder("       ";;" Pbinds ";;" Pbinds ")" [function]
-                       | "#reorder(" Pbind ";;" Pbind  ";;" Pbind  ")" [function]
-                       | "#reorder(" Pbind ";;" Pbind  ";;" Pbinds ")" [function]
-                       | "#reorder(" Pbind ";;" Pbinds ";;" Pbind  ")" [function]
-                       | "#reorder(" Pbind ";;" Pbinds ";;" Pbinds ")" [function]
-                       | "#reorder(" Pbind ";;" Pbind  ";;"        ")" [function]
-                       | "#reorder(" Pbind ";;" Pbinds ";;"        ")" [function]
-                       | "#reorder("       ";;" Pbinds ";;"        ")" [function]
-  syntax       Rbind ::= "#reorder(" Rbind   ")"                       [function]
-  syntax      GRbind ::= "#reorder(" GRbind  ")"                       [function]
-  syntax     GRbinds ::= "#reorder(" GRbinds ")"                       [function]
-  syntax      Rbinds ::= "#reorder(" Rbinds  ")"                       [function]
-                       | "#reorder("       ";;"        ";;" Rbinds ")" [function]
-                       | "#reorder("       ";;" Rbind  ";;" Rbind  ")" [function]
-                       | "#reorder("       ";;" Rbind  ";;" Rbinds ")" [function]
-                       | "#reorder("       ";;" Rbinds ";;" Rbind  ")" [function]
-                       | "#reorder("       ";;" Rbinds ";;" Rbinds ")" [function]
-                       | "#reorder(" Rbind ";;" Rbind  ";;" Rbind  ")" [function]
-                       | "#reorder(" Rbind ";;" Rbind  ";;" Rbinds ")" [function]
-                       | "#reorder(" Rbind ";;" Rbinds ";;" Rbind  ")" [function]
-                       | "#reorder(" Rbind ";;" Rbinds ";;" Rbinds ")" [function]
-                       | "#reorder(" Rbind ";;" Rbind  ";;"        ")" [function]
-                       | "#reorder(" Rbind ";;" Rbinds ";;"        ")" [function]
-                       | "#reorder("       ";;" Rbinds ";;"        ")" [function]
+  syntax    LbindPat ::= "#reorder(" LbindPat   ")"                             [function]
+  syntax   GLbindPat ::= "#reorder(" GLbindPat  ")"                             [function]
+  syntax  GLbindPats ::= "#reorder(" GLbindPats ")"                             [function]
+  syntax   LbindPats ::= "#reorder(" LbindPats  ")"                             [function]
+                       | "#reorder("          ";;"           ";;" LbindPats ")" [function]
+                       | "#reorder("          ";;" LbindPat  ";;" LbindPat  ")" [function]
+                       | "#reorder("          ";;" LbindPat  ";;" LbindPats ")" [function]
+                       | "#reorder("          ";;" LbindPats ";;" LbindPat  ")" [function]
+                       | "#reorder("          ";;" LbindPats ";;" LbindPats ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPat  ";;" LbindPat  ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPat  ";;" LbindPats ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPats ";;" LbindPat  ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPats ";;" LbindPats ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPat  ";;"           ")" [function]
+                       | "#reorder(" LbindPat ";;" LbindPats ";;"           ")" [function]
+                       | "#reorder("          ";;" LbindPats ";;"           ")" [function]
+  syntax    PbindPat ::= "#reorder(" PbindPat   ")"                             [function]
+  syntax   GPbindPat ::= "#reorder(" GPbindPat  ")"                             [function]
+  syntax  GPbindPats ::= "#reorder(" GPbindPats ")"                             [function]
+  syntax   PbindPats ::= "#reorder(" PbindPats  ")"                             [function]
+                       | "#reorder("          ";;"           ";;" PbindPats ")" [function]
+                       | "#reorder("          ";;" PbindPat  ";;" PbindPat  ")" [function]
+                       | "#reorder("          ";;" PbindPat  ";;" PbindPats ")" [function]
+                       | "#reorder("          ";;" PbindPats ";;" PbindPat  ")" [function]
+                       | "#reorder("          ";;" PbindPats ";;" PbindPats ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPat  ";;" PbindPat  ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPat  ";;" PbindPats ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPats ";;" PbindPat  ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPats ";;" PbindPats ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPat  ";;"           ")" [function]
+                       | "#reorder(" PbindPat ";;" PbindPats ";;"           ")" [function]
+                       | "#reorder("          ";;" PbindPats ";;"           ")" [function]
+  syntax    RbindPat ::= "#reorder(" RbindPat   ")"                             [function]
+  syntax   GRbindPat ::= "#reorder(" GRbindPat  ")"                             [function]
+  syntax  GRbindPats ::= "#reorder(" GRbindPats ")"                             [function]
+  syntax   RbindPats ::= "#reorder(" RbindPats  ")"                             [function]
+                       | "#reorder("          ";;"           ";;" RbindPats ")" [function]
+                       | "#reorder("          ";;" RbindPat  ";;" RbindPat  ")" [function]
+                       | "#reorder("          ";;" RbindPat  ";;" RbindPats ")" [function]
+                       | "#reorder("          ";;" RbindPats ";;" RbindPat  ")" [function]
+                       | "#reorder("          ";;" RbindPats ";;" RbindPats ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPat  ";;" RbindPat  ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPat  ";;" RbindPats ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPats ";;" RbindPat  ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPats ";;" RbindPats ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPat  ";;"           ")" [function]
+                       | "#reorder(" RbindPat ";;" RbindPats ";;"           ")" [function]
+                       | "#reorder("          ";;" RbindPats ";;"           ")" [function]
 
 // TODO: reorder bind patterns semantics
   // unguarded
   syntax    LbindPat ::= "#reorder(" LbindPat   ")" [function]
   syntax   LbindPats ::= "#reorder(" LbindPats  ")" [function]
-  syntax    PbindPat ::= "#reorder(" PbindPat   ")" [function]
-  syntax   PbindPats ::= "#reorder(" PbindPats  ")" [function]
-  syntax    RbindPat ::= "#reorder(" RbindPat   ")" [function]
-  syntax   RbindPats ::= "#reorder(" RbindPats  ")" [function]
-  // guarded
   syntax   GLbindPat ::= "#reorder(" GLbindPat  ")" [function]
   syntax  GLbindPats ::= "#reorder(" GLbindPats ")" [function]
+  syntax    PbindPat ::= "#reorder(" PbindPat   ")" [function]
+  syntax   PbindPats ::= "#reorder(" PbindPats  ")" [function]
   syntax   GPbindPat ::= "#reorder(" GPbindPat  ")" [function]
   syntax  GPbindPats ::= "#reorder(" GPbindPats ")" [function]
+  syntax    RbindPat ::= "#reorder(" RbindPat   ")" [function]
+  syntax   RbindPats ::= "#reorder(" RbindPats  ")" [function]
   syntax   GRbindPat ::= "#reorder(" GRbindPat  ")" [function]
   syntax  GRbindPats ::= "#reorder(" GRbindPats ")" [function]
 
-  // RhoKVPairs
-  syntax   RhoKVPair ::= "#reorder(" RhoKVPair  ")"                                [function]
-  syntax  RhoKVPairs ::= "#reorder(" RhoKVPairs ")"                                [function]
-                       | "#reorder("           ";;"            ";;" RhoKVPairs ")" [function]
-                       | "#reorder("           ";;" RhoKVPairs ";;" RhoKVPairs ")" [function]
-                       | "#reorder(" RhoKVPair ";;" RhoKVPairs ";;" RhoKVPairs ")" [function]
-                       | "#reorder(" RhoKVPair ";;" RhoKVPairs ";;"            ")" [function]
-                       | "#reorder("           ";;" RhoKVPairs ";;"            ")" [function]
-/*
+  // RhoKVPats
   syntax    RhoKVPat ::= "#reorder(" RhoKVPat   ")"                                [function]
   syntax   RhoKVPats ::= "#reorder(" RhoKVPats  ")"                                [function]
                        | "#reorder("           ";;"            ";;" RhoKVPats  ")" [function]
@@ -221,8 +192,8 @@ module STRUCT-SYNTAX
                        | "#reorder(" RhoKVPat  ";;" RhoKVPats  ";;" RhoKVPats  ")" [function]
                        | "#reorder(" RhoKVPat  ";;" RhoKVPats  ";;"            ")" [function]
                        | "#reorder("           ";;" RhoKVPats  ";;"            ")" [function]
-*/
 
+/*
   // #chanRelSet: Receive/RecPat/Bind[Pat][s] -> set of seta of related channel indices
   syntax         Set ::= "#chanRelSet(" Receive  ")" [function]
                        | "#chanRelSet(" RecPat   ")" [function]
@@ -252,35 +223,29 @@ module STRUCT-SYNTAX
                        | "#chanRelSet("          ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
   // chanRelSet union
   syntax         Set ::= "#unionCRS(" Set ";" Set ")" [function]
-
-// Matching Binds
-  syntax         Set ::= "#matchBindSet(" Binds ";;" Binds ")" [function]
-                       | "#matchBindSet(" Bind  ";;" Bind  ";;" Int ";" Int ")" [function]
-                       | "#matchBindSet(" Bind  ";;" Binds ";;" Int ";" Int ")" [function]
-                       | "#matchBindSet(" Binds ";;" Binds ";;" Int ";" Int ")" [function]
-                       | "#matchBindSet(" Bind  ";;" Bind  ";;" Int ";" Int ";" Int ")" [function]
-                       | "#matchBindSet(" Bind  ";;" Binds ";;" Int ";" Int ";" Int ")" [function]
-                       | "#matchBindSet(" Binds ";;" Binds ";;" Int ";" Int ";" Int ")" [function]
-
-  // matchBindSet Set union
-  syntax         Set ::= "#unionBMS(" Set ";" Set ")" [function]
-
+*/
 // Translation to built-ins -- other half in AuxFun
-  syntax        List ::= "#rho2list(" RhoList ")" [function]
-  syntax         Map ::=  "#rho2map(" RhoMap  ")" [function]
-  syntax         Set ::=  "#rho2set(" RhoSet  ")" [function]
+  syntax        List ::= "#rho2list(" ListPat  ")" [function]
+  syntax         Map ::=  "#rho2map(" ListPat  ")" [function]
+                       |  "#rho2map(" MapPat   ")" [function]
+                       |  "#rho2map(" TuplePat ")" [function]
+  syntax         Set ::=  "#rho2set(" SetPat   ")" [function]
+
+  syntax         Map ::= "#indexMap(" Int ";" ProcPats ")" [function]
 
   // Seq inclusion: Map & Set
   syntax        Bool ::= "#SeqSetIn(" Set ";" Set ")" [function] // structural equivalence Set inclusion
                        | "#SeqMapIn(" Map ";" Map ")" [function] // structural equivalence Map inclusion
 
 // seq of left arg against all right arg Procs
-  syntax        Bool ::=    "#structEqs(" Proc ";" Procs ")" [function]
+  syntax        Bool ::=    "#structEqs(" ProcPat ";" ProcPats ")" [function]
 // seq of left arg against all keys of RhoKVPairs
-  syntax        Bool ::= "#key_structEq(" Proc ";" RhoKVPairs ")" [function]
+  syntax        Bool ::= "#key_structEq(" ProcPat ";" RhoKVPats ")" [function]
+                       | "#key_structEq(" ProcPat ";" Map       ")" [function]
 
-  syntax  IndexedSet ::= Int ";" Set
-  syntax       KItem ::= IndexedSet
+  syntax        Bool ::= "#isPar(" ProcPat ")" [function]
+
+  syntax       KItem ::= IndexedSet | IndexedProcs | ProcPat
 
 endmodule
 
@@ -290,140 +255,148 @@ module STRUCT
   import AUXFUN
   import MATCH
 
-  syntax KResult ::= Proc | Procs | Name | Names | Bool | Int | List | Map | Set
+  syntax KResult ::= Proc | Procs | Name | Names | Bool | Int | List | Map | Set | IndexedSet
                    | Lbind | Lbinds | Pbind | Pbinds | Rbind | Rbinds
                    | LbindPat  | LbindPats  | PbindPat | PbindPats | RbindPat | RbindPats
                    | RhoKVPair | RhoKVPairs | RhoKVPat | RhoKVPats
 
+  rule #isPar( A:ProcPat ) => isPar(A)
+
 // counts number of structurally eq appearances of a nonPar Proc in a Par
 // first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
-  // single Proc Par i.e. a nonPar Proc
-  rule #parCount( A:Proc ; B:Proc )
-    => #if #structEq(A;B) #then 1 #else 0 #fi requires notBool isPar(B)
-  // multiple Proc Par
-  rule #parCount( A:Proc ; B:Proc | C:Proc )
-    => #if #structEq(A;B) #then 1 +Int #parCount(A;C) #else #parCount(A;C) #fi
-       requires notBool isPar(B)
+  // single-Proc Par i.e. a nonPar Proc
+  rule #parCount( *A:Var     ; *B:NamePat )
+    => #if A ==K B #then 1 #else 0 #fi
+  rule #parCount( *A:Var     ;  B:ProcPat )
+    => 0 requires notBool isEvalVar(B)
+  rule #parCount( *A:Var     ;  B:ProcPat | C:ProcPat )
+    => #parCount(*A;C) requires notBool (isEvalVar(B) orBool isParPat(B))
+  rule #parCount(  A:ProcPat ;  B:ProcPat )
+    => #if isProcVar(A)
+       #then #if A ==K B #then 1 #else 0 #fi
+       #else #if #structEq(A;B) #then 1 #else 0 #fi #fi
+       requires notBool (isEvalVar(A) orBool isParPat(B))
+  // multi-Proc Par
+  rule #parCount( A:ProcPat ; B:ProcPat | C:ProcPat )
+    => #if isProcVar(A)
+       #then #if A ==K B #then 1 +Int #parCount(A;C) #else #parCount(A;C) #fi
+       #else #if #structEq(A;B) #then 1 +Int #parCount(A;C) #else #parCount(A;C) #fi #fi
+       requires notBool (isEvalVar(A) orBool isParPat(B))
 
-// traverses Par removing structurally eq nonPar Proc
+// traverses Par removing structurally eq nonPar Procs
 // first arg intended to be nonPar, second arg is intended to be Par (enforced by #setify)
-  // single Proc Par i.e. a nonPar Proc
-  rule #parRemove( A:Proc ; B:Proc )
-    => #if #structEq(A;B) #then Nil #else B #fi requires notBool isPar(B)
-  // multiple Proc Par
-  rule #parRemove( A:Proc ; B:Proc | C:Proc )
-    => #if #structEq(A;B) #then #parRemove(A;C) #else B | #parRemove(A;C) #fi
-       requires notBool isPar(B)
+  // single-Proc Par i.e. a nonPar Proc
+  rule #parRemove( A:ProcPat ; B:ProcPat )
+    => #if isProcVar(A)
+       #then #if A ==K B #then Nil #else B #fi
+       #else #if #structEq(A;B) #then Nil #else B #fi #fi
+       requires notBool (isEvalVar(A) orBool isParPat(B))
+  rule #parRemove( *A:Var ; *B:NamePat )
+    => #if A ==K B #then Nil #else *B #fi
+  rule #parRemove( *A:Var ;  B:ProcPat )
+    => Nil requires notBool (isEvalVar(B) orBool isParPat(B))
+  rule #parRemove( *A:Var ;  B:ProcPat | C:ProcPat )
+    => #parRemove(*A;C) requires notBool (isEvalVar(B) orBool isParPat(B))
+  // multi-Proc Par
+  rule #parRemove( A:ProcPat ; B:ProcPat | C:ProcPat )
+    => #if isProcVar(A)
+       #then #if A ==K B #then #parRemove(A;C) #else B | #parRemove(A;C) #fi
+       #else #if #structEq(A;B) #then #parRemove(A;C) #else B | #parRemove(A;C) #fi #fi
+       requires notBool (isEvalVar(A) orBool isParPat(B))
 
 // computes par set of a Proc
   // par set of a nonPar Proc contains only one appearance of that Proc
-  rule #setify(   Nil  ) => .Set
-  rule #setify( A:Proc ) => SetItem(A,1) requires notBool (isPar(A) orBool A ==K Nil)
-  rule #setify( A:Proc | B:Proc )
-    => #if A ==K Nil
-       #then #setify(B) // Nil is the unit of | -- forget about it!
-       #else
-         #if #parCount(A;B) >Int 0
-         // remove Nil introduced by #parRemove
-         #then SetItem(A,1 +Int #parCount(A;B)) #setify(#parRemove(A;B))
-         #else SetItem(A,1) #setify(B)
-         #fi
-       #fi requires notBool isPar(A)
-
-// #removeNil( Nil | Proc ) => Proc
-  rule #removeNil( A:Proc ) => A requires notBool isPar(A) // TODO: extend to Name
-  rule #removeNil( A:Proc | Nil ) => A requires notBool isPar(A)
-  rule #removeNil( A:Proc | B:Proc )
-    => #if A ==K Nil
-       #then #removeNil(B)
-       #else A | #removeNil(B) #fi
-       requires notBool (isPar(A) orBool B ==K Nil)
+  rule #setify( A:ProcPat ) => SetItem(1;#order(A)) requires notBool isParPat(A)
+  rule #setify( A:ProcPat | B:ProcPat )
+    => #if #parCount(A;B) >Int 0
+       #then SetItem(1 +Int #parCount(A;B);#order(A)) (#setify(#parRemove(A;B)) -Set SetItem(1;Nil))
+       #else SetItem(1;#order(A)) (#setify(B) -Set SetItem(1;Nil))
+       #fi requires notBool isParPat(A)
 
   // Par normalization
-  rule #parnorm( A:Par  ) => #procs2par(#reorder(#par2procs(#removeNil(A))))
-  rule #parnorm( A:Proc ) => A requires notBool isPar(A)
+  rule #parnorm( A:ParPat  ) => #pats2par(#reorder(#orderEach(#par2pats(A))))
+  rule #parnorm( A:ProcPat ) => A requires notBool isParPat(A)
 
 //-------------------
 //--- Unary Order ---
 //-------------------
 //  Returns least order term structurally equivalent to input
   // OrderEach
-  rule #orderEach( A:Name ) => #order(A)
-  rule #orderEach( A:Name , B:Names ) => #order(A) , #orderEach(B)
-  rule #orderEach( A:Proc ) => #order(A)
-  rule #orderEach( A:Proc , B:Procs ) => #order(A) , #orderEach(B)
   rule #orderEach( A:NamePat ) => #order(A)
-  rule #orderEach( A:Name    , B:NamePats ) => #order(A) , #orderEach(B)
-  rule #orderEach( A:NamePat , B:Names    ) => #order(A) , #orderEach(B)
   rule #orderEach( A:NamePat , B:NamePats ) => #order(A) , #orderEach(B)
   rule #orderEach( A:ProcPat ) => #order(A)
-  rule #orderEach( A:Proc    , B:ProcPats ) => #order(A) , #orderEach(B)
-  rule #orderEach( A:ProcPat , B:Procs    ) => #order(A) , #orderEach(B)
   rule #orderEach( A:ProcPat , B:ProcPats ) => #order(A) , #orderEach(B)
 
   // TODO: finish unary order
-  rule #order( @A:Proc ) => @#order(A)
-  rule #order(  A:Var  ) => A
+  rule #order( @A:ProcPat ) => @#order(A)
+  rule #order(  A:Var     ) => A
 
-  rule #order(    A:Var  :: B:ProcPat ) =>    A  :: #order(B)
-  rule #order( (@\A:Var) :: B:ProcPat ) => (@\A) :: #order(B)
-  rule #order(   \A:Var  :: B:ProcPat ) =>   \A  :: #order(B)
-  rule #order(  (*A:Var) :: B:ProcPat ) =>  (*A) :: #order(B)
+  rule #order(   A:Var      :: B:NamePat ) =>    A  :: #order(B)
+  rule #order( (@A:ProcVar) :: B:NamePat ) =>  (@A) :: #order(B)
+  rule #order(   A:ProcVar  :: B:ProcPat ) =>    A  :: #order(B)
+  rule #order( (*A:Var)     :: B:ProcPat ) =>  (*A) :: #order(B)
 
-  rule #order( A:Proc   ) => A [owise] // to be removed once definition is completed
-  rule #order( A:Ground ) => A
+  rule #order( A:ProcPat ) => A [owise] // to be removed once definition is completed
+  rule #order( A:Ground  ) => A
 
-  rule #order( A:Receive ) => for(#reorder(#gbind(A))){#order(#cont(A))}
-  rule #order( A:Name !  ( ) ) => #order(A)! ( )
-  rule #order( A:Name !! ( ) ) => #order(A)!!( )
-  rule #order( A:ConSend   ) => #order(#chan(A))! ( #orderEach(#msg(A)) )
-       requires notBool isEmptyCSend(A)
-  rule #order( A:UnconSend ) => #order(#chan(A))!!( #orderEach(#msg(A)) )
-       requires notBool isEmptyUSend(A)
+// RecPat
+  rule #order( A:RecPat ) => for(#reorder(#gbind(A))){#order(#cont(A))}
 
-  rule #order( A:Proc | B:Proc ) => #order(A) | #order(B)
-       requires notBool isPar(A)
+// SendPat
+  rule #order( A:NamePat !  ( ) ) => #order(A)! ( )
+  rule #order( A:NamePat !! ( ) ) => #order(A)!!( )
+  rule #order( A:NamePat !  ( B:ProcPats ) ) => #order(A)! ( #orderEach(B) )
+  rule #order( A:NamePat !! ( B:ProcPats ) ) => #order(A)!!( #orderEach(B) )
 
-  rule #order( [ ] ) => [ ]
-  rule #order( [ A:Procs ] ) => [ #orderEach(A) ]
+// ParPat
+  rule #order( A:ParPat ) => #parnorm(A)
 
-  rule #order( { } ) => { }
-  rule #order( A:RhoMap ) => { #orderEach(#map2KVs(#rho2map(A))) }
+// CollectionPat
+  // ListPat
+  rule #order( [            ] ) => [ ]
+  rule #order(  EmptyListPat  ) => EmptyListPat
+  rule #order( [ A:ProcPats ] ) => [ #orderEach(A) ]
+  rule #order( [ A:ProcPats ... B:ProcVar ] ) => [ #orderEach(A) ... B ]
+  // MapPat
+  rule #order( {         } ) => { }
+  rule #order( EmptyMapPat ) => EmptyMapPat
+  rule #order( A:MapPat    ) => { #orderEach(#map2KVs(#rho2map(A))) }
+       requires notBool (isEmptyMap(A) orBool A ==K EmptyMapPat)
+  // SetPat
+  rule #order(   Set(    ) ) => Set( )
+  rule #order( EmptySetPat ) => EmptySetPat
+  rule #order( A:SetPat    ) => Set( #orderEach(#set2procs(#rho2set(A))) )
+       requires notBool (isEmptySet(A) orBool A ==K EmptySetPat)
+  rule #order( Set( A:ProcPats ... B:ProcVar ) ) => Set(  )
+  // TuplePat
+  rule #order( ( A:ProcPats ,) ) => ( #orderEach(A) ,)
 
-  rule #order(   Set( ) ) => Set( )
-  rule #order( A:RhoSet ) => Set( #orderEach(#set2procs(#rho2set(A))) )
-       requires notBool isEmptySet(A)
-
-  rule #order( ( A:Procs ,) ) => ( #orderEach(A) ,)
-
-// Binds
-  rule #order( <-  A:Name ) => <-  #order(A)
-  rule #order( <=  A:Name ) => <=  #order(A)
-  rule #order( <<- A:Name ) => <<- #order(A)
-  rule #order( A:Lbind ) => #orderEach(#bvar(A)) <-  #order(#chan(A))
+// BindPats
+  rule #order( <-  A:NamePat ) => <-  #order(A)
+  rule #order( <=  A:NamePat ) => <=  #order(A)
+  rule #order( <<- A:NamePat ) => <<- #order(A)
+  rule #order( A:LbindPat ) => #orderEach(#bvar(A)) <-  #order(#chan(A))
        requires notBool isEmptyLbind(A)
-  rule #order( A:Pbind ) => #orderEach(#bvar(A)) <<- #order(#chan(A))
+  rule #order( A:PbindPat ) => #orderEach(#bvar(A)) <<- #order(#chan(A))
        requires notBool isEmptyPbind(A)
-  rule #order( A:Rbind ) => #orderEach(#bvar(A)) <=  #order(#chan(A))
+  rule #order( A:RbindPat ) => #orderEach(#bvar(A)) <=  #order(#chan(A))
        requires notBool isEmptyRbind(A)
 
-  rule #order( A:Lbind & B:Lbind  ) => #order(A) & #order(B)
-  rule #order( A:Lbind & B:Lbinds ) => #order(A) & #order(B)
-  rule #order( A:Pbind & B:Pbind  ) => #order(A) & #order(B)
-  rule #order( A:Pbind & B:Pbinds ) => #order(A) & #order(B)
-  rule #order( A:Rbind & B:Rbind  ) => #order(A) & #order(B)
-  rule #order( A:Rbind & B:Rbinds ) => #order(A) & #order(B)
+  rule #order( A:LbindPat & B:LbindPat  ) => #order(A) & #order(B)
+  rule #order( A:LbindPat & B:LbindPats ) => #order(A) & #order(B)
+  rule #order( A:PbindPat & B:PbindPat  ) => #order(A) & #order(B)
+  rule #order( A:PbindPat & B:PbindPats ) => #order(A) & #order(B)
+  rule #order( A:RbindPat & B:RbindPat  ) => #order(A) & #order(B)
+  rule #order( A:RbindPat & B:RbindPats ) => #order(A) & #order(B)
 
 // Reorder to Order
-  rule #reorder( A:Lbind ) => #order(A)
-  rule #reorder( A:Pbind ) => #order(A)
-  rule #reorder( A:Rbind ) => #order(A)
+  rule #reorder( A:LbindPat ) => #order(A)
+  rule #reorder( A:PbindPat ) => #order(A)
+  rule #reorder( A:RbindPat ) => #order(A)
 
 // Patterns -- TODO: continue
-  rule #order( A:SimplePat ) => A
-
-  rule #order(  A:SimpleNamePat ) => A
-  rule #order( @A:SimplePat     ) => @A
+  rule #order( A:SimplePat     ) => A
+  rule #order( A:SimpleNamePat ) => A
 
 //--------------------
 //--- Binary Order ---
@@ -432,20 +405,19 @@ module STRUCT
 //   for some monotone increasing function order(_): K -> Real
 
   // check length first
-  rule #orderif( A:Procs ; B:Procs ) => #length(A) ==Int #length(B) andBool #order(A;B)
-  rule #orderif( A:Names ; B:Names ) => #length(A) ==Int #length(B) andBool #order(A;B)
-  rule #orderif( A:RhoKVPairs ;; B:RhoKVPairs ) => #length(A) ==Int #length(B) andBool #order(A;;B)
-//  rule #orderif( A:RhoKVPats  ; B:RhoKVPats  ) => #length(A) ==Int #length(B) andBool #order(A;B)
+  rule #orderif( A:ProcPats   ; B:ProcPats  ) => #length(A) ==Int #length(B) andBool #order(A;B)
+  rule #orderif( A:NamePats   ; B:NamePats  ) => #length(A) ==Int #length(B) andBool #order(A;B)
+  rule #orderif( A:RhoKVPats ;; B:RhoKVPats ) => #length(A) ==Int #length(B) andBool #order(A;;B)
 
-  // Dictionary Order
-  rule #order( A:Proc , B:Procs ; C:Proc , D:Procs )
+  // Lexicographical Order
+  rule #order( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats )
     => #if #order(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
              #else true #fi
        #else false #fi
 
-  rule #order( A:Name , B:Names ; C:Name , D:Names )
+  rule #order( A:NamePat , B:NamePats ; C:NamePat , D:NamePats )
     => #if #order(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
@@ -453,62 +425,45 @@ module STRUCT
        #else false #fi
 
   // RhoKVPairs
-  rule #order( A:RhoKVPair , B:RhoKVPairs ;; C:RhoKVPair , D:RhoKVPairs )
+  rule #order( A:RhoKVPat , B:RhoKVPats ;; C:RhoKVPat , D:RhoKVPats )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
 
-/*
-  // RhoKVPats
-  rule #order( _:RhoKVPair , B:RhoKVPats  ; _:RhoKVPat  , D:RhoKVPats  ) => #order(B;D)
-  rule #order( A:RhoKVPat  , B:RhoKVPats  ; C:RhoKVPat  , D:RhoKVPats  )
-    => #if #order(A;C)
-       #then #if #order(C;A)
-             #then #order(B;D)
-             #else true #fi
-       #else false #fi
-  rule #order( _:RhoKVPair , B:RhoKVPats  ; _:RhoKVPair , D:RhoKVPats  )
-    => #if #order(A;C)
-       #then #if #order(C;A)
-             #then #order(B;D)
-             #else true #fi
-       #else false #fi
-*/
-
-  // Binds
-  rule #order( A:Lbind & B:Lbind  ;; C:Lbind & D:Lbind  )
+  // BindPats
+  rule #order( A:LbindPat & B:LbindPat  ;; C:LbindPat & D:LbindPat  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Lbind & B:Lbinds ;; C:Lbind & D:Lbinds )
+  rule #order( A:LbindPat & B:LbindPats ;; C:LbindPat & D:LbindPats )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Pbind & B:Pbind  ;; C:Pbind & D:Pbind  )
+  rule #order( A:PbindPat & B:PbindPat  ;; C:PbindPat & D:PbindPat  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Pbind & B:Pbinds ;; C:Pbind & D:Pbinds )
+  rule #order( A:PbindPat & B:PbindPats ;; C:PbindPat & D:PbindPats )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Rbind & B:Rbind  ;; C:Rbind & D:Rbind  )
+  rule #order( A:RbindPat & B:RbindPat  ;; C:RbindPat & D:RbindPat  )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
              #else true #fi
        #else false #fi
-  rule #order( A:Rbind & B:Rbinds ;; C:Rbind & D:Rbinds )
+  rule #order( A:RbindPat & B:RbindPats ;; C:RbindPat & D:RbindPats )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
@@ -516,85 +471,85 @@ module STRUCT
        #else false #fi
 
 // Reflexivity
-  rule #order( A:Procs ; A ) => true
+  rule #order( A:ProcPats ; A ) => true
 
   // Ground
     // Nil
-  rule #order( A:Proc ; Nil    ) => A ==K Nil
-  rule #order( Nil    ; _:Proc ) => true
+  rule #order( A:ProcPat ; Nil       ) => A ==K Nil
+  rule #order( Nil       ; _:ProcPat ) => true
     // Bool
-  rule #order( _:Bool ; A:Proc ) => true
+  rule #order( _:Bool    ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isBool(A))
-  rule #order( A:Proc ; _:Bool ) => false
+  rule #order( A:ProcPat ; _:Bool    ) => false
        requires notBool (A ==K Nil orBool isBool(A))
   rule #order( true   ; A:Bool ) => A
   rule #order( false  ; _:Bool ) => true
     // Int
-  rule #order( _:Int  ; A:Proc ) => true
+  rule #order( _:Int     ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A))
-  rule #order( A:Proc ; _:Int  ) => false
+  rule #order( A:ProcPat ; _:Int     ) => false
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A))
   rule #order( I:Int  ; J:Int  ) => I <=Int J
     // String
-  rule #order( _:String ; A:Proc   ) => true
+  rule #order( _:String  ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A))
-  rule #order( A:Proc   ; _:String ) => false
+  rule #order( A:ProcPat ; _:String  ) => false
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A))
   rule #order( A:String ; B:String ) => #set2procs(#procs2set(A,B)) ==K (A,B)
     // Unforgeable
-  rule #order( _:Unforgeable ; A:Proc   ) => true
+  rule #order( _:Unforgeable ; A:ProcPat     ) => true
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A) orBool isUnforgeable(A))
-  rule #order( A:Proc   ; _:Unforgeable ) => false
+  rule #order( A:ProcPat     ; _:Unforgeable ) => false
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A) orBool isUnforgeable(A))
   rule #order( unforgeable( I:Int ) ; unforgeable( J:Int ) ) => I <=Int J
     // Uri
-  rule #order( _:Uri  ; A:Proc ) => true
+  rule #order( _:Uri     ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A) orBool isUnforgeable(A) orBool isUri(A))
-  rule #order( A:Proc ; _:Uri  ) => false
+  rule #order( A:ProcPat ; _:Uri     ) => false
        requires notBool (A ==K Nil orBool isBool(A) orBool isInt(A)
          orBool isString(A) orBool isUnforgeable(A) orBool isUri(A))
   rule #order( A:Uri ; B:Uri ) => #set2procs(#procs2set(A,B)) ==K (A,B)
 
   // Variables -- use as Id and map to string for comparison
-  rule #order( \(_:Var) ; A:Proc ) => true
+  rule #order( \(_:Var)  ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
-  rule #order( A:Proc ; \(_:Var) ) => false
+  rule #order( A:ProcPat ; \(_:Var)  ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A))
   rule #order( \A:Id ; \B:Id )
     => #set2procs(#procs2set(Id2String(A),Id2String(B))) ==K (Id2String(A),Id2String(B))
     // Eval
-  rule #order( *_:Var ; A:Proc ) => true
+  rule #order( *_:Var    ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A))
-  rule #order( A:Proc ; *_:Var ) => false
+  rule #order( A:ProcPat ; *_:Var    ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A))
   rule #order( *A:Id ; *B:Id )
     => #set2procs(#procs2set(Id2String(A),Id2String(B))) ==K (Id2String(A),Id2String(B))
 
   // VarRef
-  rule #order( _:VarRef ; A:Proc ) => true
+  rule #order( _:VarRef  ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A) orBool isVarRef(A))
-  rule #order( A:Proc ; _:VarRef ) => false
+  rule #order( A:ProcPat ; _:VarRef  ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A) orBool isVarRef(A))
   rule #order( = *A:Id ; = *B:Id ) => #order(A;B)
   rule #order( = \A:Id ; = \B:Id ) => #order(A;B)
 
-  // New
-  rule #order( _:New ; A:Proc ) => true
+  // NewPat
+  rule #order( _:NewPat  ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A) orBool isVarRef(A) orBool isNew(A))
-  rule #order( A:Proc ; _:New ) => false
+  rule #order( A:ProcPat ; _:NewPat  ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
            orBool isEval(A) orBool isVarRef(A) orBool isNew(A))
-  rule #order( new A:VarDecs in { B:Proc } ; new C:VarDecs in { D:Proc } )
+  rule #order( new A:VarDecs in { B:ProcPat } ; new C:VarDecs in { D:ProcPat } )
     => #if #orderif(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
@@ -602,7 +557,7 @@ module STRUCT
        #else false #fi
 
  // Receive: Binds , Guard , Cont
-  rule #order( A:Receive ; B:Receive )
+  rule #order( A:RecPat ; B:RecPat )
     => #if #order(#bind(A);;#bind(B))
        #then #if #order(#bind(B);;#bind(A))
              #then #if #order(#guard(A);#guard(B))
@@ -613,17 +568,17 @@ module STRUCT
              #else true #fi
        #else false #fi
 
-  rule #order( _:Receive ; A:Proc ) => true
+  rule #order( _:RecPat ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
-           orBool isEval(A) orBool isVarRef(A) orBool isNew(A)
-           orBool isReceive(A))
-  rule #order( A:Proc ; _:Receive ) => false
+           orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
+           orBool isRecPat(A))
+  rule #order( A:ProcPat ; _:RecPat ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
-           orBool isEval(A) orBool isVarRef(A) orBool isNew(A)
-           orBool isReceive(A))
+           orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
+           orBool isRecPat(A))
 
-  // Binds: dictionary order by Type , length , Chans , bvars
-  rule #order( A:Bind ;; B:Bind )
+  // Binds: lexicographical order by Type , length , Chans , bvars
+  rule #order( A:BindPat ;; B:BindPat )
     => #if #rtype(A) <=Int #rtype(B)
        #then #if #rtype(A) ==Int #rtype(B)
              #then #if #lislen(A) <=Int #lislen(B)
@@ -638,8 +593,8 @@ module STRUCT
              #else true #fi
        #else false #fi
 
-  // Send: dictionary order by Type , # of msgs , Chan , Msg
-  rule #order( A:Send ; B:Send )
+  // Send: lexicographical order by Type , # of msgs , Chan , Msg
+  rule #order( A:SendPat ; B:SendPat )
     => #if #stype(A) <=Int #stype(B)
        #then #if #stype(A) ==Int #stype(B)
              #then #if #msglen(A) <=Int #msglen(B)
@@ -654,14 +609,14 @@ module STRUCT
              #else true #fi
        #else false #fi
 
-  rule #order( _:Send ; A:Proc ) => true
+  rule #order( _:SendPat ; A:ProcPat ) => true
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
-           orBool isEval(A) orBool isVarRef(A) orBool isNew(A)
-           orBool isReceive(A) orBool isSend(A))
-  rule #order( A:Proc ; _:Receive ) => false
+           orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
+           orBool isRecPat(A) orBool isSendPat(A))
+  rule #order( A:ProcPat ; _:SendPat ) => false
        requires notBool (A ==K Nil orBool isGround(A) orBool isProcVar(A)
-           orBool isEval(A) orBool isVarRef(A) orBool isNew(A)
-           orBool isReceive(A) orBool isSend(A))
+           orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
+           orBool isRecPat(A) orBool isSendPat(A))
 
 // TODO
   // MethodProc: Proc . Method ( Args ) dictionary order by Method , Args , Proc
@@ -671,28 +626,29 @@ module STRUCT
   // Bundle:  < 0 < - < + and #order(Proc;Proc)
   // Conditional: dictionary order by BExp , then Proc [, else Proc]
 
-  // Collection: List < Map < Set < Tuple
-  rule #order( _:RhoList ; A:Collection ) => true  requires notBool isRhoList(A)
-  rule #order( A:Collection ; _:RhoList ) => false requires notBool isRhoList(A)
-  rule #order( [ ] ; A:RhoList ) => true
-  rule #order( A:RhoList ; [ ] ) => false requires A =/=K [ ]
-  rule #order( [ A:Procs ] ; [ B:Procs ] ) => #orderif(A;B)
-
-  rule #order( _:RhoMap ; A:Collection ) => true
-       requires notBool (isRhoList(A) orBool isRhoMap(A))
-  rule #order( A:Collection ; _:RhoMap ) => false
-       requires notBool (isRhoList(A) orBool isRhoMap(A))
-  rule #order( { } ; A:RhoMap ) => true
-  rule #order( A:RhoMap ; { } ) => false requires A =/=K { }
-  rule #order( { A:RhoKVPairs } ; { B:RhoKVPairs } ) => #orderif(A;;B)
+  // Collection: List < Map < Set < Tuple -- TODO: add other patterns
+    // ListPat
+  rule #order( _:ListPat ; A:CollectionPat ) => true  requires notBool isListPat(A)
+  rule #order( A:CollectionPat ; _:ListPat ) => false requires notBool isListPat(A)
+  rule #order( [ ] ; A:ListPat ) => true
+  rule #order( A:ListPat ; [ ] ) => false requires A =/=K [ ]
+  rule #order( [ A:ProcPats ] ; [ B:ProcPats ] ) => #orderif(A;B)
+    // MapPat
+  rule #order( _:MapPat ; A:CollectionPat ) => true
+       requires notBool (isListPat(A) orBool isMapPat(A))
+  rule #order( A:CollectionPat ; _:MapPat ) => false
+       requires notBool (isListPat(A) orBool isMapPat(A))
+  rule #order( { } ; A:MapPat ) => true
+  rule #order( A:MapPat ; { } ) => false requires A =/=K { }
+  rule #order( { A:RhoKVPats } ; { B:RhoKVPats } ) => #orderif(A;;B)
     // RhoKVPairs
-  rule #order( A:Proc : B:Proc  ;; C:Proc : D:Proc  )
+  rule #order( A:ProcPat : B:ProcPat  ;; C:ProcPat : D:ProcPat  )
     => #if #order(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
              #else true #fi
        #else false #fi
-  rule #order( A:RhoKVPair , B:RhoKVPairs ;; C:RhoKVPair , D:RhoKVPairs )
+  rule #order( A:RhoKVPat , B:RhoKVPats ;; C:RhoKVPat , D:RhoKVPats )
     => #if #order(A;;C)
        #then #if #order(C;;A)
              #then #order(B;;D)
@@ -700,18 +656,26 @@ module STRUCT
        #else false #fi
 
 
-  rule #order( @A:Proc ; @B:Proc ) => #order( A; B)
-  rule #order( @A:Proc ;  B:Var  ) => #order( A;*B)
-  rule #order(  A:Var  ; @B:Proc ) => #order(*A; B)
-  rule #order(  A:Id   ;  B:Id   )
+  rule #order( @A:ProcPat ; @B:ProcPat ) => #order( A; B)
+  rule #order( @A:ProcPat ;  B:Var     ) => #order( A;*B)
+  rule #order(  A:Var     ; @B:ProcPat ) => #order(*A; B)
+  rule #order(  A:Id      ;  B:Id      )
     => #set2procs(#procs2set(Id2String(A),Id2String(B))) ==K (Id2String(A),Id2String(B))
+
+// ParPat
+  rule #order( A:ProcPat | B:ProcPat ; C:ProcPat | D:ProcPat )
+    => #if #order(A;C)
+       #then #if #order(C;A)
+             #then #order(B;D)
+             #else true #fi
+       #else false #fi
 
 // Reorder
   // check order of left arg against all middle args and insert,
   // then move the head of the right arg list to the left arg and repeat
 
   //--- Procs ---
-  rule #reorder( A:Par ) => #parnorm(A)
+  rule #reorder( A:ParPat ) => #parnorm(A)
 
     // #reorder( Proc[s] )
   rule #reorder( A:Proc  ) => A requires notBool isPar(A)
@@ -898,8 +862,8 @@ module STRUCT
 
   // if length is not the same, two Proc lists cannot be structurally equivalent
   rule #structEqif( A:Procs    ; B:Procs    ) => #length(A) ==Int #length(B) andBool #structEq(A;B)
-  rule #structEqif( A:Procs    ; B:ProcPats ) => false
-  rule #structEqif( A:ProcPats ; B:Procs    ) => false
+  rule #structEqif( A:Procs    ; B:ProcPats ) => false requires notBool isProcs(B)
+  rule #structEqif( A:ProcPats ; B:Procs    ) => false requires notBool isProcs(A)
 
 // Ground
   rule #structEq( A:Ground ; B:Ground ) => A ==K B
@@ -916,12 +880,12 @@ module STRUCT
   // UGSRec
   rule #structEq( A:UGSRec ; B:UGSRec ) => #rtype(A) ==Int #rtype(B)   andBool  //same receive type
        #nameEqif(#bvar(A);#bvar(B)) andBool #nameEq(#chan(A);#chan(B)) andBool  //same listening variable & channel types
-       #structEq(#sub(#mapify(#bvar(A));#cont(A));#sub(#mapify(#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
+       #structEq(#sub(#mapify(0,0;#bvar(A));#cont(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
   // GSRec
   rule #structEq( A:GSRec ; B:GSRec ) =>  #rtype(A) ==Int #rtype(B)    andBool
        #nameEqif(#bvar(A);#bvar(B)) andBool #nameEq(#chan(A);#chan(B)) andBool
-       #structEq(#sub(#mapify(#bvar(A));#guard(A));#sub(#mapify(#bvar(A));#sub(#bvar(A);#bvar(B);#guard(B)))) andBool
-       #structEq(#sub(#mapify(#bvar(A));#cont(A));#sub(#mapify(#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
+       #structEq(#sub(#mapify(0,0;#bvar(A));#guard(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#guard(B)))) andBool
+       #structEq(#sub(#mapify(0,0;#bvar(A));#cont(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
 
   // UGMRec -- TODO
   // GMRec -- TODO
@@ -946,21 +910,21 @@ module STRUCT
 
 // Collection
   // RhoList
-  rule #structEq( [ A:Procs ] ; [ B:Procs ] ) => #structEqif(A;B)
-  rule #structEq(   A:Proc    ;   _:RhoList ) => false requires notBool isRhoList(A)
-  rule #structEq(   _:RhoList ;   A:Proc    ) => false requires notBool isRhoList(A)
+  rule #structEq( [ A:ProcPats ] ; [ B:ProcPats ] ) => #structEqif(A;B)
+  rule #structEq(   A:ProcPat    ;   _:ListPat    ) => false requires notBool isListPat(A)
+  rule #structEq(   _:ListPat    ;   A:ProcPat    ) => false requires notBool isListPat(A)
   // RhoMap
-  rule #structEq( A:RhoMap ; B:RhoMap ) => #structEq(#rho2map(A);#rho2map(B))
-  rule #structEq( A:Proc   ; _:RhoMap ) => false requires notBool isRhoMap(A)
-  rule #structEq( _:RhoMap ; A:Proc   ) => false requires notBool isRhoMap(A)
+  rule #structEq( A:MapPat  ; B:MapPat  ) => #structEq(#rho2map(A);#rho2map(B))
+  rule #structEq( A:ProcPat ; _:MapPat  ) => false requires notBool isMapPat(A)
+  rule #structEq( _:MapPat  ; A:ProcPat ) => false requires notBool isMapPat(A)
   // RhoSet
-  rule #structEq( A:RhoSet ; B:RhoSet ) => #structEq(#rho2set(A);#rho2set(B))
-  rule #structEq( A:Proc   ; _:RhoSet ) => false requires notBool isRhoSet(A)
-  rule #structEq( _:RhoSet ; A:Proc   ) => false requires notBool isRhoSet(A)
+  rule #structEq( A:SetPat  ; B:SetPat  ) => #structEq(#rho2set(A);#rho2set(B))
+  rule #structEq( A:ProcPat ; _:SetPat  ) => false requires notBool isSetPat(A)
+  rule #structEq( _:SetPat  ; A:ProcPat ) => false requires notBool isSetPat(A)
   // RhoTuple
-  rule #structEq( ( A:Procs ,) ; ( B:Procs ,) ) => #structEqif(A;B)
-  rule #structEq( A:Proc       ; _:RhoTuple   ) => false requires notBool isRhoTuple(A)
-  rule #structEq( _:RhoTuple   ; A:Proc       ) => false requires notBool isRhoTuple(A)
+  rule #structEq( ( A:ProcPats ,) ; ( B:ProcPats ,) ) => #structEqif(A;B)
+  rule #structEq(   A:ProcPat     ; _:TuplePat      ) => false requires notBool isTuplePat(A)
+  rule #structEq(   _:TuplePat    ; A:ProcPat       ) => false requires notBool isTuplePat(A)
 
 // Expressions
   // AExp
@@ -998,8 +962,6 @@ module STRUCT
     => (#nameEq(A;C) andBool #nameEq(B;D)) orBool (#nameEq(A;D) andBool #nameEq(B;C))
   rule #structEq( A:Name !=  B:Name ; C:Name !=  D:Name )
     => (#nameEq(A;C) andBool #nameEq(B;D)) orBool (#nameEq(A;D) andBool #nameEq(B;C))
-  rule #structEq( A:Proc    matches B:Proc    ; C:Proc    matches D:Proc    ) => #structEq(A;C) andBool #structEq(B;D)
-  rule #structEq( A:Proc    matches B:ProcPat ; C:Proc    matches D:ProcPat ) => #structEq(A;C) andBool #structEq(B;D)
   rule #structEq( A:ProcPat matches B:ProcPat ; C:ProcPat matches D:ProcPat ) => #structEq(A;C) andBool #structEq(B;D)
 
   // List & String expressions -- TODO
@@ -1052,23 +1014,16 @@ module STRUCT
 //--- Name Equivalence ---
 //------------------------
 // Name equivalence == symmetric name matching
-  rule #nameEq( A:Name    ; A ) => true
   rule #nameEq( A:NamePat ; A ) => true
-  rule #nameEq( A:Name    ; B:Name    ) => #match(A;B) andBool #match(B;A)
   rule #nameEq( A:NamePat ; B:NamePat ) => #match(A;B) andBool #match(B;A)
 
   // several Names
-  rule #nameEq( A:Name     , B:Names    ; C:Name    , D:Names    ) => #nameEq(A;C) andBool #nameEq(B;D)
-  rule #nameEq( A:Name     , B:NamePats ; C:Name    , D:NamePats ) => #nameEq(A;C) andBool #nameEq(B;D)
-  rule #nameEq( A:NamePat  , B:Names    ; C:NamePat , D:Names    ) => #nameEq(A;C) andBool #nameEq(B;D)
-  rule #nameEq( A:NamePat  , B:NamePats ; C:NamePat , D:NamePats ) => #nameEq(A;C) andBool #nameEq(B;D)
-  rule #nameEq( _:NamePats ; _:NamePats ) => false [owise]
+  rule #nameEq( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ) => #nameEq(A;C) andBool #nameEq(B;D)
 
   // check length
-  rule #nameEqif( A:Names    ; B:Names    ) => #length(A) ==Int #length(B) andBool #nameEq(A;B)
   rule #nameEqif( A:NamePats ; B:NamePats ) => #length(A) ==Int #length(B) andBool #nameEq(A;B)
-  rule #nameEqif( A:Names    ; B:NamePats ) => false
-  rule #nameEqif( A:NamePats ; B:Names    ) => false
+//  rule #nameEqif( A:Names    ; B:NamePats ) => false
+//  rule #nameEqif( A:NamePats ; B:Names    ) => false
 
 //-----------------
 //--- Built-ins ---
@@ -1076,33 +1031,46 @@ module STRUCT
 // #rho2list -- throws [Error] Internal: Uncaught exception thrown of type AssertionError.
 // direct RhoList to List translation
   rule #rho2list( [ ] ) => .List
-  rule #rho2list( [ A:Proc ] ) => ListItem(A)
-  rule #rho2list( [ A:Proc , B:Procs ] ) => ListItem(A) #rho2list([B])
+  rule #rho2list( [ A:ProcPat ] ) => ListItem(A)
+  rule #rho2list( [ A:ProcPat , B:ProcPats ] ) => ListItem(A) #rho2list([B])
 
 // #rho2map
-// produces Map with unique keys for structurally equivalent keys in RhoMap
+  // RhoList -- produces Map with position keys
+  rule #rho2map( [ ] ) => .Map
+  rule #rho2map( [ A:ProcPats ] ) => #indexMap(0;A)
+  rule #indexMap( I:Int ; A:ProcPat ) => I |-> A
+  rule #indexMap( I:Int ; A:ProcPat , B:ProcPats ) => I |-> A #indexMap(I +Int 1;B)
+
+  // RhoTuple -- produces Map with position keys
+  rule #rho2map( ( A:ProcPats ,) ) => #indexMap(0;A)
+
+  // RhoMap -- produces Map with a unique key-value pair for each structurally equivalent key
   rule #rho2map( { } ) => .Map
-  rule #rho2map( { A:Proc : B:Proc } ) => A |-> B
-  rule #rho2map( { A:Proc : B:Proc , C:RhoKVPairs } )
+  rule #rho2map( { A:ProcPat : B:ProcPat } ) => A |-> B
+  rule #rho2map( { A:ProcPat : B:ProcPat , C:RhoKVPats } )
     => #if #key_structEq(A;C)
        #then #rho2map({C})
        #else A |-> B #rho2map({C}) #fi
 
 // #rho2set
   rule #rho2set( Set( ) ) => .Set
-  rule #rho2set( Set( A:Proc ) ) => SetItem(A)
-  rule #rho2set( Set( A:Proc , B:Procs ) )
+  rule #rho2set( Set( A:ProcPat ) ) => SetItem(A)
+  rule #rho2set( Set( A:ProcPat , B:ProcPats ) )
     => #if #structEqs(A;B)
        #then #rho2set(Set(B)) // if #structEq(A;C) for some C in B, discard A
        #else SetItem(A) #rho2set(Set(B)) #fi // otherwise keep A and traverse remaining set
 
-  // #key_structEq( key ; RhoKVPair )
-  rule #key_structEq( A:Proc ; B:Proc : _:Proc ) => #structEq(A;B)
-  // #key_structEq( key ; RhoKVPairs )
-  rule #key_structEq( A:Proc ; B:Proc : _:Proc , C:RhoKVPairs ) => #structEq(A;B) orBool #key_structEq(A;C)
+  // #key_structEq( key ; RhoKVPat/Map )
+  rule #key_structEq( A:ProcPat ; B:ProcPat :   _:ProcPat ) => #structEq(A;B)
+  rule #key_structEq( A:ProcPat ; B:ProcPat |-> _:ProcPat ) => #structEq(A;B)
+  rule #key_structEq( A:ProcPat ;  .Map ) => false
+  // #key_structEq( key ; RhoKVPairs/Map )
+  rule #key_structEq( A:ProcPat ; B:ProcPat : _:ProcPat , C:RhoKVPats ) => #structEq(A;B) orBool #key_structEq(A;C)
+  rule #key_structEq( A:ProcPat ; B:ProcPat |-> _:ProcPat C:Map ) => #structEq(A;B) orBool #key_structEq(A;C)
 
-  rule #structEqs( A:Proc ; B:Proc           ) => #structEq(A;B)
-  rule #structEqs( A:Proc ; B:Proc , C:Procs ) => #structEq(A;B) orBool #structEqs(A;C)
+  // checks if 1st arg is structurally equivalent to any of the 2nd args
+  rule #structEqs( A:ProcPat ; B:ProcPat              ) => #structEq(A;B)
+  rule #structEqs( A:ProcPat ; B:ProcPat , C:ProcPats ) => #structEq(A;B) orBool #structEqs(A;C)
 
 //------------------
 //--- #matchComm ---
@@ -1113,7 +1081,7 @@ module STRUCT
   rule #matchComm( S:Send ;; B:GBind )
     => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
        andBool #subGuard(#msg(S);#bvar(B);#guard(B))
-
+/*
 //-----------------------------
 //--- Channel Relations Set ---
 //-----------------------------
@@ -1535,36 +1503,8 @@ module STRUCT
   rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
   // if indices do not match, union outside
   rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
-
-  rule #matchBindSet( A:Lbind ;; B:Lbind ;; I:Int ; J:Int ) // A is Ith bind in first receive, B is Jth bind in second receive
-    => #if #matchif(A;B)
-       #then SetItem(I;SetItem(J))
-       #else SetItem(I;.Set) #fi
-  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int )
-    => #if #matchif(A;B)
-       #then SetItem(I;SetItem(J)) #matchBindSet(A;;C;;I;J +Int 1)
-       #else #matchBindSet(A;;C;;I;J +Int 1) #fi
-  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int )
-    => #if #matchif(A;B)
-       #then SetItem(I;SetItem(J)) #matchBindSet(A;;C;;I;J +Int 1)
-       #else #matchBindSet(A;;C;;I;J +Int 1) #fi
-  rule #matchBindSet( A:Lbind ;; B:Lbind  ;; I:Int ; J:Int ; 0 ) => #matchBindSet(A;;B;;I;J)
-  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ; 0 )
-    => #unionBMS(#matchBindSet(A;;B;;I;J);#matchBindSet(A;;C;;I;J +Int 1;0))
-  rule #matchBindSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int ; 0 )
-    => #unionBMS(#matchBindSet(A;;B;;I;J);#matchBindSet(A;;C;;I;J +Int 1;0))
-  rule #matchBindSet( A:Lbind & B:Lbind  ;; C:Lbinds ) => #matchBindSet(A;;C;;0;0;0) #matchBindSet(B;;C;;1;0;0)
-  rule #matchBindSet( A:Lbind & B:Lbinds ;; C:Lbinds ) => #matchBindSet(A;;C;;0;0;0) #matchBindSet(B;;C;;1;0;0)
-  rule #matchBindSet( A:Lbind & B:Lbind  ;; C:Lbinds ;; I:Int ; 0 ; 0 ) => #matchBindSet(A;;C;;I;0;0) #matchBindSet(B;;C;;I +Int 1;0;0)
-  rule #matchBindSet( A:Lbind & B:Lbinds ;; C:Lbinds ;; I:Int ; 0 ; 0 ) => #matchBindSet(A;;C;;I;0;0) #matchBindSet(B;;C;;I +Int 1;0;0)
-
-// Binds Matching Set union
-  rule #unionBMS( S:Set ;  .Set ) => S
-  rule #unionBMS(  .Set ; S:Set ) => S
-  // if indices match, union inside
-  rule #unionBMS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
-  // if indices do not match, union outside
-  rule #unionBMS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
+*/
+// TODO: add #getOrElse(RhoMap;Proc;Proc)
 
 //---//---//---//---//---//---//---//---//---//
 // Extension of ==K to Name[Pat]s & Proc[Pat]s
@@ -1577,20 +1517,16 @@ module STRUCT
   rule ( A:ProcPat , B:Procs    ) ==K ( C:ProcPat , D:Procs    ) => A ==K C andBool B ==K D [structural]
   rule ( A:ProcPat , B:ProcPats ) ==K ( C:ProcPat , D:ProcPats ) => A ==K C andBool B ==K D [structural]
 
-// Eliminate Nil in parallel compositions
-  rule       Nil | A:Proc    => A  [anywhere, structural]
-  rule       Nil | A:ProcPat => A  [anywhere, structural]
-  rule A:Proc    | Nil       => A  [anywhere, structural]
-  rule A:ProcPat | Nil       => A  [anywhere, structural]
-
-// Name Equivalence
-  rule @ * A:Name    => A  [anywhere, structural]
-  rule @ * A:NamePat => A  [anywhere, structural]
-  rule * @ A:Proc    => A  [anywhere, structural]
-  rule * @ A:ProcPat => A  [anywhere, structural]
-
-// Complement Idempotency
-  rule ~ ~ A:Proc    => A [anywhere, structural]
+//------------------
+//--- Structural ---
+//------------------
+// Nil = unit of |
+  rule Nil       | A:ProcPat => A [anywhere, structural]
+  rule A:ProcPat | Nil       => A [anywhere, structural]
+// @* = Id_NamePat & *@ = Id_ProcPat
+  rule @ * A:NamePat => A [anywhere, structural]
+  rule * @ A:ProcPat => A [anywhere, structural]
+// ~~ = Id_ProcPat
   rule ~ ~ A:ProcPat => A [anywhere, structural]
 
 endmodule
