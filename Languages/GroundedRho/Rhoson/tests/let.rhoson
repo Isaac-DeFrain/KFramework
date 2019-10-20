@@ -1,0 +1,24 @@
+// LetExp Kind
+
+    #kind( let \a <- @1!(0) & \b <- [1,2,Nil] > \c <- 3 ; \d <- Set( ) ; \e <- "a" in { \a | 1 | \e } )
+
+/*
+Output:
+
+  { "seqsimlet" :
+    { "binds" :
+      { "sim" :
+        { 0 : { "var" : ProcVar , "def" : { "send" : { "linear" : { "chan" : { "quote" : { "int" : Int } } , "msg" : { "int" : Int } } } } } ,
+          1 : { "var" : ProcVar , "def" : { "list" : { 0 : { "int" : Int } , 1 : { "int" : Int } , 2 : { "nil" : Nil } } } }
+        } ,
+        "seq" :
+        { 0 : { "var" : ProcVar , "def" : { "int" : Int } } ,
+          1 : { "var" : ProcVar , "def" : { "set" : Empty } } ,
+          2 : { "var" : ProcVar , "def" : { "string" : String } }
+        }
+      } ,
+      "body" : { "par" : { 0 : { "var" : ProcVar } , 1 : { "int" : Int } , 2 : { "var" : ProcVar } } }
+    }
+  }
+
+*/

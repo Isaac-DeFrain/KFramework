@@ -1,0 +1,19 @@
+// SeqLetExp Kind
+
+    #kind( let \a <- @1!(0) ; \b <- [1,2,Nil] ; \c <- 3 in { \a | 1 | \c } )
+
+/*
+Output:
+
+  { "seqlet" :
+    { "binds" :
+      { "seq" :
+        { 0 : { "var" : ProcVar , "def" : { "send" : { "linear" : { "chan" : { "quote" : { "int" : Int } } , "msg" : { "int" : Int } } } } } ,
+          1 : { "var" : ProcVar , "def" : { "list" : { 0 : { "int" : Int } , 1 : { "int" : Int } , 2 : { "nil" : Nil } } } } ,
+          2 : { "var" : ProcVar , "def" : { "int" : Int } } }
+      } ,
+      "body" : { "par" : { 0 : { "var" : ProcVar } , 1 : { "int" : Int } , 2 : { "var" : ProcVar } } }
+    }
+  }
+
+*/
