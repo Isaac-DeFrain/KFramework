@@ -1,0 +1,10 @@
+// Map substitution
+
+    #sub( @x(0),@x(1) ; b,a ; [*b,*a] )
+
+/*
+Output:
+
+  [ x ( 0 ) , x ( 1 ) ]
+
+*/
