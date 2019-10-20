@@ -23,83 +23,33 @@ module SUB-SYNTAX
   import DOMAINS
 
 // subs into Procs
-  syntax       Proc ::= "#sub(" Procs    ";" Procs    ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" Procs    ";" ProcPats ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" ProcPats ";" Procs    ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" ProcPats ";" ProcPats ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" Names    ";" Names    ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" Names    ";" NamePats ";" Proc  ")" [function, poly(0,3)]
-                      | "#sub(" NamePats ";" Names    ";" Proc  ")" [function, poly(0,3)]
+  syntax       Proc ::= "#sub(" ProcPats ";" ProcPats ";" Proc  ")" [function, poly(0,3)]
                       | "#sub(" NamePats ";" NamePats ";" Proc  ")" [function, poly(0,3)]
-  syntax      Procs ::= "#sub(" Procs    ";" Procs    ";" Procs ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" Procs ")" [function]
-                      | "#sub(" ProcPats ";" Procs    ";" Procs ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" Procs ")" [function]
-                      | "#sub(" Names    ";" Names    ";" Procs ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" Procs ")" [function]
-                      | "#sub(" NamePats ";" Names    ";" Procs ")" [function]
+  syntax      Procs ::= "#sub(" ProcPats ";" ProcPats ";" Procs ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" Procs ")" [function]
 // Receive subs
   // if substitution variables are not included in listening variables -- #subRec
-  syntax       Proc ::= "#subRec(" Procs    ";" Procs    ";" Proc ")" [function]
-                      | "#subRec(" Procs    ";" ProcPats ";" Proc ")" [function]
-                      | "#subRec(" ProcPats ";" Procs    ";" Proc ")" [function]
-                      | "#subRec(" ProcPats ";" ProcPats ";" Proc ")" [function]
-                      | "#subRec(" Names    ";" Names    ";" Proc ")" [function]
-                      | "#subRec(" Names    ";" NamePats ";" Proc ")" [function]
-                      | "#subRec(" NamePats ";" Names    ";" Proc ")" [function]
+  syntax       Proc ::= "#subRec(" ProcPats ";" ProcPats ";" Proc ")" [function]
                       | "#subRec(" NamePats ";" NamePats ";" Proc ")" [function]
   // if substitution variables are included in listening variables -- #subChan
-  syntax       Proc ::= "#subChan(" Procs    ";" Procs    ";" Proc ")" [function]
-                      | "#subChan(" Procs    ";" ProcPats ";" Proc ")" [function]
-                      | "#subChan(" ProcPats ";" ProcPats ";" Proc ")" [function]
-                      | "#subChan(" Names    ";" Names    ";" Proc ")" [function]
-                      | "#subChan(" Names    ";" NamePats ";" Proc ")" [function]
+  syntax       Proc ::= "#subChan(" ProcPats ";" ProcPats ";" Proc ")" [function]
                       | "#subChan(" NamePats ";" NamePats ";" Proc ")" [function]
   // substituting into a Receive Bind
-  syntax      Lbind ::= "#subBind(" Procs    ";" Procs    ";;" Lbind  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Lbind  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Lbind  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Lbind  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Lbind  ")" [function]
+  syntax      Lbind ::= "#subBind(" ProcPats ";" ProcPats ";;" Lbind  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Lbind  ")" [function]
-  syntax     Lbinds ::= "#subBind(" Procs    ";" Procs    ";;" Lbinds ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Lbinds ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Lbinds ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Lbinds ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Lbinds ")" [function]
+  syntax     Lbinds ::= "#subBind(" ProcPats ";" ProcPats ";;" Lbinds ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Lbinds ")" [function]
-  syntax      Pbind ::= "#subBind(" Procs    ";" Procs    ";;" Pbind  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Pbind  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Pbind  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Pbind  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Pbind  ")" [function]
+  syntax      Pbind ::= "#subBind(" ProcPats ";" ProcPats ";;" Pbind  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Pbind  ")" [function]
-  syntax     Pbinds ::= "#subBind(" Procs    ";" Procs    ";;" Pbinds ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Pbinds ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Pbinds ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Pbinds ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Pbinds ")" [function]
+  syntax     Pbinds ::= "#subBind(" ProcPats ";" ProcPats ";;" Pbinds ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Pbinds ")" [function]
-  syntax      Rbind ::= "#subBind(" Procs    ";" Procs    ";;" Rbind  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Rbind  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Rbind  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Rbind  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Rbind  ")" [function]
+  syntax      Rbind ::= "#subBind(" ProcPats ";" ProcPats ";;" Rbind  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Rbind  ")" [function]
-  syntax     Rbinds ::= "#subBind(" Procs    ";" Procs    ";;" Rbinds ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" Rbinds ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" Rbinds ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" Rbinds ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" Rbinds ")" [function]
+  syntax     Rbinds ::= "#subBind(" ProcPats ";" ProcPats ";;" Rbinds ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" Rbinds ")" [function]
 
   // New substitution
-  syntax        New ::= "#subNew(" Procs    ";" Procs    ";" New ")" [function]
-                      | "#subNew(" Procs    ";" ProcPats ";" New ")" [function]
-                      | "#subNew(" ProcPats ";" ProcPats ";" New ")" [function]
-                      | "#subNew(" Names    ";" Names    ";" New ")" [function]
-                      | "#subNew(" Names    ";" NamePats ";" New ")" [function]
+  syntax        New ::= "#subNew(" ProcPats ";" ProcPats ";" New ")" [function]
                       | "#subNew(" NamePats ";" NamePats ";" New ")" [function]
 
   syntax        New ::= "#subNew+(" Var ";" Var ";" New ")" [function]
@@ -110,235 +60,124 @@ module SUB-SYNTAX
   syntax       Proc ::= "#subNew(" Int ";" VarDecs ";" Proc ")" [function]
 
   // Match substitution
-  syntax  MatchCase ::= "#subMatch(" Procs    ";" Procs    ";" MatchCase  ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" MatchCase  ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" MatchCase  ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" MatchCase  ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" MatchCase  ")" [function]
+  syntax  MatchCase ::= "#subMatch(" ProcPats ";" ProcPats ";" MatchCase  ")" [function]
                       | "#subMatch(" NamePats ";" NamePats ";" MatchCase  ")" [function]
-  syntax MatchCases ::= "#subMatch(" Procs    ";" Procs    ";" MatchCases ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" MatchCases ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" MatchCases ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" MatchCases ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" MatchCases ")" [function]
+  syntax MatchCases ::= "#subMatch(" ProcPats ";" ProcPats ";" MatchCases ")" [function]
                       | "#subMatch(" NamePats ";" NamePats ";" MatchCases ")" [function]
-  syntax   MCasePat ::= "#subMatch(" Procs    ";" Procs    ";" MCasePat   ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" MCasePat   ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" MCasePat   ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" MCasePat   ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" MCasePat   ")" [function]
+  syntax   MCasePat ::= "#subMatch(" ProcPats ";" ProcPats ";" MCasePat   ")" [function]
                       | "#subMatch(" NamePats ";" NamePats ";" MCasePat   ")" [function]
-  syntax  MCasePats ::= "#subMatch(" Procs    ";" Procs    ";" MCasePats  ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" MCasePats  ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" MCasePats  ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" MCasePats  ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" MCasePats  ")" [function]
+  syntax  MCasePats ::= "#subMatch(" ProcPats ";" ProcPats ";" MCasePats  ")" [function]
                       | "#subMatch(" NamePats ";" NamePats ";" MCasePats  ")" [function]
 
 // Select substitution
-  syntax     Branch ::= "#subBranch(" Proc     ";" Proc     ";" Branch     ")" [function]
-                      | "#subBranch(" Procs    ";" ProcPats ";" Branch     ")" [function]
-                      | "#subBranch(" ProcPats ";" ProcPats ";" Branch     ")" [function]
-                      | "#subBranch(" Names    ";" Names    ";" Branch     ")" [function]
-                      | "#subBranch(" Names    ";" NamePats ";" Branch     ")" [function]
+  syntax     Branch ::= "#subBranch(" ProcPats ";" ProcPats ";" Branch     ")" [function]
                       | "#subBranch(" NamePats ";" NamePats ";" Branch     ")" [function]
-  syntax   Branches ::= "#subBranch(" Proc     ";" Proc     ";" Branches   ")" [function]
-                      | "#subBranch(" Procs    ";" ProcPats ";" Branches   ")" [function]
-                      | "#subBranch(" ProcPats ";" ProcPats ";" Branches   ")" [function]
-                      | "#subBranch(" Names    ";" Names    ";" Branches   ")" [function]
-                      | "#subBranch(" Names    ";" NamePats ";" Branches   ")" [function]
+  syntax   Branches ::= "#subBranch(" ProcPats ";" ProcPats ";" Branches   ")" [function]
                       | "#subBranch(" NamePats ";" NamePats ";" Branches   ")" [function]
-  syntax  BranchPat ::= "#subBranch(" Proc     ";" Proc     ";" BranchPat  ")" [function]
-                      | "#subBranch(" Procs    ";" ProcPats ";" BranchPat  ")" [function]
-                      | "#subBranch(" ProcPats ";" ProcPats ";" BranchPat  ")" [function]
-                      | "#subBranch(" Names    ";" Names    ";" BranchPat  ")" [function]
-                      | "#subBranch(" Names    ";" NamePats ";" BranchPat  ")" [function]
+  syntax  BranchPat ::= "#subBranch(" ProcPats ";" ProcPats ";" BranchPat  ")" [function]
                       | "#subBranch(" NamePats ";" NamePats ";" BranchPat  ")" [function]
-  syntax BranchPats ::= "#subBranch(" Proc     ";" Proc     ";" BranchPats ")" [function]
-                      | "#subBranch(" Procs    ";" ProcPats ";" BranchPats ")" [function]
-                      | "#subBranch(" ProcPats ";" ProcPats ";" BranchPats ")" [function]
-                      | "#subBranch(" Names    ";" Names    ";" BranchPats ")" [function]
-                      | "#subBranch(" Names    ";" NamePats ";" BranchPats ")" [function]
+  syntax BranchPats ::= "#subBranch(" ProcPats ";" ProcPats ";" BranchPats ")" [function]
                       | "#subBranch(" NamePats ";" NamePats ";" BranchPats ")" [function]
 
 // Method substitution
   syntax
-      MethodAndArgs ::= "#subMethod(" Proc     ";" Proc     ";" MethodAndArgs ")" [function]
-                      | "#subMethod(" Procs    ";" ProcPats ";" MethodAndArgs ")" [function]
-                      | "#subMethod(" ProcPats ";" ProcPats ";" MethodAndArgs ")" [function]
-                      | "#subMethod(" Names    ";" Names    ";" MethodAndArgs ")" [function]
-                      | "#subMethod(" Names    ";" NamePats ";" MethodAndArgs ")" [function]
+      MethodAndArgs ::= "#subMethod(" ProcPats ";" ProcPats ";" MethodAndArgs ")" [function]
                       | "#subMethod(" NamePats ";" NamePats ";" MethodAndArgs ")" [function]
+  syntax
+      MethodArgPats ::= "#subMethod(" ProcPats ";" ProcPats ";" MethodArgPats ")" [function]
+                      | "#subMethod(" NamePats ";" NamePats ";" MethodArgPats ")" [function]
 
 // RhoMap/MapPat
   // substitution for key-values
-  syntax  RhoKVPair ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPair  ")" [function]
-                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPair  ")" [function]
-                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPair  ")" [function]
-                      | "#subKV(" Names    ";" Names    ";" RhoKVPair  ")" [function]
-                      | "#subKV(" Names    ";" NamePats ";" RhoKVPair  ")" [function]
+  syntax  RhoKVPair ::= "#subKV(" ProcPats ";" ProcPats ";" RhoKVPair  ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPair  ")" [function]
-  syntax RhoKVPairs ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPairs ")" [function]
-                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPairs ")" [function]
-                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPairs ")" [function]
-                      | "#subKV(" Names    ";" Names    ";" RhoKVPairs ")" [function]
-                      | "#subKV(" Names    ";" NamePats ";" RhoKVPairs ")" [function]
+  syntax RhoKVPairs ::= "#subKV(" ProcPats ";" ProcPats ";" RhoKVPairs ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPairs ")" [function]
-  syntax   RhoKVPat ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPat   ")" [function]
-                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPat   ")" [function]
-                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPat   ")" [function]
-                      | "#subKV(" Names    ";" Names    ";" RhoKVPat   ")" [function]
-                      | "#subKV(" Names    ";" NamePats ";" RhoKVPat   ")" [function]
+  syntax   RhoKVPat ::= "#subKV(" ProcPats ";" ProcPats ";" RhoKVPat   ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPat   ")" [function]
-  syntax  RhoKVPats ::= "#subKV(" Procs    ";" Procs    ";" RhoKVPats  ")" [function]
-                      | "#subKV(" Procs    ";" ProcPats ";" RhoKVPats  ")" [function]
-                      | "#subKV(" ProcPats ";" ProcPats ";" RhoKVPats  ")" [function]
-                      | "#subKV(" Names    ";" Names    ";" RhoKVPats  ")" [function]
-                      | "#subKV(" Names    ";" NamePats ";" RhoKVPats  ")" [function]
+  syntax  RhoKVPats ::= "#subKV(" ProcPats ";" ProcPats ";" RhoKVPats  ")" [function]
                       | "#subKV(" NamePats ";" NamePats ";" RhoKVPats  ")" [function]
 
-  syntax       Proc ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Proc    ")" [function, poly(0,3)]
-                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" Proc    ")" [function, poly(0,3)]
-                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" Proc    ")" [function, poly(0,3)]
-  syntax    ProcPat ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" ProcPat ")" [function]
-                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" ProcPat ")" [function]
-                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" ProcPat ")" [function]
-  syntax       Name ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" Name    ")" [function]
-                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" Name    ")" [function]
-                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" Name    ")" [function]
-  syntax    NamePat ::= "#sub(" RhoKVPairs ";" RhoKVPairs ";" NamePat ")" [function]
-                      | "#sub(" RhoKVPairs ";" RhoKVPats  ";" NamePat ")" [function]
-                      | "#sub(" RhoKVPats  ";" RhoKVPats  ";" NamePat ")" [function]
+  syntax       Proc ::= "#sub(" RhoKVPats  ";" RhoKVPats  ";" Proc    ")" [function, poly(0,3)]
+  syntax    ProcPat ::= "#sub(" RhoKVPats  ";" RhoKVPats  ";" ProcPat ")" [function]
+  syntax       Name ::= "#sub(" RhoKVPats  ";" RhoKVPats  ";" Name    ")" [function]
+  syntax    NamePat ::= "#sub(" RhoKVPats  ";" RhoKVPats  ";" NamePat ")" [function]
 
 // String expressions
-  syntax InterpMaps ::= "#sub(" Procs    ";" Procs    ";" InterpMaps ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" InterpMaps ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" InterpMaps ")" [function]
-                      | "#sub(" Names    ";" Names    ";" InterpMaps ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" InterpMaps ")" [function]
+  syntax InterpMaps ::= "#sub(" ProcPats ";" ProcPats ";" InterpMaps ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" InterpMaps ")" [function]
 
 // Name substitution
-  syntax       Name ::= "#sub(" Procs    ";" Procs    ";" Name  ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" Name  ")" [function]
-                      | "#sub(" ProcPats ";" Procs    ";" Name  ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" Name  ")" [function]
-                      | "#sub(" Names    ";" Names    ";" Name  ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" Name  ")" [function]
-                      | "#sub(" NamePats ";" Names    ";" Name  ")" [function]
+  syntax       Name ::= "#sub(" ProcPats ";" ProcPats ";" Name  ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" Name  ")" [function]
-  syntax      Names ::= "#sub(" Procs    ";" Procs    ";" Names ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" Names ")" [function]
-                      | "#sub(" ProcPats ";" Procs    ";" Names ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" Names ")" [function]
-                      | "#sub(" Names    ";" Names    ";" Names ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" Names ")" [function]
-                      | "#sub(" NamePats ";" Names    ";" Names ")" [function]
+  syntax      Names ::= "#sub(" ProcPats ";" ProcPats ";" Names ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" Names ")" [function]
 
+// Let expressions
+  syntax    LetBind ::= "#subLet(" NamePat ";" NamePat ";;" LetBind ")" [function]
+                      | "#subLet(" ProcPat ";" ProcPat ";;" LetBind ")" [function]
+                      | "#subLet(" Map ";;" LetBind ")"                 [function]
+  syntax
+        SeqLetBinds ::= "#subLet(" NamePat ";" NamePat ";;" SeqLetBinds ")" [function]
+                      | "#subLet(" ProcPat ";" ProcPat ";;" SeqLetBinds ")" [function]
+                      | "#subLet(" Map ";;" SeqLetBinds ")"                 [function]
+  syntax
+        SimLetBinds ::= "#subLet(" NamePat ";" NamePat ";;" SimLetBinds ")" [function]
+                      | "#subLet(" ProcPat ";" ProcPat ";;" SimLetBinds ")" [function]
+                      | "#subLet(" Map ";;" SimLetBinds ")"                 [function]
+  syntax
+     SeqSimLetBinds ::= "#subLet(" NamePat ";" NamePat ";;" SeqSimLetBinds ")" [function]
+                      | "#subLet(" ProcPat ";" ProcPat ";;" SeqSimLetBinds ")" [function]
+                      | "#subLet(" Map ";;" SeqSimLetBinds ")"                 [function]
+  // checks if substitution variables are in #LV
+  syntax       Proc ::= "#subLetProc(" NamePat ";" NamePat ";" Set ";" Proc ")" [function]
+                      | "#subLetProc(" ProcPat ";" ProcPat ";" Set ";" Proc ")" [function]
+
 // Process Pattern substitution
-  syntax    ProcPat ::= "#sub(" Procs    ";" Procs    ";" ProcPat ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" ProcPat ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" ProcPat ")" [function]
-                      | "#sub(" Names    ";" Names    ";" ProcPat ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" ProcPat ")" [function]
-                      | "#sub(" NamePats ";" NamePats ";" ProcPat ")" [function]
+  syntax    ProcPat ::= "#sub(" ProcPats ";" ProcPats ";" ProcPat ")" [function, poly(0,3)]
+                      | "#sub(" NamePats ";" NamePats ";" ProcPat ")" [function, poly(0,3)]
 
   // Receive pattern
-  syntax    ProcPat ::=  "#subRec(" Procs    ";" Procs    ";" ProcPat ")" [function]
-                      |  "#subRec(" Procs    ";" ProcPats ";" ProcPat ")" [function]
-                      |  "#subRec(" ProcPats ";" ProcPats ";" ProcPat ")" [function]
-                      |  "#subRec(" Names    ";" Names    ";" ProcPat ")" [function]
-                      |  "#subRec(" Names    ";" NamePats ";" ProcPat ")" [function]
-                      |  "#subRec(" NamePats ";" NamePats ";" ProcPat ")" [function]
-                      | "#subChan(" Procs    ";" Procs    ";" ProcPat ")" [function]
-                      | "#subChan(" Procs    ";" ProcPats ";" ProcPat ")" [function]
-                      | "#subChan(" ProcPats ";" ProcPats ";" ProcPat ")" [function]
-                      | "#subChan(" Names    ";" Names    ";" ProcPat ")" [function]
-                      | "#subChan(" Names    ";" NamePats ";" ProcPat ")" [function]
-                      | "#subChan(" NamePats ";" NamePats ";" ProcPat ")" [function]
+  syntax    ProcPat ::=  "#subRec(" ProcPats ";" ProcPats ";" ProcPat ")" [function, poly(0,3)]
+                      |  "#subRec(" NamePats ";" NamePats ";" ProcPat ")" [function, poly(0,3)]
+                      | "#subChan(" ProcPats ";" ProcPats ";" ProcPat ")" [function, poly(0,3)]
+                      | "#subChan(" NamePats ";" NamePats ";" ProcPat ")" [function, poly(0,3)]
 
-  syntax   LbindPat ::= "#subBind(" Procs    ";" Procs    ";;" LbindPat  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" LbindPat  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" LbindPat  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" LbindPat  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" LbindPat  ")" [function]
+  syntax   LbindPat ::= "#subBind(" ProcPats ";" ProcPats ";;" LbindPat  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" LbindPat  ")" [function]
-  syntax  LbindPats ::= "#subBind(" Procs    ";" Procs    ";;" LbindPats ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" LbindPats ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" LbindPats ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" LbindPats ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" LbindPats ")" [function]
+  syntax  LbindPats ::= "#subBind(" ProcPats ";" ProcPats ";;" LbindPats ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" LbindPats ")" [function]
-  syntax   PbindPat ::= "#subBind(" Procs    ";" Procs    ";;" PbindPat  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" PbindPat  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" PbindPat  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" PbindPat  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" PbindPat  ")" [function]
+  syntax   PbindPat ::= "#subBind(" ProcPats ";" ProcPats ";;" PbindPat  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" PbindPat  ")" [function]
-  syntax  PbindPats ::= "#subBind(" Procs    ";" Procs    ";;" PbindPats ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" PbindPats ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" PbindPats ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" PbindPats ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" PbindPats ")" [function]
+  syntax  PbindPats ::= "#subBind(" ProcPats ";" ProcPats ";;" PbindPats ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" PbindPats ")" [function]
-  syntax   RbindPat ::= "#subBind(" Procs    ";" Procs    ";;" RbindPat  ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" RbindPat  ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" RbindPat  ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" RbindPat  ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" RbindPat  ")" [function]
+  syntax   RbindPat ::= "#subBind(" ProcPats ";" ProcPats ";;" RbindPat  ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" RbindPat  ")" [function]
-  syntax  RbindPats ::= "#subBind(" Procs    ";" Procs    ";;" RbindPats ")" [function]
-                      | "#subBind(" Procs    ";" ProcPats ";;" RbindPats ")" [function]
-                      | "#subBind(" ProcPats ";" ProcPats ";;" RbindPats ")" [function]
-                      | "#subBind(" Names    ";" Names    ";;" RbindPats ")" [function]
-                      | "#subBind(" Names    ";" NamePats ";;" RbindPats ")" [function]
+  syntax  RbindPats ::= "#subBind(" ProcPats ";" ProcPats ";;" RbindPats ")" [function]
                       | "#subBind(" NamePats ";" NamePats ";;" RbindPats ")" [function]
 
   // New pattern
-  syntax     NewPat ::= "#subNew(" Procs    ";" Procs    ";" NewPat ")" [function]
-                      | "#subNew(" Procs    ";" ProcPats ";" NewPat ")" [function]
-                      | "#subNew(" ProcPats ";" ProcPats ";" NewPat ")" [function]
-                      | "#subNew(" Names    ";" Names    ";" NewPat ")" [function]
-                      | "#subNew(" Names    ";" NamePats ";" NewPat ")" [function]
+  syntax     NewPat ::= "#subNew(" ProcPats ";" ProcPats ";" NewPat ")" [function]
                       | "#subNew(" NamePats ";" NamePats ";" NewPat ")" [function]
 
   syntax    ProcPat ::= "#subNew(" Int ";" VarDecs ";" ProcPat ")" [function]
 
   // Match pattern
-  syntax   MatchPat ::= "#subMatch(" Procs    ";" Procs    ";" MatchPat ")" [function]
-                      | "#subMatch(" Procs    ";" ProcPats ";" MatchPat ")" [function]
-                      | "#subMatch(" ProcPats ";" ProcPats ";" MatchPat ")" [function]
-                      | "#subMatch(" Names    ";" Names    ";" MatchPat ")" [function]
-                      | "#subMatch(" Names    ";" NamePats ";" MatchPat ")" [function]
+  syntax   MatchPat ::= "#subMatch(" ProcPats ";" ProcPats ";" MatchPat ")" [function]
                       | "#subMatch(" NamePats ";" NamePats ";" MatchPat ")" [function]
 
-  syntax   ProcPats ::= "#sub(" Procs    ";" Procs    ";" ProcPats ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" ProcPats ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" ProcPats ")" [function]
-                      | "#sub(" Names    ";" Names    ";" ProcPats ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" ProcPats ")" [function]
+  syntax   ProcPats ::= "#sub(" ProcPats ";" ProcPats ";" ProcPats ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" ProcPats ")" [function]
 
 // Name Pattern substitution
-  syntax    NamePat ::= "#sub(" Procs    ";" Procs    ";" NamePat  ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" NamePat  ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" NamePat  ")" [function]
-                      | "#sub(" Names    ";" Names    ";" NamePat  ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" NamePat  ")" [function]
+  syntax    NamePat ::= "#sub(" ProcPats ";" ProcPats ";" NamePat  ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" NamePat  ")" [function]
 
-  syntax   NamePats ::= "#sub(" Procs    ";" Procs    ";" NamePats ")" [function]
-                      | "#sub(" Procs    ";" ProcPats ";" NamePats ")" [function]
-                      | "#sub(" ProcPats ";" ProcPats ";" NamePats ")" [function]
-                      | "#sub(" Names    ";" Names    ";" NamePats ")" [function]
-                      | "#sub(" Names    ";" NamePats ";" NamePats ")" [function]
+  syntax   NamePats ::= "#sub(" ProcPats ";" ProcPats ";" NamePats ")" [function]
                       | "#sub(" NamePats ";" NamePats ";" NamePats ")" [function]
 
-  syntax        Map ::= "#sub(" Names ";" Names    ";" Map ")" [function]
-                      | "#sub(" Names ";" NamePats ";" Map ")" [function]
-                      | "#sub(" Procs ";" Procs    ";" Map ")" [function]
-                      | "#sub(" Procs ";" ProcPats ";" Map ")" [function]
+  syntax        Map ::= "#sub(" NamePats ";" NamePats ";" Map ")" [function]
+                      | "#sub(" ProcPats ";" ProcPats ";" Map ")" [function]
 
 // Map substitutions
   syntax       Name ::= "#sub(" Map ";" Name     ")" [function]
@@ -375,8 +214,7 @@ module SUB-SYNTAX
                       | "#sub2map(" NamePats ";" NamePats ")" [function]
 
 // Input guard satisfaction predicate for comm in Grho
-  syntax       Bool ::= "#subGuard(" Procs ";" Names    ";" BExp ")" [function]
-                      | "#subGuard(" Procs ";" NamePats ";" BExp ")" [function]
+  syntax       Bool ::= "#subGuard(" ProcPats ";" NamePats ";" BExp ")" [function]
 
 // variables to substitute for
   syntax        Map ::= "#mapVarSub(" NamePats ")"         [function]
@@ -390,13 +228,7 @@ module SUB-SYNTAX
                       | "#mapVarIn("  ProcPats ";" Int ")" [function]
 
 // Substitution context checking
-  syntax       Bool ::= "#subcontext(" Proc    ";" Proc ";" Proc    ")" [function]
-                      | "#subcontext(" Proc    ";" Proc ";" ProcPat ")" [function]
-                      | "#subcontext(" ProcPat ";" Proc ";" Proc    ")" [function]
-                      | "#subcontext(" ProcPat ";" Proc ";" ProcPat ")" [function]
-                      | "#subcontext(" Name    ";" Name ";" Proc    ")" [function]
-                      | "#subcontext(" Name    ";" Name ";" ProcPat ")" [function]
-                      | "#subcontext(" NamePat ";" Name ";" Proc    ")" [function]
+  syntax       Bool ::= "#subcontext(" ProcPat ";" Proc ";" ProcPat ")" [function]
                       | "#subcontext(" NamePat ";" Name ";" ProcPat ")" [function]
 
   syntax      KItem ::= Name | NamePat | Proc | ProcPat
@@ -494,18 +326,18 @@ module SUB
   rule #sub( _:Proc ; \(_:Var) ;  A:Var ) =>  A
   // sub bound process variable in ProcVar or Var
   // Typed
-  rule #sub( A:Proc ; \B:Var ;  \B     :: D:Proc    ) =>   A :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ;  \B     :: D:ProcPat ) =>   A :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ; @\B     :: D:Name    ) =>  @A :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ; @\B     :: D:NamePat ) =>  @A :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ;  \C:Var :: D:Proc    ) =>  \C :: #sub(A;\B;D) requires B =/=K C
-  rule #sub( A:Proc ; \B:Var ;  \C:Var :: D:ProcPat ) =>  \C :: #sub(A;\B;D) requires B =/=K C
-  rule #sub( A:Proc ; \B:Var ; @\C:Var :: D:Name    ) => @\C :: #sub(A;\B;D) requires B =/=K C
-  rule #sub( A:Proc ; \B:Var ; @\C:Var :: D:NamePat ) => @\C :: #sub(A;\B;D) requires B =/=K C
-  rule #sub( A:Proc ; \B:Var ;  *C:Var :: D:Proc    ) =>  *C :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ;  *C:Var :: D:ProcPat ) =>  *C :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ;   C:Var :: D:Name    ) =>   C :: #sub(A;\B;D)
-  rule #sub( A:Proc ; \B:Var ;   C:Var :: D:NamePat ) =>   C :: #sub(A;\B;D)
+  rule #sub( A:Proc ; B:ProcVar ;  B         :: D:Proc    ) =>  A :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ;  B         :: D:ProcPat ) =>  A :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ; @B         :: D:Name    ) => @A :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ; @B         :: D:NamePat ) => @A :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ;  C:ProcVar :: D:Proc    ) =>  C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Proc ; B:ProcVar ;  C:ProcVar :: D:ProcPat ) =>  C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Proc ; B:ProcVar ; @C:ProcVar :: D:Name    ) => @C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Proc ; B:ProcVar ; @C:ProcVar :: D:NamePat ) => @C :: #sub(A;B;D) requires B =/=K C
+  rule #sub( A:Proc ; B:ProcVar ; *C:Var     :: D:Proc    ) => *C :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ; *C:Var     :: D:ProcPat ) => *C :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ;  C:Var     :: D:Name    ) =>  C :: #sub(A;B;D)
+  rule #sub( A:Proc ; B:ProcVar ;  C:Var     :: D:NamePat ) =>  C :: #sub(A;B;D)
 
   // sub Proc for *Var in Var or ProcVar
   rule #sub( A:Proc ; *B:Var ;  B     ) => @A
@@ -540,55 +372,22 @@ module SUB
   rule #sub( A:Proc ; B:ProcPat ; *C:Name    ) => *#sub(A;B;C)
   rule #sub( A:Proc ; B:ProcPat ; *C:NamePat ) => *#sub(A;B;C)
 
-  // sub *Name for *Name[Pat] in Proc[Pat]
-  rule #sub( *A:Name ; *B:Name    ; C:Proc    ) => #sub(A;B;C) requires notBool isVar(B)
-  rule #sub( *A:Name ; *B:Name    ; C:ProcPat ) => #sub(A;B;C) requires notBool isVar(B)
-  rule #sub( *A:Name ; *B:NamePat ; C:Proc    ) => #sub(A;B;C) // requires notBool isPatVar(B)
-  rule #sub( *A:Name ; *B:NamePat ; C:ProcPat ) => #sub(A;B;C) // requires notBool isPatVar(B)
+  // sub *Name for *NamePat in ProcPat
+  rule #sub( *A:Name ; *B:NamePat ; C:ProcPat ) => #sub(A;B;C) requires notBool isVar(B)
 
-  // sub Proc for Proc[Pat] in Send[Pat] -- sub in channel and message(s)
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !  ( D:Procs    ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !  (            ) ) => #sub(A;B;C) !  (             )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !  ( D:Procs    ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !  (            ) ) => #sub(A;B;C) !  (             )
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !! ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !! ( D:Procs    ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:NamePat !! (            ) ) => #sub(A;B;C) !! (             )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !! ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !! ( D:Procs    ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc    ; C:Name    !! (            ) ) => #sub(A;B;C) !! (             )
-  rule #sub( A:Proc ; B:ProcPat ; C:NamePat !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:NamePat !  ( D:Procs    ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:NamePat !  (            ) ) => #sub(A;B;C) !  (             )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !  ( D:Procs    ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !  (            ) ) => #sub(A;B;C) !  (             )
+  // sub Proc for ProcPat in Send[Pat] -- sub in channel and message(s)
   rule #sub( A:Proc ; B:ProcPat ; C:NamePat !! ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:NamePat !! ( D:Procs    ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:ProcPat ; C:NamePat !! (            ) ) => #sub(A;B;C) !! (             )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !! ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !! ( D:Procs    ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:ProcPat ; C:Name    !! (            ) ) => #sub(A;B;C) !! (             )
 
-  // sub Proc for Proc in Receive -- only substitute free variables in channel and continuation
+  // sub Proc for ProcPat in Receive -- only substitute free variables in channel and continuation
     // if substitution variables are all listening variables and not receive variables, then no substitution occurs
-  rule #sub( _:Proc ;  B:Proc    ; C:Receive ) => C requires #FV(B) <=Set (#LV(C) -Set #RV(C))
-  rule #sub( _:Proc ;  B:ProcPat ; C:Receive ) => C requires #FV(B) <=Set (#LV(C) -Set #RV(C))
-  rule #sub( _:Proc ;  B:Proc    ; C:RecPat  ) => C requires #FV(B) <=Set (#LV(C) -Set #RV(C))
-  rule #sub( _:Proc ;  B:ProcPat ; C:RecPat  ) => C requires #FV(B) <=Set (#LV(C) -Set #RV(C))
+  rule #sub( _:Proc ;  B:ProcPat ; C:RecPat ) => C requires #FV(B) <=Set (#LV(C) -Set #RV(C))
     // if substitution variables are distinct from free variables in Rec, then no substitution occurs
-  rule #sub( _:Proc ;  B:Proc    ; C:Receive ) => C requires intersectSet(#FV(B),#FV(C)) ==K .Set
-  rule #sub( _:Proc ;  B:ProcPat ; C:Receive ) => C requires intersectSet(#FV(B),#FV(C)) ==K .Set
-  rule #sub( _:Proc ;  B:Proc    ; C:RecPat  ) => C requires intersectSet(#FV(B),#FV(C)) ==K .Set
-  rule #sub( _:Proc ;  B:ProcPat ; C:RecPat  ) => C requires intersectSet(#FV(B),#FV(C)) ==K .Set
+  rule #sub( _:Proc ;  B:ProcPat ; C:RecPat ) => C requires intersectSet(#FV(B),#FV(C)) ==K .Set
     // substituting for a ProcVar -- if ProcVar is a listening variable, substitute only in the channel, else substitute in both the channel and continuation
-  rule #sub( A:Proc ;  B:ProcVar ; C:Receive ) => #if (B in #LV(C)) #then #subChan(A;B;C) #else #subRec(A;B;C) #fi
-  rule #sub( A:Proc ;  B:ProcVar ; C:RecPat  ) => #if (B in #LV(C)) #then #subChan(A;B;C) #else #subRec(A;B;C) #fi
+  rule #sub( A:Proc ;  B:ProcVar ; C:RecPat ) => #if (B in #LV(C)) #then #subChan(A;B;C) #else #subRec(A;B;C) #fi
     // substituting for *Var -- if Var is a listening variable, substitute only in the channel, else substitute in both the channel and continuation
-  rule #sub( A:Proc ; *B:Var     ; C:Receive ) => #if (B in #LV(C)) #then #subChan(@A;B;C) #else #subRec(@A;B;C) #fi
-  rule #sub( A:Proc ; *B:Var     ; C:RecPat  ) => #if (B in #LV(C)) #then #subChan(@A;B;C) #else #subRec(@A;B;C) #fi
+  rule #sub( A:Proc ; *B:Var     ; C:RecPat ) => #if (B in #LV(C)) #then #subChan(@A;B;C) #else #subRec(@A;B;C) #fi
 
     // if substitution variable is a listening variable, then it is only substituted in the channel (not in the guard or continuation)
   rule #subChan( A:Proc ; B:Proc ; C:UGRec    ) => for( #subBind(A;B;;#bind(C)) ){ #cont(C) }
@@ -603,43 +402,19 @@ module SUB
 
   // Binds -- only substitute in the channel
     // Linear
-  rule #subBind( A:Proc ; B:Proc ;; <-  C:Name    ) =>           <-  #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; <-  C:NamePat ) =>           <-  #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind       ) =>  #bvar(C) <-  #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:LbindPat    ) =>  #bvar(C) <-  #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind    & D:Lbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind    & D:LbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:LbindPat & D:Lbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; <-  C:NamePat ) =>          <-  #sub(A;B;C)
+  rule #subBind( A:Proc ; B:Proc ;; C:LbindPat    ) => #bvar(C) <-  #sub(A;B;#chan(C))
   rule #subBind( A:Proc ; B:Proc ;; C:LbindPat & D:LbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind    & D:Lbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Lbind    & D:LbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:LbindPat & D:Lbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Proc ; B:Proc ;; C:LbindPat & D:LbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Peek
-  rule #subBind( A:Proc ; B:Proc ;; <<- C:Name    ) =>           <<- #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; <<- C:NamePat ) =>           <<- #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind       ) =>  #bvar(C) <<- #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:PbindPat    ) =>  #bvar(C) <<- #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind    & D:Pbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind    & D:PbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:PbindPat & D:Pbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; <<- C:NamePat ) =>          <<- #sub(A;B;C)
+  rule #subBind( A:Proc ; B:Proc ;; C:PbindPat    ) => #bvar(C) <<- #sub(A;B;#chan(C))
   rule #subBind( A:Proc ; B:Proc ;; C:PbindPat & D:PbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind    & D:Pbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Pbind    & D:PbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:PbindPat & D:Pbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Proc ; B:Proc ;; C:PbindPat & D:PbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Repeated
-  rule #subBind( A:Proc ; B:Proc ;; <=  C:Name    ) =>           <=  #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; <=  C:NamePat ) =>           <=  #sub(A;B;C)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind       ) =>  #bvar(C) <=  #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:RbindPat    ) =>  #bvar(C) <=  #sub(A;B;#chan(C))
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind    & D:Rbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind    & D:RbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:RbindPat & D:Rbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
+  rule #subBind( A:Proc ; B:Proc ;; <=  C:NamePat ) =>          <=  #sub(A;B;C)
+  rule #subBind( A:Proc ; B:Proc ;; C:RbindPat    ) => #bvar(C) <=  #sub(A;B;#chan(C))
   rule #subBind( A:Proc ; B:Proc ;; C:RbindPat & D:RbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind    & D:Rbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:Rbind    & D:RbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Proc ; B:Proc ;; C:RbindPat & D:Rbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Proc ; B:Proc ;; C:RbindPat & D:RbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
 
 // sub Proc for ProcVar in Contract[Pat]
@@ -699,50 +474,35 @@ module SUB
   rule #sub( A:Proc ; B:ProcPat ; C:Name    ( D:Names    ) ) => #sub(A;B;C)( #sub(A;B;D) )
   rule #sub( A:Proc ; B:ProcPat ; C:Name    (            ) ) => #sub(A;B;C)(             )
 
-// sub Proc for Proc[Pat] in Par
-  rule #sub( A:Proc ; B:Proc    ; C:Proc    | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc    ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc    ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:Proc    ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:ProcPat ; C:Proc    | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:ProcPat ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Proc ; B:ProcPat ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
+// sub Proc for ProcPat in Par
   rule #sub( A:Proc ; B:ProcPat ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
 
-// sub Proc for ProcVar in Match[Pat]
-  rule #sub( A:Proc ; \B:Var ; match C:Proc    { D:MatchCases } ) => match #sub(A;\B;C) {#subMatch(A;\B;D)}
-  rule #sub( A:Proc ; \B:Var ; match C:Proc    { D:MCasePats  } ) => match #sub(A;\B;C) {#subMatch(A;\B;D)}
-  rule #sub( A:Proc ; \B:Var ; match C:ProcPat { D:MatchCases } ) => match #sub(A;\B;C) {#subMatch(A;\B;D)}
-  rule #sub( A:Proc ; \B:Var ; match C:ProcPat { D:MCasePats  } ) => match #sub(A;\B;C) {#subMatch(A;\B;D)}
-  // MatchCases/MCasePats
-  rule #subMatch( A:Proc ; \B:Var ; { C:Proc    } |=> D:Proc )
-    => #if (\B in #FV(C)) #then {C}|=>D #else {C} |=> #sub(A;\B;D) #fi
-  rule #subMatch( A:Proc ; \B:Var ; { C:Proc    } |=> D:ProcPat )
-    => #if (\B in #FV(C)) #then {C}|=>D #else {C} |=> #sub(A;\B;D) #fi
-  rule #subMatch( A:Proc ; \B:Var ; { C:ProcPat } |=> D:Proc )
-    => #if (\B in #FV(C)) #then {C}|=>D #else {C} |=> #sub(A;\B;D) #fi
-  rule #subMatch( A:Proc ; \B:Var ; { C:ProcPat } |=> D:ProcPat )
-    => #if (\B in #FV(C)) #then {C}|=>D #else {C} |=> #sub(A;\B;D) #fi
-  rule #subMatch( A:Proc ; B:Proc ; C:MatchCase D:MatchCases ) => #subMatch(A;B;C) #subMatch(A;B;D)
-  rule #subMatch( A:Proc ; B:Proc ; C:MatchCase D:MCasePats  ) => #subMatch(A;B;C) #subMatch(A;B;D)
-  rule #subMatch( A:Proc ; B:Proc ; C:MCasePat  D:MatchCases ) => #subMatch(A;B;C) #subMatch(A;B;D)
+// sub Proc for ProcVar in MatchPat
+  rule #sub( A:Proc ; B:ProcVar ; match C:ProcPat { D:MCasePats  } ) => match #sub(A;B;C) {#subMatch(A;B;D)}
+  // MCasePats
+  rule #subMatch( A:Proc ; B:ProcVar ; { C:ProcPat } |=> D:ProcPat )
+    => #if (B in #FV(C)) #then {C}|=>D #else {C} |=> #sub(A;B;D) #fi
   rule #subMatch( A:Proc ; B:Proc ; C:MCasePat  D:MCasePats  ) => #subMatch(A;B;C) #subMatch(A;B;D)
 
-// sub Proc for ProcVar in Select[Pat]
-  rule #sub( A:Proc ; \B:Var ; select { C:Branches   } ) => select {#subBranch(A;\B;C)}
-  rule #sub( A:Proc ; \B:Var ; select { C:BranchPats } ) => select {#subBranch(A;\B;C)}
-  // Branches/BranchPats
-  rule #subBranch( A:Proc ; \B:Var ; C:Branch )
-    => #if (\B in #LV(C))
-       #then {#subBind(A;\B;;#bind(C))} |=> #cont(C)
-       #else {#subBind(A;\B;;#bind(C))} |=> #sub(A;\B;#cont(C)) #fi
-  rule #subBranch( A:Proc ; \B:Var ; C:BranchPat )
-    => #if (\B in #LV(C))
-       #then {#subBind(A;\B;;#bind(C))} |=> #cont(C)
-       #else {#subBind(A;\B;;#bind(C))} |=> #sub(A;\B;#cont(C)) #fi
-  rule #subBranch( A:Proc ; B:Proc ; C:Branch    D:Branches   ) => #subBranch(A;B;C) #subBranch(A;B;D)
-  rule #subBranch( A:Proc ; B:Proc ; C:Branch    D:BranchPats ) => #subBranch(A;B;C) #subBranch(A;B;D)
-  rule #subBranch( A:Proc ; B:Proc ; C:BranchPat D:Branches   ) => #subBranch(A;B;C) #subBranch(A;B;D)
+// sub Proc for ProcVar in SelectPat
+  rule #sub( A:Proc ; B:ProcVar ; select { C:BranchPats } ) => select {#subBranch(A;B;C)}
+  // BranchPats
+  rule #subBranch( A:Proc ; B:ProcVar ; { C:LbindPat   } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C)} |=> D
+       #else {#subBind(A;B;;C)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Proc ; B:ProcVar ; { C:LbindPats  } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C)} |=> D
+       #else {#subBind(A;B;;C)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Proc ; B:ProcVar ; { C:LbindPat  if G:BExp } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C) if #sub(A;B;G)} |=> D
+       #else {#subBind(A;B;;C) if #sub(A;B;G)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Proc ; B:ProcVar ; { C:LbindPats if G:BExp } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C) if #sub(A;B;G)} |=> D
+       #else {#subBind(A;B;;C) if #sub(A;B;G)} |=> #sub(A;B;D) #fi
   rule #subBranch( A:Proc ; B:Proc ; C:BranchPat D:BranchPats ) => #subBranch(A;B;C) #subBranch(A;B;D)
 
 // VarRef -- TODO: test
@@ -753,10 +513,33 @@ module SUB
   rule #sub(  A:Proc      ; B:ProcVar ; = C:ProcVar ) => =C requires B =/=K C
   rule #sub( *A:Name      ; B:ProcVar ; = C:ProcVar ) => =C requires B =/=K C
 
-// Let expressions -- TODO: other Lets
-  rule #sub( A:Proc ;  B:ProcVar ; let C:ProcVar <- D:Proc in { E:Proc } )
-    => #if B ==K C #then let C <- #sub(A;B;D) in {E} #else let C <- #sub(A;B;D) in { #sub(A;B;E) } #fi
-  rule #sub( A:Proc ; *B:Var     ; let C:ProcVar <- D:Proc in { E:Proc } ) => let C <- #sub(A;*B;D) in { #sub(A;*B;E) }
+// Let expressions
+  // BasicLet
+  rule #sub( A:Proc ; B:ProcVar ; let C:LetBind in { D:Proc } ) => let #subLet(A;B;;C) in {#subLetProc(A;B;#LV(C);D)}
+//  rule #sub( A:Proc ; B:ProcPat ; let C:LetBind in { D:Proc } )
+//    => let #subLet(A;B;;C) in {#subLetProc(A;B;#LV(C);D)} requires notBool isProcVar(B)
+  // SeqLet
+  rule #sub( A:Proc ;  B:ProcVar ; let C:SeqLetBinds in { D:Proc } )
+    => let #subLet(A;B;;C) in { #subLetProc(A;B;#LV(C);D) }
+  // SimLet
+  rule #sub( A:Proc ;  B:ProcVar ; let C:SimLetBinds in { D:Proc } )
+    => let #subLet(A;B;;C) in { #subLetProc(A;B;#LV(C);D) }
+  // SeqSimLet
+  rule #sub( A:Proc ;  B:ProcVar ; let C:SeqSimLetBinds in { D:Proc } )
+    => let #subLet(A;B;;C) in { #subLetProc(A;B;#LV(C);D) }
+  // LetBinds
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:ProcVar    <- D:Proc           ) => C <- #sub(A;B;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:LetBind     & D:SimLetBinds    ) => #subLet(A;B;;C) & #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:LetBind     ; D:LetBind        ) => #subLet(A;B;;C) ; #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:LetBind     ; D:SeqLetBinds    ) => #subLet(A;B;;C) ; #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:SeqLetBinds > D:SimLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:SimLetBinds > D:SeqLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:SimLetBinds > D:SimLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:SeqLetBinds > D:SeqSimLetBinds ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:ProcPat ; B:ProcPat ;; C:SimLetBinds > D:SeqSimLetBinds ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  // LetProcs
+  rule #subLetProc( A:Proc ;  B:ProcVar ; C:Set ; D:Proc ) => #if (B in C) #then D #else #sub(A; B;D) #fi
+//  rule #subLetProc( _:Proc ;  B:ProcPat ; _:Set ; D:Proc ) => D requires notBool isProcVar(B)
 
 // sub Proc for Proc[Pat] in Method
   rule #sub( A:Proc ; B:Proc    ; C:Proc D:MethodAndArgs ) => #sub(A;B;C) #subMethod(A;B;D)
@@ -911,8 +694,8 @@ module SUB
 
 // IndexPVar -- for simultaneous substitution
   rule #sub( A:ProcPat ; pvar( I:Int ) ; pvar( I )   ) => A
-  rule #sub( _:ProcPat ; A:IndexPVar   ; B:ProcPat   ) => B requires A =/=K B
-  rule #sub( _:ProcPat ; A:ProcPat     ; B:IndexPVar ) => B requires A =/=K B
+  rule #sub( _:ProcPat ; A:IndexPVar   ; B:ProcVar   ) => B requires A =/=K B
+  rule #sub( _:ProcPat ; A:ProcVar     ; B:IndexPVar ) => B requires A =/=K B
 
 // sub Procs for Proc[Pat]s
 // only applies after successful #match so lengths are assumed equal
@@ -922,9 +705,8 @@ module SUB
   // sequential subs
 //  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
 //  rule #sub( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  // sub Procs for ProcPats in NamePats
+  // sub Procs for ProcPats in NamePats & ProcPats
   rule #sub( A:ProcPats ; B:ProcPats ; C:NamePat , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
-  // sub Procs for ProcPats in ProcPats
   rule #sub( A:ProcPats ; B:ProcPats ; C:ProcPat , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
 
 // sub Proc for Proc[Pat] in Map -- sub key & value
@@ -1052,43 +834,23 @@ module SUB
 
   // Binds
     // Linear
-  rule #subBind( A:Name ; B:Name ;; <-  C:Name    ) =>          <- #sub(A;B;C)
   rule #subBind( A:Name ; B:Name ;; <-  C:NamePat ) =>          <- #sub(A;B;C)
-  rule #subBind( A:Name ; B:Name ;; C:Lbind       ) => #bvar(C) <- #sub(A;B;#chan(C))
   rule #subBind( A:Name ; B:Name ;; C:LbindPat    ) => #bvar(C) <- #sub(A;B;#chan(C))
   rule #subBind( A:Name ; B:Name ;; C:Lbind    & D:Lbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:Lbind    & D:LbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:LbindPat & D:Lbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:LbindPat & D:LbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:Lbind    & D:Lbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:Lbind    & D:LbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:LbindPat & D:Lbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:LbindPat & D:LbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
     // Peek
-  rule #subBind( A:Name ; B:Name ;; <<- C:Name    ) =>          <<- #sub(A;B;C)
   rule #subBind( A:Name ; B:Name ;; <<- C:NamePat ) =>          <<- #sub(A;B;C)
-  rule #subBind( A:Name ; B:Name ;; C:Pbind       ) => #bvar(C) <<- #sub(A;B;#chan(C))
   rule #subBind( A:Name ; B:Name ;; C:PbindPat    ) => #bvar(C) <<- #sub(A;B;#chan(C))
   rule #subBind( A:Name ; B:Name ;; C:Pbind    & D:Pbind     ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
-// rule #subBind( A:Name ; B:Name ;; C:Pbind    & D:PbindPat  ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
-// rule #subBind( A:Name ; B:Name ;; C:PbindPat & D:Pbind     ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:PbindPat & D:PbindPat  ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:Pbind    & D:Pbinds    ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:Pbind    & D:PbindPats ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:PbindPat & D:Pbinds    ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:PbindPat & D:PbindPats ) =>  #subBind(A;B;;C) & #subBind(A;B;;D)
     // Repeated
-  rule #subBind( A:Name ; B:Name ;; <=  C:Name    ) =>          <= #sub(A;B;C)
   rule #subBind( A:Name ; B:Name ;; <=  C:NamePat ) =>          <= #sub(A;B;C)
-  rule #subBind( A:Name ; B:Name ;; C:Rbind       ) => #bvar(C) <= #sub(A;B;#chan(C))
   rule #subBind( A:Name ; B:Name ;; C:RbindPat    ) => #bvar(C) <= #sub(A;B;#chan(C))
-  rule #subBind( A:Name ; B:Name ;; C:Rbind    & D:Rbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:Rbind    & D:RbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:RbindPat & D:Rbind     ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:RbindPat & D:RbindPat  ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-  rule #subBind( A:Name ; B:Name ;; C:Rbind    & D:Rbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:Rbind    & D:RbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
-//  rule #subBind( A:Name ; B:Name ;; C:RbindPat & D:Rbinds    ) => #subBind(A;B;;C) & #subBind(A;B;;D)
   rule #subBind( A:Name ; B:Name ;; C:RbindPat & D:RbindPats ) => #subBind(A;B;;C) & #subBind(A;B;;D)
 
 // sub Name for Var in Contract[Pat]
@@ -1134,19 +896,9 @@ module SUB
   rule #sub( A:Name ; @\B:Var ; contract C:Name    ( ) = { E:ProcPat } ) => contract #sub(A;@\B;C)( )={#sub(A;@\B;E)}
   rule #sub( A:Name ; @\B:Var ; contract C:Name    ( ) = { E:Proc    } ) => contract #sub(A;@\B;C)( )={#sub(A;@\B;E)}
 
-// sub Name for Name[Pat] in Invocation[Pat]
-  rule #sub( A:Name ; B:Name    ; C:NamePat ( D:NamePats ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:Name    ; C:NamePat ( D:Names    ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:Name    ; C:NamePat (            ) ) => #sub(A;B;C)(             )
-  rule #sub( A:Name ; B:Name    ; C:Name    ( D:NamePats ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:Name    ; C:Name    ( D:Names    ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:Name    ; C:Name    (            ) ) => #sub(A;B;C)(             )
+// sub Name for NamePat in InvocationPat
   rule #sub( A:Name ; B:NamePat ; C:NamePat ( D:NamePats ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:NamePat ; C:NamePat ( D:Names    ) ) => #sub(A;B;C)( #sub(A;B;D) )
   rule #sub( A:Name ; B:NamePat ; C:NamePat (            ) ) => #sub(A;B;C)(             )
-  rule #sub( A:Name ; B:NamePat ; C:Name    ( D:NamePats ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:NamePat ; C:Name    ( D:Names    ) ) => #sub(A;B;C)( #sub(A;B;D) )
-  rule #sub( A:Name ; B:NamePat ; C:Name    (            ) ) => #sub(A;B;C)(             )
 
 // sub Name for Var in Match[Pat]
   rule #sub( A:Name ; B:Var ; match C:Proc    { D:MatchCases } ) => match #sub(A;B;C) {#subMatch(A;B;D)}
@@ -1167,18 +919,25 @@ module SUB
   rule #subMatch( A:Name ; B:Name ; C:MCasePat  D:MatchCases ) => #subMatch(A;B;C) #subMatch(A;B;D)
   rule #subMatch( A:Name ; B:Name ; C:MCasePat  D:MCasePats  ) => #subMatch(A;B;C) #subMatch(A;B;D)
 
-// sub Name for Var in Select[Pat]
-  rule #sub( A:Name ; B:Var ; select { C:Branches   } ) => select {#subBranch(A;B;C)}
+// sub Name for Var in SelectPat
   rule #sub( A:Name ; B:Var ; select { C:BranchPats } ) => select {#subBranch(A;B;C)}
-  // Branches
-  rule #subBranch( A:Name ; B:Var ; C:Branch )
+  // BranchPats
+  rule #subBranch( A:Name ; B:Var ; { C:LbindPat   } |=> D:ProcPat )
     => #if (B in #LV(C))
-       #then {#subBind(A;B;;#bind(C))} |=> #cont(C)
-       #else {#subBind(A;B;;#bind(C))} |=> #sub(A;B;#cont(C)) #fi
-  rule #subBranch( A:Name ; B:Var ; C:BranchPat )
+       #then {#subBind(A;B;;C)} |=> D
+       #else {#subBind(A;B;;C)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Name ; B:Var ; { C:LbindPats  } |=> D:ProcPat )
     => #if (B in #LV(C))
-       #then {#subBind(A;B;;#bind(C))} |=> #cont(C)
-       #else {#subBind(A;B;;#bind(C))} |=> #sub(A;B;#cont(C)) #fi
+       #then {#subBind(A;B;;C)} |=> D
+       #else {#subBind(A;B;;C)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Name ; B:Var ; { C:LbindPat  if G:BExp } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C) if #sub(A;B;G)} |=> D
+       #else {#subBind(A;B;;C) if #sub(A;B;G)} |=> #sub(A;B;D) #fi
+  rule #subBranch( A:Name ; B:Var ; { C:LbindPats if G:BExp } |=> D:ProcPat )
+    => #if (B in #LV(C))
+       #then {#subBind(A;B;;C) if #sub(A;B;G)} |=> D
+       #else {#subBind(A;B;;C) if #sub(A;B;G)} |=> #sub(A;B;D) #fi
   rule #subBranch( A:Name ; B:Name ; C:Branch    D:Branches   ) => #subBranch(A;B;C) #subBranch(A;B;D)
   rule #subBranch( A:Name ; B:Name ; C:Branch    D:BranchPats ) => #subBranch(A;B;C) #subBranch(A;B;D)
   rule #subBranch( A:Name ; B:Name ; C:BranchPat D:Branches   ) => #subBranch(A;B;C) #subBranch(A;B;D)
@@ -1192,10 +951,33 @@ module SUB
   rule #sub( @A:Proc      ; B:Var ; =*C:Var ) => =*C requires B =/=K C
   rule #sub(  A:Name      ; B:Var ; =*C:Var ) => =*C requires B =/=K C
 
-// Let expressions -- TODO: other LetExps
-  rule #sub( A:Name ;  B:Var     ; let C:ProcVar <- D:Proc in { E:Proc } ) => let C <- #sub(A;B;D) in { #sub(A;B;E) }
-  rule #sub( A:Name ; @B:ProcVar ; let C:ProcVar <- D:Proc in { E:Proc } )
-    => #if B ==K C #then let C <- #sub(A;@B;D) in {E} #else let C <- #sub(A;@B;D) in { #sub(A;@B;E) } #fi
+// Let expressions
+  // BasicLet
+  rule #sub( A:Name ; @B:ProcVar ; let C:LetBind in { D:Proc } ) => let #subLet(A;@B;;C) in {#subLetProc(A;@B;#LV(C);D)}
+//  rule #sub( A:Name ; @B:ProcPat ; let C:LetBind in { D:Proc } )
+//    => let #subLet(A;@B;;C) in {#subLetProc(A;@B;SetItem(C);D)} requires notBool isProcVar(B)
+  // SeqLet
+  rule #sub( A:Name ; @B:ProcVar ; let C:SeqLetBinds in { D:Proc } )
+    => let #subLet(A;@B;;C) in { #subLetProc(A;@B;#LV(C);D) }
+  // SimLet
+  rule #sub( A:Name ; @B:ProcVar ; let C:SimLetBinds in { D:Proc } )
+    => let #subLet(A;@B;;C) in { #subLetProc(A;@B;#LV(C);D) }
+  // SeqSimLet
+  rule #sub( A:Name ; @B:ProcVar ; let C:SeqSimLetBinds in { D:Proc } )
+    => let #subLet(A;@B;;C) in { #subLetProc(A;@B;#LV(C);D) }
+  // LetBinds
+  rule #subLet( A:NamePat ; B:NamePat ;; C:ProcVar    <- D:Proc           ) => C <- #sub(A;B;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:LetBind     & D:SimLetBinds    ) => #subLet(A;B;;C) & #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:LetBind     ; D:LetBind        ) => #subLet(A;B;;C) ; #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:LetBind     ; D:SeqLetBinds    ) => #subLet(A;B;;C) ; #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:SeqLetBinds > D:SimLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:SimLetBinds > D:SeqLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:SimLetBinds > D:SimLetBinds    ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:SeqLetBinds > D:SeqSimLetBinds ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  rule #subLet( A:NamePat ; B:NamePat ;; C:SimLetBinds > D:SeqSimLetBinds ) => #subLet(A;B;;C) > #subLet(A;B;;D)
+  // LetProcs
+  rule #subLetProc( A:Name ; @B:ProcVar ; C:Set ; D:Proc ) => #if (B in C) #then D #else #sub(A;@B;D) #fi
+//  rule #subLetProc( _:Name ; @B:ProcPat ; _:Set ; D:Proc ) => D requires notBool isProcVar(B)
 
 // sub Name for Name[Pat] in Method
   rule #sub( A:Name ; B:Name    ; C:Proc D:MethodAndArgs ) => #sub(A;B;C) #subMethod(A;B;D)
@@ -1233,13 +1015,6 @@ module SUB
   rule #sub( A:Name ; B:NamePat ; C:Name    !! (            ) ) => #sub(A;B;C) !! (             )
 
   // sub Name for Name[Pat] in Par[Pat]
-  rule #sub( A:Name ; B:Name    ; C:Proc    | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:Name    ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:Name    ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:Name    ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:NamePat ; C:Proc    | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:NamePat ; C:Proc    | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
-  rule #sub( A:Name ; B:NamePat ; C:ProcPat | D:Proc    ) => #sub(A;B;C) | #sub(A;B;D)
   rule #sub( A:Name ; B:NamePat ; C:ProcPat | D:ProcPat ) => #sub(A;B;C) | #sub(A;B;D)
 
   // sub Name for Name[Pat] in Collections
@@ -1387,43 +1162,21 @@ module SUB
   rule #sub( A:Name ; B:NamePat ;   if (C:BExp) D:Proc ) => if (#sub(A;B;C)) #sub(A;B;D)
   rule #sub( A:Name ; B:NamePat ; C:IfThen else D:Proc ) => #sub(A;B;C) else #sub(A;B;D)
 
+// IndexNVar -- for simultaneous substitution
+  rule #sub( A:NamePat ; nvar( I:Int ) ; nvar( I )   ) => A
+  rule #sub( _:NamePat ; A:IndexNVar   ; B:Var       ) => B requires A =/=K B
+  rule #sub( _:NamePat ; A:Var         ; B:IndexNVar ) => B requires A =/=K B
+
 // sub Names for Name[Pat]s
 // only applies after successful #match so lengths are assumed equal
-  // sub Names for Names in Name[Pat] & Proc[Pat]
-  rule #sub( A:Name , B:Names ; C:Name    , D:Names    ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:Names    ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:Names    ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:Names    ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  // sub Names for Name[Pat]s in Name[Pat] & Proc[Pat]
-  rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:Name    , D:NamePats ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:Names    ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name , B:Names ; C:NamePat , D:NamePats ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  // sub Names for Name[Pat]s in Name[Pat]s & Proc[Pat]s
-  rule #sub( A:Names ; B:Names    ; C:Name    , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:Name    , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:NamePat , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:NamePat , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:Name    , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:Name    , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:NamePat , D:Names    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:NamePat , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:Proc    , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:Proc    , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:ProcPat , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:Names    ; C:ProcPat , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:Proc    , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:Proc    , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:ProcPat , D:Procs    ) => #sub(A;B;C) , #sub(A;B;D)
-  rule #sub( A:Names ; B:NamePats ; C:ProcPat , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:NamePat ) => #sub(#mapVarIn(A,B);#sub(#mapVarSub(C,D);E))
+  rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:ProcPat ) => #sub(#mapVarIn(A,B);#sub(#mapVarSub(C,D);E))
+  // sequential sub
+//  rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
+//  rule #sub( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
+  // sub Names for NamePats in NamePats & ProcPats
+  rule #sub( A:NamePats ; B:NamePats ; C:NamePat , D:NamePats ) => #sub(A;B;C) , #sub(A;B;D)
+  rule #sub( A:NamePats ; B:NamePats ; C:ProcPat , D:ProcPats ) => #sub(A;B;C) , #sub(A;B;D)
 
 // sub Name for Name[Pat] in Map
   rule #sub( _:Name ; _:Name    ;  .Map ) => .Map
@@ -1436,106 +1189,19 @@ module SUB
 //-----------------------
 //--- Deeper Patterns ---
 //-----------------------
-// TODO: simplify
-// sub Send for Send[Pat] - sub channel for channel and message(s) for message(s)
-  rule #sub( A:Name    !  (            ) ; B:Name    !  (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:Name    !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:NamePat !  (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  (            ) ; B:NamePat !  (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:Name    !! (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:Name    !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:NamePat !! (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! (            ) ; B:NamePat !! (            ) ; E:Proc    ) => #sub(A;B;E)
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:Name    !  (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:Name    !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:NamePat !  (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
+// TODO: make simultaneous
+// sub SendPat for SendPat - sub channels and messages simultaneously
   rule #sub( A:NamePat !  (            ) ; B:NamePat !  (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:Name    !! (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:Name    !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:NamePat !! (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! (            ) ; B:NamePat !! (            ) ; E:ProcPat ) => #sub(A;B;E)
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:Name    !  (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:Name    !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:NamePat !  (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  (            ) ; B:NamePat !  (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:Name    !! (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:Name    !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:NamePat !! (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! (            ) ; B:NamePat !! (            ) ; E:Name    ) => #sub(A;B;E)
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:Name    !  (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:Name    !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:Name    !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  (            ) ; B:NamePat !  (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat !  (            ) ; B:NamePat !  (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !  ( B:Procs    ) ; C:NamePat !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat !  ( B:ProcPats ) ; C:NamePat !  ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:Name    !! (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:Name    !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:Name    !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! (            ) ; B:NamePat !! (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:Name    !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
+  rule #sub( A:NamePat !! (            ) ; B:NamePat !! (            ) ; E:ProcPat ) => #sub(A;B;E)
+  rule #sub( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat !! (            ) ; B:NamePat !! (            ) ; E:NamePat ) => #sub(A;B;E)
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:Procs    ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-  rule #sub( A:NamePat !! ( B:Procs    ) ; C:NamePat !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
   rule #sub( A:NamePat !! ( B:ProcPats ) ; C:NamePat !! ( D:ProcPats ) ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
 
 // TODO: simplify & more testing!!!
+// TODO: make simultaneous
 // sub Receive for Receive/RecPat
   // assumed to have passed #match -- matching binds, channels, and continuations
     // unguarded -- substitute channels, then continuations with listening variables hidden
@@ -1606,38 +1272,10 @@ module SUB
     => #sub(#sub(#mapSub(#LV(A)); #cont(A));#sub(#mapSub(#LV(B)); #cont(B));
        #sub(#sub(#mapSub(#LV(A));#guard(A));#sub(#mapSub(#LV(B));#guard(B));#sub(#chan(A);#chan(B);C)))
 
-// sub Par for Par[Pat] -- applied after normalization; Pars match
-  // order of substitution is irrelevant as all variables must be unique
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:Proc    ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:ProcPat ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:Proc    ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:ProcPat ; E:Name    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:Proc    ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:ProcPat ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:Proc    ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:ProcPat ; E:NamePat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:Proc    ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:ProcPat ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:Proc    ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:ProcPat ; E:Proc    ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:Proc    ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:Proc    | D:ProcPat ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isPar(C))
-  rule #sub( A:Proc | B:Proc ; C:ProcPat | D:Proc    ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
-       requires notBool (isPar(A) orBool isParPat(C))
+// sub Par for ParPat -- applied after normalization; Pars match
+  // TODO: make simultaneous
+  rule #sub( A:ParPat ; B:ProcPat | _:ProcPat ; C:NamePat ) => #sub(A;B;C)
+       requires notBool isParPat(B)
   rule #sub( A:Proc | B:Proc ; C:ProcPat | D:ProcPat ; E:ProcPat ) => #sub(B;D;#sub(A;C;E))
        requires notBool (isPar(A) orBool isParPat(C))
 
@@ -1692,13 +1330,9 @@ module SUB
 
   // sub Proc for Proc in SendPat -- sub in channel and continuation
   rule #sub( A:Proc ; B:Proc ; C:NamePat !  (            ) ) => #sub(A;B;C) !  (             )
-  rule #sub( A:Proc ; B:Proc ; C:NamePat !  ( D:Procs    ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:NamePat !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc ; C:Name    !  ( D:ProcPats ) ) => #sub(A;B;C) !  ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:NamePat !! (            ) ) => #sub(A;B;C) !! (             )
-  rule #sub( A:Proc ; B:Proc ; C:NamePat !! ( D:Procs    ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
   rule #sub( A:Proc ; B:Proc ; C:NamePat !! ( D:ProcPats ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
-  rule #sub( A:Proc ; B:Proc ; C:Name    !! ( D:ProcPats ) ) => #sub(A;B;C) !! ( #sub(A;B;D) )
 
 // sub Proc for SimplePat
   // this is only called after successful #match
@@ -2035,6 +1669,8 @@ module SUB
     // InterpMaps
   rule #sub( A:Name |-> B:Name C:Map ; D:InterpMaps ) => #sub(C;#sub(B;A;D))
   rule #sub( A:Proc |-> B:Proc C:Map ; D:InterpMaps ) => #sub(C;#sub(B;A;D))
+    // LetBinds
+//  rule #subLet( A:NamePat |-> B:NamePat C:Map ; D:LetBind ) => #subLet()
 
 // Several substitution targets
   rule #sub( A:Map ; B:Name    , C:Names    ) => #sub(A;B) , #sub(A;C)
@@ -2066,15 +1702,12 @@ module SUB
 //--- #subGuard ---
 //-----------------
 // length(P) == length(N)
-  rule #subGuard( A:Proc  ; B:Name     ; C:BExp ) => #sub(@A;B;C)
-  rule #subGuard( A:Proc  ; B:NamePat  ; C:BExp ) => #sub(@A;B;C)
-  rule #subGuard( A:Procs ; B:Names    ; C:BExp ) => #sub(#quotes(A);B;C)
-  rule #subGuard( A:Procs ; B:NamePats ; C:BExp ) => #sub(#quotes(A);B;C)
+  rule #subGuard( A:ProcPats ; B:NamePats ; C:BExp ) => #sub(#quotes(A);B;C)
 
 //------------------------
 //--- Simultaneous sub ---
 //------------------------
-// substitution variables
+// substitution variables -- TODO: decompose?
   rule #mapVarSub( A:NamePats ) => #mapVarSub(A;0)
   rule #mapVarSub( A:ProcPats ) => #mapVarSub(A;0)
   rule #mapVarSub( A:Var                  ; I:Int ) => A |-> nvar(I)
