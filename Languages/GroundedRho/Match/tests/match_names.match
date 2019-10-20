@@ -1,9 +1,9 @@
 // Names match
 
-    #match( @{ for( y <! x ){ 1 | 2 } } , @{ @2!("abc") } , @Nil ; a , @{b!(\c)} , d )
+    #match( @{ for( y <<- x ){ 1 | 2 } } , @{ @2!("abc") } , @Nil ; a , @{b!(\c)} , d )
 
 /*
-Output: 
+Output:
 
     true
 

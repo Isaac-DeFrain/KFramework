@@ -1,9 +1,9 @@
 // Names match
 
-    #match( @ true , x , @{@2!("abc")} ; @\b , c )
+    #matchif( @ true , x , @{@2!("abc")} ; @\b , c )
 
 /*
-Output: 
+Output:
 
     false
 

@@ -3,7 +3,7 @@
     #match( @ true , x , @{@2!("abc")}, @2 ; a , @\b , c , @2 )
 
 /*
-Output: 
+Output:
 
     true
 
