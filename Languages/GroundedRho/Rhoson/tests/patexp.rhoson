@@ -1,0 +1,16 @@
+// Pattern Exp Kind
+
+    #kind( @Bool!!( Int \/ String ) )
+
+/*
+Output:
+
+  { "send" :
+    { "repeat" :
+      { "chan" : { "quote" : { "pattern" : Bool } } ,
+        "msg"  : { "disjunction" : { 0 : { "pattern" : Int } , 1 : { "pattern" : String } } }
+      }
+    }
+  }
+
+*/
