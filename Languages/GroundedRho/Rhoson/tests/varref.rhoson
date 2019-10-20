@@ -1,0 +1,10 @@
+// VarRef Kind
+
+    #kind( =* a )
+
+/*
+Output:
+
+  { "varref" : NameVar }
+
+*/

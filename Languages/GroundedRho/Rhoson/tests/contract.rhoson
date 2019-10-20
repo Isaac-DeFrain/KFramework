@@ -1,0 +1,23 @@
+// Contract Kind
+
+    #kind( contract @{ *a | *b }( a,b,c,@{@Int!(Bool)} ) = { Nil } )
+
+/*
+Output:
+
+  { "contract" :
+    { "name" : { "quote" : { "par" : { 0 : { "eval" : { "var" : NameVar } } , 1 : { "eval" : { "var" : NameVar } } } } } ,
+      "args" :
+        { 0 : { "var" : NameVar } ,
+          1 : { "var" : NameVar } ,
+          2 : { "var" : NameVar } ,
+          3 : { "quote" :
+                { "send" : { "linear" :
+                  { "chan" : { "quote" : { "pattern" : Int } } ,
+                    "msg" : { "pattern" : Bool } } } } }
+        } ,
+        "body" : { "nil" : Nil }
+    }
+  }
+
+*/

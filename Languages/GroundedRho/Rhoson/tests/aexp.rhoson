@@ -1,0 +1,16 @@
+// AExp Kind
+
+    #kind( 2 + { \x % 3 } + { \a - \b } )
+
+/*
+Output:
+
+  { "sum" :
+    { 0 : { "simple" : Int } ,
+      1 : { "sum" :
+            { 0 : { "mod" : { "dividend" : { "var" : ProcVar } , "modulus" : { "simple" : Int } } } ,
+              1 : { "sub" : { "minuend" : { "var" : ProcVar } , "subtrahend" : { "var" : ProcVar } } } } }
+    }
+  }
+
+*/
