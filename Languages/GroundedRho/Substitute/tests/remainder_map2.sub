@@ -1,0 +1,10 @@
+// Map remainder pattern -- map sub
+
+    #sub( a |-> n(2) \x |-> x(3) ; { 1:*a ... \x } )
+
+/*
+Output:
+
+  { 1 : * n( 2 ) ... x( 3 ) }
+
+*/
