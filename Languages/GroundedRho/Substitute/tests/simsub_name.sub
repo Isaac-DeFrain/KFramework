@@ -1,0 +1,10 @@
+// Simultaneous substitutions
+
+    #sub( a,b ; b,a ; @[*b,*a]!(1,*a,3,*b,5) )
+
+/*
+Output:
+
+  { @ [ * a , * b ] } ! ( 1 , ( * b , 3 , * a , 5 ) )
+
+*/

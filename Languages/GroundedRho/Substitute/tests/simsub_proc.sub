@@ -1,0 +1,10 @@
+// Simultaneous substitutions
+
+    #sub( \a,\b ; \b,\a ; [\b,\a] )
+
+/*
+Output:
+
+  [ \ a , \ b ]
+
+*/
