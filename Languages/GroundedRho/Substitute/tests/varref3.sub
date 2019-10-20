@@ -1,0 +1,10 @@
+// Variable reference sub
+
+    #sub( x(3,0) ; \a ; =\b )
+
+/*
+Output:
+
+  = \ b
+
+*/

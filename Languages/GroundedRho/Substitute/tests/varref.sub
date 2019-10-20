@@ -1,0 +1,10 @@
+// Variable reference sub
+
+    #sub( n(0) ; x ; =*x )
+
+/*
+Output:
+
+  = * n( 0 )
+
+*/
