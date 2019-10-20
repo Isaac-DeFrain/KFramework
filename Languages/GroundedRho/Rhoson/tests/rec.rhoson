@@ -1,39 +1,18 @@
 // Receive Kind
 
-    #kind( for( a,b,c <- @1 ; d,e <- @2 ; f,g,h <- @3 ){ Nil } )
+    #kind( for( a,b,c <- @1 & d,e <- @2 & f,g,h <- @3 ){ *a | 1 | "a" } )
 
 /*
 Output:
-{ "receive" : { 
-    "multi" : { 
-      0 : { "chan" : { 
-              "quote" : { "int" : 1 } 
-            } , 
-            "listen" : { 
-              0 : { "namevar" : a } , 
-              1 : { "namevar" : b } , 
-              2 : { "namevar" : c } 
-            } 
-          } , 
-      1 : { "chan" : { 
-              "quote" : { "int" : 2 } 
-            } , 
-            "listen" : { 
-              0 : { "namevar" : d } , 
-              1 : { "namevar" : e } 
-            } 
-          } , 
-      2 : { "chan" : { 
-              "quote" : { "int" : 3 } 
-            } , 
-            "listen" : { 
-              0 : { "namevar" : f } , 
-              1 : { "namevar" : g } , 
-              2 : { "namevar" : h } 
-            } 
-          } 
-    } , 
-    "cont" : Nil 
-  } 
-}
+
+  { "receive" :
+    { "linear" : {
+        0 : { "chan" : { "quote" : { "int" : Int } } , "listen" : { 0 : { "var" : NameVar } , 1 : { "var" : NameVar } , 2 : { "var" : NameVar } } } ,
+        1 : { "chan" : { "quote" : { "int" : Int } } , "listen" : { 0 : { "var" : NameVar } , 1 : { "var" : NameVar } } } ,
+        2 : { "chan" : { "quote" : { "int" : Int } } , "listen" : { 0 : { "var" : NameVar } , 1 : { "var" : NameVar } , 2 : { "var" : NameVar } } } } ,
+      "cont" : { "par" : {
+                   0 : { "eval" : { "var" : NameVar } } ,
+                   1 : { "int" : Int } , 2 : { "string" : String } } }
+    }
+  }
 */

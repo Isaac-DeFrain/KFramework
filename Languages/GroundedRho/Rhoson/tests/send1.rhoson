@@ -5,14 +5,12 @@
 /*
 Output:
 
-{ "send" : { 
-    "persist" : { 
-      "chan" : { 
-        "namevar" : x 
-      } , 
-      "msg" : EmptyP 
-    } 
-  } 
-}
+  { "send" :
+    { "repeat" :
+      { "chan" : { "var" : NameVar } ,
+        "msg" : Empty
+      }
+    }
+  }
 
 */

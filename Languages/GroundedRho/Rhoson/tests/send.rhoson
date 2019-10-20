@@ -1,18 +1,18 @@
 // Send Kind
 
-    #kind( @3!(Nil , [1,2] , Set(5,2)) )
+    #kind( @3!(Nil , [1,Int] , Set(5,2)) )
 
 /*
 Output:
-{ "send" : { 
-    "linear" : { 
-      "chan" : { "quote" : { "int" : 3 } } , 
-      "msg" : { 
-        0 : { "nil" : Nil } , 
-        1 : { "list" : { 0 : { "int" : 1 } , 1 : { "int" : 2 } } } , 
-        2 : { "set" : SetItem ( { "int" : 2 } )  SetItem ( { "int" : 5 } ) }
-      } 
-    } 
-  } 
-}
+
+  { "send" :
+    { "linear" : {
+        "chan" : { "quote" : { "int" : Int } } ,
+        "msg" : {
+          0 : { "nil" : Nil } ,
+          1 : { "list" : { 0 : { "int" : Int } , 1 : { "pattern" : Int } } } ,
+          2 : { "set" : { 0 : { "int" : Int } , 1 : { "int" : Int } } } } }
+    }
+  }
+
 */
