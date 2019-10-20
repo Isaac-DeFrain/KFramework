@@ -1,0 +1,10 @@
+// AExp name pattern sub
+
+    #sub( @[1,3] ; @[\a /\ Int, *b /\ Int] ; 2 * { \a + *b } )
+
+/*
+Output:
+
+  2 * ( 1 + 3 )
+
+*/
