@@ -96,6 +96,7 @@ module COMMPRED
 //----------------
 //--- Bind Set ---
 //----------------
+// TODO: simplify with #chan & #bvar
   rule #BindSet( A:NamePats <- B:Name ) => SetItem(B;A;;1)
   rule #BindSet( A:NamePat  <- B:Name ) => SetItem(B;A;;1)
   rule #BindSet( A:Names    <- B:Name ) => SetItem(B;A;;1)
