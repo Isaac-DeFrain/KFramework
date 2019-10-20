@@ -1,0 +1,10 @@
+// Sequential Simultaneous Let Expression
+
+    #sub( 1,2,3 ; \a,\b,\f ; let \a <- @0!(\a,\b) ; \b <- ["a","b",\a] & \c <- {\a:\b} ; \d <- ["a","b",\b] & \e <- {\b:\f} in { [\a,"2","3","4"] | \b | \c | \d | \e | \f } )
+
+/*
+Output:
+
+  let \ a <- { @ 0 } ! ( 1 , 2 ) ; \ b <- [ "a" , "b" , 1 ] & \ c <- { 1 : 2 } ; \ d <- [ "a" , "b" , 2 ] & ( \ e <- { 2 : 3 } ) in { [ \ a , "2" , "3" , "4" ] | { \ b | \ c | \ d | \ e | 3 } }
+
+*/

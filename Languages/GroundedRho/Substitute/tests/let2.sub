@@ -1,0 +1,10 @@
+// Simultaneous Let Expression
+
+    #sub( 1,2 ; \a,\b ; let \a <- @0!(\a,\b) & \b <- ["a","b",\a] in { [\a,2,3,4] | \b } )
+
+/*
+Output:
+
+  let \ a <- { @ 0 } ! ( 1 , 2 ) & ( \ b <- [ "a" , "b" , 1 ] ) in { [ \ a , 2 , 3 , 4 ] | \ b }
+
+*/

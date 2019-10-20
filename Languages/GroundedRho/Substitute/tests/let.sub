@@ -1,0 +1,10 @@
+// Basic Let Expression
+
+    #sub( 1 ; \a ; let \a <- @0!(\a) in { [\a,2,3,4] | \a } )
+
+/*
+Output:
+
+  let ( \ a <- { @ 0 } ! ( 1 ) ) in { [ \ a , 2 , 3 , 4 ] | \ a }
+
+*/
