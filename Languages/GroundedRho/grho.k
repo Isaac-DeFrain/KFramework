@@ -869,16 +869,16 @@ module GRHO-SYNTAX
 
 // For DeBruijn indices & alpha/structural equivalence
   syntax              Var ::= BoundName
-  syntax        BoundName ::=  "n(" Int ")" | "n(" Int "," Int ")"
+  syntax        BoundName ::=  "N(" Int ")" | "N(" Int "," Int ")"
 
   syntax          ProcVar ::= BoundProc
-  syntax        BoundProc ::=  "x(" Int ")" |  "x(" Int "," Int ")"
+  syntax        BoundProc ::=  "X(" Int ")" | "X(" Int "," Int ")"
 
 // For hiding variables in substitutions
   syntax              Sub ::= "sub"
   syntax          ProcVar ::= Sub
 
-// For simultaneous substitutions
+// For simultaneous substitutions -- not needed if indices are assigned first
   syntax        Var ::= IndexNVar
   syntax  IndexNVar ::= "nvar(" Int ")"
   syntax    ProcVar ::= IndexPVar
@@ -1037,14 +1037,14 @@ module GRHO
 //-------------------------------
   rule (<task> <k> A:Send </k> </task> => .Bag) // dissolve send in <activity/> and spawn <send/>
        // (.Bag => <send> A </send>)
-        <sends> S:Set => #add(#sendSet(A);S) </sends>
+        <sends> S:Set => #addNameSpace(#sendSet(A);S) </sends>
 
 //----------------------------------
 //--- Receive Operator Semantics ---
 //----------------------------------
   rule (<task> <k> A:Receive </k> </task> => .Bag) // dissolve Rec in <activity/> and spawn <rec/>
        // (.Bag => <receive> A </receive>)
-        <receives> S:Set => #add(#recSet(A);S) </receives>
+        <receives> S:Set => #addRec(#recSet(A);S) </receives>
 
 //---------------------------------
 //--- Select operator semantics ---
