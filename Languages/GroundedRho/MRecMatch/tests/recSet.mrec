@@ -1,0 +1,12 @@
+// recSet
+
+    #recSet( for( x,y,\_,@{\z /\ Int} <<- @unforgeable(0) & \_ <<- @0 if *x == *y ){ [*x,*y,\z + 1] } )
+
+/*
+Output:
+
+  SetItem ( 1 ; SetItem ( 1 ; @ 0 ; \_ )
+                SetItem ( 1 ; @ unforgeable( 0 ) ; x , y , \_ , @ \ z /\ Int ) ;
+            [ * x , * y , \ z + 1 ] ; * x == * y ; 2 )
+
+*/

@@ -1,0 +1,12 @@
+// enumBindSet
+
+    #enumBindSet( for( @0 <- a & @0 <- a & \_ <- b & \_ <- b & \_ <- c ){ Nil } )
+
+/*
+Output:
+
+  SetItem ( 1 ; c ; \_ )
+  SetItem ( 2 ; a ; @ 0 )
+  SetItem ( 2 ; b ; \_ )
+
+*/

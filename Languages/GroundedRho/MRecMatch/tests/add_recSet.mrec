@@ -1,0 +1,12 @@
+// add
+
+    #add( #recSet( for( a,b <- @unforgeable(0) if *a != *b ){ a!(*b) } ) ;
+          #add( #recSet( for( a,b <- @unforgeable(0) if *a != *b ){ a!(*b) } ) ; #recSet( for( a,b,c <= @0 ){ Set(*a,*b,*c) } ) ) )
+
+/*
+Output:
+
+  SetItem ( 1 ; SetItem ( 1 ; @ 0 ; a , b , c ) ; Set( * a , * b , * c ) ; true ; 1 )
+  SetItem ( 2 ; SetItem ( 1 ; @ unforgeable( 0 ) ; a , b ) ; a ! ( * b ) ; * a != * b ; 0 )
+
+*/
