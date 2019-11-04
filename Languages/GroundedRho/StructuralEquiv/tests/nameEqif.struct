@@ -1,0 +1,10 @@
+// Name equivalence
+
+  #nameEqif( @ String , @ [ Set( Int , Int ) , ( Int ,) ] ; @ String , @ [ Set( Int , Int ) , ( Int ,) ] )
+
+/*
+Output:
+
+  true
+
+*/
