@@ -1,0 +1,46 @@
+// Get Method
+
+    new key,map in {
+      key!("a") | map!({1:2,2:3,"a":"b"}) | for( @\x <- key ){ for( @{\y /\ Map} <- map ){ \y.get(\x) } }
+    }
+
+/*
+Output:
+<T>
+  <activity>
+    <task>
+      <k>
+        "b"
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <input>
+      <receives>
+        .ReceiveCellBag
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    2
+  </nextLoc>
+  <original>
+    new key , map in { key ! ( "a" ) | map ! ( { 1 : 2 , 2 : 3 , "a" : "b" } ) | for ( @ \ x <- key ) { for ( @ \ y /\ Map <- map ) { \ y . get ( \ x ) } } }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new n( 0 ) , n( 1 ) in { for ( @ x( 2 ) <- n( 0 ) ) { for ( @ x( 3 ) /\ Map <- n( 1 ) ) { x( 3 ) . get ( x( 2 ) ) } } | n( 1 ) ! ( { 1 : 2 , 2 : 3 , "a" : "b" } ) | n( 0 ) ! ( "a" ) }
+  </OGdeBruijn>
+</T>
+*/

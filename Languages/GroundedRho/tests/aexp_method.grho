@@ -1,0 +1,5 @@
+// Method in AExp
+
+    new a in {
+      a!({1:2}.size()) | for( @\x <- a ){ \x + 2 }
+    }

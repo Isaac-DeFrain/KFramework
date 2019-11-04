@@ -1,41 +1,46 @@
 // getOrElse method
 
-  { 2:*a , *a:"yup" }.get( *a )
+    new a in {
+      { 2:*a , *a:"yup" }.get( *a )
+    }
 
 /*
 Output:
 <T>
-  <threads>
-    <thread>
+  <activity>
+    <task>
       <k>
         "yup"
       </k>
-      <env>
-        .Map
-      </env>
-    </thread>
-  </threads>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       .SendCellBag
     </sends>
-    <receives>
-      .RecCellBag
-    </receives>
+    <input>
+      <receives>
+        .ReceiveCellBag
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-    <update>
-      .Map
-    </update>
-  </reaction>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new a in { { 2 : * a , * a : "yup" } . get ( * a ) }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new n( 0 ) in { { 2 : * n( 0 ) , * n( 0 ) : "yup" } . get ( * n( 0 ) ) }
+  </OGdeBruijn>
 </T>
 */

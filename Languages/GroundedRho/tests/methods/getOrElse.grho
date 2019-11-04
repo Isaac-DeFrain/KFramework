@@ -1,41 +1,44 @@
 // getOrElse method
 
-  { *a:2 , 3:2 , 2:"yes" , 6:Nil }.getOrElse( 2 , "no" )
+  { *@0:2 , 3:2 , 2:"yes" , 6:Nil }.getOrElse( 2 , "no" )
 
 /*
 Output:
 <T>
-  <threads>
-    <thread>
+  <activity>
+    <task>
       <k>
         "yes"
       </k>
-      <env>
-        .Map
-      </env>
-    </thread>
-  </threads>
+    </task>
+  </activity>
   <tuplespace>
     <sends>
       .SendCellBag
     </sends>
-    <receives>
-      .RecCellBag
-    </receives>
+    <input>
+      <receives>
+        .ReceiveCellBag
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
-  <reaction>
-    <who>
-      .
-    </who>
-    <what>
-      .
-    </what>
-    <where>
-      .
-    </where>
-    <update>
-      .Map
-    </update>
-  </reaction>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    { 0 : 2 , 3 : 2 , 2 : "yes" , 6 : Nil } . getOrElse ( 2 , "no" )
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    { 0 : 2 , 2 : "yes" , 3 : 2 , 6 : Nil } . getOrElse ( 2 , "no" )
+  </OGdeBruijn>
 </T>
 */

@@ -1,8 +1,46 @@
-// union - map
+// Keys method
 
-  { *a:1 , *b:2 , 1:1 , 2:Nil , *c:2 } .keys( )
+      { *a:1 , *b:2 , 1:1 , 2:Nil , *c:2 } .keys( )
 
 /*
 Output:
-
+<T>
+  <activity>
+    <task>
+      <k>
+        Set( 1 , 2 , * a , * b , * c )
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <input>
+      <receives>
+        .ReceiveCellBag
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    { * a : 1 , * b : 2 , 1 : 1 , 2 : Nil , * c : 2 } . keys ( )
+  </original>
+  <OGfreevar>
+    SetItem ( a : name )
+    SetItem ( b : name )
+    SetItem ( c : name )
+  </OGfreevar>
+  <OGdeBruijn>
+    { 1 : 1 , 2 : Nil , * #deBruijn( 0 , 0 ; a ; .Map ) : 1 , * #deBruijn( 0 , 0 ; b ; .Map ) : 2 , * #deBruijn( 0 , 0 ; c ; .Map ) : 2 } . keys ( )
+  </OGdeBruijn>
+</T>
 */

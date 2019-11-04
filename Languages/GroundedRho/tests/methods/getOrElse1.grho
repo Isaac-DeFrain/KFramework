@@ -1,8 +1,44 @@
 // getOrElse method
 
-  {  }.getOrElse( *a , "no" )
+  {  }.getOrElse( "a" , "no" )
 
 /*
 Output:
-
+<T>
+  <activity>
+    <task>
+      <k>
+        "no"
+      </k>
+    </task>
+  </activity>
+  <tuplespace>
+    <sends>
+      .SendCellBag
+    </sends>
+    <input>
+      <receives>
+        .ReceiveCellBag
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
+  <nextLoc>
+    0
+  </nextLoc>
+  <original>
+    { } . getOrElse ( "a" , "no" )
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    { } . getOrElse ( "a" , "no" )
+  </OGdeBruijn>
+</T>
 */
