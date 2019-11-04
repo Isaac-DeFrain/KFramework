@@ -86,8 +86,8 @@ module METHOD
 
 // Unimplemented
 // append (list, map, set, string, GByteArray): RhoList/RhoMap/RhoSet/String/...
-  rule A:RhoList .append( B:RhoList ) => #concat(A;B)
-  rule A:RhoList .append( B:RhoList , C:Procs ) => #concat(A;B).append(C)
+//  rule A:RhoList .append( B:RhoList ) => #concat(A;B)
+//  rule A:RhoList .append( B:RhoList , C:Procs ) => #concat(A;B).append(C)
 // TODO: map, set, string
 
 // values: RhoMap ---> RhoSet
