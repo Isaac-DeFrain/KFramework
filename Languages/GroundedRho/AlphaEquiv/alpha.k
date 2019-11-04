@@ -14,7 +14,8 @@ module ALPHA-SYNTAX
                         | "#deBruijn(" Int "," Int ";" Proc  ";" Map ")" [function, poly(0,3)]
   syntax        Procs ::= "#deBruijn(" Int "," Int ";" Procs ";" Map ")" [function]
   // ProcPats
-  syntax      ProcPat ::= "#deBruijn(" Int "," Int ";" ProcPat ";" Map  ")" [function]
+  syntax      ProcPat ::= "#deBruijn(" ProcPat ")"                          [function]
+                        | "#deBruijn(" Int "," Int ";" ProcPat ";" Map  ")" [function]
   syntax     ProcPats ::= "#deBruijn(" Int "," Int ";" ProcPats ";" Map ")" [function]
   // Names
   syntax         Name ::= "#deBruijn(" Int "," Int ";" Name  ";" Map ")" [function]
@@ -112,7 +113,8 @@ module ALPHA
                    | RhoKVPair | RhoKVPairs | InterpMaps | Map
 
 // sugar for top level #deBruijn function call
-  rule #deBruijn( A:Proc ) => #deBruijn(0,0;A;.Map)
+  rule #deBruijn( A:Proc    ) => #deBruijn(0,0;A;.Map)
+  rule #deBruijn( A:ProcPat ) => #deBruijn(0,0;A;.Map)
   // #deBruijn(L:Int,I:Int;A:Proc;M:Map) // #FV(A) <=Set keys(M) if we are applying #deBruijn
 
 // completely trivial indexing cases -- no variables in expression
@@ -545,13 +547,17 @@ module ALPHA
   rule #deBruijn( L:Int , I:Int ; [ A:Procs    ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ]
   rule #deBruijn( L:Int , I:Int ; [ A:ProcPats ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ]
   rule #deBruijn( L:Int , I:Int ; [ A:Procs    ... B:ProcVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
+  rule #deBruijn( L:Int , I:Int ; [ A:Procs    ... B:EvalVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
   rule #deBruijn( L:Int , I:Int ; [ A:ProcPats ... B:ProcVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
+  rule #deBruijn( L:Int , I:Int ; [ A:ProcPats ... B:EvalVar ] ; M:Map ) => [ #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) ]
   // RhoMap/MapPat
   rule #deBruijn( _:Int , _:Int ; { } ; _:Map ) => { }
   rule #deBruijn( L:Int , I:Int ; { A:RhoKVPairs } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) }
   rule #deBruijn( L:Int , I:Int ; { A:RhoKVPats  } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) }
   rule #deBruijn( L:Int , I:Int ; { A:RhoKVPairs ... B:ProcVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPairs ... B:EvalVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
   rule #deBruijn( L:Int , I:Int ; { A:RhoKVPats  ... B:ProcVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
+  rule #deBruijn( L:Int , I:Int ; { A:RhoKVPats  ... B:EvalVar } ; M:Map ) => { #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) }
     // KVPairs/KVPats
       // single KVPair/KVPat
   rule #deBruijn( L:Int , I:Int ; A:Proc    : B:Proc    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) : #deBruijn(L,I;#sub(M;B);M)
@@ -568,7 +574,9 @@ module ALPHA
   rule #deBruijn( L:Int , I:Int ; Set( A:Procs    ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) )
   rule #deBruijn( L:Int , I:Int ; Set( A:ProcPats ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) )
   rule #deBruijn( L:Int , I:Int ; Set( A:Procs    ... B:ProcVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
+  rule #deBruijn( L:Int , I:Int ; Set( A:Procs    ... B:EvalVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
   rule #deBruijn( L:Int , I:Int ; Set( A:ProcPats ... B:ProcVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
+  rule #deBruijn( L:Int , I:Int ; Set( A:ProcPats ... B:EvalVar ) ; M:Map ) => Set( #deBruijn(L,I;#sub(M;A);M) ... #deBruijn(L,I;#sub(M;B);.Map) )
   // RhoTuple/TuplePat
   rule #deBruijn( L:Int , I:Int ; ( A:Procs    ,) ; M:Map ) => ( #deBruijn(L,I;#sub(M;A);M) ,)
   rule #deBruijn( L:Int , I:Int ; ( A:ProcPats ,) ; M:Map ) => ( #deBruijn(L,I;#sub(M;A);M) ,)
@@ -671,6 +679,12 @@ module ALPHA
 // Conditional
   rule #deBruijn( L:Int , I:Int ; if (A:BExp)   B:Proc ; M:Map ) => if (#deBruijn(L,I;#sub(M;A);M)) #deBruijn(L,I;#sub(M;B);M)
   rule #deBruijn( L:Int , I:Int ; A:IfThen else B:Proc ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) else #deBruijn(L,I;#sub(M;B);M)
+  // rule #deBruijn( L:Int , I:Int ; if (A:BExp)      B:ProcPat ; M:Map ) => if (#deBruijn(L,I;#sub(M;A);M)) #deBruijn(L,I;#sub(M;B);M)
+  // rule #deBruijn( L:Int , I:Int ; A:IfThenPat else B:ProcPat ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) else #deBruijn(L,I;#sub(M;B);M)
+
+// Method[Pat]
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat . B:Method ( ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M).B( )
+  rule #deBruijn( L:Int , I:Int ; A:ProcPat . B:Method ( C:ProcPats ) ; M:Map ) => #deBruijn(L,I;#sub(M;A);M).B( #deBruijn(L,I;#sub(M;C);M) )
 
   // Name[Pat]s
   rule #deBruijn( L:Int , I:Int ; A:Name    , B:Names    ; M:Map ) => #deBruijn(L,I;#sub(M;A);M) , #deBruijn(L,I;#sub(M;B);M)
@@ -811,7 +825,7 @@ module ALPHA
   rule #mapify( L:Int , I:Int ; A:Proc !=  B:Proc ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
   rule #mapify( L:Int , I:Int ; A:ProcPat matches B:ProcPat ) => #mapify(L,I;A) #mapify(L,I +Int size(#FV(A));B)
 
-// TODO: Bundle, Conditional,Contract, Invocation, VarRef, Method
+// TODO: Bundle, Conditional, Contract, Invocation, VarRef, Method
 
 // Patterns
   rule #mapify( _:Int , _:Int ; \_ ) => .Map
