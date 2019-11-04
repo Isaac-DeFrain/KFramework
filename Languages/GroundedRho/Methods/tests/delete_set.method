@@ -1,0 +1,10 @@
+// Delete set method
+
+    Set(1,2,3,4).delete(2)
+
+/*
+Output:
+
+  Set( 1 , 3 , 4 )
+
+*/

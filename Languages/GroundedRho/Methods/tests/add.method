@@ -1,0 +1,10 @@
+// Add method
+
+    Set(1,2,3,"a","b").add(true)
+
+/*
+Output:
+
+  Set( true , 1 , 2 , 3 , "a" , "b" )
+
+*/

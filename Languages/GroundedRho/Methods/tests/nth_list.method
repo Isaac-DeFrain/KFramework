@@ -1,0 +1,10 @@
+// RhoList nth method
+
+    ["","a","b","c","d"].nth(2)
+
+/*
+Output:
+
+  "b"
+
+*/
