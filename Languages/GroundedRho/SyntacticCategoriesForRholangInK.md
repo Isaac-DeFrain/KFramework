@@ -2,8 +2,7 @@
 
 ## Names
 ```
-       Name ::= Bundle        // Bundled process
-              | Var           // Name variable
+       Name ::= Var           // Name variable
               > Quote         // Quoted process
               > VarDec        // Variable declaration -- Var or Var(Uri)
               > TypedName     // Typed name variable
@@ -40,7 +39,14 @@
               | Invocation    // Contract invocation
               | Send          // Send/Produce
               > Conditional   // If...then(...else)
+              > Bundle        // Bundled processes
               > Par           // Parallel composition of processes
+
+  // Meta-level processes
+       Proc ::= EmptyProc
+       PVar ::= BoundProc
+  BoundProc ::= "x(" Int ")"
+              | "x(" Int "," Int ")"
 ```
 
 ## Process Patterns
