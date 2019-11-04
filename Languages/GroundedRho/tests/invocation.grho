@@ -1,0 +1,48 @@
+// Contract invocation
+
+    new square in {
+      contract square(@\x) = { \x * \x }
+      | @"contractCh"!(*square)
+      | @"valueCh"!(2)
+    }
+    |
+    for( x <- @"contractCh" & y <- @"valueCh" ){ x(y) }
+
+/*
+Output:
+<T>
+  <activity>
+    .TaskCellBag
+  </activity>
+  <tuplespace>
+    <sends>
+      SetItem ( @ "contractCh" ; SetItem ( @ Unforgeable ; SetItem ( 1 ; @ unforgeable( 0 ) ; 0 ) ) )
+      SetItem ( @ "valueCh" ; SetItem ( @ Int ; SetItem ( 1 ; @ 2 ; 0 ) ) )
+    </sends>
+    <input>
+      <receives>
+        SetItem ( 1 ; SetItem ( 1 ; @ "contractCh" ; x ) SetItem ( 1 ; @ "valueCh" ; y ) ; x ( y ) ; true ; 0 )
+        SetItem ( 1 ; SetItem ( 1 ; @ unforgeable( 0 ) ; @ \ x ) ; \ x * \ x ; true ; 1 )
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
+  </tuplespace>
+  <contracts>
+    @ unforgeable( 0 ) ( @ \ x ) |-> \ x * \ x
+  </contracts>
+  <nextLoc>
+    1
+  </nextLoc>
+  <original>
+    new square in { contract square ( @ \ x ) = { \ x * \ x } | @ "contractCh" ! ( * square ) | @ "valueCh" ! ( 2 ) } | for ( x <- @ "contractCh" & y <- @ "valueCh" ) { x ( y ) }
+  </original>
+  <OGfreevar>
+    .Set
+  </OGfreevar>
+  <OGdeBruijn>
+    new N( 0 ) in { @ "contractCh" ! ( * N( 0 ) ) | @ "valueCh" ! ( 2 ) | contract N( 0 ) ( @ X( 1 ) ) = { X( 1 ) * X( 1 ) } } | for ( @ X( 0 ) <- @ "contractCh" & @ X( 1 ) <- @ "valueCh" ) { { @ X( 0 ) } ( @ X( 1 ) ) }
+  </OGdeBruijn>
+</T>
+*/
