@@ -126,9 +126,9 @@ module ALPHA
 // New
   rule #deBruijn( L:Int , I:Int ; new A:VarDecs in { B:Proc } ; M:Map )
     => new #dbNew(L,I;#indecs(A)) in { #deBruijn(L,I +Int size(#DV(A));#sub(updateMap(M,#mapNew(L,I;#indecs(A)));B);updateMap(M,#mapNew(L,I;#indecs(A)))) }
-  rule  #dbNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then n(I) #else n(L,I) #fi
+  rule  #dbNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then N(I) #else N(L,I) #fi
   rule  #dbNew( L:Int , I:Int ; A:VarDec , B:VarDecs ) => #dbNew(L,I;A) , #dbNew(L,I +Int 1;B)
-  rule #mapNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then #var(A) |-> n(I) #else #var(A) |-> n(L,I) #fi
+  rule #mapNew( L:Int , I:Int ; A:VarDec ) => #if L ==Int 0 #then #var(A) |-> N(I) #else #var(A) |-> N(L,I) #fi
   rule #mapNew( L:Int , I:Int ; A:VarDec , B:VarDecs ) => #mapNew(L,I;A) #mapNew(L,I +Int 1;B)
 
 // Ground & Bound Terms
@@ -728,7 +728,7 @@ module ALPHA
 // NamePat
   rule #mapify( _:Int , _:Int ;   @sub      ) => .Map
   rule #mapify( _:Int , _:Int ; _:BoundName ) => .Map
-  rule #mapify( L:Int , I:Int ;  A:Var      ) => #if L ==Int 0 #then A |-> @x(I) #else A |-> @x(L,I) #fi
+  rule #mapify( L:Int , I:Int ;  A:Var      ) => #if L ==Int 0 #then A |-> @X(I) #else A |-> @X(L,I) #fi
        requires notBool isBoundName(A)
   rule #mapify( L:Int , I:Int ; @A:ProcPat  ) => #mapify(L,I;A)
   // NamePats
@@ -738,7 +738,7 @@ module ALPHA
   rule #mapify( _:Int , _:Int ;    sub       ) => .Map
   rule #mapify( _:Int , _:Int ;  _:Ground    ) => .Map
   rule #mapify( _:Int , _:Int ;  _:BoundProc ) => .Map
-  rule #mapify( L:Int , I:Int ;  A:ProcVar   ) => #if L==Int 0 #then A |-> x(I) #else A |-> x(L,I) #fi
+  rule #mapify( L:Int , I:Int ;  A:ProcVar   ) => #if L==Int 0 #then A |-> X(I) #else A |-> X(L,I) #fi
        requires notBool isBoundProc(A)
   rule #mapify( L:Int , I:Int ; *A:NamePat   ) => #mapify(L,I;A)
   // ProcPats
