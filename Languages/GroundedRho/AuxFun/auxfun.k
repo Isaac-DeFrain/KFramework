@@ -122,12 +122,6 @@ module AUXFUN-SYNTAX
   syntax   RbindPat ::= "#bind(" GBindPat  ")" [function]
   syntax  RbindPats ::= "#bind(" GBindPats ")" [function]
     // receive listening patterns
-  syntax       Name ::= "#bvar(" Receive ")" [function]
-                      | "#bvar(" RecPat  ")" [function]
-  syntax      Names ::= "#bvar(" Receive ")" [function]
-                      | "#bvar(" RecPat  ")" [function]
-  syntax    NamePat ::= "#bvar(" Receive ")" [function]
-                      | "#bvar(" RecPat  ")" [function]
   syntax   NamePats ::= "#bvar(" Receive ")" [function]
                       | "#bvar(" RecPat  ")" [function]
     // receive channel function
@@ -232,14 +226,6 @@ module AUXFUN-SYNTAX
 
   // AnyBind[Pat]s
     // bind pattern function
-  syntax       Name ::= "#bvar(" AnyBind     ")" [function]
-                      | "#bvar(" AnyBindPat  ")" [function]
-  syntax      Names ::= "#bvar(" AnyBind     ")" [function]
-                      | "#bvar(" AnyBinds    ")" [function]
-                      | "#bvar(" AnyBindPat  ")" [function]
-                      | "#bvar(" AnyBindPats ")" [function]
-  syntax    NamePat ::= "#bvar(" AnyBind     ")" [function]
-                      | "#bvar(" AnyBindPat  ")" [function]
   syntax   NamePats ::= "#bvar(" AnyBind     ")" [function]
                       | "#bvar(" AnyBinds    ")" [function]
                       | "#bvar(" AnyBindPat  ")" [function]
@@ -268,6 +254,7 @@ module AUXFUN-SYNTAX
 
   // Send[Pat]
     // send channel function
+  syntax       Name ::=   "#chan(" Send    ")" [function]
   syntax    NamePat ::=   "#chan(" SendPat ")" [function]
     // send message function
   syntax   ProcPats ::=    "#msg(" SendPat ")" [function]
@@ -399,8 +386,8 @@ module AUXFUN-SYNTAX
   syntax     RhoSet ::=  "#keys(" RhoMap ")"            [function]
                       | "#union(" RhoSet ";" RhoSet ")" [function]
 
-  syntax    RhoList ::=    "#slice(" RhoList "," Int "," Int ")" [function]
-                      | "#truncate(" RhoList "," Int ")"         [function]
+  syntax    RhoList ::= "#slice(" Procs ";" Int ";" Int ";" Int ";"       ")" [function]
+                      | "#slice(" Procs ";" Int ";" Int ";" Int ";" Procs ")" [function]
 
 // Substitution
   syntax        Map ::= "#mapSub(" Set ")" [function] // for hiding bound variables
@@ -493,6 +480,9 @@ module AUXFUN-SYNTAX
   syntax        Int ::= "#eval(" IntExp        ")" [function]
   syntax    RhoList ::= "#eval(" ConcatRhoList ")" [function]
   syntax     String ::= "#eval(" StringOnlyExp ")" [function]
+  // syntax       Name ::= "#eval(" Name  ")" [function]
+  // syntax       Proc ::= "#eval(" Proc  ")" [function]
+  // syntax      Procs ::= "#eval(" Procs ")" [function]
 
 // Explicit sort chechking functions
   syntax       Bool ::= "#isBranches(" BranchPats ")" [function]
@@ -981,25 +971,16 @@ module AUXFUN
 
   // RhoKVPairs
   rule #length( EmptyP : EmptyP ) => 0
-  rule #length( _:RhoKVPair     ) => 1 [owise]
-  rule #length( _:RhoKVPat      ) => 1
-  rule #length( _:RhoKVPair , B:RhoKVPairs ) => 1 +Int #length(B)
-  rule #length( _:RhoKVPair , B:RhoKVPats  ) => 1 +Int #length(B)
-  rule #length( _:RhoKVPat  , B:RhoKVPairs ) => 1 +Int #length(B)
+  rule #length( _:RhoKVPat      ) => 1 [owise]
   rule #length( _:RhoKVPat  , B:RhoKVPats  ) => 1 +Int #length(B)
 
   // RhoTuple
-  rule #length ( P:Procs    ,) => #length(P)
   rule #length ( P:ProcPats ,) => #length(P)
 
 // Name[Pat]s
   rule #length(   EmptyN  ) => 0
   rule #length(  @EmptyP  ) => 0
-  rule #length( _:Name    ) => 1 [owise]
-  rule #length( _:NamePat ) => 1
-  rule #length( _:Name    , N:Names    ) => 1 +Int #length(N)
-  rule #length( _:Name    , N:NamePats ) => 1 +Int #length(N)
-  rule #length( _:NamePat , N:Names    ) => 1 +Int #length(N)
+  rule #length( _:NamePat ) => 1 [owise]
   rule #length( _:NamePat , N:NamePats ) => 1 +Int #length(N)
 
 //--- Bind[Pat]s ---
@@ -1453,10 +1434,7 @@ module AUXFUN
   rule #unionSet( A:RhoSet ; Set( ) ) => A
   rule #unionSet( A:SetPat ; Set( ) ) => A
   // check if each right arg element is seq to a left arg element -- e.g. #unionSet( Set(a,b,c) ; Set(b,c,d) ) => Set( #set2procs( { a,b,c,d } ) ) => Set( a,b,c,d )
-  rule #unionSet( Set( A:Procs    ) ; Set( B:Procs    ) ) => Set(#set2procs(#procs2set(A) #procs2set(B)))
-  rule #unionSet( Set( A:Procs    ) ; Set( B:ProcPats ) ) => Set( #set2pats(#procs2set(A)  #pats2set(B)))
-  rule #unionSet( Set( A:ProcPats ) ; Set( B:Procs    ) ) => Set( #set2pats( #pats2set(A) #procs2set(B)))
-  rule #unionSet( Set( A:ProcPats ) ; Set( B:ProcPats ) ) => Set( #set2pats( #pats2set(A)  #pats2set(B)))
+  rule #unionSet( Set( A:ProcPats ) ; Set( B:ProcPats ) ) => Set( #set2pats( #pats2set(A) #pats2set(B)))
 
 //----------------------------------------------------
 //--- Channel, Bind, Binding Variables Sets & Maps ---
@@ -1795,24 +1773,36 @@ module AUXFUN
   rule #eval( A:String        ++ B:StringOnlyExp ) => A +String #eval(B)
   rule #eval( A:StringOnlyExp %% B:InterpMaps    ) => #interpolate(#eval(A);B)
 
+// // Send
+//   rule #eval( A:Name ! ( ) ) => A!( )
+//   rule #eval( A:Name ! ( B:Procs ) ) => #eval(A)!( #eval(B) )
+//
+//   rule #eval( A:Proc , B:Procs ) => #eval(A) , #eval(B)
+
 
 // #val
   rule #val( I:Int |-> J:Int ; I ) => J
   rule #val( I:Int |-> J:Int A:Map ; I ) => J requires A =/=K .Map
   rule #val( I:Int |-> J:Int A:Map ; L:Int ) => #val(A;L) requires A =/=K .Map andBool I =/=Int L
 
-/*
+
 // Methods
 //--------------
 //--- #slice ---
 //--------------
-  rule #truncate( R:RhoList , Fin:Int ) => R requires (Fin >=Int #length R)
-  rule #truncate( [ A:Proc ] , Fin:Int ) => #if Fin <=Int 0 #then [ ] #else [A] #fi
-
-  rule #slice( [ ] , _ , _ ) => [ ]
-  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
-  rule #slice( [ A:Proc ] , St:Int , Fin:Int ) => #if ( St ==Int 0 andBool Fin ==Int 0 ) #then [A] #else [ ] #fi
-
+  // assumed that 0 <= I < J < length
+  rule #slice( A:Proc ; 0 ; J:Int ; 0 ; ) => [A]
+  rule #slice( A:Proc , B:Procs ; I:Int ; J:Int ; L:Int ; )
+    => #if I <=Int L andBool L <Int J
+       #then #slice(B;I;J;L +Int 1;A)
+       #else #slice(B;I;J;L +Int 1; ) #fi
+  rule #slice( A:Proc , B:Procs ; I:Int ; J:Int ; L:Int ; C:Procs )
+    => #if I <=Int L andBool L <Int J
+       #then #slice(B;I;J;L +Int 1;#append(C;A))
+       #else #slice(B;I;J;L +Int 1;C) #fi
+  rule #slice( A:Proc ; I:Int ; J:Int ; L:Int ; B:Procs )
+    => #if I <=Int L andBool L <Int J #then [#append(B;A)] #else [B] #fi
+/*
 //-------------
 //--- #keys ---
 //-------------
