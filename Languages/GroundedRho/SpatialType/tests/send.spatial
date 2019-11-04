@@ -1,0 +1,10 @@
+// Spatial Type test
+
+    #spatialType( @0!([@"a"!!(true|Set(1,"b")),"c",(1,2,3,)],"abc",{1:2,2:Nil}) )
+
+/*
+Output:
+
+  ( @ Int ) ! ( [ ( @ String ) !! ( Bool | Set( Int , String ) ) , String , ( Int , Int , Int ,) ] , ( String , { Int : Int , Int : Unit } ) )
+
+*/
