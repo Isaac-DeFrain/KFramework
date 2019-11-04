@@ -1,55 +1,41 @@
 // New
 
-    new x,y in { y!(1) | x!(2) }
+    new x,y in { y!(1) | x!(2) | x!(2) | x!!(2) }
 
 /*
 Output:
 <T>
-  <threads>
-    .ThreadCellBag
-  </threads>
+  <activity>
+    .TaskCellBag
+  </activity>
   <tuplespace>
     <sends>
-      <send>
-        <schan>
-          @ unforgeable( 0 )
-        </schan>
-        <msg>
-          2
-        </msg>
-        <tuple>
-          1
-        </tuple>
-        <stype>
-          0
-        </stype>
-      </send> <send>
-        <schan>
-          @ unforgeable( 1 )
-        </schan>
-        <msg>
-          1
-        </msg>
-        <tuple>
-          1
-        </tuple>
-        <stype>
-          0
-        </stype>
-      </send>
+      SetItem ( @ unforgeable( 0 ) ; SetItem ( @ Int ; SetItem ( 1 ; @ 2 ; 1 ) SetItem ( 2 ; @ 2 ; 0 ) ) )
+      SetItem ( @ unforgeable( 1 ) ; SetItem ( @ Int ; SetItem ( 1 ; @ 1 ; 0 ) ) )
     </sends>
-    <receives>
-      .RecCellBag
-    </receives>
+    <input>
+      <receives>
+        .Set
+      </receives>
+      <sums>
+        .SumCellBag
+      </sums>
+    </input>
   </tuplespace>
+  <contracts>
+    .Map
+  </contracts>
   <nextLoc>
     2
   </nextLoc>
-  <freeVars>
+  <original>
+    new x , y in { y ! ( 1 ) | x ! ( 2 ) | x ! ( 2 ) | x !! ( 2 ) }
+  </original>
+  <OGfreevar>
     .Set
-  </freeVars>
-  <deBruijn>
-    new boundN( 0 ) , boundN( 1 ) in { boundN( 1 ) ! ( 1 ) | boundN( 0 ) ! ( 2 ) }
-  </deBruijn>
+  </OGfreevar>
+  <OGdeBruijn>
+    new N( 0 ) , N( 1 ) in { N( 0 ) ! ( 2 ) | N( 0 ) ! ( 2 ) | N( 1 ) ! ( 1 ) | N( 0 ) !! ( 2 ) }
+  </OGdeBruijn>
 </T>
 */
