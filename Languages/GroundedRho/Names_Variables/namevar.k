@@ -228,8 +228,12 @@ module NAMEVAR
 // SendPat
   rule  V( A:NamePat !  ( B:ProcPats ) ) =>  V(A)  V(B)
   rule  V( A:NamePat !  (            ) ) =>  V(A)
+  rule  V( A:NamePat !! ( B:ProcPats ) ) =>  V(A)  V(B)
+  rule  V( A:NamePat !! (            ) ) =>  V(A)
   rule #V( A:NamePat !  ( B:ProcPats ) ) => #V(A) #V(B)
   rule #V( A:NamePat !  (            ) ) => #V(A)
+  rule #V( A:NamePat !! ( B:ProcPats ) ) => #V(A) #V(B)
+  rule #V( A:NamePat !! (            ) ) => #V(A)
 
 // ParPat
   rule  V( A:ProcPat | B:ProcPat ) =>  V(A)  V(B)
@@ -669,8 +673,12 @@ module NAMEVAR
 // Send
   rule  FV( X:NamePat !  ( P:ProcPats ) ) =>  FV(X)  FV(P)
   rule  FV( X:NamePat !  (            ) ) =>  FV(X)
+  rule  FV( X:NamePat !! ( P:ProcPats ) ) =>  FV(X)  FV(P)
+  rule  FV( X:NamePat !! (            ) ) =>  FV(X)
   rule #FV( X:NamePat !  ( P:ProcPats ) ) => #FV(X) #FV(P)
   rule #FV( X:NamePat !  (            ) ) => #FV(X)
+  rule #FV( X:NamePat !! ( P:ProcPats ) ) => #FV(X) #FV(P)
+  rule #FV( X:NamePat !! (            ) ) => #FV(X)
 
 // ParPat
   rule  FV( P:ProcPat | Q:ProcPat ) =>  FV(P)  FV(Q)
