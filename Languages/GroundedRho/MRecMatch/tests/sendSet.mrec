@@ -1,0 +1,14 @@
+// sendSet
+
+    #sendSet( @0!("a",[Set(1,2),(1,"b",),2,{1:Nil,2:@0!(0),"a":[]}]) )
+
+/*
+Output:
+
+  SetItem ( @ 0 ;
+    SetItem ( @ String , @ [ Set( Int , Int ) , ( Int , String ,) , Int , { Int : Unit , Int : ( @ Int ) ! ( Int ) , String : EmptyListPat } ] ;
+      SetItem ( 1 ; @ "a" , @ [ Set( 1 , 2 ) , ( 1 , "b" ,) , 2 , { 1 : Nil , 2 : { @ 0 } ! ( 0 ) , "a" : [ ] } ] ; 0 )
+    )
+  )
+
+*/

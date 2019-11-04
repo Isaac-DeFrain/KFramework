@@ -1,0 +1,15 @@
+// add
+
+    #addNameSpace( #sendSet( @unforgeable(0)!("a",[Set(1,2),(1,)]) ) ; #sendSet( @0!!( 1,2,3,4,5 ) ) )
+
+/*
+Output:
+
+  SetItem ( @ 0 ;
+    SetItem ( @ Int , @ Int , @ Int , @ Int , @ Int ;
+      SetItem ( 1 ; @ 1 , @ 2 , @ 3 , @ 4 , @ 5 ; 1 ) ) )
+  SetItem ( @ unforgeable( 0 ) ;
+    SetItem ( @ String , @ [ Set( Int , Int ) , ( Int ,) ] ;
+      SetItem ( 1 ; @ "a" , @ [ Set( 1 , 2 ) , ( 1 ,) ] ; 0 ) ) )
+
+*/
