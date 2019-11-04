@@ -404,12 +404,12 @@ module MREC
   rule #enumBindSet( A:Lbind ) => SetItem(1;#chan(A);#bvar(A))
   rule #enumBindSet( A:Pbind ) => SetItem(1;#chan(A);#bvar(A))
   rule #enumBindSet( A:Rbind ) => SetItem(1;#chan(A);#bvar(A))
-  rule #enumBindSet( A:Lbind & B:Lbind  ) => #add(#enumBindSet(A);#enumBindSet(B))
-  rule #enumBindSet( A:Lbind & B:Lbinds ) => #add(#enumBindSet(A);#enumBindSet(B))
-  rule #enumBindSet( A:Pbind & B:Pbind  ) => #add(#enumBindSet(A);#enumBindSet(B))
-  rule #enumBindSet( A:Pbind & B:Pbinds ) => #add(#enumBindSet(A);#enumBindSet(B))
-  rule #enumBindSet( A:Rbind & B:Rbind  ) => #add(#enumBindSet(A);#enumBindSet(B))
-  rule #enumBindSet( A:Rbind & B:Rbinds ) => #add(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Lbind & B:Lbind  ) => #addBind(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Lbind & B:Lbinds ) => #addBind(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Pbind & B:Pbind  ) => #addBind(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Pbind & B:Pbinds ) => #addBind(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Rbind & B:Rbind  ) => #addBind(#enumBindSet(A);#enumBindSet(B))
+  rule #enumBindSet( A:Rbind & B:Rbinds ) => #addBind(#enumBindSet(A);#enumBindSet(B))
   // from Receive
   rule #enumBindSet( for( A:Lbind  ){ _:Proc } ) => #enumBindSet(A) [structural]
   rule #enumBindSet( for( A:Pbind  ){ _:Proc } ) => #enumBindSet(A) [structural]
