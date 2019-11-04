@@ -1,0 +1,11 @@
+// Lead variable test
+  // tests that the leading variable of the ParPat is of sort EvalVar
+
+    #isEvalVar( #leadVar( #varSet( Int | *x | @0!(*a) | \y | \z ) ) )
+
+/*
+Output:
+
+  true
+
+*/

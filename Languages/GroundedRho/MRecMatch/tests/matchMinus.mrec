@@ -1,0 +1,10 @@
+// matchMinus test
+
+    #matchMinus( SetItem( 2 ; "a" ) SetItem( 3 ; @0!(0) ) SetItem( 2 ; 1 ) ; SetItem( 2 ; String ) SetItem( 2 ; Int ) )
+
+/*
+Output:
+
+  SetItem ( 3 ; { @ 0 } ! ( 0 ) )
+
+*/

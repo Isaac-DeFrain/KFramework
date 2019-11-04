@@ -1,0 +1,10 @@
+// Par matching
+
+    #matchPar( 3 | "a" | @0!(0) ; Int | @0!(\y) | *x | \a | \b )
+
+/*
+Output:
+
+  true
+
+*/
