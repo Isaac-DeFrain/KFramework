@@ -20,13 +20,13 @@ module STRUCT-SYNTAX
   syntax        Bool ::=   "#structEq(" ProcPats ";" ProcPats ")" [function]
                        | "#structEqif(" ProcPats ";" ProcPats ")" [function]
 
+  syntax        Bool ::=   "#structEq(" RhoKVPats ";" RhoKVPats ")" [function]
+                       | "#structEqif(" RhoKVPats ";" RhoKVPats ")" [function]
+
   syntax        Bool ::=   "#structEq(" Map ";" Map ")" [function]
                        |   "#structEq(" Set ";" Set ")" [function]
                        | "#structEqif(" Map ";" Map ")" [function]
                        | "#structEqif(" Set ";" Set ")" [function]
-
-  syntax        Bool ::= "#structEq(" RhoKVPairs ";" RhoKVPairs ")" [function]
-  syntax        Bool ::= "#structEq(" RhoKVPats  ";" RhoKVPats  ")" [function]
 
 // Name equivalence relation
   syntax        Bool ::=   "#nameEq(" NamePats ";" NamePats ")" [function]
@@ -43,39 +43,39 @@ module STRUCT-SYNTAX
   syntax         Set ::=    "#setify(" ProcPat ")"              [function]
 
 // Unary Ordering
-  syntax        Proc ::= "#order(" Proc    ")" [function, poly(0,1)]
-  syntax        Name ::= "#order(" Name    ")" [function]
-  syntax     ProcPat ::= "#order(" ProcPat ")" [function]
-  syntax     NamePat ::= "#order(" NamePat ")" [function]
-
-  syntax        Proc ::= "#orderEach(" Proc     ")" [function, poly(0,1)]
-  syntax       Procs ::=     "#order(" Procs    ")" [function]
-                       | "#orderEach(" Procs    ")" [function]
-  syntax        Name ::= "#orderEach(" Name     ")" [function]
-  syntax       Names ::=     "#order(" Names    ")" [function]
-                       | "#orderEach(" Names    ")" [function]
-  syntax     ProcPat ::= "#orderEach(" ProcPat  ")" [function]
-  syntax    ProcPats ::=     "#order(" ProcPats ")" [function]
-                       | "#orderEach(" ProcPats ")" [function]
-  syntax     NamePat ::= "#orderEach(" NamePat  ")" [function]
-  syntax    NamePats ::=     "#order(" NamePats ")" [function]
-                       | "#orderEach(" NamePats ")" [function]
-
-  syntax   RhoKVPair ::= "#order(" RhoKVPair ")" [function]
-
-  syntax  RhoKVPairs ::=     "#order(" RhoKVPairs ")" [function]
-                       | "#orderEach(" RhoKVPairs ")" [function]
-
-  syntax    RhoKVPat ::= "#order(" RhoKVPat ")" [function]
-
-  syntax   RhoKVPats ::=     "#order(" RhoKVPats ")" [function]
-                       | "#orderEach(" RhoKVPats ")" [function]
+  syntax        Proc ::= "#order(" Proc     ")" [function, poly(0,1)]
+  syntax        Name ::= "#order(" Name     ")" [function]
+  syntax     ProcPat ::= "#order(" ProcPat  ")" [function]
+  syntax     NamePat ::= "#order(" NamePat  ")" [function]
+  syntax    ProcPats ::= "#order(" ProcPats ")" [function]
+  syntax    NamePats ::= "#order(" NamePats ")" [function]
+  // RhoMap
+  syntax   RhoKVPair ::= "#order(" RhoKVPair  ")" [function]
+  syntax  RhoKVPairs ::= "#order(" RhoKVPairs ")" [function]
+  syntax    RhoKVPat ::= "#order(" RhoKVPat   ")" [function]
+  syntax   RhoKVPats ::= "#order(" RhoKVPats  ")" [function]
+  // Match
+  syntax   MatchCase ::= "#order(" MatchCase  ")" [function]
+  syntax  MatchCases ::= "#order(" MatchCases ")" [function]
+  syntax    MCasePat ::= "#order(" MCasePat   ")" [function]
+  syntax   MCasePats ::= "#order(" MCasePats  ")" [function]
+  // Select
+  syntax      Branch ::= "#order(" Branch     ")" [function]
+  syntax    Branches ::= "#order(" Branches   ")" [function]
+  syntax   BranchPat ::= "#order(" BranchPat  ")" [function]
+  syntax  BranchPats ::= "#order(" BranchPats ")" [function]
+  // Interpolation
+  syntax  InterpMaps ::= "#order(" InterpMaps ")" [function]
 
 // Binary Ordering
   syntax        Bool ::=   "#order(" ProcPats  ";" ProcPats ")" [function]
                        |   "#order(" NamePats  ";" NamePats ")" [function]
                        | "#orderif(" ProcPats  ";" ProcPats ")" [function]
                        | "#orderif(" NamePats  ";" NamePats ")" [function]
+
+    // RhoKVPats
+  syntax        Bool ::=   "#order(" RhoKVPats ";;" RhoKVPats  ")" [function]
+                       | "#orderif(" RhoKVPats ";;" RhoKVPats  ")" [function]
 
   // subexpression ordering
     // BindPats
@@ -98,11 +98,7 @@ module STRUCT-SYNTAX
                        |   "#order(" BindPats ";;" BindPats ")" [function]
                        | "#orderif(" BindPats ";;" BindPats ")" [function]
 
-    // RhoKVPats
-  syntax        Bool ::=   "#order(" RhoKVPats ";;" RhoKVPats  ")" [function]
-                       | "#orderif(" RhoKVPats ";;" RhoKVPats  ")" [function]
-
-// Reordering -- TODO: change to Pats
+// Reordering
   syntax     ProcPat ::= "#reorder(" ProcPat  ")"                            [function]
   syntax    ProcPats ::= "#reorder(" ProcPats ")"                            [function]
                        | "#reorder("         ";;"          ";;" ProcPats ")" [function]
@@ -119,7 +115,7 @@ module STRUCT-SYNTAX
                        | "#reorder(" NamePat ";;" NamePats ";;"          ")" [function]
                        | "#reorder("         ";;" NamePats ";;"          ")" [function]
 
-  // Binds
+  // Binds -- TODO: add guards
   syntax    LbindPat ::= "#reorder(" LbindPat   ")"                             [function]
   syntax   GLbindPat ::= "#reorder(" GLbindPat  ")"                             [function]
   syntax  GLbindPats ::= "#reorder(" GLbindPats ")"                             [function]
@@ -193,52 +189,35 @@ module STRUCT-SYNTAX
                        | "#reorder(" RhoKVPat  ";;" RhoKVPats  ";;"            ")" [function]
                        | "#reorder("           ";;" RhoKVPats  ";;"            ")" [function]
 
-/*
-  // #chanRelSet: Receive/RecPat/Bind[Pat][s] -> set of seta of related channel indices
-  syntax         Set ::= "#chanRelSet(" Receive  ")" [function]
-                       | "#chanRelSet(" RecPat   ")" [function]
-  syntax         Set ::= "#chanRelSet(" Bind     ")" [function]
-                       | "#chanRelSet(" Binds    ")" [function]
-                       | "#chanRelSet(" BindPat  ")" [function]
-                       | "#chanRelSet(" BindPats ")" [function]
-  // recursively checks relations with first Bind
-  syntax         Set ::= "#chanRelSet(" Bind     ";;" Bind     ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" Binds    ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" Bind     ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" Binds    ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" BindPat  ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" BindPats ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" BindPat  ";;" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" BindPats ";;" Int ";" Int ")" [function]
-  // recursively checks all Bind relations
-  syntax         Set ::= "#chanRelSet(" Bind     ";;" Bind     ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" Bind     ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" BindPat  ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" Bind     ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" BindPat  ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet(" BindPat  ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet("          ";;" Binds    ";;" Int ";" Int ";" Int ")" [function]
-                       | "#chanRelSet("          ";;" BindPats ";;" Int ";" Int ";" Int ")" [function]
-  // chanRelSet union
-  syntax         Set ::= "#unionCRS(" Set ";" Set ")" [function]
-*/
-// Translation to built-ins -- other half in AuxFun
-  syntax        List ::= "#rho2list(" ListPat  ")" [function]
-  syntax         Map ::=  "#rho2map(" ListPat  ")" [function]
-                       |  "#rho2map(" MapPat   ")" [function]
-                       |  "#rho2map(" TuplePat ")" [function]
-  syntax         Set ::=  "#rho2set(" SetPat   ")" [function]
+  // BranchPats
+  syntax   BranchPat ::= "#reorder(" BranchPat  ")"                                [function]
+  syntax  BranchPats ::= "#reorder(" BranchPats ")"                                [function]
+                       | "#reorder("           ";;"            ";;" BranchPats ")" [function]
+                       | "#reorder("           ";;" BranchPats ";;" BranchPats ")" [function]
+                       | "#reorder(" BranchPat ";;" BranchPats ";;" BranchPats ")" [function]
+                       | "#reorder(" BranchPat ";;" BranchPats ";;"            ")" [function]
+                       | "#reorder("           ";;" BranchPats ";;"            ")" [function]
 
+// Translation to built-ins -- other half in AuxFun
+  syntax        List ::= "#rho2list(" ListPat   ")" [function]
+  syntax         Map ::=  "#rho2map(" ListPat   ")" [function]
+                       |  "#rho2map(" MapPat    ")" [function]
+                       |  "#rho2map(" TuplePat  ")" [function]
+                       |  "#rho2map(" RhoKVPats ")" [function]
+  syntax         Set ::=  "#rho2set(" SetPat    ")" [function]
+                       |  "#rho2set(" ProcPats  ")" [function]
+
+  // indexed
   syntax         Map ::= "#indexMap(" Int ";" ProcPats ")" [function]
+  syntax         Set ::= "#indexSet(" Int ";" ProcPats ")" [function]
+                       | "#indexSet(" ProcPats ")"         [function]
 
   // Seq inclusion: Map & Set
   syntax        Bool ::= "#SeqSetIn(" Set ";" Set ")" [function] // structural equivalence Set inclusion
                        | "#SeqMapIn(" Map ";" Map ")" [function] // structural equivalence Map inclusion
 
 // seq of left arg against all right arg Procs
-  syntax        Bool ::=    "#structEqs(" ProcPat ";" ProcPats ")" [function]
+  syntax        Bool ::=    "#structEqs(" ProcPat ";" ProcPats  ")" [function]
 // seq of left arg against all keys of RhoKVPairs
   syntax        Bool ::= "#key_structEq(" ProcPat ";" RhoKVPats ")" [function]
                        | "#key_structEq(" ProcPat ";" Map       ")" [function]
@@ -304,7 +283,7 @@ module STRUCT
        #else #if #structEq(A;B) #then #parRemove(A;C) #else B | #parRemove(A;C) #fi #fi
        requires notBool (isEvalVar(A) orBool isParPat(B))
 
-// computes par set of a Proc
+// computes parSet of a Proc
   // par set of a nonPar Proc contains only one appearance of that Proc
   rule #setify( A:ProcPat ) => SetItem(1;#order(A)) requires notBool isParPat(A)
   rule #setify( A:ProcPat | B:ProcPat )
@@ -314,18 +293,20 @@ module STRUCT
        #fi requires notBool isParPat(A)
 
   // Par normalization
-  rule #parnorm( A:ParPat  ) => #pats2par(#reorder(#orderEach(#par2pats(A))))
+  rule #parnorm( A:ParPat  ) => #pats2par(#reorder(#order(#par2pats(A))))
   rule #parnorm( A:ProcPat ) => A requires notBool isParPat(A)
 
 //-------------------
 //--- Unary Order ---
 //-------------------
 //  Returns least order term structurally equivalent to input
-  // OrderEach
-  rule #orderEach( A:NamePat ) => #order(A)
-  rule #orderEach( A:NamePat , B:NamePats ) => #order(A) , #orderEach(B)
-  rule #orderEach( A:ProcPat ) => #order(A)
-  rule #orderEach( A:ProcPat , B:ProcPats ) => #order(A) , #orderEach(B)
+  // NamePats/ProcPats
+  rule #order( A:NamePat , B:NamePats ) => #order(A) , #order(B)
+  rule #order( A:ProcPat , B:ProcPats ) => #order(A) , #order(B)
+
+  // RhoKVPats
+  rule #order( A:ProcPat  : B:ProcPat   ) => #order(A) : #order(B)
+  rule #order( A:RhoKVPat , B:RhoKVPats ) => #order(A) , #order(B)
 
   // TODO: finish unary order
   rule #order( @A:ProcPat ) => @#order(A)
@@ -340,46 +321,16 @@ module STRUCT
   rule #order( A:Ground  ) => A
 
 // RecPat
-  rule #order( A:RecPat ) => for(#reorder(#gbind(A))){#order(#cont(A))}
-
-// SendPat
-  rule #order( A:NamePat !  ( ) ) => #order(A)! ( )
-  rule #order( A:NamePat !! ( ) ) => #order(A)!!( )
-  rule #order( A:NamePat !  ( B:ProcPats ) ) => #order(A)! ( #orderEach(B) )
-  rule #order( A:NamePat !! ( B:ProcPats ) ) => #order(A)!!( #orderEach(B) )
-
-// ParPat
-  rule #order( A:ParPat ) => #parnorm(A)
-
-// CollectionPat
-  // ListPat
-  rule #order( [            ] ) => [ ]
-  rule #order(  EmptyListPat  ) => EmptyListPat
-  rule #order( [ A:ProcPats ] ) => [ #orderEach(A) ]
-  rule #order( [ A:ProcPats ... B:ProcVar ] ) => [ #orderEach(A) ... B ]
-  // MapPat
-  rule #order( {         } ) => { }
-  rule #order( EmptyMapPat ) => EmptyMapPat
-  rule #order( A:MapPat    ) => { #orderEach(#map2KVs(#rho2map(A))) }
-       requires notBool (isEmptyMap(A) orBool A ==K EmptyMapPat)
-  // SetPat
-  rule #order(   Set(    ) ) => Set( )
-  rule #order( EmptySetPat ) => EmptySetPat
-  rule #order( A:SetPat    ) => Set( #orderEach(#set2procs(#rho2set(A))) )
-       requires notBool (isEmptySet(A) orBool A ==K EmptySetPat)
-  rule #order( Set( A:ProcPats ... B:ProcVar ) ) => Set(  )
-  // TuplePat
-  rule #order( ( A:ProcPats ,) ) => ( #orderEach(A) ,)
-
-// BindPats
+  rule #order( A:RecPat ) => for(#reorder(#order(#gbind(A)))){#order(#cont(A))}
+  // BindPats
   rule #order( <-  A:NamePat ) => <-  #order(A)
   rule #order( <=  A:NamePat ) => <=  #order(A)
   rule #order( <<- A:NamePat ) => <<- #order(A)
-  rule #order( A:LbindPat ) => #orderEach(#bvar(A)) <-  #order(#chan(A))
+  rule #order( A:LbindPat ) => #order(#bvar(A)) <-  #order(#chan(A))
        requires notBool isEmptyLbind(A)
-  rule #order( A:PbindPat ) => #orderEach(#bvar(A)) <<- #order(#chan(A))
+  rule #order( A:PbindPat ) => #order(#bvar(A)) <<- #order(#chan(A))
        requires notBool isEmptyPbind(A)
-  rule #order( A:RbindPat ) => #orderEach(#bvar(A)) <=  #order(#chan(A))
+  rule #order( A:RbindPat ) => #order(#bvar(A)) <=  #order(#chan(A))
        requires notBool isEmptyRbind(A)
 
   rule #order( A:LbindPat & B:LbindPat  ) => #order(A) & #order(B)
@@ -389,14 +340,111 @@ module STRUCT
   rule #order( A:RbindPat & B:RbindPat  ) => #order(A) & #order(B)
   rule #order( A:RbindPat & B:RbindPats ) => #order(A) & #order(B)
 
-// Reorder to Order
-  rule #reorder( A:LbindPat ) => #order(A)
-  rule #reorder( A:PbindPat ) => #order(A)
-  rule #reorder( A:RbindPat ) => #order(A)
+// SendPat
+  rule #order( A:NamePat !  ( ) ) => #order(A)! ( )
+  rule #order( A:NamePat !! ( ) ) => #order(A)!!( )
+  rule #order( A:NamePat !  ( B:ProcPats ) ) => #order(A)! ( #order(B) )
+  rule #order( A:NamePat !! ( B:ProcPats ) ) => #order(A)!!( #order(B) )
 
-// Patterns -- TODO: continue
+// ParPat
+  rule #order( A:ParPat ) => #parnorm(A)
+
+// EvalPat
+  rule #order( *A:NamePat ) => *#order(A)
+
+// NewPat
+  rule #order( new A:VarDecs in { B:ProcPat } ) => new A in { #order(B) }
+
+// Match
+  rule #order( match A:ProcPat { B:MCasePats } ) => match #order(A) { #order(B) }
+  // MCasePats
+  rule #order( { A:ProcPat } |=> B:ProcPat ) => { #order(A) } |=> #order(B)
+  rule #order( A:MCasePat B:MCasePats ) => #order(A) #order(B)
+
+// TODO: LetExp
+
+// VarRef
+  rule #order( A:VarRef ) => A
+
+// CondPat
+  rule #order( if ( A:BExp ) B:ProcPat ) => if ( #order(A) ) #order(B)
+  rule #order( if ( A:BExp ) B:ProcPat else C:ProcPat ) => if ( #order(A) ) #order(B) else #order(C)
+
+// ContractPat
+  rule #order( contract A:NamePat (            ) = { C:ProcPat } ) => contract A (           ) = { #order(C) }
+  rule #order( contract A:NamePat ( B:NamePats ) = { C:ProcPat } ) => contract A ( #order(B) ) = { #order(C) }
+
+// InvocationPat
+  rule #order( A:NamePat (  )           ) => #order(A) ( )
+  rule #order( A:NamePat ( B:NamePats ) ) => #order(A) ( #order(B) )
+
+// CollectionPat
+  // ListPat
+  rule #order( [ ] ) => [ ]
+  rule #order( EmptyListPat ) => EmptyListPat
+  rule #order( [ A:ProcPats ] ) => [ #order(A) ]
+  rule #order( [ A:ProcPats ... B:ProcVar ] ) => [ #order(A) ... B ]
+  rule #order( [ A:ProcPats ... B:EvalVar ] ) => [ #order(A) ... B ]
+  // MapPat
+  rule #order( { } ) => { }
+  rule #order( EmptyMapPat ) => EmptyMapPat
+  rule #order( { A:RhoKVPats } ) => { #reorder(#order(A)) }
+  rule #order( { A:RhoKVPats ... B:ProcVar } ) => { #reorder(#order(A)) ... B }
+  rule #order( { A:RhoKVPats ... B:EvalVar } ) => { #reorder(#order(A)) ... B }
+  // SetPat
+  rule #order( Set( ) ) => Set( )
+  rule #order( EmptySetPat ) => EmptySetPat
+  rule #order( Set( A:ProcPats ) ) => Set( #reorder(#order(A)) )
+  rule #order( Set( A:ProcPats ... B:ProcVar ) ) => Set( #reorder(#order(A)) ... B )
+  rule #order( Set( A:ProcPats ... B:EvalVar ) ) => Set( #reorder(#order(A)) ... B )
+  // TuplePat
+  rule #order( ( A:ProcPats ,) ) => ( #order(A) ,)
+
+// AExp
+  rule #order( A:AExp ) => A
+
+// ListExp
+  rule #order( A:RhoList    ++ B:ConcatRhoList ) => #order(A) ++ #order(B)
+  rule #order( A:ListOrVar  ++ B:ListOrVar  ) => #order(A) ++ #order(B)
+  rule #order( A:ListOrVar  ++ B:ConcatList ) => #order(A) ++ #order(B)
+  rule #order( A:Invocation ++ B:ConcatList ) => #order(A) ++ #order(B)
+
+// StringExp
+  rule #order( A:StringOnlyExp ) => A
+  rule #order( A:ConcatString  ) => A
+  rule #order( A:StringOrVar ++ B:StringExp  ) => A ++ #order(B)
+  rule #order( A:StringExp   %% B:InterpMaps ) => A %% #order(B)
+  rule #order( A:RhoMap %% B:InterpMaps ) => #order(A) %% #order(B)
+
+// BExp -- TODO: continue
+  rule #order( A:BoolExp ) => A
+
+// Select
+  rule #order( select { A:BranchPats } ) => select {#reorder(A)}
+
+// Method
+  rule #order( A:ProcPat . B:Method ( )         ) => #order(A).B( )
+  rule #order( A:ProcPat . B:Method ( C:Procs ) ) => #order(A).B( #order(C) )
+
+// Bundle
+  rule #order( bundle+{ A:Proc } ) => bundle+{ #order(A) }
+  rule #order( bundle-{ A:Proc } ) => bundle-{ #order(A) }
+  rule #order( bundle0{ A:Proc } ) => bundle0{ #order(A) }
+  rule #order(  bundle{ A:Proc } ) =>  bundle{ #order(A) }
+
+// Pure patterns -- TODO: continue
   rule #order( A:SimplePat     ) => A
   rule #order( A:SimpleNamePat ) => A
+
+  rule #order( @A:ProcPat ) => @#order(A)
+  rule #order( ~A:ProcPat ) => ~#order(A)
+  rule #order(  A:ProcPat /\ B:ProcPat ) => #order(A) /\ #order(B)
+  rule #order(  A:ProcPat \/ B:ProcPat ) => #order(A) \/ #order(B)
+
+// Reorder BindPat
+  rule #reorder( A:LbindPat ) => A
+  rule #reorder( A:PbindPat ) => A
+  rule #reorder( A:RbindPat ) => A
 
 //--------------------
 //--- Binary Order ---
@@ -473,6 +521,8 @@ module STRUCT
 // Reflexivity
   rule #order( A:ProcPats ; A ) => true
 
+// Hierarchy:
+// Nil < Bool < Int < String < Unforgeable < Uri < ProcVar < EvalVar < ...
   // Ground
     // Nil
   rule #order( A:ProcPat ; Nil       ) => A ==K Nil
@@ -577,7 +627,7 @@ module STRUCT
            orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
            orBool isRecPat(A))
 
-  // Binds: lexicographical order by Type , length , Chans , bvars
+  // Binds: lexicographical order by Type , length , Chans , bvars (, guard)
   rule #order( A:BindPat ;; B:BindPat )
     => #if #rtype(A) <=Int #rtype(B)
        #then #if #rtype(A) ==Int #rtype(B)
@@ -618,20 +668,12 @@ module STRUCT
            orBool isEval(A) orBool isVarRef(A) orBool isNewPat(A)
            orBool isRecPat(A) orBool isSendPat(A))
 
-// TODO
-  // MethodProc: Proc . Method ( Args ) dictionary order by Method , Args , Proc
-  // Exp: BExp < AExp <StringExp
-  // Matching: dictionary order by # of MatchCases, Proc, MatchCases
-  // Contract: dictionary order by Chan , NamePat
-  // Bundle:  < 0 < - < + and #order(Proc;Proc)
-  // Conditional: dictionary order by BExp , then Proc [, else Proc]
-
-  // Collection: List < Map < Set < Tuple -- TODO: add other patterns
+  // Collection: List < Map < Set < Tuple -- TODO: add remainder patterns
     // ListPat
   rule #order( _:ListPat ; A:CollectionPat ) => true  requires notBool isListPat(A)
   rule #order( A:CollectionPat ; _:ListPat ) => false requires notBool isListPat(A)
   rule #order( [ ] ; A:ListPat ) => true
-  rule #order( A:ListPat ; [ ] ) => false requires A =/=K [ ]
+  rule #order( A:ListPat ; [ ] ) => false requires notBool isEmptyList(A)
   rule #order( [ A:ProcPats ] ; [ B:ProcPats ] ) => #orderif(A;B)
     // MapPat
   rule #order( _:MapPat ; A:CollectionPat ) => true
@@ -639,10 +681,10 @@ module STRUCT
   rule #order( A:CollectionPat ; _:MapPat ) => false
        requires notBool (isListPat(A) orBool isMapPat(A))
   rule #order( { } ; A:MapPat ) => true
-  rule #order( A:MapPat ; { } ) => false requires A =/=K { }
+  rule #order( A:MapPat ; { } ) => false requires notBool isEmptyMap(A)
   rule #order( { A:RhoKVPats } ; { B:RhoKVPats } ) => #orderif(A;;B)
     // RhoKVPairs
-  rule #order( A:ProcPat : B:ProcPat  ;; C:ProcPat : D:ProcPat  )
+  rule #order( A:ProcPat : B:ProcPat ;; C:ProcPat : D:ProcPat )
     => #if #order(A;C)
        #then #if #order(C;A)
              #then #order(B;D)
@@ -655,6 +697,15 @@ module STRUCT
              #else true #fi
        #else false #fi
 
+// TODO: Set, Tuple
+
+// TODO
+  // MethodProc: Proc . Method ( Args ) dictionary order by Method , Args , Proc
+  // Exp: BExp < AExp <StringExp
+  // Matching: dictionary order by # of MatchCases, Proc, MatchCases
+  // Contract: dictionary order by Chan , NamePat
+  // Bundle:  < 0 < - < + and #order(Proc;Proc)
+  // Conditional: dictionary order by BExp , then Proc [, else Proc]
 
   rule #order( @A:ProcPat ; @B:ProcPat ) => #order( A; B)
   rule #order( @A:ProcPat ;  B:Var     ) => #order( A;*B)
@@ -670,200 +721,263 @@ module STRUCT
              #else true #fi
        #else false #fi
 
+// TODO: BranchPats -- lexicographical order by Bind , (guard ,) continuation
+
+
 // Reorder
   // check order of left arg against all middle args and insert,
   // then move the head of the right arg list to the left arg and repeat
+  // once only middle args remain, return
 
-  //--- Procs ---
+  //--- ProcPats ---
   rule #reorder( A:ParPat ) => #parnorm(A)
 
-    // #reorder( Proc[s] )
-  rule #reorder( A:Proc  ) => A requires notBool isPar(A)
-  rule #reorder( A:Procs ) => #reorder( ;; ;;A) requires notBool isProc(A)
+    // #reorder( ProcPat[s] )
+  rule #reorder( A:ProcPat  ) => A requires notBool isParPat(A)
+  rule #reorder( A:ProcPats ) => #reorder( ;; ;;A) requires notBool isProcPat(A)
 
-    // #reorder( ;; ;; Procs )
-  rule #reorder( ;; ;; A:Proc , B:Procs ) => #reorder( ;;A;;B)
+    // #reorder( ;; ;; ProcPats )
+  rule #reorder( ;; ;; A:ProcPat , B:ProcPats ) => #reorder( ;;A;;B)
 
-    // #reorder( ;; Procs ;; )
-  rule #reorder( ;; A:Procs ;;  ) => A
+    // #reorder( ;; ProcPats ;; )
+  rule #reorder( ;; A:ProcPats ;;  ) => A
 
-    // #reorder( ;; Proc[s] ;; Proc[s] )
-  rule #reorder( ;; A:Proc           ;; B:Proc           ) => #reorder(B;;A  ;; )
-  rule #reorder( ;; A:Proc           ;; B:Proc , C:Procs ) => #reorder(B;;A  ;;C)
-  rule #reorder( ;; A:Proc , B:Procs ;; C:Proc           ) => #reorder(C;;A,B;; )
-  rule #reorder( ;; A:Proc , B:Procs ;; C:Proc , D:Procs ) => #reorder(C;;A,B;;D)
+    // #reorder( ;; ProcPat[s] ;; ProcPat[s] )
+  rule #reorder( ;; A:ProcPat              ;; B:ProcPat              ) => #reorder(B;;A  ;; )
+  rule #reorder( ;; A:ProcPat              ;; B:ProcPat , C:ProcPats ) => #reorder(B;;A  ;;C)
+  rule #reorder( ;; A:ProcPat , B:ProcPats ;; C:ProcPat              ) => #reorder(C;;A,B;; )
+  rule #reorder( ;; A:ProcPat , B:ProcPats ;; C:ProcPat , D:ProcPats ) => #reorder(C;;A,B;;D)
 
-    // #reorder( Proc ;; Proc[s] ;; )
-  rule #reorder( A:Proc ;; B:Proc ;; ) => #if #order(A;B) #then A,B #else B,A #fi
-  rule #reorder( A:Proc ;; B:Proc , C:Procs ;; ) => #if #order(A;B)
-                                                    #then #append(A;B,C)
-                                                    #else #append(B;#reorder(A;;C;; )) #fi
+    // #reorder( ProcPat ;; ProcPat[s] ;; )
+  rule #reorder( A:ProcPat ;; B:ProcPat ;; ) => #if #order(A;B) #then A,B #else B,A #fi
+  rule #reorder( A:ProcPat ;; B:ProcPat , C:ProcPats ;; ) => #if #order(A;B)
+                                                             #then #append(A;B,C)
+                                                             #else #append(B;#reorder(A;;C;; )) #fi
 
-    // #reorder( Proc ;; Proc[s] ;; Proc[s] )
-  rule #reorder( A:Proc ;; B:Proc  ;; C:Proc           ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Proc ;; B:Proc  ;; C:Proc , D:Procs ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Proc ;; B:Procs ;; C:Proc           ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Proc ;; B:Procs ;; C:Proc , D:Procs ) => #reorder(C;;#reorder(A;;B;; );;D)
+    // #reorder( ProcPat ;; ProcPat[s] ;; ProcPat[s] )
+  rule #reorder( A:ProcPat ;; B:ProcPat  ;; C:ProcPat              ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:ProcPat ;; B:ProcPat  ;; C:ProcPat , D:ProcPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:ProcPat ;; B:ProcPats ;; C:ProcPat              ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:ProcPat ;; B:ProcPats ;; C:ProcPat , D:ProcPats ) => #reorder(C;;#reorder(A;;B;; );;D)
 
-  //--- Names ---
-    // #reorder( Name[s] )
-  rule #reorder( A:Name  ) => A
-  rule #reorder( A:Names ) => #reorder( ;; ;;A) requires notBool isName(A)
+  //--- NamePats ---
+    // #reorder( NamePat[s] )
+  rule #reorder( A:NamePat  ) => A
+  rule #reorder( A:NamePats ) => #reorder( ;; ;;A) requires notBool isNamePat(A)
 
-    // #reorder( ;; ;; Names )
-  rule #reorder( ;; ;; A:Name , B:Names ) => #reorder( ;;A;;B)
+    // #reorder( ;; ;; NamePats )
+  rule #reorder( ;; ;; A:NamePat , B:NamePats ) => #reorder( ;;A;;B)
 
-    // #reorder( ;; Names ;; )
-  rule #reorder( ;; A:Names ;;  ) => A
+    // #reorder( ;; NamePats ;; )
+  rule #reorder( ;; A:NamePats ;;  ) => A
 
-    // #reorder( ;; Name[s] ;; Name[s] )
-  rule #reorder( ;; A:Name           ;; B:Name           ) => #reorder(B;;A  ;; )
-  rule #reorder( ;; A:Name           ;; B:Name , C:Names ) => #reorder(B;;A  ;;C)
-  rule #reorder( ;; A:Name , B:Names ;; C:Name           ) => #reorder(C;;A,B;; )
-  rule #reorder( ;; A:Name , B:Names ;; C:Name , D:Names ) => #reorder(C;;A,B;;D)
+    // #reorder( ;; NamePat[s] ;; NamePat[s] )
+  rule #reorder( ;; A:NamePat              ;; B:NamePat              ) => #reorder(B;;A  ;; )
+  rule #reorder( ;; A:NamePat              ;; B:NamePat , C:NamePats ) => #reorder(B;;A  ;;C)
+  rule #reorder( ;; A:NamePat , B:NamePats ;; C:NamePat              ) => #reorder(C;;A,B;; )
+  rule #reorder( ;; A:NamePat , B:NamePats ;; C:NamePat , D:NamePats ) => #reorder(C;;A,B;;D)
 
-    // #reorder( Name ;; Name[s] ;; )
-  rule #reorder( A:Name ;; B:Name ;; ) => #if #order(A;B) #then A,B #else B,A #fi
-  rule #reorder( A:Name ;; B:Name , C:Names ;; ) => #if #order(A;B)
-                                                      #then #append(A;B,C)
-                                                      #else #append(B;#reorder(A;;C;; )) #fi
+    // #reorder( NamePat ;; NamePat[s] ;; )
+  rule #reorder( A:NamePat ;; B:NamePat ;; ) => #if #order(A;B) #then A,B #else B,A #fi
+  rule #reorder( A:NamePat ;; B:NamePat , C:NamePats ;; ) => #if #order(A;B)
+                                                             #then #append(A;B,C)
+                                                             #else #append(B;#reorder(A;;C;; )) #fi
 
-    // #reorder( Name ;; Name[s] ;; Name[s] )
-  rule #reorder( A:Name ;; B:Name  ;; C:Name           ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Name ;; B:Name  ;; C:Name , D:Names ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Name ;; B:Names ;; C:Name           ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Name ;; B:Names ;; C:Name , D:Names ) => #reorder(C;;#reorder(A;;B;; );;D)
+    // #reorder( NamePat ;; NamePat[s] ;; NamePat[s] )
+  rule #reorder( A:NamePat ;; B:NamePat  ;; C:NamePat              ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:NamePat ;; B:NamePat  ;; C:NamePat , D:NamePats ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:NamePat ;; B:NamePats ;; C:NamePat              ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:NamePat ;; B:NamePats ;; C:NamePat , D:NamePats ) => #reorder(C;;#reorder(A;;B;; );;D)
 
-  // Binds
-    // Lbinds
-    // #reorder( Lbind[s] )
-  rule #reorder( A:Lbind  ) => A
-  rule #reorder( A:Lbinds ) => #reorder( ;; ;;A)
+  // BindPats
+    // Guarded
+  rule #reorder( A:GLbindPat  ) => A
+  rule #reorder( A:GLbindPats ) => A
+  rule #reorder( A:GPbindPat  ) => A
+  rule #reorder( A:GPbindPats ) => A
+  rule #reorder( A:GRbindPat  ) => A
+  rule #reorder( A:GRbindPats ) => A
 
-    // #reorder( ;; ;; Lbinds )
-  rule #reorder( ;; ;; A:Lbind & B:Lbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Lbind & B:Lbinds ) => #reorder( ;;A;;B)
+    // LbindPats
+    // #reorder( LbindPat[s] )
+  rule #reorder( A:LbindPat  ) => A
+  rule #reorder( A:LbindPats ) => #reorder( ;; ;;A)
 
-    // #reorder( ;; Lbinds ;; )
-  rule #reorder( ;; A:Lbinds ;;  ) => A
+    // #reorder( ;; ;; LbindPats )
+  rule #reorder( ;; ;; A:LbindPat & B:LbindPat  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:LbindPat & B:LbindPats ) => #reorder( ;;A;;B)
 
-    // #reorder( ;; Lbind[s] ;; Lbind[s] )
-  rule #reorder( ;; A:Lbind  ;; B:Lbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Lbind  ;; B:Lbind & C:Lbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Lbind  ;; B:Lbind & C:Lbinds ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Lbinds ;; C:Lbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Lbinds ;; C:Lbind & D:Lbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Lbinds ;; C:Lbind & D:Lbinds ) => #reorder(C;;A;;D)
+    // #reorder( ;; LbindPats ;; )
+  rule #reorder( ;; A:LbindPats ;;  ) => A
 
-    // #reorder( Lbind ;; Lbind[s] ;; )
-  rule #reorder( A:Lbind ;; B:Lbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
-  rule #reorder( A:Lbind ;; B:Lbind & C:Lbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Lbind ;; B:Lbind & C:Lbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
+    // #reorder( ;; LbindPat[s] ;; LbindPat[s] )
+  rule #reorder( ;; A:LbindPat  ;; B:LbindPat               ) => #reorder(B;;A;; )
+  rule #reorder( ;; A:LbindPat  ;; B:LbindPat & C:LbindPat  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:LbindPat  ;; B:LbindPat & C:LbindPats ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:LbindPats ;; C:LbindPat               ) => #reorder(C;;A;; )
+  rule #reorder( ;; A:LbindPats ;; C:LbindPat & D:LbindPat  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:LbindPats ;; C:LbindPat & D:LbindPats ) => #reorder(C;;A;;D)
 
-    // #reorder( Lbind ;; Lbind[s] ;; Lbind[s] )
-  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind & D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Lbind ;; B:Lbind  ;; C:Lbind & D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind & D:Lbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Lbind ;; B:Lbinds ;; C:Lbind & D:Lbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+    // #reorder( LbindPat ;; LbindPat[s] ;; )
+  rule #reorder( A:LbindPat ;; B:LbindPat ;; )
+    => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:LbindPat ;; B:LbindPat & C:LbindPat  ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
+  rule #reorder( A:LbindPat ;; B:LbindPat & C:LbindPats ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
 
-    // Pbinds
-    // #reorder( Pbind[s] )
-  rule #reorder( A:Pbind  ) => A
-  rule #reorder( A:Pbinds ) => #reorder( ;; ;;A)
+    // #reorder( LbindPat ;; LbindPat[s] ;; LbindPat[s] )
+  rule #reorder( A:LbindPat ;; B:LbindPat  ;; C:LbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:LbindPat ;; B:LbindPat  ;; C:LbindPat & D:LbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:LbindPat ;; B:LbindPat  ;; C:LbindPat & D:LbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:LbindPat ;; B:LbindPats ;; C:LbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:LbindPat ;; B:LbindPats ;; C:LbindPat & D:LbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:LbindPat ;; B:LbindPats ;; C:LbindPat & D:LbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
 
-    // #reorder( ;; ;; Pbinds )
-  rule #reorder( ;; ;; A:Pbind & B:Pbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Pbind & B:Pbinds ) => #reorder( ;;A;;B)
+    // PbindPats
+    // #reorder( PbindPat[s] )
+  rule #reorder( A:PbindPat  ) => A
+  rule #reorder( A:PbindPats ) => #reorder( ;; ;;A)
 
-    // #reorder( ;; Pbinds ;; )
-  rule #reorder( ;; A:Pbinds ;;  ) => A
+    // #reorder( ;; ;; PbindPats )
+  rule #reorder( ;; ;; A:PbindPat & B:PbindPat  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:PbindPat & B:PbindPats ) => #reorder( ;;A;;B)
 
-    // #reorder( ;; Pbind[s] ;; Pbind[s] )
-  rule #reorder( ;; A:Pbind  ;; B:Pbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Pbind  ;; B:Pbind & C:Pbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Pbind  ;; B:Pbind & C:Pbinds ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Pbinds ;; C:Pbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Pbinds ;; C:Pbind & D:Pbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Pbinds ;; C:Pbind & D:Pbinds ) => #reorder(C;;A;;D)
+    // #reorder( ;; PbindPats ;; )
+  rule #reorder( ;; A:PbindPats ;;  ) => A
 
-    // #reorder( Pbind ;; Pbind[s] ;; )
-  rule #reorder( A:Pbind ;; B:Pbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
-  rule #reorder( A:Pbind ;; B:Pbind & C:Pbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Pbind ;; B:Pbind & C:Pbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
+    // #reorder( ;; PbindPat[s] ;; PbindPat[s] )
+  rule #reorder( ;; A:PbindPat  ;; B:PbindPat               ) => #reorder(B;;A;; )
+  rule #reorder( ;; A:PbindPat  ;; B:PbindPat & C:PbindPat  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:PbindPat  ;; B:PbindPat & C:PbindPats ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:PbindPats ;; C:PbindPat               ) => #reorder(C;;A;; )
+  rule #reorder( ;; A:PbindPats ;; C:PbindPat & D:PbindPat  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:PbindPats ;; C:PbindPat & D:PbindPats ) => #reorder(C;;A;;D)
 
-    // #reorder( Pbind ;; Pbind[s] ;; Pbind[s] )
-  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind & D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Pbind ;; B:Pbind  ;; C:Pbind & D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind & D:Pbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Pbind ;; B:Pbinds ;; C:Pbind & D:Pbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+    // #reorder( PbindPat ;; PbindPat[s] ;; )
+  rule #reorder( A:PbindPat ;; B:PbindPat ;; )
+    => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:PbindPat ;; B:PbindPat & C:PbindPat  ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
+  rule #reorder( A:PbindPat ;; B:PbindPat & C:PbindPats ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
 
-    // Rbinds
-    // #reorder( Rbind[s] )
-  rule #reorder( A:Rbind  ) => A
-  rule #reorder( A:Rbinds ) => #reorder( ;; ;;A)
+    // #reorder( PbindPat ;; PbindPat[s] ;; PbindPat[s] )
+  rule #reorder( A:PbindPat ;; B:PbindPat  ;; C:PbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:PbindPat ;; B:PbindPat  ;; C:PbindPat & D:PbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:PbindPat ;; B:PbindPat  ;; C:PbindPat & D:PbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:PbindPat ;; B:PbindPats ;; C:PbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:PbindPat ;; B:PbindPats ;; C:PbindPat & D:PbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:PbindPat ;; B:PbindPats ;; C:PbindPat & D:PbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
 
-    // #reorder( ;; ;; Rbinds )
-  rule #reorder( ;; ;; A:Rbind & B:Rbind  ) => #reorder( ;;A;;B)
-  rule #reorder( ;; ;; A:Rbind & B:Rbinds ) => #reorder( ;;A;;B)
+    // RbindPats
+    // #reorder( RbindPat[s] )
+  rule #reorder( A:RbindPat  ) => A
+  rule #reorder( A:RbindPats ) => #reorder( ;; ;;A)
 
-    // #reorder( ;; Rbinds ;; )
-  rule #reorder( ;; A:Rbinds ;;  ) => A
+    // #reorder( ;; ;; RbindPats )
+  rule #reorder( ;; ;; A:RbindPat & B:RbindPat  ) => #reorder( ;;A;;B)
+  rule #reorder( ;; ;; A:RbindPat & B:RbindPats ) => #reorder( ;;A;;B)
 
-    // #reorder( ;; Rbind[s] ;; Rbind[s] )
-  rule #reorder( ;; A:Rbind  ;; B:Rbind            ) => #reorder(B;;A;; )
-  rule #reorder( ;; A:Rbind  ;; B:Rbind & C:Rbind  ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Rbind  ;; B:Rbind & C:Rbinds ) => #reorder(B;;A;;C)
-  rule #reorder( ;; A:Rbinds ;; C:Rbind            ) => #reorder(C;;A;; )
-  rule #reorder( ;; A:Rbinds ;; C:Rbind & D:Rbind  ) => #reorder(C;;A;;D)
-  rule #reorder( ;; A:Rbinds ;; C:Rbind & D:Rbinds ) => #reorder(C;;A;;D)
+    // #reorder( ;; RbindPats ;; )
+  rule #reorder( ;; A:RbindPats ;;  ) => A
 
-    // #reorder( Rbind ;; Rbind[s] ;; )
-  rule #reorder( A:Rbind ;; B:Rbind ;; ) => #if #order(A;;B) #then A&B #else B&A #fi
-  rule #reorder( A:Rbind ;; B:Rbind & C:Rbind  ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
-  rule #reorder( A:Rbind ;; B:Rbind & C:Rbinds ;; ) => #if #order(A;;B)
-                                                       #then #append(A;;B&C)
-                                                       #else #append(B;;#reorder(A;;C;; )) #fi
+    // #reorder( ;; RbindPat[s] ;; RbindPat[s] )
+  rule #reorder( ;; A:RbindPat  ;; B:RbindPat               ) => #reorder(B;;A;; )
+  rule #reorder( ;; A:RbindPat  ;; B:RbindPat & C:RbindPat  ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:RbindPat  ;; B:RbindPat & C:RbindPats ) => #reorder(B;;A;;C)
+  rule #reorder( ;; A:RbindPats ;; C:RbindPat               ) => #reorder(C;;A;; )
+  rule #reorder( ;; A:RbindPats ;; C:RbindPat & D:RbindPat  ) => #reorder(C;;A;;D)
+  rule #reorder( ;; A:RbindPats ;; C:RbindPat & D:RbindPats ) => #reorder(C;;A;;D)
 
-    // #reorder( Rbind ;; Rbind[s] ;; Rbind[s] )
-  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind & D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Rbind ;; B:Rbind  ;; C:Rbind & D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind            ) => #reorder(C;;#reorder(A;;B;; );; )
-  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind & D:Rbind  ) => #reorder(C;;#reorder(A;;B;; );;D)
-  rule #reorder( A:Rbind ;; B:Rbinds ;; C:Rbind & D:Rbinds ) => #reorder(C;;#reorder(A;;B;; );;D)
+    // #reorder( RbindPat ;; RbindPat[s] ;; )
+  rule #reorder( A:RbindPat ;; B:RbindPat ;; )
+    => #if #order(A;;B) #then A&B #else B&A #fi
+  rule #reorder( A:RbindPat ;; B:RbindPat & C:RbindPat  ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
+  rule #reorder( A:RbindPat ;; B:RbindPat & C:RbindPats ;; )
+    => #if #order(A;;B)
+       #then #append(A;;B&C)
+       #else #append(B;;#reorder(A;;C;; )) #fi
 
+    // #reorder( RbindPat ;; RbindPat[s] ;; RbindPat[s] )
+  rule #reorder( A:RbindPat ;; B:RbindPat  ;; C:RbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:RbindPat ;; B:RbindPat  ;; C:RbindPat & D:RbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:RbindPat ;; B:RbindPat  ;; C:RbindPat & D:RbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:RbindPat ;; B:RbindPats ;; C:RbindPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:RbindPat ;; B:RbindPats ;; C:RbindPat & D:RbindPat  ) => #reorder(C;;#reorder(A;;B;; );;D)
+  rule #reorder( A:RbindPat ;; B:RbindPats ;; C:RbindPat & D:RbindPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+
+  // RhoKVPats
+    // #reorder( RhoKVPat[s] )
+  rule #reorder( A:RhoKVPat  ) => A
+  rule #reorder( A:RhoKVPats ) => #reorder( ;; ;;A) requires notBool isRhoKVPat(A)
+
+    // #reorder( ;; ;; RhoKVPats )
+  rule #reorder( ;; ;; A:RhoKVPat , B:RhoKVPats ) => #reorder( ;;A;;B)
+
+    // #reorder( ;; RhoKVPats ;; )
+  rule #reorder( ;; A:RhoKVPats ;;  ) => A
+
+    // #reorder( ;; RhoKVPat[s] ;; RhoKVPat[s] )
+  rule #reorder( ;; A:RhoKVPats ;; B:RhoKVPat               ) => #reorder(B;;A;; )
+  rule #reorder( ;; A:RhoKVPats ;; B:RhoKVPat , C:RhoKVPats ) => #reorder(B;;A;;C)
+
+    // #reorder( RhoKVPat ;; RhoKVPat[s] ;; )
+  rule #reorder( A:RhoKVPat ;; B:RhoKVPat ;; )
+    => #if #order(A;;B) #then A,B #else B,A #fi
+  rule #reorder( A:RhoKVPat ;; B:RhoKVPat , C:RhoKVPats ;; )
+    => #if #order(A;;B)
+       #then #append(A;B,C)
+       #else #append(B;#reorder(A;;C;; )) #fi
+
+    // #reorder( RhoKVPat ;; RhoKVPat[s] ;; RhoKVPat[s] )
+  rule #reorder( A:RhoKVPat ;; B:RhoKVPats ;; C:RhoKVPat               ) => #reorder(C;;#reorder(A;;B;; );; )
+  rule #reorder( A:RhoKVPat ;; B:RhoKVPats ;; C:RhoKVPat , D:RhoKVPats ) => #reorder(C;;#reorder(A;;B;; );;D)
+
+// TODO: BranchPats
 
 //------------------------------
 //--- Structural Equivalence ---
 //------------------------------
-  rule #structEq( A:Proc    ; A ) => true
   rule #structEq( A:ProcPat ; A ) => true
 
   // indexes arguments & checks par set equality -- Note: at least one arg is a Par
   // #setify turns nonPar Proc P into the one element set: SetItem(P  , 1)
   // #setify turns Par P1 | ... | PM into the indexed set: SetItem(P1 , n1) ... SetItem(PM,)
-  rule #structEq( A:Proc ; B:Proc ) => #setify(#deBruijn(A)) ==K #setify(#deBruijn(B))
-       requires isPar(A) orBool isPar(B)
-  rule #structEq( A:Proc , B:Procs ; C:Proc , D:Procs ) => #structEq(A;C) andBool #structEq(B;D)
+  rule #structEq( A:ProcPat ; B:ProcPat ) => #setify(#deBruijn(A)) ==K #setify(#deBruijn(B))
+       requires isParPat(A) orBool isParPat(B)
+  rule #structEq( A:ProcPat , B:ProcPats ; C:ProcPat , D:ProcPats ) => #structEq(A;C) andBool #structEq(B;D)
 
   // if length is not the same, two Proc lists cannot be structurally equivalent
   rule #structEqif( A:Procs    ; B:Procs    ) => #length(A) ==Int #length(B) andBool #structEq(A;B)
+  rule #structEqif( A:ProcPats ; B:ProcPats ) => #length(A) ==Int #length(B) andBool #structEq(A;B)
+       requires notBool (isProcs(A) andBool isProcs(B))
   rule #structEqif( A:Procs    ; B:ProcPats ) => false requires notBool isProcs(B)
   rule #structEqif( A:ProcPats ; B:Procs    ) => false requires notBool isProcs(A)
+
+  rule #structEqif( A:RhoKVPats ; B:RhoKVPats ) => #length(A) ==Int #length(B) andBool #structEq(A;B)
+
+// SimplePat
+  rule #structEq( Bool        ; Bool        ) => true
+  rule #structEq( Int         ; Int         ) => true
+  rule #structEq( String      ; String      ) => true
+  rule #structEq( Unit        ; Unit        ) => true
+  rule #structEq( Uri         ; Uri         ) => true
+  rule #structEq( Unforgeable ; Unforgeable ) => true
+  rule #structEq( A:SimplePat ; B:SimplePat ) => false [owise]
+  rule #structEq( A:SimplePat ; B:ProcPat   ) => false requires notBool isSimplePat(B)
+  rule #structEq( A:ProcPat   ; B:SimplePat ) => false requires notBool isSimplePat(A)
 
 // Ground
   rule #structEq( A:Ground ; B:Ground ) => A ==K B
@@ -871,18 +985,18 @@ module STRUCT
   rule #structEq( A:Proc   ; _:Ground ) => false requires notBool isGround(A)
 
 // Send
-  rule #structEq( A:Send ; B:Send ) => #stype(A) ==Int #stype(B) andBool
+  rule #structEq( A:SendPat ; B:SendPat ) => #stype(A) ==Int #stype(B) andBool
        #nameEq(#chan(A);#chan(B)) andBool #structEqif(#msg(A);#msg(B))
-  rule #structEq( A:Proc ; _:Send ) => false requires notBool (isSend(A) orBool isPar(A))
-  rule #structEq( _:Send ; A:Proc ) => false requires notBool (isSend(A) orBool isPar(A))
+  rule #structEq( A:ProcPat ; _:SendPat ) => false requires notBool (isSendPat(A) orBool isParPat(A))
+  rule #structEq( _:SendPat ; A:ProcPat ) => false requires notBool (isSendPat(A) orBool isParPat(A))
 
 // Receive -- checks equivalence of listening variables, channels, (Guard), and continuations
   // UGSRec
-  rule #structEq( A:UGSRec ; B:UGSRec ) => #rtype(A) ==Int #rtype(B)   andBool  //same receive type
+  rule #structEq( A:UGSRecPat ; B:UGSRecPat ) => #rtype(A) ==Int #rtype(B) andBool  //same receive type
        #nameEqif(#bvar(A);#bvar(B)) andBool #nameEq(#chan(A);#chan(B)) andBool  //same listening variable & channel types
        #structEq(#sub(#mapify(0,0;#bvar(A));#cont(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
   // GSRec
-  rule #structEq( A:GSRec ; B:GSRec ) =>  #rtype(A) ==Int #rtype(B)    andBool
+  rule #structEq( A:GSRecPat ; B:GSRecPat ) => #rtype(A) ==Int #rtype(B) andBool
        #nameEqif(#bvar(A);#bvar(B)) andBool #nameEq(#chan(A);#chan(B)) andBool
        #structEq(#sub(#mapify(0,0;#bvar(A));#guard(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#guard(B)))) andBool
        #structEq(#sub(#mapify(0,0;#bvar(A));#cont(A));#sub(#mapify(0,0;#bvar(A));#sub(#bvar(A);#bvar(B);#cont(B))))
@@ -892,39 +1006,57 @@ module STRUCT
 // Contract -- TODO
 // Invocation -- TODO
 
-// Eval -- TODO: finish
-  rule #structEq( *A:Name ; *B:Name ) => #nameEq(A;B)
+// EvalPat
+  rule #structEq( *A:NamePat ; *B:NamePat ) => #nameEq(A;B)
 
-// ProcVar -- TODO: test
-  rule #structEq( _:ProcVar ; _:ProcVar ) => true
+// ProcVar
+  rule #structEq( A:ProcVar ; B:ProcVar ) => A ==K B
   rule #structEq( _:ProcVar ; A:Proc    ) => false requires notBool isProcVar(A)
   rule #structEq( A:Proc    ; _:ProcVar ) => false requires notBool isProcVar(A)
 
-// New -- TODO
+// NewPat -- TODO
 // VarRef -- TODO
 // TypedProc -- TODO
-// MethodProc -- TODO
-// Match -- TODO
-// Select -- TODO
-// Conditional -- TODO
+// MethodPat -- TODO
+// MatchPat -- TODO
+// SelectPat -- TODO
+// ConditionalPat -- TODO
 
 // Collection
   // RhoList
-  rule #structEq( [ A:ProcPats ] ; [ B:ProcPats ] ) => #structEqif(A;B)
-  rule #structEq(   A:ProcPat    ;   _:ListPat    ) => false requires notBool isListPat(A)
-  rule #structEq(   _:ListPat    ;   A:ProcPat    ) => false requires notBool isListPat(A)
+  rule #structEq( A:ListPat ; B:ListPat ) => #structEqif(#rho2map(A);#rho2map(B))
+       requires notBool (isListRemPat(A) andBool isListRemPat(B))
+  rule #structEq( [ A:ProcPats ... _:ProcVar ] ; [ B:ProcPats ... _:ProcVar ] ) => #structEqif(A;B)
+  rule #structEq( [ A:ProcPats ... _:EvalVar ] ; [ B:ProcPats ... _:EvalVar ] ) => #structEqif(A;B)
+  rule #structEq( [ A:ProcPats ... _:ProcVar ] ; [ B:ProcPats ... _:EvalVar ] ) => #structEqif(A;B)
+  rule #structEq( [ A:ProcPats ... _:EvalVar ] ; [ B:ProcPats ... _:ProcVar ] ) => #structEqif(A;B)
+  rule #structEq(   A:ProcPat ; _:ListPat ) => false requires notBool isListPat(A)
+  rule #structEq(   _:ListPat ; A:ProcPat ) => false requires notBool isListPat(A)
   // RhoMap
-  rule #structEq( A:MapPat  ; B:MapPat  ) => #structEq(#rho2map(A);#rho2map(B))
+  rule #structEq( A:MapPat ; B:MapPat ) => #structEq(#rho2map(A);#rho2map(B))
+       requires notBool (isMapRemPat(A) andBool isMapRemPat(B))
+  rule #structEq( { A:RhoKVPats ... _:ProcVar } ; { B:RhoKVPats ... _:ProcVar } ) => #structEqif(A;B)
+  rule #structEq( { A:RhoKVPats ... _:EvalVar } ; { B:RhoKVPats ... _:EvalVar } ) => #structEqif(A;B)
+  rule #structEq( { A:RhoKVPats ... _:ProcVar } ; { B:RhoKVPats ... _:EvalVar } ) => #structEqif(A;B)
+  rule #structEq( { A:RhoKVPats ... _:EvalVar } ; { B:RhoKVPats ... _:ProcVar } ) => #structEqif(A;B)
   rule #structEq( A:ProcPat ; _:MapPat  ) => false requires notBool isMapPat(A)
   rule #structEq( _:MapPat  ; A:ProcPat ) => false requires notBool isMapPat(A)
+    // RhoKVPats
+  rule #structEq( A:ProcPat  : B:ProcPat   ; C:ProcPat  : D:ProcPat   ) => #structEq(A;C) andBool #structEq(B;D)
+  rule #structEq( A:RhoKVPat , B:RhoKVPats ; C:RhoKVPat , D:RhoKVPats ) => #structEq(A;C) andBool #structEq(B;D)
   // RhoSet
-  rule #structEq( A:SetPat  ; B:SetPat  ) => #structEq(#rho2set(A);#rho2set(B))
+  rule #structEq( A:SetPat ; B:SetPat ) => #structEq(#rho2set(A);#rho2set(B))
+       requires notBool (isSetRemPat(A) andBool isSetRemPat(B))
+  rule #structEq( Set( A:ProcPats ... _:ProcVar ) ; Set( B:ProcPats ... _:ProcVar ) ) => #structEqif(A;B)
+  rule #structEq( Set( A:ProcPats ... _:EvalVar ) ; Set( B:ProcPats ... _:EvalVar ) ) => #structEqif(A;B)
+  rule #structEq( Set( A:ProcPats ... _:ProcVar ) ; Set( B:ProcPats ... _:EvalVar ) ) => #structEqif(A;B)
+  rule #structEq( Set( A:ProcPats ... _:EvalVar ) ; Set( B:ProcPats ... _:ProcVar ) ) => #structEqif(A;B)
   rule #structEq( A:ProcPat ; _:SetPat  ) => false requires notBool isSetPat(A)
   rule #structEq( _:SetPat  ; A:ProcPat ) => false requires notBool isSetPat(A)
   // RhoTuple
   rule #structEq( ( A:ProcPats ,) ; ( B:ProcPats ,) ) => #structEqif(A;B)
-  rule #structEq(   A:ProcPat     ; _:TuplePat      ) => false requires notBool isTuplePat(A)
-  rule #structEq(   _:TuplePat    ; A:ProcPat       ) => false requires notBool isTuplePat(A)
+  rule #structEq(   A:ProcPat     ;   _:TuplePat    ) => false requires notBool isTuplePat(A)
+  rule #structEq(   _:TuplePat    ;   A:ProcPat     ) => false requires notBool isTuplePat(A)
 
 // Expressions
   // AExp
@@ -971,6 +1103,9 @@ module STRUCT
 //--- Set & Map Structural Equivalence ---
 //----------------------------------------
 // Structural equivalence of Maps & Sets
+  rule #structEqif( A:Set ; B:Set ) => size(A) ==Int size(B) andBool #structEq(A;B)
+  rule #structEqif( A:Map ; B:Map ) => size(A) ==Int size(B) andBool #structEq(A;B)
+
   rule #structEq( A:Set ; B:Set ) => #SeqSetIn(A;B) andBool #SeqSetIn(B;A)
   rule #structEq( A:Map ; B:Map ) => #SeqMapIn(A;B) andBool #SeqMapIn(B;A)
 
@@ -984,17 +1119,17 @@ module STRUCT
   // #SeqSetIn( {e} S:Set ; T:Set ) => #SeqSetIn({e};T) and #SeqSetIn(S;T)
   // each element of the left arg Set must be contained in the right arg Set
   // and-branch over all left arg Set elements:
-  rule #SeqSetIn( SetItem( A:Proc ) S:Set ; T:Set )
+  rule #SeqSetIn( SetItem( A:ProcPat ) S:Set ; T:Set )
     => #SeqSetIn( SetItem(A);T) andBool #SeqSetIn(S;T)
        requires S =/=K .Set andBool T =/=K .Set
 
   // #SeqSetIn( {e} ; {e'} T:Set ) => #SeqSetIn({e};{e'}) or #SeqSetIn({e};T)
   // left arg Set element is contained in right arg Set if there's at least one struct equiv right arg Set element
   // or-brach over right arg Set elements:
-  rule #SeqSetIn( SetItem( A:Proc ) ; SetItem( B:Proc ) T:Set )
+  rule #SeqSetIn( SetItem( A:ProcPat ) ; SetItem( B:ProcPat ) T:Set )
     => #SeqSetIn(SetItem(A);SetItem(B)) orBool #SeqSetIn(SetItem(A);T)
        requires T =/=K .Set
-  rule #SeqSetIn( SetItem( A:Proc ) ; SetItem( B:Proc ) ) => #structEq(A;B)
+  rule #SeqSetIn( SetItem( A:ProcPat ) ; SetItem( B:ProcPat ) ) => #structEq(A;B)
 
 // Structural equivalence Map inclusion
   // left arg empty Map
@@ -1002,28 +1137,37 @@ module STRUCT
   // right arg empty Map
   rule #SeqMapIn( A:Map ;  .Map ) => false requires A =/=K .Map
 // TODO: normalize each element so this can become syntactic equality
-  rule #SeqMapIn( A:Proc |-> B:Proc M:Map ; N:Map )
+  rule #SeqMapIn( A:ProcPat |-> B:ProcPat M:Map ; N:Map )
     => #SeqMapIn( A |-> B;N) andBool #SeqMapIn(M;N)
        requires M =/=K .Map andBool N =/=K .Map
-  rule #SeqMapIn( A:Proc |-> B:Proc ; C:Proc |-> D:Proc N:Map ) // struct equiv of keys and values
+  rule #SeqMapIn( A:ProcPat |-> B:ProcPat ; C:ProcPat |-> D:ProcPat N:Map ) // struct equiv of keys and values
     => #SeqMapIn(A|->B;C|->D) orBool #SeqMapIn(A|->B;N)
        requires N =/=K .Map
-  rule #SeqMapIn( A:Proc |-> B:Proc ; C:Proc |-> D:Proc ) => #structEq(A;C) andBool #structEq(B;D)
+  rule #SeqMapIn( A:ProcPat |-> B:ProcPat ; C:ProcPat |-> D:ProcPat ) => #structEq(A;C) andBool #structEq(B;D)
 
 //------------------------
 //--- Name Equivalence ---
 //------------------------
 // Name equivalence == symmetric name matching
   rule #nameEq( A:NamePat ; A ) => true
-  rule #nameEq( A:NamePat ; B:NamePat ) => #match(A;B) andBool #match(B;A)
+
+// Name variables
+  rule #nameEq( A:Var  ; B:Var  ) => A ==K B
+  rule #nameEq( A:Var  ; B:Name ) => false requires notBool isVar(B)
+  rule #nameEq( A:Name ; B:Var  ) => false requires notBool isVar(A)
+
+// Typed name variable
+  rule #nameEq( A:Name :: B:NamePat ; C:Name :: D:NamePat ) => #nameEq(A;C) andBool #nameEq(B;D)
+
+// Quote
+  rule #nameEq( @A:ProcPat ; @B:ProcPat ) => #structEq(A;B)
+  rule #nameEq( @A:ProcPat ;  B:NamePat ) => false requires notBool isQuotePat(B)
+  rule #nameEq(  A:NamePat ; @B:ProcPat ) => false requires notBool isQuotePat(A)
 
   // several Names
   rule #nameEq( A:NamePat , B:NamePats ; C:NamePat , D:NamePats ) => #nameEq(A;C) andBool #nameEq(B;D)
-
-  // check length
+  // check length first
   rule #nameEqif( A:NamePats ; B:NamePats ) => #length(A) ==Int #length(B) andBool #nameEq(A;B)
-//  rule #nameEqif( A:Names    ; B:NamePats ) => false
-//  rule #nameEqif( A:NamePats ; B:Names    ) => false
 
 //-----------------
 //--- Built-ins ---
@@ -1031,12 +1175,14 @@ module STRUCT
 // #rho2list -- throws [Error] Internal: Uncaught exception thrown of type AssertionError.
 // direct RhoList to List translation
   rule #rho2list( [ ] ) => .List
+  rule #rho2list( EmptyListPat ) => .List
   rule #rho2list( [ A:ProcPat ] ) => ListItem(A)
   rule #rho2list( [ A:ProcPat , B:ProcPats ] ) => ListItem(A) #rho2list([B])
 
 // #rho2map
   // RhoList -- produces Map with position keys
   rule #rho2map( [ ] ) => .Map
+  rule #rho2map( EmptyListPat ) => .Map
   rule #rho2map( [ A:ProcPats ] ) => #indexMap(0;A)
   rule #indexMap( I:Int ; A:ProcPat ) => I |-> A
   rule #indexMap( I:Int ; A:ProcPat , B:ProcPats ) => I |-> A #indexMap(I +Int 1;B)
@@ -1046,19 +1192,48 @@ module STRUCT
 
   // RhoMap -- produces Map with a unique key-value pair for each structurally equivalent key
   rule #rho2map( { } ) => .Map
+  rule #rho2map( EmptyMapPat ) => .Map
   rule #rho2map( { A:ProcPat : B:ProcPat } ) => A |-> B
   rule #rho2map( { A:ProcPat : B:ProcPat , C:RhoKVPats } )
-    => #if #key_structEq(A;C)
-       #then #rho2map({C})
-       #else A |-> B #rho2map({C}) #fi
+    => #if isProcVar(A) orBool isEvalVar(A)
+       #then A |-> B #rho2map(C)
+       #else #if #key_structEq(A;C)
+             #then #rho2map(C)
+             #else A |-> B #rho2map(C) #fi #fi
+
+  // RhoKVPats
+  rule #rho2map( A:ProcPat : B:ProcPat ) => A |-> B
+  rule #rho2map( A:ProcPat : B:ProcPat , C:RhoKVPats )
+    => #if isProcVar(A) orBool isEvalVar(A)
+       #then A |-> B #rho2map(C)
+       #else #if #key_structEq(A;C)
+             #then #rho2map(C)
+             #else A |-> B #rho2map(C) #fi #fi
 
 // #rho2set
+  // SetPat
   rule #rho2set( Set( ) ) => .Set
+  rule #rho2set( EmptySetPat ) => .Set
   rule #rho2set( Set( A:ProcPat ) ) => SetItem(A)
   rule #rho2set( Set( A:ProcPat , B:ProcPats ) )
-    => #if #structEqs(A;B)
-       #then #rho2set(Set(B)) // if #structEq(A;C) for some C in B, discard A
-       #else SetItem(A) #rho2set(Set(B)) #fi // otherwise keep A and traverse remaining set
+    => #if isProcVar(A) orBool isEvalVar(A)
+       #then SetItem(A) #rho2set(B)
+       #else #if #structEqs(A;B)
+             #then #rho2set(B)
+             #else SetItem(A) #rho2set(B) #fi #fi
+
+  // ProcPats
+  rule #rho2set( A:ProcPat ) => SetItem(A)
+  rule #rho2set( A:ProcPat , B:ProcPats )
+    => #if isProcVar(A) orBool isEvalVar(A)
+       #then SetItem(A) #rho2set(B)
+       #else #if #structEqs(A;B)
+             #then #rho2set(B)
+             #else SetItem(A) #rho2set(B) #fi #fi
+
+  rule #indexSet( A:ProcPats ) => #indexSet(0;A)
+  rule #indexSet( I:Int ; A:ProcPat ) => SetItem(I;A)
+  rule #indexSet( I:Int ; A:ProcPat , B:ProcPats ) => SetItem(I;A) #indexSet(I +Int 1;B)
 
   // #key_structEq( key ; RhoKVPat/Map )
   rule #key_structEq( A:ProcPat ; B:ProcPat :   _:ProcPat ) => #structEq(A;B)
@@ -1081,440 +1256,12 @@ module STRUCT
   rule #matchComm( S:Send ;; B:GBind )
     => #nameEq(#chan(S);#chan(B)) andBool #matchif(#quotes(#msg(S));#bvar(B))
        andBool #subGuard(#msg(S);#bvar(B);#guard(B))
-/*
-//-----------------------------
-//--- Channel Relations Set ---
-//-----------------------------
-  rule #chanRelSet( _:SRec    ) => .Set
-  rule #chanRelSet( _:SRecPat ) => .Set
-  rule #chanRelSet( A:Bind & B:Bind  ) => #chanRelSet(A;;B;;0;1;0)
-  rule #chanRelSet( A:Bind & B:Binds ) => #chanRelSet(A;;B;;0;1;0)
-  rule #chanRelSet( A:MRec    ) => #chanRelSet( ;;#bind(A);;0;1;0) // initially check 0th bind against all others
-  rule #chanRelSet( A:MRecPat ) => #chanRelSet( ;;#bind(A);;0;1;0)
 
-  // first arg Bind is checked against other Bind(s) for channel relations
-  // after checking each, throw it away and repeat for the next Bind
-  // TODO: optimization oppurtunity: if #FV(#chan) = .Set, move on to next bind
-    // Lbinds
-  rule #chanRelSet( ;; A:Lbind &  B:Lbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L) // only called with I=0,J=1
-  rule #chanRelSet( ;; A:Lbind &  B:Lbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L) // only called with I=0,J=1
-      // Ith Bind fixed, traverse succeeding Binds
-  rule #chanRelSet(    A:Lbind ;; B:Lbind  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ) // think: A is the Ith bind, B is the Jth bind in original
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int)
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-      // recursively generates chanRelSet for each Bind
-  rule #chanRelSet( A:Lbind ;; B:Lbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbind  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind ;; B:Lbind & C:Lbinds ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-    // LbindPats
-  rule #chanRelSet( ;; A:LbindPat &  B:Lbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Lbind    &  B:LbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:LbindPat &  B:LbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:LbindPat &  B:Lbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Lbind    &  B:LbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:LbindPat &  B:LbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
-  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  // recursively generates chanRelSet for each Bind[Pat]
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind    ;; B:Lbind    & C:LbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Lbind    ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:Lbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:Lbind    & C:LbindPats    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:LbindPat ;; B:LbindPat & C:LbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-
-    // Pbinds
-  rule #chanRelSet( ;; A:Pbind &  B:Pbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Pbind &  B:Pbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  // Ith Bind fixed, traverse succeeding Binds
-  rule #chanRelSet(    A:Pbind ;; B:Pbind  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbind  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbinds ;; I:Int ; J:Int)
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  // recursively generates chanRelSet for each Bind
-  rule #chanRelSet( A:Pbind ;; B:Pbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbind  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind ;; B:Pbind & C:Pbinds ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-    // PbindPats
-  rule #chanRelSet( ;; A:PbindPat &  B:Pbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Pbind    &  B:PbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:PbindPat &  B:PbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:PbindPat &  B:Pbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Pbind    &  B:PbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:PbindPat &  B:PbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
-  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  // recursively generates chanRelSet for each Bind[Pat]
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind    ;; B:Pbind    & C:PbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Pbind    ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:Pbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:Pbind    & C:PbindPats    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:PbindPat ;; B:PbindPat & C:PbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-
-    // Rbinds
-  rule #chanRelSet( ;; A:Rbind &  B:Rbind  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Rbind &  B:Rbinds ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  // Ith Bind fixed, traverse succeeding Binds
-  rule #chanRelSet(    A:Rbind ;; B:Rbind  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbind  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbinds ;; I:Int ; J:Int)
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  // recursively generates chanRelSet for each Bind
-  rule #chanRelSet( A:Rbind ;; B:Rbind ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbind  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind ;; B:Rbind & C:Rbinds ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-    // RbindPats
-  rule #chanRelSet( ;; A:RbindPat &  B:Rbind     ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Rbind    &  B:RbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:RbindPat &  B:RbindPat  ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:RbindPat &  B:Rbinds    ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:Rbind    &  B:RbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  rule #chanRelSet( ;; A:RbindPat &  B:RbindPats ;; I:Int ; J:Int ; L:Int ) => #chanRelSet(A;;B;;I;J;L)
-  // Ith Bind[Pat] fixed, traverse succeeding Bind[Pat][s]
-  // CRS( Bind[Pat] ;; Bind[Pat] ;; Int ; Int )
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then .Set
-       #else SetItem(I;SetItem(J)) #fi
-  // CRS( Bind[Pat] ;; Bind[Pat]s ;; Int ; Int )
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int )
-    => #if intersectSet(#FV(#chan(A)),#FV(#chan(B))) ==K .Set
-       #then #chanRelSet(A;;C;;I;J +Int 1)
-       #else #unionCRS(SetItem(I;SetItem(J));#chanRelSet(A;;C;;I;J +Int 1)) #fi
-  // recursively generates chanRelSet for each Bind[Pat]
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat ;; I:Int ; J:Int ; _:Int ) => #chanRelSet(A;;B;;I;J)
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbind     ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPat  ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind    ;; B:Rbind    & C:RbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:Rbind    ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:Rbinds    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:Rbind    & C:RbindPats    ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-  rule #chanRelSet( A:RbindPat ;; B:RbindPat & C:RbindPats ;; I:Int ; J:Int ; L:Int )
-    => #unionCRS(#chanRelSet(A;;B&C;;I;J);#chanRelSet(B;;C;;I +Int 1;I +Int 2;L))
-
-// Channel relation set union
-  rule #unionCRS( S:Set ;  .Set ) => S
-  rule #unionCRS(  .Set ; S:Set ) => S
-  rule #unionCRS( SetItem( I:Int ; .Set ) ; S:Set ) => S
-  rule #unionCRS( S:Set ; SetItem( I:Int ; .Set ) ) => S
-  // if indices match, union inside
-  rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( I ; C:Set ) ) => SetItem(I;A C)
-  // if indices do not match, union outside
-  rule #unionCRS( SetItem( I:Int ; A:Set ) ; SetItem( J:Int ; C:Set ) D:Set ) => SetItem(I;A) SetItem(J;C) D requires I =/=Int J
-*/
 // TODO: add #getOrElse(RhoMap;Proc;Proc)
 
 //---//---//---//---//---//---//---//---//---//
-// Extension of ==K to Name[Pat]s & Proc[Pat]s
-  rule ( A:Name    , B:Names    ) ==K ( C:Name    , D:Names    ) => A ==K C andBool B ==K D [structural]
-  rule ( A:Name    , B:NamePats ) ==K ( C:Name    , D:NamePats ) => A ==K C andBool B ==K D [structural]
-  rule ( A:NamePat , B:Names    ) ==K ( C:NamePat , D:Names    ) => A ==K C andBool B ==K D [structural]
+// Extension of ==K to NamePats & ProcPats
   rule ( A:NamePat , B:NamePats ) ==K ( C:NamePat , D:NamePats ) => A ==K C andBool B ==K D [structural]
-  rule ( A:Proc    , B:Procs    ) ==K ( C:Proc    , D:Procs    ) => A ==K C andBool B ==K D [structural]
-  rule ( A:Proc    , B:ProcPats ) ==K ( C:Proc    , D:ProcPats ) => A ==K C andBool B ==K D [structural]
-  rule ( A:ProcPat , B:Procs    ) ==K ( C:ProcPat , D:Procs    ) => A ==K C andBool B ==K D [structural]
   rule ( A:ProcPat , B:ProcPats ) ==K ( C:ProcPat , D:ProcPats ) => A ==K C andBool B ==K D [structural]
 
 //------------------
