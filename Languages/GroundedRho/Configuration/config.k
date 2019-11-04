@@ -35,17 +35,19 @@ module CONFIG
       </activity>                                       //**tuplespace**
       <tuplespace color="blue">                         // stores sends and receives
         <sends>                                         //**sends**
-          <send color="cyan" multiplicity="*">          //
-            .K                                          //
-          </send>                                       //
+          .Set
+          // <send color="cyan" multiplicity="*">          //
+          //   .K                                          //
+          // </send>                                       //
         </sends>                                        //
         <input>                                         //
-          <receives>                                    //
-            <receive color="yellow" multiplicity="*">   //
-              .K                                        //
-            </receive>                                  //
+          <receives>                                    //**receives**
+            .Set
+            // <receive color="yellow" multiplicity="*">   //
+            //   .K                                        //
+            // </receive>                                  //
           </receives>                                   //
-          <sums>                                        //
+          <sums>                                        //**selects**
             <sum multiplicity="*">                      //
               <branches>                                //
                 <branch multiplicity="*"> .K </branch>  // TODO: may be better as a set of Branches (they should be mutually exclusive anyways)
@@ -81,28 +83,21 @@ module CONFIG
 /*
 // Execution guards
   syntax KItem ::= "Check_All"
-  rule (Check_All => Check_FreeVars ~> Check_Type ~> Normalize) ~> _:Proc
+  rule (Check_All => Check_FreeVars ~> Check_Type) ~> _:Proc
 
   // Free variable execution guard
   syntax KItem ::= "Check_FreeVars"
                  | "Error: Free Variables!"
   // Remove free variable error guard if program is closed & check type
-  rule (Check_FreeVars ~> Check_Type ~> Normalize ~> P:Proc)
+  rule (Check_FreeVars ~> Check_Type ~> P:Proc)
     => #if FV(P) ==K .Set #then (Check_Type ~> Normalize ~> P) #else Error: Free Variables! #fi
 
   // Type check execution guard
   syntax KItem ::= "Check_Type"
                  | "Error: Invalid Type"
   // Remove type check guard if program is correct & normalize
-  rule (Check_Type ~> Normalize ~> P:Proc)
-    => #if #typeCheck(P) #then (Normalize ~> P) #else Error: Invalid Type #fi // TODO: #typeCheck
-
-// TODO: should contracts be loaded into the registry before normalization???
-
-  // Normalization
-  syntax KItem ::= "Normalize"
-  // Remove normalize guard & execute normalized process
-  rule (Normalize ~> P:Proc) => #normalize(P) // TODO: #normalize
+  rule (Check_Type ~> P:Proc)
+    => #if #typeCheck(P) #then #order(P) #else Error: Invalid Type #fi // TODO: #typeCheck
 */
 
 endmodule
