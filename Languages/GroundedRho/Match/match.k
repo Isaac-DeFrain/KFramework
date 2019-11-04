@@ -134,11 +134,11 @@ module MATCH
   rule #match( @EmptyP ;  EmptyN ) => true // empty send/empty listen matching
   rule #match(  EmptyN ; @EmptyP ) => true // empty send/empty listen matching
   // declared name variables -- BoundName
-  rule #match( n( I:Int )         ; n( J:Int )         ) => I ==Int J // TODO: is this right???
-  rule #match( n( L:Int , I:Int ) ; n( M:Int , J:Int ) ) => I ==Int J andBool L ==Int M
+  rule #match( N( I:Int )         ; N( J:Int )         ) => I ==Int J // TODO: is this right???
+  rule #match( N( L:Int , I:Int ) ; N( M:Int , J:Int ) ) => I ==Int J andBool L ==Int M
   rule #match( A:Name      ; _:BoundName ) => false requires notBool isBoundName(A)
   rule #match( _:BoundName ; A:Name      ) => false requires notBool isBoundName(A)
-//  rule #match( n( I:Int ) ; @x( J:Int ) ) => I ==Int J // TODO ???
+//  rule #match( N( I:Int ) ; @X( J:Int ) ) => I ==Int J // TODO ???
 
 // Proc matching
   rule #match( A:Proc  ; A       ) => true
@@ -147,11 +147,11 @@ module MATCH
   rule #match(  EmptyP ; *EmptyN ) => true // empty send/empty listen matching
   rule #match( *EmptyN ;  EmptyP ) => true // empty send/empty listen matching
   // bound process variables -- BoundProc
-  rule #match(  x( I:Int )         ;  x( J:Int )         ) => I ==Int J
-  rule #match(  x( L:Int , I:Int ) ;  x( M:Int , J:Int ) ) => I ==Int J andBool L ==Int M
+  rule #match(  X( I:Int )         ;  X( J:Int )         ) => I ==Int J
+  rule #match(  X( L:Int , I:Int ) ;  X( M:Int , J:Int ) ) => I ==Int J andBool L ==Int M
   rule #match( A:Proc      ; _:BoundProc ) => false requires notBool isBoundProc(A)
   rule #match( _:BoundProc ; A:Proc      ) => false requires notBool isBoundProc(A)
-// rule #match( x( I:Int ) ; *n( J:Int ) ) => I ==Int J // TODO ???
+// rule #match( X( I:Int ) ; *n( J:Int ) ) => I ==Int J // TODO ???
 
   // the only Ground a Ground matches is itself
   // Ground ::= "Nil" | Bool | Int | String | Unforgeable | Uri
